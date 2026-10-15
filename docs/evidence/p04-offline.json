@@ -1,0 +1,2082 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "465a0052df604b4eb9b4218b99cb811625d7a998",
+  "dirty": false,
+  "native_ee": "native_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 17,
+      "requests": 24,
+      "values": 53074,
+      "payload_bytes": 212296,
+      "request_bytes": 3815008,
+      "max_values": 8064,
+      "max_request_bytes": 841751,
+      "max_bands": 14,
+      "embedded_constants": 10868,
+      "inline_values": 33328,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/group_product/g4-w7",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 4,
+          "k": 3,
+          "window": 7
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 8,
+          "group_in": 2,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 16,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials of ee_mirror_fpn.conv3x3 (grouped double)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/upernet/notes/milestone10_findings.md, formulation table row 'double-partial (B) sum': bit-identical to the mirror, 1.93e-5 vs SMP float32",
+        "calibration": true,
+        "notes": "Four group products summed in double in the decoder's FUSION_ORDER and rounded once (decoder.grouped_double's sum), against the unsplit convolution."
+      },
+      "inputs_sha256": "09de39684361bb12c636fbea39cc4cca63661048d05b360a830cee8ade5f179f",
+      "weights_sha256": "86157be195669ff78bfb53c0400263771822fda50e8a9cb61cb59b5f995ec191",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 2744,
+          "payload_bytes": 10976,
+          "request_bytes": 208749,
+          "graph_sha256": "1e45467eb92ccc4dcd0b51240edd5ef0190783922775eacfd8741e3312836105",
+          "graph_bytes": 208521,
+          "embedded_constants": 288,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.153,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 8.344650268554688e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 10,
+              "channel": 3,
+              "actual": -1.5498167276382446,
+              "expected": -1.5498175621032715
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/window_pool/bins1236-w7",
+        "lane": "window",
+        "block": "window_pool",
+        "parts": [],
+        "settings": {
+          "sizes": [
+            1,
+            2,
+            3,
+            6
+          ],
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            7,
+            7
+          ],
+          "channels": 4,
+          "output": [
+            50,
+            4
+          ]
+        },
+        "seed": 17,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "SMP 0.5.0 PSPModule(sizes=(1, 2, 3, 6)) AdaptiveAvgPool2d blocks",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_psp.pool (window order)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/upernet/notes/milestone8_findings.md, answers 6 and 8: pooled values bit-identical to the mirror everywhere, <= 3.6e-6 vs SMP float32",
+        "calibration": true,
+        "notes": "One 7 x 7 window, as production pools the single stage-4 window; the [50, 4] value is read back row by row. The mirror's bin tables come from the library (native_ee.blocks.window.pooling), so the bit check cannot see a wrong bin rule; the SMP reference can (a wrong bin moves a mean far more than 1e-4)."
+      },
+      "inputs_sha256": "9fdb811a2b7ca84ba2f75dd9dcd07703345a7a90cd514064ddb40724ad532347",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 50
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 50,
+          "readouts": [
+            {
+              "name": "pooled",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 250,
+          "payload_bytes": 1000,
+          "request_bytes": 57845,
+          "graph_sha256": "e286e4b6aa8155c0256409f449ce8bc619717150cc43fbdb401ae49b94769f53",
+          "graph_bytes": 57618,
+          "embedded_constants": 750,
+          "inline_values": 196
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 245,
+          "payload_bytes": 980,
+          "request_bytes": 7506,
+          "graph_sha256": "e819ca0ae071268f63c340fa81060d2deac27019124768d2c957c09b4030daf6",
+          "graph_bytes": 7280,
+          "embedded_constants": 0,
+          "inline_values": 196
+        }
+      ],
+      "errors": [],
+      "seconds": 3.185,
+      "outputs": {
+        "pooled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 200,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 0,
+              "channel": 1,
+              "actual": 0.06129293888807297,
+              "expected": 0.06129290908575058
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/window_pool/e5-bins1236-w5",
+        "lane": "window",
+        "block": "window_pool",
+        "parts": [],
+        "settings": {
+          "sizes": [
+            1,
+            2,
+            3,
+            6
+          ],
+          "window": 5
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            5,
+            5
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "channels": 4,
+          "output": [
+            50,
+            4
+          ],
+          "readout": [
+            10,
+            5,
+            4
+          ]
+        },
+        "seed": 4001,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "SMP 0.5.0 PSPModule(sizes=(1, 2, 3, 6)) AdaptiveAvgPool2d blocks, channels-last input",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_psp.pool (window order, window=5, bin tables from PyTorch on index maps)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/window_pool/bins1236-w7 (one 7 x 7 window). Milestone 8 pooled 7, 14, 28 and 56 tokens to (1, 2, 3, 6) at window 7 with the research code (docs/history/upernet/notes/milestone8_findings.md, answers 4-6).",
+        "calibration": false,
+        "notes": "5 x 5 tokens (1 x 1 window of 5) pooled to (1, 2, 3, 6): 50 stacked bins, read as a 10 x 5 grid of rows. Uneven bins: 5 -> 2, 5 -> 3, 5 -> 6 (PyTorch's start/end rule; they overlap). The mirror's bin tables are PyTorch's, read off adaptive_avg_pool2d on one-hot index maps, so a wrong bin rule in the library fails the mirror as well as SMP. Exact: every bin sum is a multiple of 2^-23 below 2^8, so exact in double in any order; one division and one float32 rounding."
+      },
+      "inputs_sha256": "21a315e8ae28d5385fc5bb81c7939a10ddbc3337e07c2c7e6939cd764a59038d",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "pooled",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 250,
+          "payload_bytes": 1000,
+          "request_bytes": 39279,
+          "graph_sha256": "cdb9729e7f151b4db874e8454bb41dedf4e4caa2cc8dea316cc5e6b7851c6f3a",
+          "graph_bytes": 39052,
+          "embedded_constants": 550,
+          "inline_values": 100
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 125,
+          "payload_bytes": 500,
+          "request_bytes": 6335,
+          "graph_sha256": "d914b87ddf692aab8898ee9977736d71280d649ecd351e4841364143fdaefe19",
+          "graph_bytes": 6109,
+          "embedded_constants": 0,
+          "inline_values": 100
+        }
+      ],
+      "errors": [],
+      "seconds": 0.107,
+      "outputs": {
+        "pooled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 200,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 3,
+              "actual": -0.2970826029777527,
+              "expected": -0.2970825731754303
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/window_pool/e8-bins1236-w8",
+        "lane": "window",
+        "block": "window_pool",
+        "parts": [],
+        "settings": {
+          "sizes": [
+            1,
+            2,
+            3,
+            6
+          ],
+          "window": 8
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            8,
+            8
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "channels": 4,
+          "output": [
+            50,
+            4
+          ],
+          "readout": [
+            10,
+            5,
+            4
+          ]
+        },
+        "seed": 4002,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "SMP 0.5.0 PSPModule(sizes=(1, 2, 3, 6)) AdaptiveAvgPool2d blocks, channels-last input",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_psp.pool (window order, window=8, bin tables from PyTorch on index maps)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/window_pool/bins1236-w7 (one 7 x 7 window). Milestone 8 pooled 7, 14, 28 and 56 tokens to (1, 2, 3, 6) at window 7 with the research code (docs/history/upernet/notes/milestone8_findings.md, answers 4-6).",
+        "calibration": false,
+        "notes": "8 x 8 tokens (1 x 1 window of 8) pooled to (1, 2, 3, 6): 50 stacked bins, read as a 10 x 5 grid of rows. Uneven bins: 8 -> 3, 8 -> 6 (PyTorch's start/end rule; they overlap). The mirror's bin tables are PyTorch's, read off adaptive_avg_pool2d on one-hot index maps, so a wrong bin rule in the library fails the mirror as well as SMP. Exact: every bin sum is a multiple of 2^-23 below 2^8, so exact in double in any order; one division and one float32 rounding."
+      },
+      "inputs_sha256": "2768ea219bf8063ab76158837b0ef4500924c9ab83d1bd01c392feea8abab3c5",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "pooled",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 250,
+          "payload_bytes": 1000,
+          "request_bytes": 70235,
+          "graph_sha256": "4716fc4e85cae7b72a53929948c4761ef4c203079ccb72d325186f9de305aa47",
+          "graph_bytes": 70008,
+          "embedded_constants": 850,
+          "inline_values": 256
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 320,
+          "payload_bytes": 1280,
+          "request_bytes": 8257,
+          "graph_sha256": "5d2232525f2a2218706120ae85812ed932b3309af18f177c4f8268b808fd198b",
+          "graph_bytes": 8031,
+          "embedded_constants": 0,
+          "inline_values": 256
+        }
+      ],
+      "errors": [],
+      "seconds": 0.09,
+      "outputs": {
+        "pooled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 200,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 0,
+              "channel": 3,
+              "actual": -0.2695286273956299,
+              "expected": -0.26952865719795227
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/window_pool/e12-bins1236-w12",
+        "lane": "window",
+        "block": "window_pool",
+        "parts": [],
+        "settings": {
+          "sizes": [
+            1,
+            2,
+            3,
+            6
+          ],
+          "window": 12
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            12,
+            12
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "channels": 4,
+          "output": [
+            50,
+            4
+          ],
+          "readout": [
+            10,
+            5,
+            4
+          ]
+        },
+        "seed": 4003,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "SMP 0.5.0 PSPModule(sizes=(1, 2, 3, 6)) AdaptiveAvgPool2d blocks, channels-last input",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_psp.pool (window order, window=12, bin tables from PyTorch on index maps)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/window_pool/bins1236-w7 (one 7 x 7 window). Milestone 8 pooled 7, 14, 28 and 56 tokens to (1, 2, 3, 6) at window 7 with the research code (docs/history/upernet/notes/milestone8_findings.md, answers 4-6).",
+        "calibration": false,
+        "notes": "12 x 12 tokens (1 x 1 window of 12) pooled to (1, 2, 3, 6): 50 stacked bins, read as a 10 x 5 grid of rows. Every bin divides the extent evenly. The mirror's bin tables are PyTorch's, read off adaptive_avg_pool2d on one-hot index maps, so a wrong bin rule in the library fails the mirror as well as SMP. Exact: every bin sum is a multiple of 2^-23 below 2^8, so exact in double in any order; one division and one float32 rounding."
+      },
+      "inputs_sha256": "c3c1103218f2be4c632e9b7d41ed3ec7491dfd07320a9b868eb1a892bab1e28e",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "pooled",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 250,
+          "payload_bytes": 1000,
+          "request_bytes": 133501,
+          "graph_sha256": "2f224b96a6542063dfb2351d4baf1eed3332eebbc8461dcefdc246fd523387ec",
+          "graph_bytes": 133274,
+          "embedded_constants": 1250,
+          "inline_values": 576
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 12,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 12,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 720,
+          "payload_bytes": 2880,
+          "request_bytes": 12146,
+          "graph_sha256": "62c847e3f25e56fb319b103044b64eef70cd8dce0f509500cded919265ffc8ee",
+          "graph_bytes": 11918,
+          "embedded_constants": 0,
+          "inline_values": 576
+        }
+      ],
+      "errors": [],
+      "seconds": 0.088,
+      "outputs": {
+        "pooled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 200,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 7,
+              "col": 2,
+              "channel": 3,
+              "actual": 0.7655012607574463,
+              "expected": 0.7655013203620911
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/window_pool/e14-bins1236-w7",
+        "lane": "window",
+        "block": "window_pool",
+        "parts": [],
+        "settings": {
+          "sizes": [
+            1,
+            2,
+            3,
+            6
+          ],
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "windows": [
+            2,
+            2
+          ],
+          "channels": 4,
+          "output": [
+            50,
+            4
+          ],
+          "readout": [
+            10,
+            5,
+            4
+          ]
+        },
+        "seed": 4004,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "SMP 0.5.0 PSPModule(sizes=(1, 2, 3, 6)) AdaptiveAvgPool2d blocks, channels-last input",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_psp.pool (window order, window=7, bin tables from PyTorch on index maps)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/window_pool/bins1236-w7 (one 7 x 7 window). Milestone 8 pooled 7, 14, 28 and 56 tokens to (1, 2, 3, 6) at window 7 with the research code (docs/history/upernet/notes/milestone8_findings.md, answers 4-6).",
+        "calibration": false,
+        "notes": "14 x 14 tokens (2 x 2 windows of 7) pooled to (1, 2, 3, 6): 50 stacked bins, read as a 10 x 5 grid of rows. Uneven bins: 14 -> 3, 14 -> 6 (PyTorch's start/end rule; they overlap). The mirror's bin tables are PyTorch's, read off adaptive_avg_pool2d on one-hot index maps, so a wrong bin rule in the library fails the mirror as well as SMP. Exact: every bin sum is a multiple of 2^-23 below 2^8, so exact in double in any order; one division and one float32 rounding. The only P04 pool on more than one window: the window partials are gathered with sampleRectangle and summed over the 4 windows."
+      },
+      "inputs_sha256": "bcbcfb727bc38b01b393660bf83faa3f44e631e9e25f52a5bd3523f936b16bac",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "pooled",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 250,
+          "payload_bytes": 1000,
+          "request_bytes": 66070,
+          "graph_sha256": "dc3d8d602fc75189c77e51cde7e0451d311d84abfb92fe5670d619e5c2ba0668",
+          "graph_bytes": 65843,
+          "embedded_constants": 1450,
+          "inline_values": 784
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 980,
+          "payload_bytes": 3920,
+          "request_bytes": 14678,
+          "graph_sha256": "321d264d02c5f7b97a36b1108d8fa089ae509f8fabda1dae1f1f57a6d0faca8d",
+          "graph_bytes": 14450,
+          "embedded_constants": 0,
+          "inline_values": 784
+        }
+      ],
+      "errors": [],
+      "seconds": 0.074,
+      "outputs": {
+        "pooled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 200,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 0,
+              "channel": 2,
+              "actual": 0.27126386761665344,
+              "expected": 0.2712639272212982
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/window_pool/e8-bins1248-w8",
+        "lane": "window",
+        "block": "window_pool",
+        "parts": [],
+        "settings": {
+          "sizes": [
+            1,
+            2,
+            4,
+            8
+          ],
+          "window": 8
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            8,
+            8
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "channels": 4,
+          "output": [
+            85,
+            4
+          ],
+          "readout": [
+            17,
+            5,
+            4
+          ]
+        },
+        "seed": 4005,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "SMP 0.5.0 PSPModule(sizes=(1, 2, 4, 8)) AdaptiveAvgPool2d blocks, channels-last input",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_psp.pool (window order, window=8, bin tables from PyTorch on index maps)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/window_pool/bins1236-w7 (one 7 x 7 window). Milestone 8 pooled 7, 14, 28 and 56 tokens to (1, 2, 3, 6) at window 7 with the research code (docs/history/upernet/notes/milestone8_findings.md, answers 4-6).",
+        "calibration": false,
+        "notes": "8 x 8 tokens (1 x 1 window of 8) pooled to (1, 2, 4, 8): 85 stacked bins, read as a 17 x 5 grid of rows. Every bin divides the extent evenly. The mirror's bin tables are PyTorch's, read off adaptive_avg_pool2d on one-hot index maps, so a wrong bin rule in the library fails the mirror as well as SMP. Exact: every bin sum is a multiple of 2^-23 below 2^8, so exact in double in any order; one division and one float32 rounding."
+      },
+      "inputs_sha256": "35d4a9a76aedfa069bccf3260ffe52f0d5cc0b0af879c02467228854753ab3ca",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 17
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 17,
+          "readouts": [
+            {
+              "name": "pooled",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 425,
+          "payload_bytes": 1700,
+          "request_bytes": 73170,
+          "graph_sha256": "0d9641ff05db3eb079ac85c5bc744adbca24981ae6deb81386d80f27c0a61a3a",
+          "graph_bytes": 72943,
+          "embedded_constants": 1445,
+          "inline_values": 256
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 320,
+          "payload_bytes": 1280,
+          "request_bytes": 8251,
+          "graph_sha256": "c7d0a2bf9bec2f766885c74cd0d029afdfc95f9b12d1961611a7d92148aad616",
+          "graph_bytes": 8025,
+          "embedded_constants": 0,
+          "inline_values": 256
+        }
+      ],
+      "errors": [],
+      "seconds": 0.066,
+      "outputs": {
+        "pooled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 340,
+            "max_abs": 4.470348358154297e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 3,
+              "actual": 0.2291126847267151,
+              "expected": 0.2291126400232315
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/window_pool/e12-bins1248-w12",
+        "lane": "window",
+        "block": "window_pool",
+        "parts": [],
+        "settings": {
+          "sizes": [
+            1,
+            2,
+            4,
+            8
+          ],
+          "window": 12
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            12,
+            12
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "channels": 4,
+          "output": [
+            85,
+            4
+          ],
+          "readout": [
+            17,
+            5,
+            4
+          ]
+        },
+        "seed": 4006,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "SMP 0.5.0 PSPModule(sizes=(1, 2, 4, 8)) AdaptiveAvgPool2d blocks, channels-last input",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_psp.pool (window order, window=12, bin tables from PyTorch on index maps)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/window_pool/bins1236-w7 (one 7 x 7 window). Milestone 8 pooled 7, 14, 28 and 56 tokens to (1, 2, 3, 6) at window 7 with the research code (docs/history/upernet/notes/milestone8_findings.md, answers 4-6).",
+        "calibration": false,
+        "notes": "12 x 12 tokens (1 x 1 window of 12) pooled to (1, 2, 4, 8): 85 stacked bins, read as a 17 x 5 grid of rows. Uneven bins: 12 -> 8 (PyTorch's start/end rule; they overlap). The mirror's bin tables are PyTorch's, read off adaptive_avg_pool2d on one-hot index maps, so a wrong bin rule in the library fails the mirror as well as SMP. Exact: every bin sum is a multiple of 2^-23 below 2^8, so exact in double in any order; one division and one float32 rounding."
+      },
+      "inputs_sha256": "a64a1313c05b366cb2e35f801131b2dc67377d27b58d02e51c13d853e4eae9c9",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 17
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 17,
+          "readouts": [
+            {
+              "name": "pooled",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 425,
+          "payload_bytes": 1700,
+          "request_bytes": 136573,
+          "graph_sha256": "343eee7434dc6a28c6d9629c9b5806900fb418e775de7b13f9cd9fe4d58d987c",
+          "graph_bytes": 136346,
+          "embedded_constants": 2125,
+          "inline_values": 576
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 12,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 12,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 720,
+          "payload_bytes": 2880,
+          "request_bytes": 12184,
+          "graph_sha256": "f2787e6eaa74f7240b17714d938e5ad8c533835461514ccb100b1181ea6ec887",
+          "graph_bytes": 11956,
+          "embedded_constants": 0,
+          "inline_values": 576
+        }
+      ],
+      "errors": [],
+      "seconds": 0.058,
+      "outputs": {
+        "pooled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 340,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 3,
+              "channel": 1,
+              "actual": 0.6198903322219849,
+              "expected": 0.6198903918266296
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/g1-w7",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 1,
+          "k": 3,
+          "window": 7
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 8,
+          "group_in": 8,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 4011,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..0, double) of ee_mirror_fpn.conv3x3 per group (double); 1 group(s)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/group_product/g4-w7. Milestone 10 ran the 4 groups of the fusion (docs/history/upernet/notes/milestone10_findings.md, section 4).",
+        "calibration": false,
+        "notes": "1 contiguous group(s) of 8 input channel(s), K = 72 per group; the partials summed in double in group order 0..0, one float32 rounding. The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: every product is a multiple of 2^-48 and every partial sum is below 18 < 2^5, so each group's dot and the group sum are exact in double in any order; one rounding. One group: the product is the unsplit convolution's im2col product."
+      },
+      "inputs_sha256": "e4c04084f5f049cbbc797b20f3b5c7e0ba85310a08a9126305c72c64170dc97b",
+      "weights_sha256": "8429f3703a36f52d8e30a037a3a862c43e0afbdef51428ea5f5a5e1aebc7d063",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 2744,
+          "payload_bytes": 10976,
+          "request_bytes": 87783,
+          "graph_sha256": "7180585c7f8ee5c44869bf0983a7e206dfb1268ce400fc9a5d76235a62b260b2",
+          "graph_bytes": 87555,
+          "embedded_constants": 288,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.048,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 6,
+              "channel": 1,
+              "actual": -0.6335594058036804,
+              "expected": -0.6335588097572327
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/g2-w7",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 2,
+          "k": 3,
+          "window": 7
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 8,
+          "group_in": 4,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 4012,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..1, double) of ee_mirror_fpn.conv3x3 per group (double); 2 group(s)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/group_product/g4-w7. Milestone 10 ran the 4 groups of the fusion (docs/history/upernet/notes/milestone10_findings.md, section 4).",
+        "calibration": false,
+        "notes": "2 contiguous group(s) of 4 input channel(s), K = 36 per group; the partials summed in double in group order 0..1, one float32 rounding. The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: every product is a multiple of 2^-48 and every partial sum is below 18 < 2^5, so each group's dot and the group sum are exact in double in any order; one rounding."
+      },
+      "inputs_sha256": "3ebf18efca1dedcbc4f1dfd5507f3697cbd0e0aab251f7d78ea2b8ca4d863053",
+      "weights_sha256": "345f260da598e8c7be91d0b9ed87b67034935e7a612b10b21f5ac2d65234d991",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 2744,
+          "payload_bytes": 10976,
+          "request_bytes": 129489,
+          "graph_sha256": "a4dcdf9baca4c3ee3984d4125119f1f4edcb99b86a655a7f8ef476ccd7653647",
+          "graph_bytes": 129261,
+          "embedded_constants": 288,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.231,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 11,
+              "col": 8,
+              "channel": 3,
+              "actual": 1.5581494569778442,
+              "expected": 1.558150053024292
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/g8-w7",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 8,
+          "k": 3,
+          "window": 7
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 8,
+          "group_in": 1,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 4013,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..7, double) of ee_mirror_fpn.conv3x3 per group (double); 8 group(s)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/group_product/g4-w7. Milestone 10 ran the 4 groups of the fusion (docs/history/upernet/notes/milestone10_findings.md, section 4).",
+        "calibration": false,
+        "notes": "8 contiguous group(s) of 1 input channel(s), K = 9 per group; the partials summed in double in group order 0..7, one float32 rounding. The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: every product is a multiple of 2^-48 and every partial sum is below 18 < 2^5, so each group's dot and the group sum are exact in double in any order; one rounding."
+      },
+      "inputs_sha256": "0dcc46fe7d4b826ad0c6c761d1e9d629e2a2d85e8d74f26b82b62d3c574ee456",
+      "weights_sha256": "d435be3dc0be07baddae824d71acdc14d19b4fd7389b283d2f9bb5f079cdbd14",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 2744,
+          "payload_bytes": 10976,
+          "request_bytes": 367945,
+          "graph_sha256": "2b0e06fb8f98bf35a4d0bc6405fd8e53dee8d9ff05932f752d9f1eb6aa882772",
+          "graph_bytes": 367717,
+          "embedded_constants": 288,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.04,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 8,
+              "channel": 1,
+              "actual": 2.0879242420196533,
+              "expected": 2.087923765182495
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/g1-w12",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 1,
+          "k": 3,
+          "window": 12
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            24,
+            24
+          ],
+          "in": 8,
+          "group_in": 8,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 4014,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..0, double) of ee_mirror_fpn.conv3x3 per group (double); 1 group(s)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/group_product/g4-w7. Milestone 10 ran the 4 groups of the fusion (docs/history/upernet/notes/milestone10_findings.md, section 4).",
+        "calibration": false,
+        "notes": "1 contiguous group(s) of 8 input channel(s), K = 72 per group; the partials summed in double in group order 0..0, one float32 rounding. The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: every product is a multiple of 2^-48 and every partial sum is below 18 < 2^5, so each group's dot and the group sum are exact in double in any order; one rounding. One group: the product is the unsplit convolution's im2col product."
+      },
+      "inputs_sha256": "8a33de9581b8adb37595f64c685a3bd77ce79003174a8d172f5567fcd7b985b7",
+      "weights_sha256": "6b6993942b9e8dfa0878177d43fd6ffdc90df1176b52905dd26e3144f555b050",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 8064,
+          "payload_bytes": 32256,
+          "request_bytes": 194904,
+          "graph_sha256": "7deba5b4f8b0d739e7a9258fba64ded303c5709187da8143874a9d6c2d32479e",
+          "graph_bytes": 194676,
+          "embedded_constants": 288,
+          "inline_values": 4608
+        }
+      ],
+      "errors": [],
+      "seconds": 0.04,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2304,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 2,
+              "channel": 0,
+              "actual": -1.353271484375,
+              "expected": -1.3532720804214478
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/g2-w12",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 2,
+          "k": 3,
+          "window": 12
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            24,
+            24
+          ],
+          "in": 8,
+          "group_in": 4,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 4015,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..1, double) of ee_mirror_fpn.conv3x3 per group (double); 2 group(s)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/group_product/g4-w7. Milestone 10 ran the 4 groups of the fusion (docs/history/upernet/notes/milestone10_findings.md, section 4).",
+        "calibration": false,
+        "notes": "2 contiguous group(s) of 4 input channel(s), K = 36 per group; the partials summed in double in group order 0..1, one float32 rounding. The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: every product is a multiple of 2^-48 and every partial sum is below 18 < 2^5, so each group's dot and the group sum are exact in double in any order; one rounding."
+      },
+      "inputs_sha256": "82980eccf6072194fba6a40446a365a2a1af4a715426b056b46391cfbc7dbbfe",
+      "weights_sha256": "e17945daf5c70af49f1288aa3037ecaf619a6d8328ef5a6963008198d37a4bd7",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 8064,
+          "payload_bytes": 32256,
+          "request_bytes": 291264,
+          "graph_sha256": "0d1d258415f1d2e48532cc27a2b6cefae829f8762b1ced8f6e6fb06da5687f10",
+          "graph_bytes": 291036,
+          "embedded_constants": 288,
+          "inline_values": 4608
+        }
+      ],
+      "errors": [],
+      "seconds": 0.04,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2304,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 9,
+              "channel": 1,
+              "actual": -1.2333399057388306,
+              "expected": -1.2333405017852783
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/g4-w12",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 4,
+          "k": 3,
+          "window": 12
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            24,
+            24
+          ],
+          "in": 8,
+          "group_in": 2,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 4016,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..3, double) of ee_mirror_fpn.conv3x3 per group (double); 4 group(s)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/group_product/g4-w7. Milestone 10 ran the 4 groups of the fusion (docs/history/upernet/notes/milestone10_findings.md, section 4).",
+        "calibration": false,
+        "notes": "4 contiguous group(s) of 2 input channel(s), K = 18 per group; the partials summed in double in group order 0..3, one float32 rounding. The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: every product is a multiple of 2^-48 and every partial sum is below 18 < 2^5, so each group's dot and the group sum are exact in double in any order; one rounding."
+      },
+      "inputs_sha256": "ff504e4db427a02e26934da684104cb890abceaca5b22f0a0fbf1261675932d0",
+      "weights_sha256": "fc5d76d31b6eeb74f8c40ed9e85034d6142d7f0c140581dce5435b62340a157c",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 8064,
+          "payload_bytes": 32256,
+          "request_bytes": 474624,
+          "graph_sha256": "adf1f70b9c05cf530906fd0b8a09c8bc86b0ce9cbb0bb9b6fa5eaab2b8d29e68",
+          "graph_bytes": 474396,
+          "embedded_constants": 288,
+          "inline_values": 4608
+        }
+      ],
+      "errors": [],
+      "seconds": 0.041,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2304,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 7,
+              "channel": 2,
+              "actual": 1.5401009321212769,
+              "expected": 1.540101408958435
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/g8-w12",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 8,
+          "k": 3,
+          "window": 12
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            24,
+            24
+          ],
+          "in": 8,
+          "group_in": 1,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 4017,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..7, double) of ee_mirror_fpn.conv3x3 per group (double); 8 group(s)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P04): no milestone ran it in the library. The regression check is window/group_product/g4-w7. Milestone 10 ran the 4 groups of the fusion (docs/history/upernet/notes/milestone10_findings.md, section 4).",
+        "calibration": false,
+        "notes": "8 contiguous group(s) of 1 input channel(s), K = 9 per group; the partials summed in double in group order 0..7, one float32 rounding. The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: every product is a multiple of 2^-48 and every partial sum is below 18 < 2^5, so each group's dot and the group sum are exact in double in any order; one rounding."
+      },
+      "inputs_sha256": "ceddb747c8c6235acc465d4868a136b5f8c5197ded365e9b3fa1360149f2dfab",
+      "weights_sha256": "aa03833c8f1cb83853e29c8c10f837cdb12c8bacef42c042affbd15e44291cc1",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 8064,
+          "payload_bytes": 32256,
+          "request_bytes": 841751,
+          "graph_sha256": "d68350509f19d0dba2cea44ebca26c882c889f2cb4a578d685eb661d3d167b32",
+          "graph_bytes": 841523,
+          "embedded_constants": 288,
+          "inline_values": 4608
+        }
+      ],
+      "errors": [],
+      "seconds": 0.039,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2304,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 9,
+              "channel": 1,
+              "actual": 1.491459846496582,
+              "expected": 1.4914604425430298
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/order-g4-w7",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 4,
+          "k": 3,
+          "window": 7
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 8,
+          "group_in": 2,
+          "out": 1,
+          "bias": false,
+          "probe": [
+            7,
+            7
+          ]
+        },
+        "seed": 4021,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit (designed) weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..3, double) of ee_mirror_fpn.conv3x3 per group (double); 4 groups",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New fixture (P04): Milestone 10 found formulation B insensitive to the group order on its data (docs/history/upernet/notes/milestone10_findings.md, section 4, order study); this probe makes the order visible.",
+        "calibration": false,
+        "notes": "One output channel, weights designed: at token (7, 7) the 4 group partials are -0x1.0000000000000p+0, -0x1.8000000000000p-52, 0x1.0000000000000p+0, 0x1.8000000000000p-55 (one exact product each), and their double sum in group order, rounded once, differs from other orders and from rounding each partial. Exact: each group's partial is exact (one product), but the double group sum is inexact at the probe token and at about a third of the others; on this data the float32 result depends on the order only at the probe token. The mirror is exact because it adds the partials in the graph's order, in double, so the whole fixture rests on the premise that Earth Engine adds the double partial images in that order (Milestone 10, formulation B). If a probe fails while the 8 group fixtures pass, the premise failed, not the block."
+      },
+      "inputs_sha256": "d5771b9db16e71d8c7a47844517c4954d7695e52ca14ac3e6e25193d100c55e5",
+      "weights_sha256": "4d66c338a1c650e71b7ecf39ef02d0e48438e17c7d840050fb62e1edfc2fe4bc",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 1
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 11,
+          "values": 2156,
+          "payload_bytes": 8624,
+          "request_bytes": 206810,
+          "graph_sha256": "8146502724ee746265a91fec0eafbc96a4be78cbee080555de8cbb48ae17d654",
+          "graph_bytes": 206582,
+          "embedded_constants": 72,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.077,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 1.1102230246251565e-16,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 7,
+              "col": 7,
+              "channel": 0,
+              "actual": -4.0245584642661925e-16,
+              "expected": -2.914335439641036e-16
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/group_product/order-g8-w7",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 8,
+          "k": 3,
+          "window": 7
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 8,
+          "group_in": 1,
+          "out": 1,
+          "bias": false,
+          "probe": [
+            7,
+            7
+          ]
+        },
+        "seed": 4022,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit (designed) weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials (order 0..7, double) of ee_mirror_fpn.conv3x3 per group (double); 8 groups",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New fixture (P04): Milestone 10 found formulation B insensitive to the group order on its data (docs/history/upernet/notes/milestone10_findings.md, section 4, order study); this probe makes the order visible.",
+        "calibration": false,
+        "notes": "One output channel, weights designed: at token (7, 7) the 8 group partials are 0x1.0000000000000p-60, 0x1.0000000000000p-55, -0x1.0000000000000p-1, 0x1.0000000000000p-1, 0x1.0000000000000p-49, 0x1.0000000000000p-63, -0x1.0000000000000p-56, -0x1.8000000000000p-44 (one exact product each), and their double sum in group order, rounded once, differs from other orders and from rounding each partial. Exact: each group's partial is exact (one product), but the double group sum is inexact at the probe token and at about a third of the others; on this data the float32 result depends on the order only at the probe token. The mirror is exact because it adds the partials in the graph's order, in double, so the whole fixture rests on the premise that Earth Engine adds the double partial images in that order (Milestone 10, formulation B). If a probe fails while the 8 group fixtures pass, the premise failed, not the block."
+      },
+      "inputs_sha256": "30c75160b0924b5ed1c8a469ab519e0cc1ad4e66a106e5d634584243f0ce2619",
+      "weights_sha256": "0724a6a15857cd8eec555800a72e5c60df360a8d394be4a08b79d74229657f53",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 1
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 11,
+          "values": 2156,
+          "payload_bytes": 8624,
+          "request_bytes": 365659,
+          "graph_sha256": "6059bc1d2db0e90d0a691b28d7621c0f0af25ff0c8935b467df4ef959bd60edd",
+          "graph_bytes": 365431,
+          "embedded_constants": 72,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.146,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 8.344702966817108e-14,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 7,
+              "col": 7,
+              "channel": 0,
+              "actual": -8.344702966817108e-14,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

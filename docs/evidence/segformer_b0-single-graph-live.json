@@ -1,0 +1,357 @@
+{
+ "bodies": {
+  "export": {
+   "bytes": 4247347,
+   "compact_bytes": 3972026,
+   "compact_sha256": "59d09c3a7f359d8a5da8a462b173793c4e47b085eb1708c232dc443065df6441",
+   "sha256": "dd50a0c80c9e1ca43abde98a17d92b727edbaeb85d4f05614d18c33c6d1862d2"
+  },
+  "model_pixels": {
+   "bytes": 4247889,
+   "compact_bytes": 3972523,
+   "compact_sha256": "d71b0250a79ac5748e24409846bd7bc451f60142402ee5b3851dc8a95d345b86",
+   "sha256": "a8a770b101af91071406dc81c520f90fce0925dd60b783b33c2086a30a192836"
+  },
+  "readback": {
+   "bytes": 1957,
+   "compact_bytes": 1825,
+   "compact_sha256": "5b8d2e9264cc1742b40b85dea4b14111059b884720cb1eb01dd97f4bb200afd3",
+   "sha256": "f2ff30c3454cbbe3495fc457862be74366899c04d2538d21a1db643d288bf6b7"
+  }
+ },
+ "calls": {
+  "computePixels": 2,
+  "exportImage": 1,
+  "getAsset": 11,
+  "getOperation": 154
+ },
+ "comparison": {
+  "model_pixels": {
+   "returned": false
+  },
+  "readback": {
+   "decoded": true,
+   "mirror": {
+    "actual_sha256": "fade13792cd932a95b7a16d42ad598458cd0d801c119fb779ea2b3d659b55225",
+    "actual_worst": -0.4481014907360077,
+    "argmax_disagreements": 0,
+    "differing_bits": 0,
+    "expected_sha256": "fade13792cd932a95b7a16d42ad598458cd0d801c119fb779ea2b3d659b55225",
+    "expected_worst": -0.4481014907360077,
+    "mae": 0.0,
+    "max_abs": 0.0,
+    "nonfinite": 0,
+    "over_target": 0,
+    "passed": true,
+    "rmse": 0.0,
+    "target": 0,
+    "values": 100352,
+    "worst": [
+     0,
+     0,
+     0
+    ]
+   },
+   "pytorch": {
+    "actual_sha256": "fade13792cd932a95b7a16d42ad598458cd0d801c119fb779ea2b3d659b55225",
+    "actual_worst": -1.1258805990219116,
+    "argmax_disagreements": 0,
+    "differing_bits": 95460,
+    "expected_sha256": "3b380c31583443e4ff0868becb5197afd108ae6e8b53159497e3208c0a5361ec",
+    "expected_worst": -1.1258776187896729,
+    "mae": 4.828918515847087e-07,
+    "max_abs": 2.9802322387695312e-06,
+    "nonfinite": 0,
+    "over_target": 0,
+    "passed": true,
+    "rmse": 6.136577018491095e-07,
+    "target": 0.0001,
+    "values": 100352,
+    "worst": [
+     219,
+     12,
+     1
+    ]
+   },
+   "returned": true,
+   "staged_ee": {
+    "actual_sha256": "fade13792cd932a95b7a16d42ad598458cd0d801c119fb779ea2b3d659b55225",
+    "actual_worst": -0.4481014907360077,
+    "argmax_disagreements": 0,
+    "differing_bits": 0,
+    "expected_sha256": "fade13792cd932a95b7a16d42ad598458cd0d801c119fb779ea2b3d659b55225",
+    "expected_worst": -0.4481014907360077,
+    "mae": 0.0,
+    "max_abs": 0.0,
+    "nonfinite": 0,
+    "over_target": 0,
+    "passed": true,
+    "rmse": 0.0,
+    "target": 0,
+    "values": 100352,
+    "worst": [
+     0,
+     0,
+     0
+    ]
+   },
+   "valid_pixels": 50176
+  }
+ },
+ "destination": "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_single_graph_logits",
+ "deviations": [
+  "The first attempt stopped at its own destination check: Earth Engine answered HTTP 404 ('does not exist or doesn't allow this operation'), and the runner matched only 'not found'. It had made 1 initialization and the 11 planned getAsset calls; nothing was computed or submitted. The continuation recorded that 404 and did not repeat the checks.",
+  "The continuation ran in a new process and initialized again: 2 algorithms.list calls in total, against the plan's 1. Read only."
+ ],
+ "events": [
+  {
+   "kind": "initialized",
+   "t": 1791954508.828788
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_input",
+   "t": 1791954509.1442041,
+   "type": "IMAGE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0000",
+   "t": 1791954509.485526,
+   "type": "TABLE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0001",
+   "t": 1791954509.9675908,
+   "type": "TABLE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0002",
+   "t": 1791954510.361613,
+   "type": "TABLE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0003",
+   "t": 1791954510.8541188,
+   "type": "TABLE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0004",
+   "t": 1791954511.178329,
+   "type": "TABLE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0005",
+   "t": 1791954511.612624,
+   "type": "TABLE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0006",
+   "t": 1791954511.954108,
+   "type": "TABLE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0007",
+   "t": 1791954512.220781,
+   "type": "TABLE"
+  },
+  {
+   "kind": "asset_present",
+   "name_suffix": "segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0008",
+   "t": 1791954512.5278862,
+   "type": "TABLE"
+  },
+  {
+   "kind": "destination_absent",
+   "message": "HttpError 404: Asset 'projects/YOUR_EE_PROJECT/assets/<namespace>_single_graph_logits' does not exist or doesn't allow this operation.",
+   "note": "recorded from the stopped attempt: HTTP 404; the runner matched 'not found' only",
+   "runner_sha256": "61c77f9aaf9ddd0c4546c2fd8662d99b174c97bc798d3089adb5f1c9533ce513",
+   "t": 1791954552.769492
+  },
+  {
+   "kind": "initialized",
+   "t": 1791954554.626215
+  },
+  {
+   "error": "EEException: User memory limit exceeded.",
+   "kind": "model_pixels_failed",
+   "seconds": 138.12059262488037,
+   "t": 1791954692.791209
+  },
+  {
+   "kind": "export_submitted",
+   "operation": "projects/YOUR_EE_PROJECT/operations/THOT2CWRUV23SUUR7Y37JO3S",
+   "t": 1791954717.896072
+  },
+  {
+   "eecu": 5870.01171875,
+   "end": "2026-10-14T06:29:45.617832Z",
+   "error": null,
+   "kind": "export_done",
+   "start": "2026-10-14T05:12:00.978475Z",
+   "state": "SUCCEEDED",
+   "t": 1791959403.979347,
+   "updated": "2026-10-14T06:29:45.617832Z"
+  },
+  {
+   "bytes": 602240,
+   "kind": "readback_ok",
+   "seconds": 2.3073190418072045,
+   "sha256": "b1b2da8e466b420e98d4b3ff3dec70afe1cf2fa4acd4e82a718675fe436ba157",
+   "t": 1791959406.289968
+  }
+ ],
+ "export": {
+  "last": {
+   "done": true,
+   "metadata": {
+    "@type": "type.googleapis.com/google.earthengine.v1alpha.OperationMetadata",
+    "attempt": 1,
+    "batchEecuUsageSeconds": 5870.01171875,
+    "createTime": "2026-10-14T05:11:57.699796Z",
+    "description": "segformer_b0_single_graph_logits",
+    "destinationUris": [
+     "https://code.earthengine.google.com/?asset=projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_single_graph_logits"
+    ],
+    "endTime": "2026-10-14T06:29:45.617832Z",
+    "priority": 100,
+    "progress": 1,
+    "stages": [
+     {
+      "completeWorkUnits": 1,
+      "description": "Computation and writing of temporary files.",
+      "displayName": "Create Local Files",
+      "totalWorkUnits": "1"
+     },
+     {
+      "completeWorkUnits": 1,
+      "description": "Uploading of files to the export destination.",
+      "displayName": "Write Files to Destination",
+      "totalWorkUnits": "1"
+     }
+    ],
+    "startTime": "2026-10-14T05:12:00.978475Z",
+    "state": "SUCCEEDED",
+    "type": "EXPORT_IMAGE",
+    "updateTime": "2026-10-14T06:29:45.617832Z"
+   },
+   "name": "projects/YOUR_EE_PROJECT/operations/THOT2CWRUV23SUUR7Y37JO3S",
+   "response": {
+    "@type": "type.googleapis.com/google.protobuf.Empty"
+   }
+  },
+  "operation": "projects/YOUR_EE_PROJECT/operations/THOT2CWRUV23SUUR7Y37JO3S",
+  "request_id": "a6c1b851-4cb9-4bea-b599-9b80cc065901",
+  "state": "SUCCEEDED",
+  "submitted": 1791954692.862442
+ },
+ "grid": {
+  "affineTransform": {
+   "scaleX": 2.5,
+   "scaleY": -2.5,
+   "shearX": 0,
+   "shearY": 0,
+   "translateX": 1000,
+   "translateY": 2000.0
+  },
+  "crsCode": "EPSG:3857",
+  "dimensions": {
+   "height": 224,
+   "width": 224
+  }
+ },
+ "input_asset": "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_input",
+ "limits": {
+  "computePixels": 2,
+  "exportImage": 1,
+  "getAsset": 11,
+  "getOperation": 200
+ },
+ "model_bands": [
+  "c0",
+  "c1",
+  "valid"
+ ],
+ "namespace": "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z",
+ "poll": {
+  "minutes": 100,
+  "seconds": 30
+ },
+ "project": "YOUR_EE_PROJECT",
+ "readback_bands": [
+  "c0",
+  "c1",
+  "valid"
+ ],
+ "record_variant": {
+  "kind": "project-redacted public derivative",
+  "project_replacements": 17,
+  "raw_sha256": "1f7c9f0568337edcec6f84f784566027f09e92337ecbeaf86deef585d3202024"
+ },
+ "required": [
+  "input"
+ ],
+ "revision": "f88270e914dbdf3a5195c3a135f5d4821244b0a9",
+ "runner_sha256": "6bbd1f063f4baebb7af832faabec3689993a993092e003764b9fb59d1ee62691",
+ "single_graph_cost": {
+  "batch_eecu_seconds": 5870.01171875,
+  "run_seconds": 4664.639357
+ },
+ "staged_cost_reference": {
+  "model_tasks_total": {
+   "batch_eecu_seconds": 91.06902408599854,
+   "run_seconds": 304.95537
+  },
+  "source": "the staged run's task records (release_runs/segformer_b0-fullmodel-execution)",
+  "tasks": {
+   "export_C1": {
+    "batch_eecu_seconds": 9.05392837524414,
+    "run_seconds": 17.72604
+   },
+   "export_C2": {
+    "batch_eecu_seconds": 17.78119659423828,
+    "run_seconds": 53.141631
+   },
+   "export_C3": {
+    "batch_eecu_seconds": 16.027587890625,
+    "run_seconds": 33.305152
+   },
+   "export_C4": {
+    "batch_eecu_seconds": 26.884357452392578,
+    "run_seconds": 83.953078
+   },
+   "export_S1B0": {
+    "batch_eecu_seconds": 13.357780456542969,
+    "run_seconds": 48.243432
+   },
+   "export_input": {
+    "batch_eecu_seconds": 0.27878400683403015,
+    "run_seconds": 16.564971
+   },
+   "export_logits": {
+    "batch_eecu_seconds": 7.964173316955566,
+    "run_seconds": 68.586037
+   }
+  }
+ },
+ "state": "DONE",
+ "state_sha256": "3c7d9cb7c85c473bf54af1f8cf748d63b4d1243017614aaf6b0678867d357a23",
+ "weight_tables": [
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0000",
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0001",
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0002",
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0003",
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0004",
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0005",
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0006",
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0007",
+  "projects/YOUR_EE_PROJECT/assets/segformer_b0_3c7d9cb7c85c_20261014T014619Z_weights_part_0008"
+ ]
+}

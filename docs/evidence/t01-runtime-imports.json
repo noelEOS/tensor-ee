@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "source_base": "c36784339700ccaf2347494c4a30abcab74d9695",
+  "scope": "Observed local repository imports after explicit facade import, validated checkpoint/manifest loader, three offline saved-asset stages and fixed local model constructor. Includes package __init__ files; excludes unused historical wrapper paths. Graph construction is not numerical parity.",
+  "module_count": 53,
+  "modules": {
+    "ee_attention": "ee_attention/__init__.py",
+    "ee_attention.earth_engine": "ee_attention/earth_engine/__init__.py",
+    "ee_attention.earth_engine.array_ops": "ee_attention/earth_engine/array_ops.py",
+    "ee_attention.earth_engine.blockwise_attention": "ee_attention/earth_engine/blockwise_attention.py",
+    "ee_attention.earth_engine.naive_attention": "ee_attention/earth_engine/naive_attention.py",
+    "ee_attention.earth_engine.spatial_attention": "ee_attention/earth_engine/spatial_attention.py",
+    "native_ee": "native_ee/__init__.py",
+    "native_ee._swin_parameters": "native_ee/_swin_parameters.py",
+    "native_ee.compiler": "native_ee/compiler.py",
+    "native_ee.primitives": "native_ee/primitives.py",
+    "native_ee.swin": "native_ee/swin.py",
+    "native_ee.weight_assets": "native_ee/weight_assets.py",
+    "native_ee.weight_mapping": "native_ee/weight_mapping.py",
+    "swin_block": "swin_block/__init__.py",
+    "swin_block.earth_engine": "swin_block/earth_engine/__init__.py",
+    "swin_block.earth_engine.layer_norm": "swin_block/earth_engine/layer_norm.py",
+    "swin_block.earth_engine.linear": "swin_block/earth_engine/linear.py",
+    "swin_block.earth_engine.ops": "swin_block/earth_engine/ops.py",
+    "swin_block.earth_engine.relative_position": "swin_block/earth_engine/relative_position.py",
+    "swin_block.earth_engine.swin_block": "swin_block/earth_engine/swin_block.py",
+    "swin_encoder": "swin_encoder/__init__.py",
+    "swin_encoder.earth_engine": "swin_encoder/earth_engine/__init__.py",
+    "swin_encoder.earth_engine.configuration": "swin_encoder/earth_engine/configuration.py",
+    "swin_encoder.earth_engine.stage": "swin_encoder/earth_engine/stage.py",
+    "swin_encoder.earth_engine.swin_encoder": "swin_encoder/earth_engine/swin_encoder.py",
+    "swin_hierarchy": "swin_hierarchy/__init__.py",
+    "swin_hierarchy.earth_engine": "swin_hierarchy/earth_engine/__init__.py",
+    "swin_hierarchy.earth_engine.patch_merge": "swin_hierarchy/earth_engine/patch_merge.py",
+    "swin_hierarchy.earth_engine.periodic_extension": "swin_hierarchy/earth_engine/periodic_extension.py",
+    "swin_image_encoder": "swin_image_encoder/__init__.py",
+    "swin_image_encoder.earth_engine": "swin_image_encoder/earth_engine/__init__.py",
+    "swin_image_encoder.earth_engine.patch_embed": "swin_image_encoder/earth_engine/patch_embed.py",
+    "swin_pair": "swin_pair/__init__.py",
+    "swin_pair.earth_engine": "swin_pair/earth_engine/__init__.py",
+    "swin_pair.earth_engine.coordinates": "swin_pair/earth_engine/coordinates.py",
+    "swin_pair.earth_engine.shift": "swin_pair/earth_engine/shift.py",
+    "swin_pair.earth_engine.shifted_mask": "swin_pair/earth_engine/shifted_mask.py",
+    "swin_pair.earth_engine.shifted_swin_block": "swin_pair/earth_engine/shifted_swin_block.py",
+    "upernet.earth_engine": "upernet/earth_engine/__init__.py",
+    "upernet.earth_engine._coefficients": "upernet/earth_engine/_coefficients.py",
+    "upernet.earth_engine._decoder_contract": "upernet/earth_engine/_decoder_contract.py",
+    "upernet.earth_engine.adaptive_pool": "upernet/earth_engine/adaptive_pool.py",
+    "upernet.earth_engine.conv2d": "upernet/earth_engine/conv2d.py",
+    "upernet.earth_engine.feature_interface": "upernet/earth_engine/feature_interface.py",
+    "upernet.earth_engine.feature_ops": "upernet/earth_engine/feature_ops.py",
+    "upernet.earth_engine.feature_transport": "upernet/earth_engine/feature_transport.py",
+    "upernet.earth_engine.fpn": "upernet/earth_engine/fpn.py",
+    "upernet.earth_engine.fusion": "upernet/earth_engine/fusion.py",
+    "upernet.earth_engine.layout": "upernet/earth_engine/layout.py",
+    "upernet.earth_engine.normalization": "upernet/earth_engine/normalization.py",
+    "upernet.earth_engine.psp": "upernet/earth_engine/psp.py",
+    "upernet.earth_engine.resize": "upernet/earth_engine/resize.py",
+    "upernet.earth_engine.segmentation_head": "upernet/earth_engine/segmentation_head.py"
+  },
+  "external_runtime_packages": [
+    "earthengine-api",
+    "numpy",
+    "torch",
+    "segmentation-models-pytorch",
+    "timm"
+  ],
+  "historical_wrappers_not_public_runtime": [
+    "generated stage inputs, profiling, export/download functions and legacy seeded weight loaders remain available in research modules but are not traversed by the facade"
+  ],
+  "formula_extraction_audit": [
+    {
+      "source": "swin_encoder/reference/pytorch_swin_encoder.py",
+      "runtime": "swin_encoder/earth_engine/configuration.py",
+      "function": "stage_windows",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "swin_encoder/reference/pytorch_swin_encoder.py",
+      "runtime": "swin_encoder/earth_engine/configuration.py",
+      "function": "stage_shifted",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "swin_encoder/reference/pytorch_swin_encoder.py",
+      "runtime": "swin_encoder/earth_engine/configuration.py",
+      "function": "block_shifts",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "swin_encoder/reference/pytorch_swin_encoder.py",
+      "runtime": "swin_encoder/earth_engine/configuration.py",
+      "function": "check_windows",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "swin_encoder/reference/pytorch_swin_encoder.py",
+      "runtime": "swin_encoder/earth_engine/configuration.py",
+      "function": "check_resolution",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "swin_encoder/reference/pytorch_swin_encoder.py",
+      "runtime": "swin_encoder/earth_engine/configuration.py",
+      "function": "encoder_halo",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/adaptive_pool_reference.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "bins",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/adaptive_pool_reference.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "onehot_bins",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/adaptive_pool_reference.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "check_rule",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/adaptive_pool_reference.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "pool_rows",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/adaptive_pool_reference.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "offsets",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/adaptive_pool_reference.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "axis_membership",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/adaptive_pool_reference.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "membership",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/adaptive_pool_reference.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "window_token_order",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/pytorch_decoder_primitives.py",
+      "runtime": "upernet/earth_engine/_coefficients.py",
+      "function": "bilinear_weights",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/smp_fpn_reference.py",
+      "runtime": "upernet/earth_engine/_decoder_contract.py",
+      "function": "block_index",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/smp_fpn_reference.py",
+      "runtime": "upernet/earth_engine/_decoder_contract.py",
+      "function": "lateral_prefix",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/smp_fpn_reference.py",
+      "runtime": "upernet/earth_engine/_decoder_contract.py",
+      "function": "conv_prefix",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/smp_fpn_reference.py",
+      "runtime": "upernet/earth_engine/_decoder_contract.py",
+      "function": "norm_prefix",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/smp_fpn_reference.py",
+      "runtime": "upernet/earth_engine/_decoder_contract.py",
+      "function": "level_tensors",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/smp_fusion_reference.py",
+      "runtime": "upernet/earth_engine/_decoder_contract.py",
+      "function": "tensor_channels",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/reference/smp_fusion_reference.py",
+      "runtime": "upernet/earth_engine/_decoder_contract.py",
+      "function": "bn_args",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "upernet/earth_engine/feature_assets.py",
+      "runtime": "upernet/earth_engine/feature_transport.py",
+      "function": "stride_sample",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "swin_pair/earth_engine/rasters.py",
+      "runtime": "swin_pair/earth_engine/coordinates.py",
+      "function": "token_grid",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "swin_pair/earth_engine/rasters.py",
+      "runtime": "swin_pair/earth_engine/coordinates.py",
+      "function": "coarse_projection",
+      "ast_identical_to_accepted_base": true
+    },
+    {
+      "source": "swin_pair/earth_engine/rasters.py",
+      "runtime": "swin_pair/earth_engine/coordinates.py",
+      "function": "window_coordinates",
+      "ast_identical_to_accepted_base": true
+    }
+  ],
+  "source_revision": "db214c7ca580ecd4185f58c9cf927c9999dc9dbf"
+}

@@ -1,0 +1,787 @@
+{
+  "format": "native_ee_featurecollection_weights_v2",
+  "status": "ready",
+  "asset_namespace": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567",
+  "started_unix": 1790603567.609709,
+  "serialization": "JSON strings of numeric chunks; 9 significant decimal digits for float32; float() restoration",
+  "dummy_geometry": "Point(0, 0); EE table exports require non-null geometry",
+  "max_collection_payload_bytes": 8000000,
+  "max_active_tasks": 2,
+  "parameter_count": 14319426,
+  "layers": {
+    "conv_000": {
+      "shape": [
+        64,
+        98
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/conv1/Conv",
+      "sha256": "59c2c29a3fa395a93c7c27c0655e1b79c9d3d34098fc70b835e9b3dc34005184",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000"
+      ]
+    },
+    "conv_001": {
+      "shape": [
+        64,
+        576
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer1/layer1.0/conv1/Conv",
+      "sha256": "6e34f2c1e136809b3ab64598499e9eccd617f0d134bcfe372a21b79de8b44f31",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000"
+      ]
+    },
+    "conv_002": {
+      "shape": [
+        64,
+        576
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer1/layer1.0/conv2/Conv",
+      "sha256": "80b1c411564ab90412ce30c8b09d4af5c10a3b007b32f931d809ab2b347b5144",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000"
+      ]
+    },
+    "conv_003": {
+      "shape": [
+        64,
+        576
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer1/layer1.1/conv1/Conv",
+      "sha256": "677b0303dde5dc535195ac12dcaaa676085b5ab5490c5b777ff754dfefbacc3b",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000"
+      ]
+    },
+    "conv_004": {
+      "shape": [
+        64,
+        576
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer1/layer1.1/conv2/Conv",
+      "sha256": "730f41a398fbc13972d24502dcc20e9e1777c1fc4313b6c688d53a5053a1e4a6",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000"
+      ]
+    },
+    "conv_005": {
+      "shape": [
+        128,
+        576
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer2/layer2.0/conv1/Conv",
+      "sha256": "4ff5b8199895ea6d9d040e18bf00c7c56f8e923d6d7e7d6a74445a68126d5d25",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000"
+      ]
+    },
+    "conv_006": {
+      "shape": [
+        128,
+        1152
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer2/layer2.0/conv2/Conv",
+      "sha256": "9bce52424a479860ba0718c5102f4683245643164ab00a2b955657b6a18a6fc4",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000"
+      ]
+    },
+    "conv_007": {
+      "shape": [
+        128,
+        64
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer2/layer2.0/downsample/downsample.0/Conv",
+      "sha256": "06484b467167ee12c0997537427c985476fd1b835cdf21475eec3f3e7a2bc787",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000"
+      ]
+    },
+    "conv_008": {
+      "shape": [
+        128,
+        1152
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer2/layer2.1/conv1/Conv",
+      "sha256": "3c16f890841a0aa1eb18dc87c9bfbda8a85cdeddeeaaa684c7b046b85c0cf558",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0001"
+      ]
+    },
+    "conv_009": {
+      "shape": [
+        128,
+        1152
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer2/layer2.1/conv2/Conv",
+      "sha256": "2772b7ba7b396ee0dddf820e19f5abbd6e04ea380be387d943515dd224b689e4",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0001"
+      ]
+    },
+    "conv_010": {
+      "shape": [
+        256,
+        1152
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer3/layer3.0/conv1/Conv",
+      "sha256": "a1b5b53e6a6c59bc196e8db6f45efbec55959dec25e0c448322fe6e6c2f34518",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0001"
+      ]
+    },
+    "conv_011": {
+      "shape": [
+        256,
+        2304
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer3/layer3.0/conv2/Conv",
+      "sha256": "5a1db08e77feeca00e2b34573586502a22cc386d7f6ff92846d4e3ced4980b7b",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0001",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0002",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0003"
+      ]
+    },
+    "conv_012": {
+      "shape": [
+        256,
+        128
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer3/layer3.0/downsample/downsample.0/Conv",
+      "sha256": "69a6aafeb790937687765442770f7ea72d9d5ff10e2ff9bffa610f5cc41d2324",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0003"
+      ]
+    },
+    "conv_013": {
+      "shape": [
+        256,
+        2304
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer3/layer3.1/conv1/Conv",
+      "sha256": "b49a5c818505e416e1abb5915596667703360debe581eb7e71f7e1f51e9b7c96",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0003",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0004"
+      ]
+    },
+    "conv_014": {
+      "shape": [
+        256,
+        2304
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer3/layer3.1/conv2/Conv",
+      "sha256": "99d15a5bb6d5152c25b93f311faa3020e7b0d9962c6fb3bf94046ac268dc04b7",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0004",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0005"
+      ]
+    },
+    "conv_015": {
+      "shape": [
+        512,
+        2304
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer4/layer4.0/conv1/Conv",
+      "sha256": "d49becd35577fc82775b4cba0f26577fbb9b832a4f7228a589511c275488e265",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0005",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0006",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0007"
+      ]
+    },
+    "conv_016": {
+      "shape": [
+        512,
+        4608
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer4/layer4.0/conv2/Conv",
+      "sha256": "c0b2f7e567f9eb171963dfcde43d1598254a4b4db1fd5712d32a31cf3030a391",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0007",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0008",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0009",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0010",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0011",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0012"
+      ]
+    },
+    "conv_017": {
+      "shape": [
+        512,
+        256
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer4/layer4.0/downsample/downsample.0/Conv",
+      "sha256": "c63804a085f9144508220ff1ef2f9f7d0840572881414f33cd332670a0c18a76",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0012"
+      ]
+    },
+    "conv_018": {
+      "shape": [
+        512,
+        4608
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer4/layer4.1/conv1/Conv",
+      "sha256": "ddcfe5a02422bb91915d019df8db50999842d919181da7060e0c64879625142a",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0012",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0013",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0014",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0015",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0016",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0017"
+      ]
+    },
+    "conv_019": {
+      "shape": [
+        512,
+        4608
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/encoder/layer4/layer4.1/conv2/Conv",
+      "sha256": "8cbfc35467c196ba9e2e16c4799200f6573e70d04619a75e420666ccbecde87e",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0017",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0018",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0019",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0020",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0021"
+      ]
+    },
+    "conv_020": {
+      "shape": [
+        256,
+        6912
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.0/conv1/conv1.0/Conv",
+      "sha256": "e04df981f603846d2386a0ac955adb1a45965865c088fa4a8bb60e6fceed4d94",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0021",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0022",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0023",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0024",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0025"
+      ]
+    },
+    "conv_021": {
+      "shape": [
+        256,
+        2304
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.0/conv2/conv2.0/Conv",
+      "sha256": "6ddb47f0317e8ef91555b786553344140bbdb89c54969d03a8acd6094261f35f",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0025",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0026"
+      ]
+    },
+    "conv_022": {
+      "shape": [
+        128,
+        3456
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.1/conv1/conv1.0/Conv",
+      "sha256": "a7663807f9c15b93f66e1c760e04e804cb6bb167678675a0e76663ee41a9ad60",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0026",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0027"
+      ]
+    },
+    "conv_023": {
+      "shape": [
+        128,
+        1152
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.1/conv2/conv2.0/Conv",
+      "sha256": "f0ad52d7cb9bf0a889ead21d02028ca56a8f4b881a3cf01fd1e3043b6bafb79c",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0027"
+      ]
+    },
+    "conv_024": {
+      "shape": [
+        64,
+        1728
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.2/conv1/conv1.0/Conv",
+      "sha256": "00d749e1ba0984dd490b42cfa214b21da36854c3939bacbcf7c99abc9ffecc15",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0027",
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0028"
+      ]
+    },
+    "conv_025": {
+      "shape": [
+        64,
+        576
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.2/conv2/conv2.0/Conv",
+      "sha256": "49f6263c7731b86f1ba091ceb98387bf4bfe5f44b37a0a8101114ba3dc717a00",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0028"
+      ]
+    },
+    "conv_026": {
+      "shape": [
+        32,
+        1152
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.3/conv1/conv1.0/Conv",
+      "sha256": "cc244bd95c51a651a30492f4691b9bd8dd06620be16e8219d5f7e56300ce9915",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0028"
+      ]
+    },
+    "conv_027": {
+      "shape": [
+        32,
+        288
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.3/conv2/conv2.0/Conv",
+      "sha256": "9e882086e9957b394ec8c67b1c62073b2d4d4892d60082d5d1278988dc65e4ea",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0028"
+      ]
+    },
+    "conv_028": {
+      "shape": [
+        16,
+        288
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.4/conv1/conv1.0/Conv",
+      "sha256": "d1128c57e7bf467d8de7e2d957dd46174b4254733e046b525f0869d978dfeb7c",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0028"
+      ]
+    },
+    "conv_029": {
+      "shape": [
+        16,
+        144
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/decoder/blocks.4/conv2/conv2.0/Conv",
+      "sha256": "e942047c23181d8e41c0ae8993b6abd778c5c4de9d29fb8898f5557ed5184612",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0028"
+      ]
+    },
+    "conv_030": {
+      "shape": [
+        2,
+        144
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "/segmentation_head/segmentation_head.0/Conv",
+      "sha256": "551d9556900ef97a37aeeeba4f300afd96e6f48b9acbcbed7a4d5e605d2523ff",
+      "assets": [
+        "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0028"
+      ]
+    }
+  },
+  "shards": [
+    {
+      "index": 0,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0000",
+      "rows": 788,
+      "layers": [
+        "conv_000",
+        "conv_001",
+        "conv_002",
+        "conv_003",
+        "conv_004",
+        "conv_005",
+        "conv_006",
+        "conv_007",
+        "conv_008"
+      ],
+      "collection_payload_bytes": 6905587,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 1,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0001",
+      "rows": 430,
+      "layers": [
+        "conv_008",
+        "conv_009",
+        "conv_010",
+        "conv_011"
+      ],
+      "collection_payload_bytes": 7027091,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 2,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0002",
+      "rows": 221,
+      "layers": [
+        "conv_011"
+      ],
+      "collection_payload_bytes": 7090566,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 3,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0003",
+      "rows": 455,
+      "layers": [
+        "conv_011",
+        "conv_012",
+        "conv_013"
+      ],
+      "collection_payload_bytes": 7020820,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 4,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0004",
+      "rows": 219,
+      "layers": [
+        "conv_013",
+        "conv_014"
+      ],
+      "collection_payload_bytes": 7070529,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 5,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0005",
+      "rows": 220,
+      "layers": [
+        "conv_014",
+        "conv_015"
+      ],
+      "collection_payload_bytes": 7090447,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 6,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0006",
+      "rows": 217,
+      "layers": [
+        "conv_015"
+      ],
+      "collection_payload_bytes": 7077343,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 7,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0007",
+      "rows": 218,
+      "layers": [
+        "conv_015",
+        "conv_016"
+      ],
+      "collection_payload_bytes": 7090796,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 8,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0008",
+      "rows": 224,
+      "layers": [
+        "conv_016"
+      ],
+      "collection_payload_bytes": 7079763,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 9,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0009",
+      "rows": 224,
+      "layers": [
+        "conv_016"
+      ],
+      "collection_payload_bytes": 7076804,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 10,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0010",
+      "rows": 224,
+      "layers": [
+        "conv_016"
+      ],
+      "collection_payload_bytes": 7072452,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 11,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0011",
+      "rows": 224,
+      "layers": [
+        "conv_016"
+      ],
+      "collection_payload_bytes": 7075052,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 12,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0012",
+      "rows": 668,
+      "layers": [
+        "conv_016",
+        "conv_017",
+        "conv_018"
+      ],
+      "collection_payload_bytes": 6947207,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 13,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0013",
+      "rows": 214,
+      "layers": [
+        "conv_018"
+      ],
+      "collection_payload_bytes": 7056880,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 14,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0014",
+      "rows": 214,
+      "layers": [
+        "conv_018"
+      ],
+      "collection_payload_bytes": 7058691,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 15,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0015",
+      "rows": 214,
+      "layers": [
+        "conv_018"
+      ],
+      "collection_payload_bytes": 7063249,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 16,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0016",
+      "rows": 214,
+      "layers": [
+        "conv_018"
+      ],
+      "collection_payload_bytes": 7076702,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 17,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0017",
+      "rows": 222,
+      "layers": [
+        "conv_018",
+        "conv_019"
+      ],
+      "collection_payload_bytes": 7061307,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 18,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0018",
+      "rows": 234,
+      "layers": [
+        "conv_019"
+      ],
+      "collection_payload_bytes": 7052447,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 19,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0019",
+      "rows": 234,
+      "layers": [
+        "conv_019"
+      ],
+      "collection_payload_bytes": 7060784,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 20,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0020",
+      "rows": 234,
+      "layers": [
+        "conv_019"
+      ],
+      "collection_payload_bytes": 7063534,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 21,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0021",
+      "rows": 230,
+      "layers": [
+        "conv_019",
+        "conv_020"
+      ],
+      "collection_payload_bytes": 7048748,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 22,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0022",
+      "rows": 142,
+      "layers": [
+        "conv_020"
+      ],
+      "collection_payload_bytes": 7110748,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 23,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0023",
+      "rows": 142,
+      "layers": [
+        "conv_020"
+      ],
+      "collection_payload_bytes": 7108855,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 24,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0024",
+      "rows": 142,
+      "layers": [
+        "conv_020"
+      ],
+      "collection_payload_bytes": 7097904,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 25,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0025",
+      "rows": 177,
+      "layers": [
+        "conv_020",
+        "conv_021"
+      ],
+      "collection_payload_bytes": 7087551,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 26,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0026",
+      "rows": 201,
+      "layers": [
+        "conv_021",
+        "conv_022"
+      ],
+      "collection_payload_bytes": 7080451,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 27,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0027",
+      "rows": 252,
+      "layers": [
+        "conv_022",
+        "conv_023",
+        "conv_024"
+      ],
+      "collection_payload_bytes": 7074507,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 28,
+      "asset_id": "projects/tensor-ee/assets/segwater_r18_c34c75563208_1790603567_part_0028",
+      "rows": 188,
+      "layers": [
+        "conv_024",
+        "conv_025",
+        "conv_026",
+        "conv_027",
+        "conv_028",
+        "conv_029",
+        "conv_030"
+      ],
+      "collection_payload_bytes": 1905051,
+      "status": "COMPLETED"
+    }
+  ],
+  "checkpoint": {
+    "sha256": "c34c75563208c184a5a8edc735d8643d0d41bf857ae8ce253440eeb1dacd3a94",
+    "local_path": "checkpoints/segwater_r18_s42_fp32_b32.onnx",
+    "bytes": 57302208,
+    "trained": true,
+    "weight_conversion": "unchanged float32 ONNX initializers",
+    "remote_source": "gdrive:segwater_v2_tensorRT/compress_v3_cpu/onnx/unet_r18_hpo10pct_s42/fp32_b32.onnx"
+  },
+  "project": "tensor-ee",
+  "finished_unix": 1790605858.650487,
+  "collection_payload_bytes": 199631866,
+  "public_copy": {
+    "assets": "server-side copies (Earth Engine copyAsset) of this manifest's original upload, in the public project tensor-ee",
+    "link_record": "docs/evidence/s01-weights-link.json",
+    "removed_shard_fields": [
+      "task_id",
+      "task_status",
+      "started_unix",
+      "finished_unix"
+    ]
+  }
+}

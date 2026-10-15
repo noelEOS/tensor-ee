@@ -1,0 +1,118 @@
+{
+ "schema_version": 1,
+ "kind": "x00_g1ext_segformer_link",
+ "passed": true,
+ "private_records_sha256": {
+  "prepared": "e63789306f2b95ac70dbe52a38a76b7c66bca6e2ee2842b38679726a381b4446",
+  "sizing": "4b1820bd17001ac80d4e6189a83d97f747f3bf90ff1e604aae456de558c7b34d"
+ },
+ "checks": {
+  "sizing_record_sha256_pinned": true,
+  "prepared_approved_this_sizing_record": true,
+  "sizing_record_measured_the_run_namespace": true,
+  "state_sha256_equal": true,
+  "weight_manifest_equal": true
+ },
+ "summary": {
+  "cuts": 7,
+  "compute_pixels_bodies_equal": 7,
+  "namespace_substitutions_exact": 7,
+  "placeholder_graphs_equal_golden": 7,
+  "submitted_producer_bodies": 5,
+  "submitted_producer_bodies_equal_rebuilt": 5
+ },
+ "cuts": {
+  "monolithic": {
+   "compute_pixels_body_equal": true,
+   "compute_pixels_expression_equal": true,
+   "namespace_occurrences": 10,
+   "placeholder_absent_before_substitution": true,
+   "namespace_substitution_exact": true,
+   "placeholder_sha256": "5db4917d29afd8bb4f28e2a6c9a12b2818117fb2b63dfcd916cef1e103a24362",
+   "placeholder_equals_golden": true
+  },
+  "stage1a": {
+   "compute_pixels_body_equal": true,
+   "compute_pixels_expression_equal": true,
+   "namespace_occurrences": 3,
+   "placeholder_absent_before_substitution": true,
+   "namespace_substitution_exact": true,
+   "placeholder_sha256": "59b5b8c5088495dcdf66a6fdb30d9c7715828468fce12deae0e5a0fe6993e30f",
+   "placeholder_equals_golden": true
+  },
+  "stage1b": {
+   "compute_pixels_body_equal": true,
+   "compute_pixels_expression_equal": true,
+   "namespace_occurrences": 2,
+   "placeholder_absent_before_substitution": true,
+   "namespace_substitution_exact": true,
+   "placeholder_sha256": "31013521e75413d0d954aced361da27408397b6cb9b2e370cedcf77948cdd951",
+   "placeholder_equals_golden": true
+  },
+  "stage2": {
+   "compute_pixels_body_equal": true,
+   "compute_pixels_expression_equal": true,
+   "namespace_occurrences": 3,
+   "placeholder_absent_before_substitution": true,
+   "namespace_substitution_exact": true,
+   "placeholder_sha256": "230aabdca2890070d191cb83b00531628def0c013f4ae6634cef596aceced788",
+   "placeholder_equals_golden": true
+  },
+  "stage3": {
+   "compute_pixels_body_equal": true,
+   "compute_pixels_expression_equal": true,
+   "namespace_occurrences": 6,
+   "placeholder_absent_before_substitution": true,
+   "namespace_substitution_exact": true,
+   "placeholder_sha256": "21ca03633871fc4528df991c1496cb97cf759b950a1e8de85e993a251e747e8d",
+   "placeholder_equals_golden": true
+  },
+  "stage4": {
+   "compute_pixels_body_equal": true,
+   "compute_pixels_expression_equal": true,
+   "namespace_occurrences": 6,
+   "placeholder_absent_before_substitution": true,
+   "namespace_substitution_exact": true,
+   "placeholder_sha256": "3afbab6f1f765ce0a2fd22e62192d19d312e75e88d65da6b7ec384a0ee8eb9c2",
+   "placeholder_equals_golden": true
+  },
+  "decoder": {
+   "compute_pixels_body_equal": true,
+   "compute_pixels_expression_equal": true,
+   "namespace_occurrences": 6,
+   "placeholder_absent_before_substitution": true,
+   "namespace_substitution_exact": true,
+   "placeholder_sha256": "87eeb28c33d3c65327eedb5687d5a92c099d48f2ffb0374cc2ab8029e086a77e",
+   "placeholder_equals_golden": true
+  }
+ },
+ "environment": {
+  "python": "3.14.6",
+  "implementation": "CPython",
+  "platform": "darwin-arm64",
+  "packages": {
+   "earthengine-api": "1.7.45",
+   "torch": "2.14.0",
+   "numpy": "2.5.3",
+   "onnx": "1.23.0",
+   "timm": "1.0.30",
+   "segmentation-models-pytorch": "0.5.0",
+   "torchvision": "0.29.0"
+  }
+ },
+ "provenance": {
+  "source_revision": "c1682bb66f76fd74925c459ae0092ef330c26e3d",
+  "base_revision": "e0aed5c16501326ac1fc32253e4cf652b023aa83",
+  "runtime_paths": [
+   "native_ee",
+   "tools/graph_identity.py",
+   "tools/segformer_b0_request_plan.py",
+   "tools/live_fixtures.py",
+   "tools/fixtures"
+  ],
+  "runtime_paths_uncommitted_changes": [],
+  "command": "python tools/graph_identity.py --link-ext RELEASE_RUNS --link-output docs/evidence/x00-g1ext-link.json",
+  "date": "2026-10-14",
+  "cloud_calls": 0
+ }
+}

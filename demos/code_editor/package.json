@@ -1,0 +1,7 @@
+{
+  "name": "segwater-code-editor-validation",
+  "private": true,
+  "description": "Development-only offline checks of the generated Code Editor module",
+  "scripts": {"test": "node --test test_runtime.cjs"},
+  "dependencies": {"@google/earthengine": "1.7.46"}
+}

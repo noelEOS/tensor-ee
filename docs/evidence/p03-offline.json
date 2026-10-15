@@ -1,0 +1,1367 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "76e5939602d98d5aa72e72e71c3c0f6b2c1abc86",
+  "dirty": false,
+  "native_ee": "native_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 7,
+      "requests": 14,
+      "values": 588677,
+      "payload_bytes": 2354708,
+      "request_bytes": 3003031,
+      "max_values": 186048,
+      "max_request_bytes": 726425,
+      "max_bands": 355,
+      "embedded_constants": 193936,
+      "inline_values": 141200,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/patch_embed/p4-vvvh-d96",
+        "lane": "window",
+        "block": "patch_embed",
+        "parts": [
+          "stride_columns"
+        ],
+        "settings": {
+          "patch": 4,
+          "bands": [
+            "VV",
+            "VH"
+          ],
+          "dim": 96,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            56,
+            56,
+            2
+          ],
+          "tokens": [
+            14,
+            14
+          ],
+          "dim": 96
+        },
+        "seed": 18,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchEmbed(patch_size=4, in_chans=2, embed_dim=96, LayerNorm), random weights, step by step",
+        "mirror": {
+          "source": "reference.swin_image_encoder.ee_mirror_image_encoder.pe_mirror",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/swin_image_encoder/notes/milestone6_findings.md, answers 4, 5 and 8: projection and LayerNorm bit-identical to the mirror; <= 2.4e-6 and 1.67e-6 vs timm",
+        "calibration": true,
+        "notes": "Embedding width 96 is one of the Fixed settings, so it is not reduced."
+      },
+      "inputs_sha256": "e211633e21866178739a3c1a11c0d4cf692f6bdd7f4d46860433536c7274c66c",
+      "weights_sha256": "bcaa6fde6eb0a232427f46d94940da17519f2f48620dda473aca8bd3c0a228a4",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "pe_proj",
+              "kind": "output",
+              "channels": 96
+            },
+            {
+              "name": "x",
+              "kind": "output",
+              "channels": 96
+            }
+          ],
+          "bands": 194,
+          "values": 38024,
+          "payload_bytes": 152096,
+          "request_bytes": 194299,
+          "graph_sha256": "28d3b1ebab0d50abe7ac0c39adf6048cd574380e0fe0fe1d9c28ad1d3c992c04",
+          "graph_bytes": 194071,
+          "embedded_constants": 17184,
+          "inline_values": 6272
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 80060,
+          "graph_sha256": "aac111fe1e7ea9b338836bc46937bbc133c353fe66beab2ff9a8cec8cbd18834",
+          "graph_bytes": 79834,
+          "embedded_constants": 0,
+          "inline_values": 6272
+        }
+      ],
+      "errors": [],
+      "seconds": 0.909,
+      "outputs": {
+        "pe_proj": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 18816,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 53,
+              "actual": 1.006526231765747,
+              "expected": 1.0065258741378784
+            }
+          }
+        },
+        "x": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 18816,
+            "max_abs": 9.5367431640625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 7,
+              "channel": 81,
+              "actual": -3.493076801300049,
+              "expected": -3.4930777549743652
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_embed/p2-b3-d48-w5",
+        "lane": "window",
+        "block": "patch_embed",
+        "parts": [
+          "stride_columns"
+        ],
+        "settings": {
+          "patch": 2,
+          "bands": [
+            "B4",
+            "B3",
+            "B2"
+          ],
+          "dim": 48,
+          "window": 5
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            20,
+            30,
+            3
+          ],
+          "raster_bands": [
+            "B2",
+            "B3",
+            "B4"
+          ],
+          "tokens": [
+            10,
+            15
+          ],
+          "windows": [
+            2,
+            3
+          ],
+          "columns": 12,
+          "dim": 48
+        },
+        "seed": 3001,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchEmbed(img_size=(20, 30), patch_size=2, in_chans=3, embed_dim=48, norm_layer=nn.LayerNorm, output_fmt='NHWC'), random weights, step by step; columns from its Conv2d with one-hot weights",
+        "mirror": {
+          "source": "reference.swin_image_encoder.ee_mirror_image_encoder: patches (F.unfold); pe_mirror(sequential_sums=True) on patch_windows(patch=2, window=5)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P03): no milestone ran this patch, band list or width. The regression is window/patch_embed/p4-vvvh-d96 (docs/history/swin_image_encoder/notes/milestone6_findings.md, answers 1-5: patch membership, flatten order and window layout exact; projection and LayerNorm bit-identical to the mirror).",
+        "calibration": false,
+        "notes": "Exact: pe_columns moves values; pe_proj sums each dot product left to right in double, as EE's matrixMultiply (Milestone 5), adds the bias in double and rounds once; x is LayerNorm with left-to-right sums in double and one rounding, on the float32 pe_proj. Summation order (order_analysis): the pe_proj sums (K = 12 products and the bias) are exact in every order, certified at most 48.6 bits (below 53), and so are the LayerNorm mean sums (42.8 bits). The x order ratio is at least 2130 over 7200 values, 0 at most 1 (above 1, every order of the variance sum rounds alike). The raster stores the bands as B2, B3, B4; the block selects them by name in the order B4, B3, B2, the Conv2d's input channels."
+      },
+      "inputs_sha256": "095654707db7bee537d1f903f3ac9ac6c28d59487d51f8978dde1e8bc5047b59",
+      "weights_sha256": "4b17f44af843e3a457354086fc22e3e19dffa94c4a06aafa65797d1c5a9b87f2",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 15,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 15,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "pe_columns",
+              "kind": "output",
+              "channels": 12
+            },
+            {
+              "name": "pe_proj",
+              "kind": "output",
+              "channels": 48
+            },
+            {
+              "name": "x",
+              "kind": "output",
+              "channels": 48
+            }
+          ],
+          "bands": 111,
+          "values": 16650,
+          "payload_bytes": 66600,
+          "request_bytes": 77703,
+          "graph_sha256": "fee37de3f38c583a2ae0143180fad382f7ae7ec6d96ea80cf21ebde0ea75ed10",
+          "graph_bytes": 77477,
+          "embedded_constants": 4176,
+          "inline_values": 1800
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 30,
+              "height": 20
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 30,
+          "height": 20,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 3
+            }
+          ],
+          "bands": 4,
+          "values": 2400,
+          "payload_bytes": 9600,
+          "request_bytes": 26489,
+          "graph_sha256": "29323fddc057a4187f62b66c1bc48844ee80a63c2728d7cbe0724edf4b4bbf64",
+          "graph_bytes": 26263,
+          "embedded_constants": 0,
+          "inline_values": 1800
+        }
+      ],
+      "errors": [],
+      "seconds": 0.02,
+      "outputs": {
+        "pe_columns": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1800,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.7446476221084595,
+              "expected": -0.7446476221084595
+            }
+          }
+        },
+        "pe_proj": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 7200,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 4,
+              "channel": 17,
+              "actual": 1.023904800415039,
+              "expected": 1.0239046812057495
+            }
+          }
+        },
+        "x": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 7200,
+            "max_abs": 7.152557373046875e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 9,
+              "channel": 43,
+              "actual": 3.2421371936798096,
+              "expected": 3.242137908935547
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_embed/p2-b1-d128-w8",
+        "lane": "window",
+        "block": "patch_embed",
+        "parts": [
+          "stride_columns"
+        ],
+        "settings": {
+          "patch": 2,
+          "bands": [
+            "b0"
+          ],
+          "dim": 128,
+          "window": 8
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            48,
+            32,
+            1
+          ],
+          "raster_bands": [
+            "b0"
+          ],
+          "tokens": [
+            24,
+            16
+          ],
+          "windows": [
+            3,
+            2
+          ],
+          "columns": 4,
+          "dim": 128
+        },
+        "seed": 3002,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchEmbed(img_size=(48, 32), patch_size=2, in_chans=1, embed_dim=128, norm_layer=nn.LayerNorm, output_fmt='NHWC'), random weights, step by step; columns from its Conv2d with one-hot weights",
+        "mirror": {
+          "source": "reference.swin_image_encoder.ee_mirror_image_encoder: patches (F.unfold); pe_mirror(sequential_sums=True) on patch_windows(patch=2, window=8)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P03): no milestone ran this patch, band list or width. The regression is window/patch_embed/p4-vvvh-d96 (docs/history/swin_image_encoder/notes/milestone6_findings.md, answers 1-5: patch membership, flatten order and window layout exact; projection and LayerNorm bit-identical to the mirror).",
+        "calibration": false,
+        "notes": "Exact: pe_columns moves values; pe_proj sums each dot product left to right in double, as EE's matrixMultiply (Milestone 5), adds the bias in double and rounds once; x is LayerNorm with left-to-right sums in double and one rounding, on the float32 pe_proj. Summation order (order_analysis): the pe_proj sums (K = 4 products and the bias) are exact in every order, certified at most 47.7 bits (below 53), and so are the LayerNorm mean sums (46.3 bits). The x order ratio is at least 88.6 over 49152 values, 0 at most 1 (above 1, every order of the variance sum rounds alike)."
+      },
+      "inputs_sha256": "94a71e360b20f1e6aa504c6caaea7d1203622813d4e512d1d5a67ec0f638dcf9",
+      "weights_sha256": "889951b171e1f2b00596293bb50d2dc25704f08c21686ab9c63ae0b48bbc52cd",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "pe_columns",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "pe_proj",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "x",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 263,
+          "values": 100992,
+          "payload_bytes": 403968,
+          "request_bytes": 103853,
+          "graph_sha256": "1d975e9ce4990776d378357fc4b2049df8ec60040484904509e37c0e836d196c",
+          "graph_bytes": 103627,
+          "embedded_constants": 25088,
+          "inline_values": 1536
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 32,
+              "height": 48
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 32,
+          "height": 48,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 1
+            }
+          ],
+          "bands": 2,
+          "values": 3072,
+          "payload_bytes": 12288,
+          "request_bytes": 21956,
+          "graph_sha256": "4ef340d5157659551dc856db3179240c08bc2654bbec06e2d36b9b8988047b24",
+          "graph_bytes": 21730,
+          "embedded_constants": 0,
+          "inline_values": 1536
+        }
+      ],
+      "errors": [],
+      "seconds": 0.018,
+      "outputs": {
+        "pe_columns": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1536,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.8392236232757568,
+              "expected": 0.8392236232757568
+            }
+          }
+        },
+        "pe_proj": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 49152,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 8,
+              "actual": -0.5419937968254089,
+              "expected": -0.5419938564300537
+            }
+          }
+        },
+        "x": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 49152,
+            "max_abs": 7.152557373046875e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 4,
+              "channel": 56,
+              "actual": 2.302192211151123,
+              "expected": 2.3021914958953857
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_embed/p2-b2-d96-w12",
+        "lane": "window",
+        "block": "patch_embed",
+        "parts": [
+          "stride_columns"
+        ],
+        "settings": {
+          "patch": 2,
+          "bands": [
+            "HH",
+            "HV"
+          ],
+          "dim": 96,
+          "window": 12
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            48,
+            48,
+            2
+          ],
+          "raster_bands": [
+            "HH",
+            "HV"
+          ],
+          "tokens": [
+            24,
+            24
+          ],
+          "windows": [
+            2,
+            2
+          ],
+          "columns": 8,
+          "dim": 96
+        },
+        "seed": 3003,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchEmbed(img_size=(48, 48), patch_size=2, in_chans=2, embed_dim=96, norm_layer=nn.LayerNorm, output_fmt='NHWC'), random weights, step by step; columns from its Conv2d with one-hot weights",
+        "mirror": {
+          "source": "reference.swin_image_encoder.ee_mirror_image_encoder: patches (F.unfold); pe_mirror(sequential_sums=True) on patch_windows(patch=2, window=12)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P03): no milestone ran this patch, band list or width. The regression is window/patch_embed/p4-vvvh-d96 (docs/history/swin_image_encoder/notes/milestone6_findings.md, answers 1-5: patch membership, flatten order and window layout exact; projection and LayerNorm bit-identical to the mirror).",
+        "calibration": false,
+        "notes": "Exact: pe_columns moves values; pe_proj sums each dot product left to right in double, as EE's matrixMultiply (Milestone 5), adds the bias in double and rounds once; x is LayerNorm with left-to-right sums in double and one rounding, on the float32 pe_proj. Summation order (order_analysis): the pe_proj sums (K = 8 products and the bias) are exact in every order, certified at most 48.4 bits (below 53), and so are the LayerNorm mean sums (45.4 bits). The x order ratio is at least 44.3 over 55296 values, 0 at most 1 (above 1, every order of the variance sum rounds alike)."
+      },
+      "inputs_sha256": "32fc68e3787cc6d411b7a295bb7aef81288c41ba195012a80e249434bf9a80a2",
+      "weights_sha256": "7605f586804d85f2a284b31beab73efd2d620b98faefb0a9ce303ce7f6a7fffe",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "pe_columns",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "pe_proj",
+              "kind": "output",
+              "channels": 96
+            },
+            {
+              "name": "x",
+              "kind": "output",
+              "channels": 96
+            }
+          ],
+          "bands": 203,
+          "values": 116928,
+          "payload_bytes": 467712,
+          "request_bytes": 203096,
+          "graph_sha256": "10a11f33e12d973dea80a489e90fba745b34ce8b423075e859f08fa01aad3e36",
+          "graph_bytes": 202870,
+          "embedded_constants": 42240,
+          "inline_values": 4608
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 48,
+              "height": 48
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 48,
+          "height": 48,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 6912,
+          "payload_bytes": 27648,
+          "request_bytes": 59949,
+          "graph_sha256": "cd999649e0276edc10ee7501fa21ff4245421ca26d80e1c1201a8e347a634d74",
+          "graph_bytes": 59723,
+          "embedded_constants": 0,
+          "inline_values": 4608
+        }
+      ],
+      "errors": [],
+      "seconds": 0.018,
+      "outputs": {
+        "pe_columns": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4608,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.9100682735443115,
+              "expected": 0.9100682735443115
+            }
+          }
+        },
+        "pe_proj": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 55296,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 5,
+              "channel": 40,
+              "actual": -0.5623850226402283,
+              "expected": -0.5623849034309387
+            }
+          }
+        },
+        "x": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 55296,
+            "max_abs": 7.152557373046875e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 65,
+              "actual": -2.315690040588379,
+              "expected": -2.315690755844116
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_embed/p4-b4-d128-w12",
+        "lane": "window",
+        "block": "patch_embed",
+        "parts": [
+          "stride_columns"
+        ],
+        "settings": {
+          "patch": 4,
+          "bands": [
+            "b0",
+            "b1",
+            "b2",
+            "b3"
+          ],
+          "dim": 128,
+          "window": 12
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            96,
+            96,
+            4
+          ],
+          "raster_bands": [
+            "b0",
+            "b1",
+            "b2",
+            "b3"
+          ],
+          "tokens": [
+            24,
+            24
+          ],
+          "windows": [
+            2,
+            2
+          ],
+          "columns": 64,
+          "dim": 128
+        },
+        "seed": 3004,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchEmbed(img_size=(96, 96), patch_size=4, in_chans=4, embed_dim=128, norm_layer=nn.LayerNorm, output_fmt='NHWC'), random weights, step by step; columns from its Conv2d with one-hot weights",
+        "mirror": {
+          "source": "reference.swin_image_encoder.ee_mirror_image_encoder: patches (F.unfold); pe_mirror(sequential_sums=True) on patch_windows(patch=4, window=12)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P03): no milestone ran this patch, band list or width. The regression is window/patch_embed/p4-vvvh-d96 (docs/history/swin_image_encoder/notes/milestone6_findings.md, answers 1-5: patch membership, flatten order and window layout exact; projection and LayerNorm bit-identical to the mirror).",
+        "calibration": false,
+        "notes": "Exact: pe_columns moves values; pe_proj sums each dot product left to right in double, as EE's matrixMultiply (Milestone 5), adds the bias in double and rounds once; x is LayerNorm with left-to-right sums in double and one rounding, on the float32 pe_proj. Summation order (order_analysis): the pe_proj sums (K = 64 products and the bias) are exact in every order, certified at most 50.6 bits (below 53), and so are the LayerNorm mean sums (45.1 bits). The x order ratio is at least 0.995 over 73728 values, 1 at most 1 (above 1, every order of the variance sum rounds alike). One x value, about -0.7336123 at token row 12, column 16, channel 30 (window 3, token 4), lies within the first-order reordering bound of the LayerNorm's variance sum from a float32 rounding boundary (ratio 0.995: distance 4.22e-15, bound 4.24e-15). The reversed, exact, NumPy, pairwise, strided (2 to 16 lanes) and chunked (4 to 32) sums, and 2,000 random orders, all round it alike. A single differing x value there would point to Earth Engine's summation order, not to a library error."
+      },
+      "inputs_sha256": "c23c15dc24847ad61c6a58062f1a032f0e18ecd82d3a3418bd916f590ca989a4",
+      "weights_sha256": "6df247e13b34ea0880f519b893225c245f8b94ad989327b32925d1da1d560a5e",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "pe_columns",
+              "kind": "output",
+              "channels": 64
+            },
+            {
+              "name": "pe_proj",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "x",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 323,
+          "values": 186048,
+          "payload_bytes": 744192,
+          "request_bytes": 726425,
+          "graph_sha256": "978a67569a9bbff5288c35ea2e98936991e6e7221407fdec78aef729adafc114",
+          "graph_bytes": 726197,
+          "embedded_constants": 63488,
+          "inline_values": 36864
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 96,
+              "height": 96
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 96,
+          "height": 96,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 46080,
+          "payload_bytes": 184320,
+          "request_bytes": 452906,
+          "graph_sha256": "6f2f9cb5a7b4058991f6784b5b01b567c45b93ba45530c023c9fe8ad2da685e6",
+          "graph_bytes": 452680,
+          "embedded_constants": 0,
+          "inline_values": 36864
+        }
+      ],
+      "errors": [],
+      "seconds": 0.021,
+      "outputs": {
+        "pe_columns": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 36864,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.4870870113372803,
+              "expected": -0.4870870113372803
+            }
+          }
+        },
+        "pe_proj": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 73728,
+            "max_abs": 9.5367431640625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 13,
+              "channel": 89,
+              "actual": 2.0476841926574707,
+              "expected": 2.0476832389831543
+            }
+          }
+        },
+        "x": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 73728,
+            "max_abs": 1.9073486328125e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 13,
+              "channel": 89,
+              "actual": 4.220080375671387,
+              "expected": 4.220078468322754
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_embed/p8-b1-d96-w7",
+        "lane": "window",
+        "block": "patch_embed",
+        "parts": [
+          "stride_columns"
+        ],
+        "settings": {
+          "patch": 8,
+          "bands": [
+            "b0"
+          ],
+          "dim": 96,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            56,
+            56,
+            1
+          ],
+          "raster_bands": [
+            "b0"
+          ],
+          "tokens": [
+            7,
+            7
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "columns": 64,
+          "dim": 96
+        },
+        "seed": 3005,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchEmbed(img_size=(56, 56), patch_size=8, in_chans=1, embed_dim=96, norm_layer=nn.LayerNorm, output_fmt='NHWC'), random weights, step by step; columns from its Conv2d with one-hot weights",
+        "mirror": {
+          "source": "reference.swin_image_encoder.ee_mirror_image_encoder: patches (F.unfold); pe_mirror(sequential_sums=True) on patch_windows(patch=8, window=7)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P03): no milestone ran this patch, band list or width. The regression is window/patch_embed/p4-vvvh-d96 (docs/history/swin_image_encoder/notes/milestone6_findings.md, answers 1-5: patch membership, flatten order and window layout exact; projection and LayerNorm bit-identical to the mirror).",
+        "calibration": false,
+        "notes": "Exact: pe_columns moves values; pe_proj sums each dot product left to right in double, as EE's matrixMultiply (Milestone 5), adds the bias in double and rounds once; x is LayerNorm with left-to-right sums in double and one rounding, on the float32 pe_proj. Summation order (order_analysis): the pe_proj sums (K = 64 products and the bias) are exact in every order, certified at most 50.5 bits (below 53), and so are the LayerNorm mean sums (42.7 bits). The x order ratio is at least 471 over 4704 values, 0 at most 1 (above 1, every order of the variance sum rounds alike)."
+      },
+      "inputs_sha256": "cbd2b7218fc35e64dad7769c6c51e9e512afd412f4e899fae5a9831db57a4b9f",
+      "weights_sha256": "6b2303cf11bbd1d3db3cac1038ee9882a457b7bf1c42ad1adccc7382c7be8730",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "pe_columns",
+              "kind": "output",
+              "channels": 64
+            },
+            {
+              "name": "pe_proj",
+              "kind": "output",
+              "channels": 96
+            },
+            {
+              "name": "x",
+              "kind": "output",
+              "channels": 96
+            }
+          ],
+          "bands": 259,
+          "values": 12691,
+          "payload_bytes": 50764,
+          "request_bytes": 237885,
+          "graph_sha256": "5895fee1692f5333389fe6a0ad5c671ef6403ca633bf2d5c54c770683f3d0b8a",
+          "graph_bytes": 237659,
+          "embedded_constants": 20256,
+          "inline_values": 3136
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 1
+            }
+          ],
+          "bands": 2,
+          "values": 6272,
+          "payload_bytes": 25088,
+          "request_bytes": 41397,
+          "graph_sha256": "c18e13b22286eebc5623f2f935c7a3541845ea72f7af6b82b8381addec89620f",
+          "graph_bytes": 41171,
+          "embedded_constants": 0,
+          "inline_values": 3136
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "pe_columns": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.7297543287277222,
+              "expected": -0.7297543287277222
+            }
+          }
+        },
+        "pe_proj": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4704,
+            "max_abs": 7.152557373046875e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 11,
+              "actual": -2.9620046615600586,
+              "expected": -2.962005376815796
+            }
+          }
+        },
+        "x": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4704,
+            "max_abs": 1.6689300537109375e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 1,
+              "channel": 48,
+              "actual": -2.7155539989471436,
+              "expected": -2.71555233001709
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_embed/p8-b4-d48-w8",
+        "lane": "window",
+        "block": "patch_embed",
+        "parts": [
+          "stride_columns"
+        ],
+        "settings": {
+          "patch": 8,
+          "bands": [
+            "b0",
+            "b1",
+            "b2",
+            "b3"
+          ],
+          "dim": 48,
+          "window": 8
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            64,
+            64,
+            4
+          ],
+          "raster_bands": [
+            "b0",
+            "b1",
+            "b2",
+            "b3"
+          ],
+          "tokens": [
+            8,
+            8
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "columns": 256,
+          "dim": 48
+        },
+        "seed": 3006,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchEmbed(img_size=(64, 64), patch_size=8, in_chans=4, embed_dim=48, norm_layer=nn.LayerNorm, output_fmt='NHWC'), random weights, step by step; columns from its Conv2d with one-hot weights",
+        "mirror": {
+          "source": "reference.swin_image_encoder.ee_mirror_image_encoder: patches (F.unfold); pe_mirror(sequential_sums=True) on patch_windows(patch=8, window=8)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P03): no milestone ran this patch, band list or width. The regression is window/patch_embed/p4-vvvh-d96 (docs/history/swin_image_encoder/notes/milestone6_findings.md, answers 1-5: patch membership, flatten order and window layout exact; projection and LayerNorm bit-identical to the mirror).",
+        "calibration": false,
+        "notes": "Exact: pe_columns moves values; pe_proj sums each dot product left to right in double, as EE's matrixMultiply (Milestone 5), adds the bias in double and rounds once; x is LayerNorm with left-to-right sums in double and one rounding, on the float32 pe_proj. Summation order (order_analysis): the pe_proj sums (K = 256 products and the bias) are exact in every order, certified at most 52.3 bits (below 53), and so are the LayerNorm mean sums (40.8 bits). The x order ratio is at least 959 over 3072 values, 0 at most 1 (above 1, every order of the variance sum rounds alike)."
+      },
+      "inputs_sha256": "0e80b8c4880707df75d9a916d463542b04886753da6f8a0b9be0c2a01895e596",
+      "weights_sha256": "c2327d230c4272c53635f2cb2f705097c6d0c8306d7e7b1b31efddaf2ea00ca9",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "pe_columns",
+              "kind": "output",
+              "channels": 256
+            },
+            {
+              "name": "pe_proj",
+              "kind": "output",
+              "channels": 48
+            },
+            {
+              "name": "x",
+              "kind": "output",
+              "channels": 48
+            }
+          ],
+          "bands": 355,
+          "values": 22720,
+          "payload_bytes": 90880,
+          "request_bytes": 572584,
+          "graph_sha256": "4fd5f431b0f6f8c9ea89f754853680ce38df7bdd4dd33e3a9abf2be43306c35f",
+          "graph_bytes": 572358,
+          "embedded_constants": 21504,
+          "inline_values": 16384
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 64,
+              "height": 64
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 64,
+          "height": 64,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 20480,
+          "payload_bytes": 81920,
+          "request_bytes": 204429,
+          "graph_sha256": "d43c3c6f81b16438ea95ea71a57087f70223bdd0405f1e4f693505ebe54333ef",
+          "graph_bytes": 204203,
+          "embedded_constants": 0,
+          "inline_values": 16384
+        }
+      ],
+      "errors": [],
+      "seconds": 0.018,
+      "outputs": {
+        "pe_columns": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 16384,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.3710954189300537,
+              "expected": 0.3710954189300537
+            }
+          }
+        },
+        "pe_proj": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3072,
+            "max_abs": 2.384185791015625e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 1,
+              "channel": 12,
+              "actual": -4.070358753204346,
+              "expected": -4.070356369018555
+            }
+          }
+        },
+        "x": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3072,
+            "max_abs": 1.6689300537109375e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 0,
+              "channel": 14,
+              "actual": -1.5003540515899658,
+              "expected": -1.5003557205200195
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

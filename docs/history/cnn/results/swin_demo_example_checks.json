@@ -1,0 +1,119 @@
+{
+  "model": "swin-t",
+  "status": "pass",
+  "fresh_export": false,
+  "asset_id": "projects/ORIGINAL_PROJECT/assets/upernet/m12/logits/m12_C_m12_catalogue_224_grou_e05771",
+  "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+  "grid": {
+    "crs": "EPSG:32651",
+    "transform": [
+      10.0,
+      0.0,
+      287680.95335071225,
+      0.0,
+      -10.0,
+      2640838.8405420803
+    ],
+    "width": 224,
+    "height": 224,
+    "tile_count": 1,
+    "area_km2": 5.0176
+  },
+  "pixels": 50176,
+  "bands": [
+    "logit_0",
+    "logit_1",
+    "water_probability",
+    "water_mask",
+    "coverage"
+  ],
+  "all_float32_finite": true,
+  "full_coverage": true,
+  "water_pixels": 34259,
+  "probability_range": [
+    0.0037510187830775976,
+    0.9920015335083008
+  ],
+  "probability_max_error_vs_numpy": 1.1920928955078125e-07,
+  "graphs": {
+    "A": {
+      "grid": {
+        "crs": "EPSG:32651",
+        "crs_transform": [
+          40.0,
+          0.0,
+          287680.95335071225,
+          0.0,
+          -40.0,
+          2640838.8405420803
+        ],
+        "dimensions": [
+          56,
+          56
+        ]
+      },
+      "images": [
+        "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240105T215301_20240105T215326_051977_0647E8_D7EE"
+      ],
+      "weight_table_count": 27
+    },
+    "B": {
+      "grid": {
+        "crs": "EPSG:32651",
+        "crs_transform": [
+          320.0,
+          0.0,
+          287680.95335071225,
+          0.0,
+          -320.0,
+          2640838.8405420803
+        ],
+        "dimensions": [
+          7,
+          7
+        ]
+      },
+      "images": [
+        "projects/ORIGINAL_PROJECT/assets/upernet/m12/features/m12_A_m12_catalogue_224_77bae5"
+      ],
+      "weight_table_count": 32
+    },
+    "C": {
+      "grid": {
+        "crs": "EPSG:32651",
+        "crs_transform": [
+          10.0,
+          0.0,
+          287680.95335071225,
+          0.0,
+          -10.0,
+          2640838.8405420803
+        ],
+        "dimensions": [
+          224,
+          224
+        ]
+      },
+      "images": [
+        "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240105T215301_20240105T215326_051977_0647E8_D7EE",
+        "projects/ORIGINAL_PROJECT/assets/upernet/m12/features/m12_A_m12_catalogue_224_77bae5",
+        "projects/ORIGINAL_PROJECT/assets/upernet/m12/features/m12_B_m12_catalogue_224_30a0b6"
+      ],
+      "weight_table_count": 18
+    }
+  },
+  "offline_tests": {
+    "passed": 95,
+    "command": ".venv/bin/python -m pytest tests/test_demo_swin.py tests/test_demo_server.py tests/test_demo_geometry.py tests/test_m12_small_swin_contract.py -q"
+  },
+  "browser_checks": {
+    "preset_and_scene_search": true,
+    "single_day_search": true,
+    "no_scenes_state": true,
+    "completed_example": true,
+    "probability_water_and_radar_layers": true,
+    "ee_tiles_loaded": true,
+    "desktop_and_narrow_layouts": true,
+    "fresh_export": false
+  }
+}

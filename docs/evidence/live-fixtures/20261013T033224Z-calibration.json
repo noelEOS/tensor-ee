@@ -1,0 +1,1655 @@
+{
+  "schema_version": 1,
+  "kind": "live_fixture_run",
+  "status": "failed",
+  "command": "python tools/live_fixtures.py --run calibration --project ORIGINAL_PROJECT",
+  "selection": [
+    "raster/conv2d/k3",
+    "raster/pool2d/avg-k2-s2",
+    "raster/pool2d/max-k3-s2-p1",
+    "raster/nearest_upsample/f2",
+    "window/relative_position_bias/w7",
+    "window/attention/w7-s3",
+    "window/layer_norm2d/w7-eps1e-6",
+    "window/patch_merge/w7",
+    "window/conv3x3_window/k3-w7",
+    "window/group_product/g4-w7",
+    "window/window_pool/bins1236-w7",
+    "window/patch_embed/p4-vvvh-d96"
+  ],
+  "project": "ORIGINAL_PROJECT",
+  "credentials": "adc",
+  "revision": "fd6777fe4f4478d345c07e8ae922ba2957cd5e09",
+  "dirty": false,
+  "native_ee": "native_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "started_utc": "2026-10-13T03:32:24+00:00",
+  "budget": {
+    "requests": 40,
+    "raster_side": 64,
+    "window_side": 8,
+    "values": 1000000,
+    "request_bytes": 2000000,
+    "in_flight": 4,
+    "assets": 0,
+    "tasks": 0
+  },
+  "plan": {
+    "fixtures": 12,
+    "requests": 18,
+    "values": 88026,
+    "payload_bytes": 352104,
+    "request_bytes": 1055901,
+    "max_values": 38024,
+    "max_request_bytes": 208749,
+    "max_bands": 194,
+    "embedded_constants": 26847,
+    "inline_values": 25944,
+    "assets": 0,
+    "tasks": 0,
+    "in_flight": 1
+  },
+  "max_in_flight": 1,
+  "errors": [],
+  "fixtures": [
+    {
+      "spec": {
+        "id": "raster/conv2d/k3",
+        "lane": "raster",
+        "block": "conv2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 1,
+          "padding": 1
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output": [
+            16,
+            16,
+            3
+          ],
+          "weight": [
+            3,
+            2,
+            3,
+            3
+          ]
+        },
+        "seed": 1,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.Conv2d(2, 3, 3, padding=1), random weights",
+        "mirror": null,
+        "history": "docs/history/cnn/results/primitives_float32.json, case conv3_asymmetric (Conv2d 2 -> 3, 3 x 3, 16 x 16): pass, max 3.28e-7 vs PyTorch float32",
+        "calibration": true,
+        "notes": "No exact NumPy mirror of the R path exists: compared with PyTorch only."
+      },
+      "inputs_sha256": "359a449fc44f3b59135b6ab6a49ef597997540c231af3391b704db7301941859",
+      "weights_sha256": "700b94506fa64f12a47ff06e13fcb5aeed61cca886f71fbf6ec8711f1cc6e7b4",
+      "status": "failed",
+      "wall_seconds": 0.008,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'out']"
+      ],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 3
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 7,
+          "values": 1792,
+          "payload_bytes": 7168,
+          "request_bytes": 17829,
+          "graph_sha256": "55b4876639f6825db2b4ed55088d2c5b7b4758495c6031fb48ac0b3b8a1b9d0e",
+          "graph_bytes": 17599,
+          "embedded_constants": 57,
+          "inline_values": 512,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.008
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/avg-k2-s2",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 2,
+          "stride": 2,
+          "padding": 0
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output": [
+            8,
+            8,
+            2
+          ]
+        },
+        "seed": 2,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.AvgPool2d(2, 2)",
+        "mirror": null,
+        "history": "docs/history/cnn/results/primitives_float32.json, case average_pool_nearest (AvgPool2d 2 x 2 on 16 x 16): pool pass, max 7.45e-9 vs PyTorch float32",
+        "calibration": true,
+        "notes": "No exact NumPy mirror of the R path exists: compared with PyTorch only."
+      },
+      "inputs_sha256": "4baee82d66dc784102de3d22adff79796001eef123908243a35afddb997142de",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "failed",
+      "wall_seconds": 0.013,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "request 1: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'out']"
+      ],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 192,
+          "payload_bytes": 768,
+          "request_bytes": 14877,
+          "graph_sha256": "1e16cd636714f869414c8e921b62999d5702d00640034d75cd2c0738939e55cc",
+          "graph_bytes": 14649,
+          "embedded_constants": 0,
+          "inline_values": 512,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.007
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 768,
+          "payload_bytes": 3072,
+          "request_bytes": 12313,
+          "graph_sha256": "a70404994d075716519b00f1314024f30f936a940dafdeeba04f81bc66630f31",
+          "graph_bytes": 12083,
+          "embedded_constants": 0,
+          "inline_values": 512,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.006
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/max-k3-s2-p1",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 2,
+          "padding": 1
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output": [
+            8,
+            8,
+            2
+          ]
+        },
+        "seed": 3,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.MaxPool2d(3, 2, 1)",
+        "mirror": null,
+        "history": "docs/history/cnn/results/resnet_primitives.json, cases max3_stride2_padded_even (MaxPool2d 3 x 3 stride 2 padding 1 on 16 x 16): pass, max 0, and max3_stride2_padded_negative_odd (negative inputs, 17 x 15): pass, max 5.2e-8, from inputs that were not float32-exact (input error 5.96e-8)",
+        "calibration": true,
+        "notes": "Selection only: Earth Engine must equal PyTorch bit for bit (tolerance 0). The inputs are all negative, so a pad that contributed (a zero) would change every border window."
+      },
+      "inputs_sha256": "ad3434668f58c2d7e862d47f7a4547dd6e96ba9c8105ca55a5754bea73ebc4ec",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "failed",
+      "wall_seconds": 0.014,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "request 1: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'out']"
+      ],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 192,
+          "payload_bytes": 768,
+          "request_bytes": 17073,
+          "graph_sha256": "dbd4a41c0594e85fc6dcba87da2f9eb4434eb19d3160cacd35a2d93b5f3c5e33",
+          "graph_bytes": 16845,
+          "embedded_constants": 0,
+          "inline_values": 512,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.007
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 768,
+          "payload_bytes": 3072,
+          "request_bytes": 12365,
+          "graph_sha256": "d7df8022f8afd8464fd416aec0d745d51bb51d6bf5550151a8d473a976a242ef",
+          "graph_bytes": 12135,
+          "embedded_constants": 0,
+          "inline_values": 512,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.007
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "raster/nearest_upsample/f2",
+        "lane": "raster",
+        "block": "nearest_upsample",
+        "parts": [],
+        "settings": {
+          "scale_factor": 2
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            8,
+            2
+          ],
+          "output": [
+            16,
+            16,
+            2
+          ]
+        },
+        "seed": 4,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode='nearest')",
+        "mirror": null,
+        "history": "docs/history/cnn/results/primitives_float32.json, case max_pool_nearest (nearest x2 to 16 x 16): up pass, max 0 vs PyTorch float32",
+        "calibration": true,
+        "notes": "A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0)."
+      },
+      "inputs_sha256": "eb028add8c366298d5de27cf2f44db2e6895291d838463c37a22bc22f75b70bb",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "failed",
+      "wall_seconds": 0.007,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "request 1: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'out']"
+      ],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0.0,
+              "translateX": 1000,
+              "shearY": 0.0,
+              "scaleY": -20.0,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 768,
+          "payload_bytes": 3072,
+          "request_bytes": 9936,
+          "graph_sha256": "6f2a9d5a8375d0191055dea2bfc38804f9d65e66dd7ab61f82ca401756652556",
+          "graph_bytes": 9698,
+          "embedded_constants": 0,
+          "inline_values": 128,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.004
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 192,
+          "payload_bytes": 768,
+          "request_bytes": 7615,
+          "graph_sha256": "0f6382a738af1fa1b4b55bcc09b6e9202ceb2bbb7eb95e32dd7c356326d029ef",
+          "graph_bytes": 7387,
+          "embedded_constants": 0,
+          "inline_values": 128,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.003
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "window/relative_position_bias/w7",
+        "lane": "window",
+        "block": "relative_position_bias",
+        "parts": [],
+        "settings": {
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "table": [
+            169,
+            2
+          ],
+          "heads": 2,
+          "output": [
+            2,
+            49,
+            49
+          ]
+        },
+        "seed": 11,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm WindowAttention(window_size=7)._get_rel_pos_bias(), random table",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror (bias)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/swin_block/notes/findings.md, answer 8: the bias equals timm's bit for bit",
+        "calibration": true,
+        "notes": "A V value read back row by row ([49, 1, 49] per head)."
+      },
+      "inputs_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "weights_sha256": "d2fa3bcc88ff11f6160f9e539f47508d9efd4b82b76980650f50edc363bc7c4f",
+      "status": "failed",
+      "wall_seconds": 0.011,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['bias_h0', 'bias_h1']"
+      ],
+      "offline": {
+        "bias_h0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2401,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.4249075651168823,
+              "expected": 0.4249075651168823
+            }
+          }
+        },
+        "bias_h1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2401,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.38415396213531494,
+              "expected": -0.38415396213531494
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 49
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 49,
+          "readouts": [
+            {
+              "name": "bias_h0",
+              "kind": "output",
+              "channels": 49
+            },
+            {
+              "name": "bias_h1",
+              "kind": "output",
+              "channels": 49
+            }
+          ],
+          "bands": 100,
+          "values": 4900,
+          "payload_bytes": 19600,
+          "request_bytes": 16269,
+          "graph_sha256": "6fd9e92beff02169dd7c2012c4982817e713460baae0a9184afd4919bba121fb",
+          "graph_bytes": 16042,
+          "embedded_constants": 338,
+          "inline_values": 0,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.011
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "window/attention/w7-s3",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "shifted_window_mask",
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 7,
+          "shift": 3,
+          "value": -100.0
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "windows": [
+            2,
+            2
+          ],
+          "dim": 16,
+          "heads": 2,
+          "head_dim": 8
+        },
+        "seed": 12,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(window_size=7, shift_size=3) SW-MSA, non-fused, up to the output projection; its attn_mask",
+        "mirror": {
+          "source": "reference.swin_pair.ee_mirror_shifted.ShiftedMirror (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/swin_pair/notes/findings.md, answer 10 and section 3 tests 4-5: EE mask element-identical to timm's attn_mask; attention per head bit-identical to the mirror, <= 7.6e-6 vs PyTorch",
+        "calibration": true,
+        "notes": "Policies of the parts: linear double_round_once, naive_attention round_each_op, mask double_round_once. The input is periodic so the cyclic shift is exact; the concatenated heads are compared in the shifted layout."
+      },
+      "inputs_sha256": "3015ba99cad4e6bd829d83ae36707675ec5f6b6b1eda782fdb005f807797a8c4",
+      "weights_sha256": "d7d93b90dcf44776c43bde30f02d190a761cbf5fe96b1156635d0b9e547dbfd7",
+      "status": "failed",
+      "wall_seconds": 0.263,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['concat', 'input', 'mask']"
+      ],
+      "offline": {
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 1.3113021850585938e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 5,
+              "actual": -0.8346167802810669,
+              "expected": -0.834618091583252
+            }
+          }
+        },
+        "mask": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 9604,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "mask",
+              "kind": "output",
+              "channels": 49
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 16
+            }
+          ],
+          "bands": 84,
+          "values": 16464,
+          "payload_bytes": 65856,
+          "request_bytes": 133029,
+          "graph_sha256": "6e0dc7cbee718567285187510863bb2d757d441603f760a3446aefe4cfcaa536",
+          "graph_bytes": 132801,
+          "embedded_constants": 3458,
+          "inline_values": 3136,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.263
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "window/layer_norm2d/w7-eps1e-6",
+        "lane": "window",
+        "block": "layer_norm2d",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "eps": 1e-06
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "channels": 8
+        },
+        "seed": 13,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "SMP 0.5.0 LayerNorm2d(8, eps=1e-6), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.layer_norm2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/upernet/notes/milestone7_findings.md, feature normalization rows: LayerNorm2d bit-identical to the mirror, <= 5.7e-6 vs SMP float32",
+        "calibration": true,
+        "notes": ""
+      },
+      "inputs_sha256": "500d795694996ce463e5213f00fca7106666c33cc674e141d72b5d3cc65046b5",
+      "weights_sha256": "a10dd390ae4b2b9c66a789c09b4e9d0494c3e92dabcf76471b25bdec56054874",
+      "status": "failed",
+      "wall_seconds": 0.026,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'out']"
+      ],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 2,
+              "channel": 1,
+              "actual": -2.080789089202881,
+              "expected": -2.0807886123657227
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 18,
+          "values": 3528,
+          "payload_bytes": 14112,
+          "request_bytes": 71809,
+          "graph_sha256": "9b3865551a9294eda36153dd218b79630d100c37abcd43f6fd5db23f36ed001b",
+          "graph_bytes": 71581,
+          "embedded_constants": 784,
+          "inline_values": 1568,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.026
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "window/patch_merge/w7",
+        "lane": "window",
+        "block": "patch_merge",
+        "parts": [
+          "gather_windows",
+          "merge_windows"
+        ],
+        "settings": {
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "channels": 8,
+          "output_tokens": [
+            7,
+            7
+          ],
+          "output_channels": 16
+        },
+        "seed": 14,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchMerging(dim=8), random weights, step by step",
+        "mirror": {
+          "source": "PatchMergeMirror's steps (reference.swin_hierarchy gather_windows; reference.swin_block layer_norm_formula with sequential_sum; one rounded product)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/swin_hierarchy/notes/milestone4_findings.md, answers 1, 4, 5, 13: gather exact; LayerNorm and reduction bit-identical to the mirror, <= 3.6e-6 vs PyTorch",
+        "calibration": true,
+        "notes": "The mirror sums the LayerNorm left to right, Earth Engine's order (PatchMergeMirror.norm itself uses torch's order)."
+      },
+      "inputs_sha256": "ea8f6f45b61a3ef030f39a30086db0196a6e64f349a51c6a8d404f8cdd485d22",
+      "weights_sha256": "3fb01e86f33580aa2d1f99f1127bb407549f07066e0c7f450f82dfb58aee2a79",
+      "status": "failed",
+      "wall_seconds": 0.058,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "request 1: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['cat', 'input', 'norm', 'out']"
+      ],
+      "offline": {
+        "cat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.5090042352676392,
+              "expected": 0.5090042352676392
+            }
+          }
+        },
+        "norm": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 1,
+              "channel": 21,
+              "actual": -2.546978235244751,
+              "expected": -2.5469777584075928
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 3,
+              "channel": 2,
+              "actual": -2.044381618499756,
+              "expected": -2.0443811416625977
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "cat",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "norm",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 16
+            }
+          ],
+          "bands": 83,
+          "values": 4067,
+          "payload_bytes": 16268,
+          "request_bytes": 93669,
+          "graph_sha256": "52d58538f73a5cf1e83322ed747e45fe0ce089ddac40e7bb97b5d4903cacc617",
+          "graph_bytes": 93443,
+          "embedded_constants": 3648,
+          "inline_values": 1568,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.04
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 9,
+          "values": 1764,
+          "payload_bytes": 7056,
+          "request_bytes": 26738,
+          "graph_sha256": "dc3e7658b7c177ca00b6497e10ffc98c031d2f4a32de2765b7732dd657f4fafd",
+          "graph_bytes": 26510,
+          "embedded_constants": 0,
+          "inline_values": 1568,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.018
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "window/conv3x3_window/k3-w7",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "k": 3,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 4,
+          "out": 4,
+          "bias": true
+        },
+        "seed": 15,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.conv3x3 (window_im2col)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/upernet/notes/milestone7_findings.md, rows '3x3 Conv tiny 2 -> 3' and '256 -> 256' (window im2col): bit-identical to the mirror, <= 8.1e-6 vs PyTorch",
+        "calibration": true,
+        "notes": "The 2 x 2-window raster makes every halo cross a window edge or the zero border."
+      },
+      "inputs_sha256": "dec7d72c707ff2ad0edf27ff5392585187a127c4e10b080c30b830cd12f7228f",
+      "weights_sha256": "1ed4bceb0bcc41a8b0ae31e979253c3a1f597dc4dd62b27421d7176670d594a5",
+      "status": "failed",
+      "wall_seconds": 0.034,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'out']"
+      ],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 4,
+              "channel": 2,
+              "actual": 1.2455466985702515,
+              "expected": 1.2455470561981201
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 1960,
+          "payload_bytes": 7840,
+          "request_bytes": 73920,
+          "graph_sha256": "68438139db4f1b2d9b03796a8bef5c889fac1bd1d230d575f6f67a2db9d423ee",
+          "graph_bytes": 73692,
+          "embedded_constants": 340,
+          "inline_values": 784,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.034
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "window/group_product/g4-w7",
+        "lane": "window",
+        "block": "group_product",
+        "parts": [],
+        "settings": {
+          "groups": 4,
+          "k": 3,
+          "window": 7
+        },
+        "policy": "grouped_double",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 8,
+          "group_in": 2,
+          "out": 4,
+          "bias": false
+        },
+        "seed": 16,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) of the same unsplit weight",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_fusion.sum_partials of ee_mirror_fpn.conv3x3 (grouped double)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/upernet/notes/milestone10_findings.md, formulation table row 'double-partial (B) sum': bit-identical to the mirror, 1.93e-5 vs SMP float32",
+        "calibration": true,
+        "notes": "Four group products summed in double in the decoder's FUSION_ORDER and rounded once (decoder.grouped_double's sum), against the unsplit convolution."
+      },
+      "inputs_sha256": "09de39684361bb12c636fbea39cc4cca63661048d05b360a830cee8ade5f179f",
+      "weights_sha256": "86157be195669ff78bfb53c0400263771822fda50e8a9cb61cb59b5f995ec191",
+      "status": "failed",
+      "wall_seconds": 0.066,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'out']"
+      ],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 8.344650268554688e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 10,
+              "channel": 3,
+              "actual": -1.5498167276382446,
+              "expected": -1.5498175621032715
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 14,
+          "values": 2744,
+          "payload_bytes": 10976,
+          "request_bytes": 208749,
+          "graph_sha256": "1e45467eb92ccc4dcd0b51240edd5ef0190783922775eacfd8741e3312836105",
+          "graph_bytes": 208521,
+          "embedded_constants": 288,
+          "inline_values": 1568,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.065
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "window/window_pool/bins1236-w7",
+        "lane": "window",
+        "block": "window_pool",
+        "parts": [],
+        "settings": {
+          "sizes": [
+            1,
+            2,
+            3,
+            6
+          ],
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            7,
+            7
+          ],
+          "channels": 4,
+          "output": [
+            50,
+            4
+          ]
+        },
+        "seed": 17,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "SMP 0.5.0 PSPModule(sizes=(1, 2, 3, 6)) AdaptiveAvgPool2d blocks",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_psp.pool (window order)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/upernet/notes/milestone8_findings.md, answers 6 and 8: pooled values bit-identical to the mirror everywhere, <= 3.6e-6 vs SMP float32",
+        "calibration": true,
+        "notes": "One 7 x 7 window, as production pools the single stage-4 window; the [50, 4] value is read back row by row. The mirror's bin tables come from the library (native_ee.blocks.window.pooling), so the bit check cannot see a wrong bin rule; the SMP reference can (a wrong bin moves a mean far more than 1e-4)."
+      },
+      "inputs_sha256": "9fdb811a2b7ca84ba2f75dd9dcd07703345a7a90cd514064ddb40724ad532347",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "failed",
+      "wall_seconds": 0.02,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "request 1: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'pooled']"
+      ],
+      "offline": {
+        "pooled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 200,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 0,
+              "channel": 1,
+              "actual": 0.06129293888807297,
+              "expected": 0.06129290908575058
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 50
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 50,
+          "readouts": [
+            {
+              "name": "pooled",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 250,
+          "payload_bytes": 1000,
+          "request_bytes": 57845,
+          "graph_sha256": "e286e4b6aa8155c0256409f449ce8bc619717150cc43fbdb401ae49b94769f53",
+          "graph_bytes": 57618,
+          "embedded_constants": 750,
+          "inline_values": 196,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.017
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 245,
+          "payload_bytes": 980,
+          "request_bytes": 7506,
+          "graph_sha256": "e819ca0ae071268f63c340fa81060d2deac27019124768d2c957c09b4030daf6",
+          "graph_bytes": 7280,
+          "embedded_constants": 0,
+          "inline_values": 196,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.003
+        }
+      ],
+      "outputs": {}
+    },
+    {
+      "spec": {
+        "id": "window/patch_embed/p4-vvvh-d96",
+        "lane": "window",
+        "block": "patch_embed",
+        "parts": [
+          "stride_columns"
+        ],
+        "settings": {
+          "patch": 4,
+          "bands": [
+            "VV",
+            "VH"
+          ],
+          "dim": 96,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            56,
+            56,
+            2
+          ],
+          "tokens": [
+            14,
+            14
+          ],
+          "dim": 96
+        },
+        "seed": 18,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchEmbed(patch_size=4, in_chans=2, embed_dim=96, LayerNorm), random weights, step by step",
+        "mirror": {
+          "source": "reference.swin_image_encoder.ee_mirror_image_encoder.pe_mirror",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/swin_image_encoder/notes/milestone6_findings.md, answers 4, 5 and 8: projection and LayerNorm bit-identical to the mirror; <= 2.4e-6 and 1.67e-6 vs timm",
+        "calibration": true,
+        "notes": "Embedding width 96 is one of the Fixed settings, so it is not reduced."
+      },
+      "inputs_sha256": "e211633e21866178739a3c1a11c0d4cf692f6bdd7f4d46860433536c7274c66c",
+      "weights_sha256": "bcaa6fde6eb0a232427f46d94940da17519f2f48620dda473aca8bd3c0a228a4",
+      "status": "failed",
+      "wall_seconds": 0.167,
+      "failures": [
+        "request 0: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "request 1: EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+        "outputs not compared: ['input', 'pe_proj', 'x']"
+      ],
+      "offline": {
+        "pe_proj": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 18816,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 53,
+              "actual": 1.006526231765747,
+              "expected": 1.0065258741378784
+            }
+          }
+        },
+        "x": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 18816,
+            "max_abs": 9.5367431640625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 7,
+              "channel": 81,
+              "actual": -3.493076801300049,
+              "expected": -3.4930777549743652
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "pe_proj",
+              "kind": "output",
+              "channels": 96
+            },
+            {
+              "name": "x",
+              "kind": "output",
+              "channels": 96
+            }
+          ],
+          "bands": 194,
+          "values": 38024,
+          "payload_bytes": 152096,
+          "request_bytes": 194299,
+          "graph_sha256": "28d3b1ebab0d50abe7ac0c39adf6048cd574380e0fe0fe1d9c28ad1d3c992c04",
+          "graph_bytes": 194071,
+          "embedded_constants": 17184,
+          "inline_values": 6272,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.104
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 80060,
+          "graph_sha256": "aac111fe1e7ea9b338836bc46937bbc133c353fe66beab2ff9a8cec8cbd18834",
+          "graph_bytes": 79834,
+          "embedded_constants": 0,
+          "inline_values": 6272,
+          "status": "error",
+          "error": "EEException: Earth Engine client library not initialized. See http://goo.gle/ee-auth.",
+          "wall_seconds": 0.063
+        }
+      ],
+      "outputs": {}
+    }
+  ],
+  "cloud_calls": {
+    "requests": 18,
+    "computePixels": 0,
+    "algorithms_list": 0,
+    "refused": []
+  },
+  "finished_utc": "2026-10-13T03:32:33+00:00",
+  "wall_seconds": 8.796
+}

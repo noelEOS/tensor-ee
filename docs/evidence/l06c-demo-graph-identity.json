@@ -1,0 +1,961 @@
+{
+ "task": "L06c",
+ "claim": "graph identity of the demo export requests, archived vs new (not numerical execution)",
+ "archived": {
+  "tag": "research-archive-2026-10-12",
+  "commit": "bef12aab283a22f1c6eed43845180f3e68dd954d",
+  "code": "demo/ (git archive copy)"
+ },
+ "new": {
+  "code": "demos/browser/",
+  "head": "ed7aa9c64d74c84385dd1f9216dc524aa1e0698f",
+  "dirty": false
+ },
+ "environment": {
+  "python": "3.14.6",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "earthengine-api": "1.7.45",
+  "torch": "2.14.0",
+  "numpy": "2.5.3"
+ },
+ "checkpoints_sha256": {
+  "unet": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+  "swin-t": "5c7a7c44d29b3c75bd69f59809fb1b63a039313bec021d897ff3876d2cea42a5"
+ },
+ "manifests_sha256": {
+  "archived": {
+   "unet": "87c2f53f842f555fd58518924f2ab72bce3deceac0c62409a28297ef9af4b65a",
+   "swin-t": "dbd3cdaf450e4e2d128ec557843dc1c761cd9ab66d7d3581bb5cd255532fc9a3"
+  },
+  "new": {
+   "unet": "87c2f53f842f555fd58518924f2ab72bce3deceac0c62409a28297ef9af4b65a",
+   "swin-t": "dbd3cdaf450e4e2d128ec557843dc1c761cd9ab66d7d3581bb5cd255532fc9a3"
+  }
+ },
+ "project_placeholder": "demo-project",
+ "inputs": {
+  "unet/drawn_one_chip": {
+   "model": "unet",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+   "dates": [
+    "2024-01-03",
+    "2024-01-03"
+   ],
+   "aoi": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       120.90668557448498,
+       23.85856570687715
+      ],
+      [
+       120.91303222932038,
+       23.85856570687715
+      ],
+      [
+       120.91303222932038,
+       23.86170454515052
+      ],
+      [
+       120.90668557448498,
+       23.86170454515052
+      ],
+      [
+       120.90668557448498,
+       23.85856570687715
+      ]
+     ]
+    ]
+   },
+   "job_id": "00000000000000000000000000000001",
+   "mock_answers_sha256": "f13df58e5888a7c4b078db792d2a9310166e9b1468f27d72d7229615a86011fc"
+  },
+  "unet/preset_two_chips": {
+   "model": "unet",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240105T215301_20240105T215326_051977_0647E8_D7EE",
+   "dates": [
+    "2024-01-01",
+    "2024-01-07"
+   ],
+   "aoi": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       120.902,
+       23.849
+      ],
+      [
+       120.918,
+       23.849
+      ],
+      [
+       120.918,
+       23.863
+      ],
+      [
+       120.902,
+       23.863
+      ],
+      [
+       120.902,
+       23.849
+      ]
+     ]
+    ]
+   },
+   "job_id": "00000000000000000000000000000002",
+   "mock_answers_sha256": "3a1d4ef8379d0f057678c156e288295d1496b191c4045d35683829a8f143f0e5"
+  },
+  "unet/drawn_four_chips": {
+   "model": "unet",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+   "dates": [
+    "2024-01-01",
+    "2024-01-07"
+   ],
+   "aoi": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       120.93,
+       23.855
+      ],
+      [
+       120.93,
+       23.842
+      ],
+      [
+       120.915,
+       23.842
+      ],
+      [
+       120.915,
+       23.855
+      ],
+      [
+       120.93,
+       23.855
+      ]
+     ]
+    ]
+   },
+   "job_id": "00000000000000000000000000000003",
+   "mock_answers_sha256": "80c73f696d5be2592b92e658de95e74fd4ce1263f22c8130e683215cd7f54f3e"
+  },
+  "swin/preset_one_chip": {
+   "model": "swin-t",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+   "dates": [
+    "2024-01-01",
+    "2024-01-07"
+   ],
+   "aoi": "preset",
+   "job_id": "00000000000000000000000000000004",
+   "mock_answers_sha256": "90fa1b22c5d1459791f3c20ddadb221613e439204c9d94c47a4b7a688abe1ae1"
+  }
+ },
+ "mock_answers": {
+  "unet/drawn_one_chip": [
+   [
+    [
+     [
+      286822.5664535813,
+      2640134.0132739698
+     ],
+     [
+      287474.2111652765,
+      2640134.0132739698
+     ],
+     [
+      287474.2111652765,
+      2640491.2211206825
+     ],
+     [
+      286822.5664535813,
+      2640491.2211206825
+     ],
+     [
+      286822.5664535813,
+      2640134.0132739698
+     ]
+    ]
+   ],
+   {
+    "type": "FeatureCollection",
+    "features": [
+     {
+      "type": "Feature",
+      "geometry": null,
+      "id": "0",
+      "properties": {
+       "id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+       "coverage_fraction": 1,
+       "time": 1704276094000,
+       "orbit": "ASCENDING",
+       "relative_orbit": 69
+      }
+     }
+    ]
+   },
+   [
+    [
+     [
+      286822.5664535813,
+      2640134.0132739698
+     ],
+     [
+      287474.2111652765,
+      2640134.0132739698
+     ],
+     [
+      287474.2111652765,
+      2640491.2211206825
+     ],
+     [
+      286822.5664535813,
+      2640491.2211206825
+     ],
+     [
+      286822.5664535813,
+      2640134.0132739698
+     ]
+    ]
+   ]
+  ],
+  "unet/preset_two_chips": [
+   [
+    [
+     [
+      286329.5594653789,
+      2639067.052520982
+     ],
+     [
+      287982.3639615685,
+      2639067.052520982
+     ],
+     [
+      287982.3639615685,
+      2640641.7739597503
+     ],
+     [
+      286329.5594653789,
+      2640641.7739597503
+     ],
+     [
+      286329.5594653789,
+      2639067.052520982
+     ]
+    ]
+   ],
+   {
+    "type": "FeatureCollection",
+    "features": [
+     {
+      "type": "Feature",
+      "geometry": null,
+      "id": "0",
+      "properties": {
+       "id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240105T215301_20240105T215326_051977_0647E8_D7EE",
+       "coverage_fraction": 1,
+       "time": 1704491581000,
+       "orbit": "DESCENDING",
+       "relative_orbit": 105
+      }
+     }
+    ]
+   },
+   [
+    [
+     [
+      286329.5594653789,
+      2639067.052520982
+     ],
+     [
+      287982.3639615685,
+      2639067.052520982
+     ],
+     [
+      287982.3639615685,
+      2640641.7739597503
+     ],
+     [
+      286329.5594653789,
+      2640641.7739597503
+     ],
+     [
+      286329.5594653789,
+      2639067.052520982
+     ]
+    ]
+   ]
+  ],
+  "unet/drawn_four_chips": [
+   [
+    [
+     [
+      287642.52816126787,
+      2638273.810239861
+     ],
+     [
+      289191.77434923244,
+      2638273.810239861
+     ],
+     [
+      289191.77434923244,
+      2639736.1169383363
+     ],
+     [
+      287642.52816126787,
+      2639736.1169383363
+     ],
+     [
+      287642.52816126787,
+      2638273.810239861
+     ]
+    ]
+   ],
+   {
+    "type": "FeatureCollection",
+    "features": [
+     {
+      "type": "Feature",
+      "geometry": null,
+      "id": "0",
+      "properties": {
+       "id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+       "coverage_fraction": 1,
+       "time": 1704276094000,
+       "orbit": "ASCENDING",
+       "relative_orbit": 69
+      }
+     }
+    ]
+   },
+   [
+    [
+     [
+      287642.52816126787,
+      2638273.810239861
+     ],
+     [
+      289191.77434923244,
+      2638273.810239861
+     ],
+     [
+      289191.77434923244,
+      2639736.1169383363
+     ],
+     [
+      287642.52816126787,
+      2639736.1169383363
+     ],
+     [
+      287642.52816126787,
+      2638273.810239861
+     ]
+    ]
+   ]
+  ],
+  "swin/preset_one_chip": [
+   [
+    [
+     [
+      120.91600567714312,
+      23.845652641634786
+     ],
+     [
+      120.93632012718672,
+      23.845652641634786
+     ],
+     [
+      120.93632012718672,
+      23.864336400097898
+     ],
+     [
+      120.91600567714312,
+      23.864336400097898
+     ],
+     [
+      120.91600567714312,
+      23.845652641634786
+     ]
+    ]
+   ],
+   [
+    [
+     [
+      287750.9383652301,
+      2638668.985166969
+     ],
+     [
+      289850.67594605125,
+      2638668.985166969
+     ],
+     [
+      289850.67594605125,
+      2640768.7227305407
+     ],
+     [
+      287750.9383652301,
+      2640768.7227305407
+     ],
+     [
+      287750.9383652301,
+      2638668.985166969
+     ]
+    ]
+   ],
+   {
+    "type": "FeatureCollection",
+    "features": [
+     {
+      "type": "Feature",
+      "geometry": null,
+      "id": "0",
+      "properties": {
+       "id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+       "coverage_fraction": 1,
+       "time": 1704276094000,
+       "orbit": "ASCENDING",
+       "relative_orbit": 69
+      }
+     }
+    ]
+   },
+   {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       120.91533337959737,
+       23.844736715104435
+      ],
+      [
+       120.93731578828096,
+       23.845032681299287
+      ],
+      [
+       120.9369955410599,
+       23.865252214529917
+      ],
+      [
+       120.91500972543787,
+       23.864955966857135
+      ],
+      [
+       120.91533337959737,
+       23.844736715104435
+      ]
+     ]
+    ]
+   },
+   [
+    [
+     [
+      287750.9383652301,
+      2638668.985166969
+     ],
+     [
+      289850.67594605125,
+      2638668.985166969
+     ],
+     [
+      289850.67594605125,
+      2640768.7227305407
+     ],
+     [
+      287750.9383652301,
+      2640768.7227305407
+     ],
+     [
+      287750.9383652301,
+      2638668.985166969
+     ]
+    ]
+   ]
+  ]
+ },
+ "cloud_attempts": {
+  "archived": [],
+  "new": []
+ },
+ "cases": {
+  "unet/drawn_one_chip": {
+   "note": "the drawn AOI of the verified browser run: one chip",
+   "identical": true,
+   "expected_grid": true,
+   "archived": {
+    "job_id": "00000000000000000000000000000001",
+    "asset_id": "projects/demo-project/assets/segwater_demo_00000000000000000000000000000001",
+    "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+    "aoi": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        120.90668557448498,
+        23.85856570687715
+       ],
+       [
+        120.91303222932038,
+        23.85856570687715
+       ],
+       [
+        120.91303222932038,
+        23.86170454515052
+       ],
+       [
+        120.90668557448498,
+        23.86170454515052
+       ],
+       [
+        120.90668557448498,
+        23.85856570687715
+       ]
+      ]
+     ]
+    },
+    "grid": {
+     "crs": "EPSG:32651",
+     "transform": [
+      10,
+      0,
+      286720,
+      0,
+      -10,
+      2640960
+     ],
+     "width": 224,
+     "height": 224,
+     "tile_count": 1,
+     "area_km2": 5.0176
+    },
+    "scenes_response": {
+     "sha256": "e39e307c14c0a6695fa0ce0bfe56011df867d495cccae47c8f5e532d7fc27393",
+     "bytes": 373
+    },
+    "metadata_requests": [
+     {
+      "sha256": "12f499b6b2b337bc160ebfdcd2f0c48876d45ae5321950eb4c27275fbfa40c77",
+      "bytes": 1091
+     },
+     {
+      "sha256": "291598dc311d26447e14c9ad96fb7b68234c3de4966f59b7e78571e2780e8211",
+      "bytes": 6311
+     },
+     {
+      "sha256": "12f499b6b2b337bc160ebfdcd2f0c48876d45ae5321950eb4c27275fbfa40c77",
+      "bytes": 1091
+     }
+    ],
+    "exports": [
+     {
+      "image": {
+       "sha256": "b879a6dc8ff7a2b23c897518bbd1c41e4666054f3887422dbaad8b3ca51ce615",
+       "bytes": 1165006
+      },
+      "description": "segwater_demo_00000000000000000000000000000001",
+      "asset_id": "projects/demo-project/assets/segwater_demo_00000000000000000000000000000001",
+      "request_file": {
+       "sha256": "1b8179821e8381cace7f0d592479d34b9ec96785ecd429c4f2b1764c70361c78",
+       "bytes": 6004788
+      },
+      "request_canonical": {
+       "sha256": "a9e7ee1385b31310a4ea78d5a80192f371e79a84668c8fe8e508f515f5b76f1e",
+       "bytes": 1083472
+      },
+      "request_bytes": 1083472,
+      "native_operations": {
+       "sha256": "16c68218756e3b403dc1e3aa2c9ad16c0f84023973ad307439bffafc10b1dbc8",
+       "bytes": 1130
+      },
+      "native_operation_count": 63
+     }
+    ],
+    "predictor": {
+     "sha256": "4cd80cdde95dbf8b91102a3491390deb72f96f5dfc0732ed248f0208f991bbb9",
+     "bytes": 856
+    }
+   },
+   "new": "identical to archived"
+  },
+  "unet/preset_two_chips": {
+   "note": "the Sun Moon Lake preset AOI of the verified API run: two chips",
+   "identical": true,
+   "expected_grid": true,
+   "archived": {
+    "job_id": "00000000000000000000000000000002",
+    "asset_id": "projects/demo-project/assets/segwater_demo_00000000000000000000000000000002",
+    "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240105T215301_20240105T215326_051977_0647E8_D7EE",
+    "aoi": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        120.902,
+        23.849
+       ],
+       [
+        120.918,
+        23.849
+       ],
+       [
+        120.918,
+        23.863
+       ],
+       [
+        120.902,
+        23.863
+       ],
+       [
+        120.902,
+        23.849
+       ]
+      ]
+     ]
+    },
+    "grid": {
+     "crs": "EPSG:32651",
+     "transform": [
+      10,
+      0,
+      284480,
+      0,
+      -10,
+      2640960
+     ],
+     "width": 448,
+     "height": 224,
+     "tile_count": 2,
+     "area_km2": 10.0352
+    },
+    "scenes_response": {
+     "sha256": "c3efd3ab23e1880a00ae16497853224587232f992e0fa8392d3c209a379edc44",
+     "bytes": 376
+    },
+    "metadata_requests": [
+     {
+      "sha256": "6f808554a730ca410bc0e706885e7395a37e6322e2b2c1f8ff9335025c123cf9",
+      "bytes": 1003
+     },
+     {
+      "sha256": "69d1d7157bc01acaaff520adfe292183927754489521592519fad77834e036fa",
+      "bytes": 6224
+     },
+     {
+      "sha256": "6f808554a730ca410bc0e706885e7395a37e6322e2b2c1f8ff9335025c123cf9",
+      "bytes": 1003
+     }
+    ],
+    "exports": [
+     {
+      "image": {
+       "sha256": "6f92c0b592180d800e54043f72208110068e40be056e10f0d034425a38069c7a",
+       "bytes": 1303864
+      },
+      "description": "segwater_demo_00000000000000000000000000000002",
+      "asset_id": "projects/demo-project/assets/segwater_demo_00000000000000000000000000000002",
+      "request_file": {
+       "sha256": "3c2ce48e1c7649d9f8f0a08b8f37d78ba055d398eaeae8d946ef95229ae404a4",
+       "bytes": 3764069
+      },
+      "request_canonical": {
+       "sha256": "302103a79ccec2744f961005929e2d4bf44076b7237f47a704109217830e523c",
+       "bytes": 1213420
+      },
+      "request_bytes": 1213420,
+      "native_operations": {
+       "sha256": "16c68218756e3b403dc1e3aa2c9ad16c0f84023973ad307439bffafc10b1dbc8",
+       "bytes": 1130
+      },
+      "native_operation_count": 63
+     }
+    ],
+    "predictor": {
+     "sha256": "3e460bdff3141443262bfee5fdad73e05c644dd766bc3ab32b8f1925f8cc0071",
+     "bytes": 1052
+    }
+   },
+   "new": "identical to archived"
+  },
+  "unet/drawn_four_chips": {
+   "note": "a drawn AOI in a non-canonical ring order that snaps to 2 x 2 chips (the default cap)",
+   "identical": true,
+   "expected_grid": true,
+   "archived": {
+    "job_id": "00000000000000000000000000000003",
+    "asset_id": "projects/demo-project/assets/segwater_demo_00000000000000000000000000000003",
+    "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+    "aoi": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        120.915,
+        23.842
+       ],
+       [
+        120.93,
+        23.842
+       ],
+       [
+        120.93,
+        23.855
+       ],
+       [
+        120.915,
+        23.855
+       ],
+       [
+        120.915,
+        23.842
+       ]
+      ]
+     ]
+    },
+    "grid": {
+     "crs": "EPSG:32651",
+     "transform": [
+      10,
+      0,
+      286720,
+      0,
+      -10,
+      2640960
+     ],
+     "width": 448,
+     "height": 448,
+     "tile_count": 4,
+     "area_km2": 20.0704
+    },
+    "scenes_response": {
+     "sha256": "52a1dc7384938259bab7222fbb443be3acb50e902e6d531d6ac0e797fb651399",
+     "bytes": 374
+    },
+    "metadata_requests": [
+     {
+      "sha256": "620ae09313d0d74e36087e448a056fd41b440f64b92d340f83b05851de3f9989",
+      "bytes": 1001
+     },
+     {
+      "sha256": "5c5cfaa3d4cc585d6d3f1f87d8466c84252fa941bae2c39396f65b8379d53849",
+      "bytes": 6222
+     },
+     {
+      "sha256": "620ae09313d0d74e36087e448a056fd41b440f64b92d340f83b05851de3f9989",
+      "bytes": 1001
+     }
+    ],
+    "exports": [
+     {
+      "image": {
+       "sha256": "e98961610c36bf03de7bad4bc912c15f3e66a564522f3f4f97e5365fac2dcbb9",
+       "bytes": 1575518
+      },
+      "description": "segwater_demo_00000000000000000000000000000003",
+      "asset_id": "projects/demo-project/assets/segwater_demo_00000000000000000000000000000003",
+      "request_file": {
+       "sha256": "669da18c5e746b9f692e373b91effea40e44cd1a812838c544b881ccf2bca573",
+       "bytes": 5105816
+      },
+      "request_canonical": {
+       "sha256": "02897bb101bd870760de588d73dd36c8cb4376efe269b4f7cba363639cd62697",
+       "bytes": 1467655
+      },
+      "request_bytes": 1467655,
+      "native_operations": {
+       "sha256": "16c68218756e3b403dc1e3aa2c9ad16c0f84023973ad307439bffafc10b1dbc8",
+       "bytes": 1130
+      },
+      "native_operation_count": 63
+     }
+    ],
+    "predictor": {
+     "sha256": "74069ec370e5ea98aae2556abfb30037fe1f7a260d555f64f558980eac0f9302",
+     "bytes": 1446
+    }
+   },
+   "new": "identical to archived"
+  },
+  "swin/preset_one_chip": {
+   "note": "the Swin-T lake-chip preset (the Milestone 12 catalogue chip): stages A, B and C",
+   "identical": true,
+   "expected_grid": true,
+   "archived": {
+    "job_id": "00000000000000000000000000000004",
+    "asset_id": "projects/demo-project/assets/swint_upernet_demo_00000000000000000000000000000004",
+    "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+    "aoi": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        120.91600567714312,
+        23.845652641634786
+       ],
+       [
+        120.93632012718672,
+        23.845652641634786
+       ],
+       [
+        120.93632012718672,
+        23.864336400097898
+       ],
+       [
+        120.91600567714312,
+        23.864336400097898
+       ],
+       [
+        120.91600567714312,
+        23.845652641634786
+       ]
+      ]
+     ]
+    },
+    "grid": {
+     "crs": "EPSG:32651",
+     "transform": [
+      10,
+      0,
+      287680.95335071225,
+      0,
+      -10,
+      2640838.8405420803
+     ],
+     "width": 224,
+     "height": 224,
+     "tile_count": 1,
+     "area_km2": 5.0176
+    },
+    "scenes_response": {
+     "sha256": "6be36341d5d9f0ccf57a9afa4ff7a1c3944d72d51a5918a41bbce0696e3ca9d6",
+     "bytes": 657
+    },
+    "metadata_requests": [
+     {
+      "sha256": "fd6d2dd901a524db484cf37105faf66001b2b145b290837f1abd6e8cb865d5a0",
+      "bytes": 839
+     },
+     {
+      "sha256": "be975bdfcec59a487344a645ddf4acdfd1406c93d8351380791b65c4d578ff11",
+      "bytes": 1095
+     },
+     {
+      "sha256": "20d5b8a1a44223e5e47ffa7686526542cb2176d2bf8470eb172f2247eec98775",
+      "bytes": 6022
+     },
+     {
+      "sha256": "97bec40e601962a3f25d8c14438950bd41c4930173e93dbbbf7f82a7365f6550",
+      "bytes": 744
+     },
+     {
+      "sha256": "be975bdfcec59a487344a645ddf4acdfd1406c93d8351380791b65c4d578ff11",
+      "bytes": 1095
+     }
+    ],
+    "exports": [
+     {
+      "image": {
+       "sha256": "c5ff7b8faf73db7ea95e1eb9e3499a736c03d40bba65de71999221d81893c990",
+       "bytes": 851482
+      },
+      "description": "swint_upernet_demo_00000000000000000000000000000004_A",
+      "asset_id": "projects/demo-project/assets/swint_upernet_demo_00000000000000000000000000000004_A",
+      "request_file": {
+       "sha256": "eed221055290147b754721ea0526beddb273723e8e3103b5182587f895aab66a",
+       "bytes": 3950948
+      },
+      "request_canonical": {
+       "sha256": "714ea8b387f4f0860f3b0866d4443d368a0ac60c72fa4c835f191512019d5f5b",
+       "bytes": 796265
+      },
+      "request_bytes": 796265,
+      "native_operations": {
+       "sha256": "4eb68ebec6f0e03775112d30825c5e05432bcf8b874d3e51b0cf3c9148598c92",
+       "bytes": 1361
+      },
+      "native_operation_count": 79
+     },
+     {
+      "image": {
+       "sha256": "3283f2667cdeb596b94d35c068fec78dfaed63655a004e3766a494baf5d60d36",
+       "bytes": 346871
+      },
+      "description": "swint_upernet_demo_00000000000000000000000000000004_B",
+      "asset_id": "projects/demo-project/assets/swint_upernet_demo_00000000000000000000000000000004_B",
+      "request_file": {
+       "sha256": "8b66f49fbad4ce0836739068f5e10f584818cf4416f17aff3d1d9f819f074d17",
+       "bytes": 1624002
+      },
+      "request_canonical": {
+       "sha256": "d8d65e9e06fc2a0380b4212664385790b20182ebdbe453d12cf165ef71592c27",
+       "bytes": 324521
+      },
+      "request_bytes": 324521,
+      "native_operations": {
+       "sha256": "145f2a1f95f7d46ebae8526e65190bf1dbd1914e7b69178a5cc552f75bb544de",
+       "bytes": 1138
+      },
+      "native_operation_count": 65
+     },
+     {
+      "image": {
+       "sha256": "c90e197df123173a8f6e632b86676e8f8020acb53402b3946b71bc0ace06e843",
+       "bytes": 602296
+      },
+      "description": "swint_upernet_demo_00000000000000000000000000000004_C",
+      "asset_id": "projects/demo-project/assets/swint_upernet_demo_00000000000000000000000000000004",
+      "request_file": {
+       "sha256": "aaab7283e5ffd1359920e2c6297489ad47f2e1ab8b35e46877b7d3a3e385d41c",
+       "bytes": 2969818
+      },
+      "request_canonical": {
+       "sha256": "7bd6ed4642d2e50ed2df9833870d7d3bc75df2edbef01a8e99b24589da67ae60",
+       "bytes": 558768
+      },
+      "request_bytes": 558768,
+      "native_operations": {
+       "sha256": "c2b5fdb80cf63bcd2712653c7b373b2b6b826b07424e8244e25a90d72a09aa31",
+       "bytes": 1285
+      },
+      "native_operation_count": 74
+     }
+    ],
+    "predictor": null
+   },
+   "new": "identical to archived"
+  }
+ },
+ "live_request_crosscheck": {
+  "status": "identical",
+  "runs": {
+   "unet/drawn_one_chip": {
+    "live_job_id": "55413ad3711c40fe9c599af470aa370c",
+    "live_task_state": "COMPLETED",
+    "live_request_sha256": "17c9b529a013171d5fb7dd4d1f0bfce0a9f0ca6a15435caf47d894142e62d382",
+    "live_request_bytes": 1083473,
+    "new_request_sha256": "17c9b529a013171d5fb7dd4d1f0bfce0a9f0ca6a15435caf47d894142e62d382",
+    "new_request_bytes": 1083473,
+    "identical": true
+   },
+   "unet/preset_two_chips": {
+    "live_job_id": "b4acb70cbbeb47eab5ae8ee3cbb387cc",
+    "live_task_state": "COMPLETED",
+    "live_request_sha256": "6924e462428502a67ea7425cd0ee06aa43282b4a58b1b37dc3da92301a5fa57d",
+    "live_request_bytes": 1213421,
+    "new_request_sha256": "6924e462428502a67ea7425cd0ee06aa43282b4a58b1b37dc3da92301a5fa57d",
+    "new_request_bytes": 1213421,
+    "identical": true
+   }
+  }
+ },
+ "summary": {
+  "cases": 4,
+  "identical": 4,
+  "exports": 6,
+  "all_identical": true
+ }
+}

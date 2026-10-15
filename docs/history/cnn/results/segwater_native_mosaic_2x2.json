@@ -1,0 +1,661 @@
+{
+  "experiment": "trained_segwater_native_chip_mosaic",
+  "identity": {
+    "config": {
+      "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+      "crs": "EPSG:32651",
+      "transform": [
+        10,
+        0,
+        286030,
+        0,
+        -10,
+        2640860
+      ],
+      "width": 448,
+      "height": 448
+    },
+    "checkpoint_sha256": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+    "manifest_sha256": "87c2f53f842f555fd58518924f2ab72bce3deceac0c62409a28297ef9af4b65a",
+    "project": "ORIGINAL_PROJECT",
+    "validate": true,
+    "tolerance": 0.0001,
+    "requested_asset_id": null
+  },
+  "status": "pass",
+  "dtype": "float32",
+  "chip_size": 224,
+  "tiling": "independent_disjoint_fixed224",
+  "monolithic_scene_equivalence_claimed": false,
+  "source_scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+  "grid": {
+    "dimensions": {
+      "width": 448,
+      "height": 448
+    },
+    "crsCode": "EPSG:32651",
+    "affineTransform": {
+      "scaleX": 10,
+      "shearX": 0,
+      "translateX": 286030,
+      "shearY": 0,
+      "scaleY": -10,
+      "translateY": 2640860
+    }
+  },
+  "tile_count": 4,
+  "predictor": {
+    "grid": {
+      "crs": "EPSG:32651",
+      "transform": [
+        10,
+        0,
+        286030,
+        0,
+        -10,
+        2640860
+      ],
+      "width": 448,
+      "height": 448
+    },
+    "bands": [
+      "logit_0",
+      "logit_1",
+      "water_probability",
+      "water_mask",
+      "coverage"
+    ],
+    "dtype": "float32",
+    "chip_size": [
+      224,
+      224
+    ],
+    "alignment": 32,
+    "tile_count": 4,
+    "halo": 0,
+    "overlap": 0,
+    "independent_chip_inference": true,
+    "padding": "zero outside each finite model-layer tensor",
+    "missing_input": "shared raw VV/VH mask; exact zero in normalized space",
+    "partial_chip_context": "full224 raw-scene context beyond AOI; crop output to AOI",
+    "coverage": "valid raw VV/VH center and two valid finite logits",
+    "water_class": 1,
+    "water_threshold": 0.5,
+    "tiles": [
+      {
+        "index": 0,
+        "row": 0,
+        "column": 0,
+        "x": 0,
+        "y": 0,
+        "width": 224,
+        "height": 224,
+        "chip_grid": {
+          "crs": "EPSG:32651",
+          "transform": [
+            10,
+            0,
+            286030,
+            0,
+            -10,
+            2640860
+          ],
+          "width": 224,
+          "height": 224
+        }
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "column": 1,
+        "x": 224,
+        "y": 0,
+        "width": 224,
+        "height": 224,
+        "chip_grid": {
+          "crs": "EPSG:32651",
+          "transform": [
+            10,
+            0,
+            288270,
+            0,
+            -10,
+            2640860
+          ],
+          "width": 224,
+          "height": 224
+        }
+      },
+      {
+        "index": 2,
+        "row": 1,
+        "column": 0,
+        "x": 0,
+        "y": 224,
+        "width": 224,
+        "height": 224,
+        "chip_grid": {
+          "crs": "EPSG:32651",
+          "transform": [
+            10,
+            0,
+            286030,
+            0,
+            -10,
+            2638620
+          ],
+          "width": 224,
+          "height": 224
+        }
+      },
+      {
+        "index": 3,
+        "row": 1,
+        "column": 1,
+        "x": 224,
+        "y": 224,
+        "width": 224,
+        "height": 224,
+        "chip_grid": {
+          "crs": "EPSG:32651",
+          "transform": [
+            10,
+            0,
+            288270,
+            0,
+            -10,
+            2638620
+          ],
+          "width": 224,
+          "height": 224
+        }
+      }
+    ]
+  },
+  "output_bands": [
+    "logit_0",
+    "logit_1",
+    "water_probability",
+    "water_mask",
+    "coverage",
+    "raw_VV",
+    "raw_VH",
+    "z_VV",
+    "z_VH",
+    "pixel_x",
+    "pixel_y"
+  ],
+  "pixel_count": 200704,
+  "imagery_downloaded": true,
+  "validation_requested": true,
+  "graph": {
+    "sha256": "a66b5c051b830d92936351070876b5eb0a887b9512b109edf3b97f4e8b18dc5e",
+    "bytes": 1467199,
+    "native_operation_names": [
+      "AggregateFeatureCollection.array",
+      "Array",
+      "Array.float",
+      "Array.reshape",
+      "Collection.filter",
+      "Collection.limit",
+      "Collection.loadTable",
+      "Collection.merge",
+      "Filter.equals",
+      "GeometryConstructors.Rectangle",
+      "Image.abs",
+      "Image.add",
+      "Image.addBands",
+      "Image.and",
+      "Image.arrayFlatten",
+      "Image.arrayProject",
+      "Image.changeProj",
+      "Image.clamp",
+      "Image.clip",
+      "Image.constant",
+      "Image.divide",
+      "Image.eq",
+      "Image.exp",
+      "Image.floor",
+      "Image.gt",
+      "Image.gte",
+      "Image.load",
+      "Image.lt",
+      "Image.lte",
+      "Image.mask",
+      "Image.matrixMultiply",
+      "Image.max",
+      "Image.mod",
+      "Image.multiply",
+      "Image.neighborhoodToBands",
+      "Image.neq",
+      "Image.or",
+      "Image.pixelCoordinates",
+      "Image.reduce",
+      "Image.reduceNeighborhood",
+      "Image.rename",
+      "Image.reproject",
+      "Image.select",
+      "Image.setDefaultProjection",
+      "Image.subtract",
+      "Image.toArray",
+      "Image.toFloat",
+      "Image.unmask",
+      "Image.updateMask",
+      "Image.where",
+      "ImageCollection.fromImages",
+      "ImageCollection.mosaic",
+      "Kernel.fixed",
+      "Kernel.square",
+      "List.flatten",
+      "List.map",
+      "Projection",
+      "Reducer.max",
+      "Reducer.min",
+      "String",
+      "String.decodeJSON"
+    ],
+    "used_asset_keys": [
+      "conv_000",
+      "conv_001",
+      "conv_002",
+      "conv_003",
+      "conv_004",
+      "conv_005",
+      "conv_006",
+      "conv_007",
+      "conv_008",
+      "conv_009",
+      "conv_010",
+      "conv_011",
+      "conv_012",
+      "conv_013",
+      "conv_014",
+      "conv_015",
+      "conv_016",
+      "conv_017",
+      "conv_018",
+      "conv_019",
+      "conv_020",
+      "conv_021",
+      "conv_022",
+      "conv_023",
+      "conv_024",
+      "conv_025",
+      "conv_026",
+      "conv_027",
+      "conv_028",
+      "conv_029",
+      "conv_030"
+    ],
+    "fallback_keys": [],
+    "operation_audit_scope": "prepared_export_expression_including_nested_functions"
+  },
+  "export": {
+    "request_id": "fe0e31ae-5ffc-42ca-aee1-1b54fbc58794",
+    "task_id": "74WAW36X4VICZ2KQGP2UQGPQ",
+    "asset_id": "projects/ORIGINAL_PROJECT/assets/segwater_mosaic_448x448_1790613563_598db585",
+    "state": "COMPLETED",
+    "request_file": "<checkout>/results/segwater_native_mosaic_2x2.ee_export_request.json",
+    "request_sha256": "2c8fa7fa06ccb3ff16360f109901cfff3a4e3dc98c6c2e3753ee51145c08bf20",
+    "request_bytes": 1467702,
+    "prepared_unix": 1790613564.129198,
+    "operation_name": "projects/ORIGINAL_PROJECT/operations/74WAW36X4VICZ2KQGP2UQGPQ",
+    "task_status": {
+      "state": "COMPLETED",
+      "description": "segwater_mosaic_448x448_1790613563_598db585",
+      "priority": 100,
+      "creation_timestamp_ms": 1790613573455,
+      "update_timestamp_ms": 1790613897202,
+      "start_timestamp_ms": 1790613578120,
+      "task_type": "EXPORT_IMAGE",
+      "destination_uris": [
+        "https://code.earthengine.google.com/?asset=projects/ORIGINAL_PROJECT/assets/segwater_mosaic_448x448_1790613563_598db585"
+      ],
+      "attempt": 1,
+      "batch_eecu_usage_seconds": 580.1734008789062,
+      "id": "74WAW36X4VICZ2KQGP2UQGPQ",
+      "name": "projects/ORIGINAL_PROJECT/operations/74WAW36X4VICZ2KQGP2UQGPQ"
+    },
+    "elapsed_seconds": 337.8640558719635,
+    "ee_runtime_seconds": 319.082
+  },
+  "download_file": "<checkout>/downloads/segwater_mosaic/segwater_native_mosaic_2x2.npz",
+  "download_sha256": "7c48c32a8ee3d9d15acc3e1b9ad4d6230ce83a91a202b90a70443a9476b71caa",
+  "download_bytes": 6136880,
+  "preprocessing": {
+    "bitwise_equal": true,
+    "differing_values": 0,
+    "max_abs_error": 0.0
+  },
+  "comparison": {
+    "status": "pass",
+    "all_pass": true,
+    "numerical_pass": true,
+    "mask_pass": true,
+    "coverage_pass": true,
+    "tolerance": 0.0001,
+    "arithmetic": "float32",
+    "reference": "local_pytorch_chip_mosaic",
+    "logits_shape": [
+      2,
+      448,
+      448
+    ],
+    "probability_shape": [
+      448,
+      448
+    ],
+    "chip_size": 224,
+    "seam_width_pixels": 2,
+    "seam_rows": [
+      224
+    ],
+    "seam_columns": [
+      224
+    ],
+    "coverage": {
+      "pixel_count": 200704,
+      "exactly_one_pixel_count": 200704,
+      "uncovered_pixel_count": 0,
+      "overlap_pixel_count": 0,
+      "other_pixel_count": 0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "full": {
+      "pixel_count": 200704,
+      "logits": {
+        "max_abs_error": 1.3455748558044434e-05,
+        "mean_abs_error": 4.150618810316864e-07,
+        "rmse": 6.598451085526591e-07,
+        "values_over_1e-4": 0,
+        "values_over_tolerance": 0,
+        "value_count": 401408,
+        "max_error_location": {
+          "index": [
+            1,
+            14,
+            63
+          ],
+          "row": 14,
+          "column": 63,
+          "actual_ee": 0.14118601381778717,
+          "expected_torch": 0.14117255806922913,
+          "channel": 1
+        }
+      },
+      "probability": {
+        "max_abs_error": 6.4373016357421875e-06,
+        "mean_abs_error": 2.8529276940858495e-08,
+        "rmse": 1.6324417417834525e-07,
+        "values_over_1e-4": 0,
+        "values_over_tolerance": 0,
+        "value_count": 200704,
+        "max_error_location": {
+          "index": [
+            14,
+            61
+          ],
+          "row": 14,
+          "column": 61,
+          "actual_ee": 0.5484247803688049,
+          "expected_torch": 0.5484183430671692
+        }
+      },
+      "numerical_pass": true,
+      "mask_pass": true,
+      "mask": {
+        "threshold": 0.5,
+        "pixel_count": 200704,
+        "exact_match": true,
+        "mismatch_count": 0,
+        "match_count": 200704,
+        "ee_water_count": 63571,
+        "torch_water_count": 63571,
+        "first_mismatch": null
+      }
+    },
+    "seams": {
+      "union": {
+        "pixel_count": 3568,
+        "logits": {
+          "max_abs_error": 5.364418029785156e-06,
+          "mean_abs_error": 3.8732705043287297e-07,
+          "rmse": 5.47479661605621e-07,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 7136,
+          "max_error_location": {
+            "index": [
+              1,
+              225,
+              154
+            ],
+            "row": 225,
+            "column": 154,
+            "actual_ee": 1.0456578731536865,
+            "expected_torch": 1.0456525087356567,
+            "channel": 1
+          }
+        },
+        "probability": {
+          "max_abs_error": 1.7285346984863281e-06,
+          "mean_abs_error": 2.4863284320275625e-08,
+          "rmse": 1.02230732990094e-07,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 3568,
+          "max_error_location": {
+            "index": [
+              225,
+              155
+            ],
+            "row": 225,
+            "column": 155,
+            "actual_ee": 0.7359743118286133,
+            "expected_torch": 0.7359725832939148
+          }
+        },
+        "numerical_pass": true,
+        "mask_pass": true,
+        "mask": {
+          "threshold": 0.5,
+          "pixel_count": 3568,
+          "exact_match": true,
+          "mismatch_count": 0,
+          "match_count": 3568,
+          "ee_water_count": 897,
+          "torch_water_count": 897,
+          "first_mismatch": null
+        }
+      },
+      "vertical": {
+        "pixel_count": 1792,
+        "logits": {
+          "max_abs_error": 2.380460500717163e-06,
+          "mean_abs_error": 3.4553134004022823e-07,
+          "rmse": 4.486124871583286e-07,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 3584,
+          "max_error_location": {
+            "index": [
+              0,
+              139,
+              222
+            ],
+            "row": 139,
+            "column": 222,
+            "actual_ee": 0.056031111627817154,
+            "expected_torch": 0.05603349208831787,
+            "channel": 0
+          }
+        },
+        "probability": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.8296953951946193e-08,
+          "rmse": 6.076151271017238e-08,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 1792,
+          "max_error_location": {
+            "index": [
+              139,
+              222
+            ],
+            "row": 139,
+            "column": 222,
+            "actual_ee": 0.6574623584747314,
+            "expected_torch": 0.6574617028236389
+          }
+        },
+        "numerical_pass": true,
+        "mask_pass": true,
+        "mask": {
+          "threshold": 0.5,
+          "pixel_count": 1792,
+          "exact_match": true,
+          "mismatch_count": 0,
+          "match_count": 1792,
+          "ee_water_count": 585,
+          "torch_water_count": 585,
+          "first_mismatch": null
+        }
+      },
+      "horizontal": {
+        "pixel_count": 1792,
+        "logits": {
+          "max_abs_error": 5.364418029785156e-06,
+          "mean_abs_error": 4.278098275634079e-07,
+          "rmse": 6.296439769570839e-07,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 3584,
+          "max_error_location": {
+            "index": [
+              1,
+              225,
+              154
+            ],
+            "row": 225,
+            "column": 154,
+            "actual_ee": 1.0456578731536865,
+            "expected_torch": 1.0456525087356567,
+            "channel": 1
+          }
+        },
+        "probability": {
+          "max_abs_error": 1.7285346984863281e-06,
+          "mean_abs_error": 3.131364378905488e-08,
+          "rmse": 1.308428903001868e-07,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 1792,
+          "max_error_location": {
+            "index": [
+              225,
+              155
+            ],
+            "row": 225,
+            "column": 155,
+            "actual_ee": 0.7359743118286133,
+            "expected_torch": 0.7359725832939148
+          }
+        },
+        "numerical_pass": true,
+        "mask_pass": true,
+        "mask": {
+          "threshold": 0.5,
+          "pixel_count": 1792,
+          "exact_match": true,
+          "mismatch_count": 0,
+          "match_count": 1792,
+          "ee_water_count": 312,
+          "torch_water_count": 312,
+          "first_mismatch": null
+        }
+      },
+      "intersection": {
+        "pixel_count": 16,
+        "logits": {
+          "max_abs_error": 7.152557373046875e-07,
+          "mean_abs_error": 2.4028122425079346e-07,
+          "rmse": 3.197679561139921e-07,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 32,
+          "max_error_location": {
+            "index": [
+              0,
+              223,
+              225
+            ],
+            "row": 223,
+            "column": 225,
+            "actual_ee": 1.99459707736969,
+            "expected_torch": 1.9945977926254272,
+            "channel": 0
+          }
+        },
+        "probability": {
+          "max_abs_error": 3.725290298461914e-08,
+          "mean_abs_error": 1.1874362604302746e-08,
+          "rmse": 1.798682647269345e-08,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 16,
+          "max_error_location": {
+            "index": [
+              222,
+              225
+            ],
+            "row": 222,
+            "column": 225,
+            "actual_ee": 0.03565168008208275,
+            "expected_torch": 0.03565171733498573
+          }
+        },
+        "numerical_pass": true,
+        "mask_pass": true,
+        "mask": {
+          "threshold": 0.5,
+          "pixel_count": 16,
+          "exact_match": true,
+          "mismatch_count": 0,
+          "match_count": 16,
+          "ee_water_count": 0,
+          "torch_water_count": 0,
+          "first_mismatch": null
+        }
+      }
+    }
+  },
+  "finished_unix": 1790613904.541984,
+  "prior_top_left_chip_regression": {
+    "raw_db": {
+      "bitwise_equal": true,
+      "max_abs_error": 0.0
+    },
+    "ee_z": {
+      "bitwise_equal": true,
+      "max_abs_error": 0.0
+    },
+    "ee_logits": {
+      "bitwise_equal": true,
+      "max_abs_error": 0.0
+    },
+    "ee_probability": {
+      "bitwise_equal": true,
+      "max_abs_error": 0.0
+    },
+    "torch_logits": {
+      "bitwise_equal": true,
+      "max_abs_error": 0.0
+    },
+    "torch_probability": {
+      "bitwise_equal": true,
+      "max_abs_error": 0.0
+    }
+  },
+  "saved_archive_metrics_rechecked": true
+}

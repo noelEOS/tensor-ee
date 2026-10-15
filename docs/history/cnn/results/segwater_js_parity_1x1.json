@@ -1,0 +1,394 @@
+{
+  "experiment": "javascript_segwater_real_s1_parity",
+  "identity": {
+    "config": {
+      "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+      "crs": "EPSG:32651",
+      "transform": [
+        10,
+        0,
+        286030,
+        0,
+        -10,
+        2640860
+      ],
+      "width": 224,
+      "height": 224
+    },
+    "project": "ORIGINAL_PROJECT",
+    "module_sha256": "14a0f596bc74f9ded533f1f2e914293e09a39e19081b5c8fbf54db3a902f47c2",
+    "harness_sha256": "511e7f67c1d6c26e055c80ca91d626a71bc94e7db312d7a453edf854b6ea9cc1",
+    "checkpoint_sha256": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+    "reference_sha256": "7c48c32a8ee3d9d15acc3e1b9ad4d6230ce83a91a202b90a70443a9476b71caa",
+    "tolerance": 0.0001
+  },
+  "status": "pass",
+  "js_sdk_version": "1.7.46",
+  "reference": "original unfused PyTorch + previously validated Python EE pixels",
+  "graph_file": "<checkout>/downloads/code_editor/segwater_js_parity_1x1.graph.json",
+  "graph_sha256": "d8c10819806f495203256b4bd75302715f15ea6e5876467fef7795909090e793",
+  "graph_bytes": 1075113,
+  "native_operation_names": [
+    "AggregateFeatureCollection.array",
+    "Array",
+    "Array.float",
+    "Array.reshape",
+    "Collection.filter",
+    "Collection.limit",
+    "Collection.loadTable",
+    "Collection.merge",
+    "Filter.equals",
+    "GeometryConstructors.Rectangle",
+    "Image.abs",
+    "Image.add",
+    "Image.addBands",
+    "Image.and",
+    "Image.arrayFlatten",
+    "Image.arrayProject",
+    "Image.changeProj",
+    "Image.clamp",
+    "Image.clip",
+    "Image.constant",
+    "Image.divide",
+    "Image.eq",
+    "Image.exp",
+    "Image.floor",
+    "Image.gt",
+    "Image.gte",
+    "Image.load",
+    "Image.lt",
+    "Image.lte",
+    "Image.mask",
+    "Image.matrixMultiply",
+    "Image.max",
+    "Image.mod",
+    "Image.multiply",
+    "Image.neighborhoodToBands",
+    "Image.neq",
+    "Image.or",
+    "Image.pixelCoordinates",
+    "Image.reduce",
+    "Image.reduceNeighborhood",
+    "Image.rename",
+    "Image.reproject",
+    "Image.select",
+    "Image.setDefaultProjection",
+    "Image.subtract",
+    "Image.toArray",
+    "Image.toFloat",
+    "Image.unmask",
+    "Image.updateMask",
+    "Image.where",
+    "ImageCollection.fromImages",
+    "ImageCollection.mosaic",
+    "Kernel.fixed",
+    "Kernel.square",
+    "List.flatten",
+    "List.map",
+    "Projection",
+    "Reducer.max",
+    "Reducer.min",
+    "String",
+    "String.decodeJSON"
+  ],
+  "grid": {
+    "dimensions": {
+      "width": 224,
+      "height": 224
+    },
+    "crsCode": "EPSG:32651",
+    "affineTransform": {
+      "scaleX": 10,
+      "shearX": 0,
+      "translateX": 286030,
+      "shearY": 0,
+      "scaleY": -10,
+      "translateY": 2640860
+    }
+  },
+  "output_bands": [
+    "logit_0",
+    "logit_1",
+    "water_probability",
+    "water_mask",
+    "coverage",
+    "raw_VV",
+    "raw_VH",
+    "z_VV",
+    "z_VH",
+    "pixel_x",
+    "pixel_y"
+  ],
+  "export": {
+    "request_id": "68716aeb-204c-43c9-afe6-b4c5b747bfe2",
+    "task_id": "54XKPJHUD3RZCOAA5VPKADU5",
+    "asset_id": "projects/ORIGINAL_PROJECT/assets/segwater_js_224x224_1790657933_9d6aad87",
+    "state": "COMPLETED",
+    "request_file": "<checkout>/results/segwater_js_parity_1x1.ee_export_request.json",
+    "request_sha256": "6c52c41749f2369b3209fe3c744f2414dee19f5f009b211f20760453026d88f0",
+    "request_bytes": 1074314,
+    "prepared_unix": 1790657933.422903,
+    "operation_name": "projects/ORIGINAL_PROJECT/operations/54XKPJHUD3RZCOAA5VPKADU5",
+    "last_task_status": {
+      "state": "COMPLETED",
+      "description": "segwater_js_1790657933_9d6aad87",
+      "priority": 100,
+      "creation_timestamp_ms": 1790657939837,
+      "update_timestamp_ms": 1790658031500,
+      "start_timestamp_ms": 1790657943467,
+      "task_type": "EXPORT_IMAGE",
+      "destination_uris": [
+        "https://code.earthengine.google.com/?asset=projects/ORIGINAL_PROJECT/assets/segwater_js_224x224_1790657933_9d6aad87"
+      ],
+      "attempt": 1,
+      "batch_eecu_usage_seconds": 101.12764739990234,
+      "id": "54XKPJHUD3RZCOAA5VPKADU5",
+      "name": "projects/ORIGINAL_PROJECT/operations/54XKPJHUD3RZCOAA5VPKADU5"
+    }
+  },
+  "comparison": {
+    "status": "pass",
+    "all_pass": true,
+    "numerical_pass": true,
+    "mask_pass": true,
+    "coverage_pass": true,
+    "tolerance": 0.0001,
+    "arithmetic": "float32",
+    "reference": "local_pytorch_chip_mosaic",
+    "logits_shape": [
+      2,
+      224,
+      224
+    ],
+    "probability_shape": [
+      224,
+      224
+    ],
+    "chip_size": 224,
+    "seam_width_pixels": 2,
+    "seam_rows": [],
+    "seam_columns": [],
+    "coverage": {
+      "pixel_count": 50176,
+      "exactly_one_pixel_count": 50176,
+      "uncovered_pixel_count": 0,
+      "overlap_pixel_count": 0,
+      "other_pixel_count": 0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "full": {
+      "pixel_count": 50176,
+      "logits": {
+        "max_abs_error": 1.3455748558044434e-05,
+        "mean_abs_error": 4.346895909890236e-07,
+        "rmse": 7.704209625258862e-07,
+        "values_over_1e-4": 0,
+        "values_over_tolerance": 0,
+        "value_count": 100352,
+        "max_error_location": {
+          "index": [
+            1,
+            14,
+            63
+          ],
+          "row": 14,
+          "column": 63,
+          "actual_ee": 0.14118601381778717,
+          "expected_torch": 0.14117255806922913,
+          "channel": 1
+        }
+      },
+      "probability": {
+        "max_abs_error": 6.4373016357421875e-06,
+        "mean_abs_error": 4.198021330559243e-08,
+        "rmse": 2.2990320847071644e-07,
+        "values_over_1e-4": 0,
+        "values_over_tolerance": 0,
+        "value_count": 50176,
+        "max_error_location": {
+          "index": [
+            14,
+            61
+          ],
+          "row": 14,
+          "column": 61,
+          "actual_ee": 0.5484247803688049,
+          "expected_torch": 0.5484183430671692
+        }
+      },
+      "numerical_pass": true,
+      "mask_pass": true,
+      "mask": {
+        "threshold": 0.5,
+        "pixel_count": 50176,
+        "exact_match": true,
+        "mismatch_count": 0,
+        "match_count": 50176,
+        "ee_water_count": 30205,
+        "torch_water_count": 30205,
+        "first_mismatch": null
+      }
+    },
+    "seams": {
+      "union": {
+        "pixel_count": 0,
+        "logits": {
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "rmse": 0.0,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 0,
+          "max_error_location": null
+        },
+        "probability": {
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "rmse": 0.0,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 0,
+          "max_error_location": null
+        },
+        "numerical_pass": true,
+        "mask_pass": true,
+        "mask": {
+          "threshold": 0.5,
+          "pixel_count": 0,
+          "exact_match": true,
+          "mismatch_count": 0,
+          "match_count": 0,
+          "ee_water_count": 0,
+          "torch_water_count": 0,
+          "first_mismatch": null
+        }
+      },
+      "vertical": {
+        "pixel_count": 0,
+        "logits": {
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "rmse": 0.0,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 0,
+          "max_error_location": null
+        },
+        "probability": {
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "rmse": 0.0,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 0,
+          "max_error_location": null
+        },
+        "numerical_pass": true,
+        "mask_pass": true,
+        "mask": {
+          "threshold": 0.5,
+          "pixel_count": 0,
+          "exact_match": true,
+          "mismatch_count": 0,
+          "match_count": 0,
+          "ee_water_count": 0,
+          "torch_water_count": 0,
+          "first_mismatch": null
+        }
+      },
+      "horizontal": {
+        "pixel_count": 0,
+        "logits": {
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "rmse": 0.0,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 0,
+          "max_error_location": null
+        },
+        "probability": {
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "rmse": 0.0,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 0,
+          "max_error_location": null
+        },
+        "numerical_pass": true,
+        "mask_pass": true,
+        "mask": {
+          "threshold": 0.5,
+          "pixel_count": 0,
+          "exact_match": true,
+          "mismatch_count": 0,
+          "match_count": 0,
+          "ee_water_count": 0,
+          "torch_water_count": 0,
+          "first_mismatch": null
+        }
+      },
+      "intersection": {
+        "pixel_count": 0,
+        "logits": {
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "rmse": 0.0,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 0,
+          "max_error_location": null
+        },
+        "probability": {
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "rmse": 0.0,
+          "values_over_1e-4": 0,
+          "values_over_tolerance": 0,
+          "value_count": 0,
+          "max_error_location": null
+        },
+        "numerical_pass": true,
+        "mask_pass": true,
+        "mask": {
+          "threshold": 0.5,
+          "pixel_count": 0,
+          "exact_match": true,
+          "mismatch_count": 0,
+          "match_count": 0,
+          "ee_water_count": 0,
+          "torch_water_count": 0,
+          "first_mismatch": null
+        }
+      }
+    }
+  },
+  "python_ee_comparison": {
+    "raw_db": {
+      "max_absolute_error": 0.0,
+      "differing_float32_values": 0
+    },
+    "ee_z": {
+      "max_absolute_error": 0.0,
+      "differing_float32_values": 0
+    },
+    "ee_logits": {
+      "max_absolute_error": 0.0,
+      "differing_float32_values": 0
+    },
+    "ee_probability": {
+      "max_absolute_error": 0.0,
+      "differing_float32_values": 0
+    }
+  },
+  "python_ee_mask_mismatches": 0,
+  "preprocessing_bitwise_differences": 0,
+  "asset_all_bands_float32": true,
+  "imagery_downloaded": true,
+  "download_file": "<checkout>/downloads/code_editor/segwater_js_parity_1x1.npz",
+  "download_sha256": "f3c9eea3a4d84cd2643fa498151e4c36c09111e10295275d2bdcd8db4cc8505c",
+  "pixel_count": 50176,
+  "finished_unix": 1790658039.076384
+}

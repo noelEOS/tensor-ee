@@ -1,0 +1,818 @@
+{
+ "edges": {
+  "decoder.head": {
+   "bands": null,
+   "channels": 2,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 224,
+    "kind": "token",
+    "scale": 2.5,
+    "width": 224
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "decoder.pyramid": {
+   "bands": null,
+   "channels": 1024,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 56,
+    "kind": "token",
+    "scale": 10.0,
+    "width": 56
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.block1.0": {
+   "bands": null,
+   "channels": 32,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 56,
+    "kind": "token",
+    "scale": 10.0,
+    "width": 56
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.block1.1": {
+   "bands": null,
+   "channels": 32,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 56,
+    "kind": "token",
+    "scale": 10.0,
+    "width": 56
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.block2.0": {
+   "bands": null,
+   "channels": 64,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 28,
+    "kind": "token",
+    "scale": 20.0,
+    "width": 28
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.block2.1": {
+   "bands": null,
+   "channels": 64,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 28,
+    "kind": "token",
+    "scale": 20.0,
+    "width": 28
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.block3.0": {
+   "bands": null,
+   "channels": 160,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 14,
+    "kind": "token",
+    "scale": 40.0,
+    "width": 14
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.block3.1": {
+   "bands": null,
+   "channels": 160,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 14,
+    "kind": "token",
+    "scale": 40.0,
+    "width": 14
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.block4.0": {
+   "bands": null,
+   "channels": 256,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 7,
+    "kind": "token",
+    "scale": 80.0,
+    "width": 7
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.block4.1": {
+   "bands": null,
+   "channels": 256,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 7,
+    "kind": "token",
+    "scale": 80.0,
+    "width": 7
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.norm1": {
+   "bands": null,
+   "channels": 32,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 56,
+    "kind": "token",
+    "scale": 10.0,
+    "width": 56
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.norm2": {
+   "bands": null,
+   "channels": 64,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 28,
+    "kind": "token",
+    "scale": 20.0,
+    "width": 28
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.norm3": {
+   "bands": null,
+   "channels": 160,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 14,
+    "kind": "token",
+    "scale": 40.0,
+    "width": 14
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.norm4": {
+   "bands": null,
+   "channels": 256,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 7,
+    "kind": "token",
+    "scale": 80.0,
+    "width": 7
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.patch_embed1": {
+   "bands": null,
+   "channels": 32,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 56,
+    "kind": "token",
+    "scale": 10.0,
+    "width": 56
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.patch_embed2": {
+   "bands": null,
+   "channels": 64,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 28,
+    "kind": "token",
+    "scale": 20.0,
+    "width": 28
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.patch_embed3": {
+   "bands": null,
+   "channels": 160,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 14,
+    "kind": "token",
+    "scale": 40.0,
+    "width": 14
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "encoder.patch_embed4": {
+   "bands": null,
+   "channels": 256,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 7,
+    "kind": "token",
+    "scale": 80.0,
+    "width": 7
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "input": {
+   "bands": [
+    "b0",
+    "b1"
+   ],
+   "channels": 2,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 224,
+    "kind": "grid",
+    "transform": [
+     2.5,
+     0,
+     1000,
+     0,
+     -2.5,
+     2000
+    ],
+    "width": 224
+   },
+   "layout": "R",
+   "window": null
+  },
+  "input_windows": {
+   "bands": null,
+   "channels": 2,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 224,
+    "kind": "token",
+    "scale": 2.5,
+    "width": 224
+   },
+   "layout": "W",
+   "window": 7
+  },
+  "logits": {
+   "bands": [
+    "c0",
+    "c1"
+   ],
+   "channels": 2,
+   "grid": {
+    "crs": "EPSG:3857",
+    "height": 224,
+    "kind": "grid",
+    "transform": [
+     2.5,
+     0,
+     1000,
+     0,
+     -2.5,
+     2000
+    ],
+    "width": 224
+   },
+   "layout": "R",
+   "window": null
+  }
+ },
+ "format": "native_ee.block_graph",
+ "inputs": [
+  "input"
+ ],
+ "name": "segformer_b0",
+ "nodes": [
+  {
+   "id": "input_windows",
+   "inputs": [
+    "input"
+   ],
+   "op": "relabel_to_windows",
+   "output": "input_windows",
+   "parameters": {},
+   "settings": {
+    "grid": {
+     "crs": "EPSG:3857",
+     "height": 224,
+     "kind": "token",
+     "scale": 2.5,
+     "width": 224
+    },
+    "window": 7
+   }
+  },
+  {
+   "id": "encoder.patch_embed1",
+   "inputs": [
+    "input_windows"
+   ],
+   "op": "overlap_embedding",
+   "output": "encoder.patch_embed1",
+   "parameters": {
+    "norm.bias": "encoder.patch_embed1.norm.bias",
+    "norm.weight": "encoder.patch_embed1.norm.weight",
+    "proj.bias": "encoder.patch_embed1.proj.bias",
+    "proj.weight": "encoder.patch_embed1.proj.weight"
+   },
+   "settings": {
+    "cin": 2,
+    "cout": 32,
+    "kernel": 7,
+    "stride": 4
+   }
+  },
+  {
+   "id": "encoder.block1.0",
+   "inputs": [
+    "encoder.patch_embed1"
+   ],
+   "op": "mit_block",
+   "output": "encoder.block1.0",
+   "parameters": {
+    "attn.kv.bias": "encoder.block1.0.attn.kv.bias",
+    "attn.kv.weight": "encoder.block1.0.attn.kv.weight",
+    "attn.norm.bias": "encoder.block1.0.attn.norm.bias",
+    "attn.norm.weight": "encoder.block1.0.attn.norm.weight",
+    "attn.proj.bias": "encoder.block1.0.attn.proj.bias",
+    "attn.proj.weight": "encoder.block1.0.attn.proj.weight",
+    "attn.q.bias": "encoder.block1.0.attn.q.bias",
+    "attn.q.weight": "encoder.block1.0.attn.q.weight",
+    "attn.sr.bias": "encoder.block1.0.attn.sr.bias",
+    "attn.sr.weight": "encoder.block1.0.attn.sr.weight",
+    "mlp.dwconv.dwconv.bias": "encoder.block1.0.mlp.dwconv.dwconv.bias",
+    "mlp.dwconv.dwconv.weight": "encoder.block1.0.mlp.dwconv.dwconv.weight",
+    "mlp.fc1.bias": "encoder.block1.0.mlp.fc1.bias",
+    "mlp.fc1.weight": "encoder.block1.0.mlp.fc1.weight",
+    "mlp.fc2.bias": "encoder.block1.0.mlp.fc2.bias",
+    "mlp.fc2.weight": "encoder.block1.0.mlp.fc2.weight",
+    "norm1.bias": "encoder.block1.0.norm1.bias",
+    "norm1.weight": "encoder.block1.0.norm1.weight",
+    "norm2.bias": "encoder.block1.0.norm2.bias",
+    "norm2.weight": "encoder.block1.0.norm2.weight"
+   },
+   "settings": {
+    "dim": 32,
+    "heads": 1,
+    "ratio": 8
+   }
+  },
+  {
+   "id": "encoder.block1.1",
+   "inputs": [
+    "encoder.block1.0"
+   ],
+   "op": "mit_block",
+   "output": "encoder.block1.1",
+   "parameters": {
+    "attn.kv.bias": "encoder.block1.1.attn.kv.bias",
+    "attn.kv.weight": "encoder.block1.1.attn.kv.weight",
+    "attn.norm.bias": "encoder.block1.1.attn.norm.bias",
+    "attn.norm.weight": "encoder.block1.1.attn.norm.weight",
+    "attn.proj.bias": "encoder.block1.1.attn.proj.bias",
+    "attn.proj.weight": "encoder.block1.1.attn.proj.weight",
+    "attn.q.bias": "encoder.block1.1.attn.q.bias",
+    "attn.q.weight": "encoder.block1.1.attn.q.weight",
+    "attn.sr.bias": "encoder.block1.1.attn.sr.bias",
+    "attn.sr.weight": "encoder.block1.1.attn.sr.weight",
+    "mlp.dwconv.dwconv.bias": "encoder.block1.1.mlp.dwconv.dwconv.bias",
+    "mlp.dwconv.dwconv.weight": "encoder.block1.1.mlp.dwconv.dwconv.weight",
+    "mlp.fc1.bias": "encoder.block1.1.mlp.fc1.bias",
+    "mlp.fc1.weight": "encoder.block1.1.mlp.fc1.weight",
+    "mlp.fc2.bias": "encoder.block1.1.mlp.fc2.bias",
+    "mlp.fc2.weight": "encoder.block1.1.mlp.fc2.weight",
+    "norm1.bias": "encoder.block1.1.norm1.bias",
+    "norm1.weight": "encoder.block1.1.norm1.weight",
+    "norm2.bias": "encoder.block1.1.norm2.bias",
+    "norm2.weight": "encoder.block1.1.norm2.weight"
+   },
+   "settings": {
+    "dim": 32,
+    "heads": 1,
+    "ratio": 8
+   }
+  },
+  {
+   "id": "encoder.norm1",
+   "inputs": [
+    "encoder.block1.1"
+   ],
+   "op": "channel_norm",
+   "output": "encoder.norm1",
+   "parameters": {
+    "bias": "encoder.norm1.bias",
+    "weight": "encoder.norm1.weight"
+   },
+   "settings": {
+    "channels": 32,
+    "eps": 1e-06
+   }
+  },
+  {
+   "id": "encoder.patch_embed2",
+   "inputs": [
+    "encoder.norm1"
+   ],
+   "op": "overlap_embedding",
+   "output": "encoder.patch_embed2",
+   "parameters": {
+    "norm.bias": "encoder.patch_embed2.norm.bias",
+    "norm.weight": "encoder.patch_embed2.norm.weight",
+    "proj.bias": "encoder.patch_embed2.proj.bias",
+    "proj.weight": "encoder.patch_embed2.proj.weight"
+   },
+   "settings": {
+    "cin": 32,
+    "cout": 64,
+    "kernel": 3,
+    "stride": 2
+   }
+  },
+  {
+   "id": "encoder.block2.0",
+   "inputs": [
+    "encoder.patch_embed2"
+   ],
+   "op": "mit_block",
+   "output": "encoder.block2.0",
+   "parameters": {
+    "attn.kv.bias": "encoder.block2.0.attn.kv.bias",
+    "attn.kv.weight": "encoder.block2.0.attn.kv.weight",
+    "attn.norm.bias": "encoder.block2.0.attn.norm.bias",
+    "attn.norm.weight": "encoder.block2.0.attn.norm.weight",
+    "attn.proj.bias": "encoder.block2.0.attn.proj.bias",
+    "attn.proj.weight": "encoder.block2.0.attn.proj.weight",
+    "attn.q.bias": "encoder.block2.0.attn.q.bias",
+    "attn.q.weight": "encoder.block2.0.attn.q.weight",
+    "attn.sr.bias": "encoder.block2.0.attn.sr.bias",
+    "attn.sr.weight": "encoder.block2.0.attn.sr.weight",
+    "mlp.dwconv.dwconv.bias": "encoder.block2.0.mlp.dwconv.dwconv.bias",
+    "mlp.dwconv.dwconv.weight": "encoder.block2.0.mlp.dwconv.dwconv.weight",
+    "mlp.fc1.bias": "encoder.block2.0.mlp.fc1.bias",
+    "mlp.fc1.weight": "encoder.block2.0.mlp.fc1.weight",
+    "mlp.fc2.bias": "encoder.block2.0.mlp.fc2.bias",
+    "mlp.fc2.weight": "encoder.block2.0.mlp.fc2.weight",
+    "norm1.bias": "encoder.block2.0.norm1.bias",
+    "norm1.weight": "encoder.block2.0.norm1.weight",
+    "norm2.bias": "encoder.block2.0.norm2.bias",
+    "norm2.weight": "encoder.block2.0.norm2.weight"
+   },
+   "settings": {
+    "dim": 64,
+    "heads": 2,
+    "ratio": 4
+   }
+  },
+  {
+   "id": "encoder.block2.1",
+   "inputs": [
+    "encoder.block2.0"
+   ],
+   "op": "mit_block",
+   "output": "encoder.block2.1",
+   "parameters": {
+    "attn.kv.bias": "encoder.block2.1.attn.kv.bias",
+    "attn.kv.weight": "encoder.block2.1.attn.kv.weight",
+    "attn.norm.bias": "encoder.block2.1.attn.norm.bias",
+    "attn.norm.weight": "encoder.block2.1.attn.norm.weight",
+    "attn.proj.bias": "encoder.block2.1.attn.proj.bias",
+    "attn.proj.weight": "encoder.block2.1.attn.proj.weight",
+    "attn.q.bias": "encoder.block2.1.attn.q.bias",
+    "attn.q.weight": "encoder.block2.1.attn.q.weight",
+    "attn.sr.bias": "encoder.block2.1.attn.sr.bias",
+    "attn.sr.weight": "encoder.block2.1.attn.sr.weight",
+    "mlp.dwconv.dwconv.bias": "encoder.block2.1.mlp.dwconv.dwconv.bias",
+    "mlp.dwconv.dwconv.weight": "encoder.block2.1.mlp.dwconv.dwconv.weight",
+    "mlp.fc1.bias": "encoder.block2.1.mlp.fc1.bias",
+    "mlp.fc1.weight": "encoder.block2.1.mlp.fc1.weight",
+    "mlp.fc2.bias": "encoder.block2.1.mlp.fc2.bias",
+    "mlp.fc2.weight": "encoder.block2.1.mlp.fc2.weight",
+    "norm1.bias": "encoder.block2.1.norm1.bias",
+    "norm1.weight": "encoder.block2.1.norm1.weight",
+    "norm2.bias": "encoder.block2.1.norm2.bias",
+    "norm2.weight": "encoder.block2.1.norm2.weight"
+   },
+   "settings": {
+    "dim": 64,
+    "heads": 2,
+    "ratio": 4
+   }
+  },
+  {
+   "id": "encoder.norm2",
+   "inputs": [
+    "encoder.block2.1"
+   ],
+   "op": "channel_norm",
+   "output": "encoder.norm2",
+   "parameters": {
+    "bias": "encoder.norm2.bias",
+    "weight": "encoder.norm2.weight"
+   },
+   "settings": {
+    "channels": 64,
+    "eps": 1e-06
+   }
+  },
+  {
+   "id": "encoder.patch_embed3",
+   "inputs": [
+    "encoder.norm2"
+   ],
+   "op": "overlap_embedding",
+   "output": "encoder.patch_embed3",
+   "parameters": {
+    "norm.bias": "encoder.patch_embed3.norm.bias",
+    "norm.weight": "encoder.patch_embed3.norm.weight",
+    "proj.bias": "encoder.patch_embed3.proj.bias",
+    "proj.weight": "encoder.patch_embed3.proj.weight"
+   },
+   "settings": {
+    "cin": 64,
+    "cout": 160,
+    "kernel": 3,
+    "stride": 2
+   }
+  },
+  {
+   "id": "encoder.block3.0",
+   "inputs": [
+    "encoder.patch_embed3"
+   ],
+   "op": "mit_block",
+   "output": "encoder.block3.0",
+   "parameters": {
+    "attn.kv.bias": "encoder.block3.0.attn.kv.bias",
+    "attn.kv.weight": "encoder.block3.0.attn.kv.weight",
+    "attn.norm.bias": "encoder.block3.0.attn.norm.bias",
+    "attn.norm.weight": "encoder.block3.0.attn.norm.weight",
+    "attn.proj.bias": "encoder.block3.0.attn.proj.bias",
+    "attn.proj.weight": "encoder.block3.0.attn.proj.weight",
+    "attn.q.bias": "encoder.block3.0.attn.q.bias",
+    "attn.q.weight": "encoder.block3.0.attn.q.weight",
+    "attn.sr.bias": "encoder.block3.0.attn.sr.bias",
+    "attn.sr.weight": "encoder.block3.0.attn.sr.weight",
+    "mlp.dwconv.dwconv.bias": "encoder.block3.0.mlp.dwconv.dwconv.bias",
+    "mlp.dwconv.dwconv.weight": "encoder.block3.0.mlp.dwconv.dwconv.weight",
+    "mlp.fc1.bias": "encoder.block3.0.mlp.fc1.bias",
+    "mlp.fc1.weight": "encoder.block3.0.mlp.fc1.weight",
+    "mlp.fc2.bias": "encoder.block3.0.mlp.fc2.bias",
+    "mlp.fc2.weight": "encoder.block3.0.mlp.fc2.weight",
+    "norm1.bias": "encoder.block3.0.norm1.bias",
+    "norm1.weight": "encoder.block3.0.norm1.weight",
+    "norm2.bias": "encoder.block3.0.norm2.bias",
+    "norm2.weight": "encoder.block3.0.norm2.weight"
+   },
+   "settings": {
+    "dim": 160,
+    "heads": 5,
+    "ratio": 2
+   }
+  },
+  {
+   "id": "encoder.block3.1",
+   "inputs": [
+    "encoder.block3.0"
+   ],
+   "op": "mit_block",
+   "output": "encoder.block3.1",
+   "parameters": {
+    "attn.kv.bias": "encoder.block3.1.attn.kv.bias",
+    "attn.kv.weight": "encoder.block3.1.attn.kv.weight",
+    "attn.norm.bias": "encoder.block3.1.attn.norm.bias",
+    "attn.norm.weight": "encoder.block3.1.attn.norm.weight",
+    "attn.proj.bias": "encoder.block3.1.attn.proj.bias",
+    "attn.proj.weight": "encoder.block3.1.attn.proj.weight",
+    "attn.q.bias": "encoder.block3.1.attn.q.bias",
+    "attn.q.weight": "encoder.block3.1.attn.q.weight",
+    "attn.sr.bias": "encoder.block3.1.attn.sr.bias",
+    "attn.sr.weight": "encoder.block3.1.attn.sr.weight",
+    "mlp.dwconv.dwconv.bias": "encoder.block3.1.mlp.dwconv.dwconv.bias",
+    "mlp.dwconv.dwconv.weight": "encoder.block3.1.mlp.dwconv.dwconv.weight",
+    "mlp.fc1.bias": "encoder.block3.1.mlp.fc1.bias",
+    "mlp.fc1.weight": "encoder.block3.1.mlp.fc1.weight",
+    "mlp.fc2.bias": "encoder.block3.1.mlp.fc2.bias",
+    "mlp.fc2.weight": "encoder.block3.1.mlp.fc2.weight",
+    "norm1.bias": "encoder.block3.1.norm1.bias",
+    "norm1.weight": "encoder.block3.1.norm1.weight",
+    "norm2.bias": "encoder.block3.1.norm2.bias",
+    "norm2.weight": "encoder.block3.1.norm2.weight"
+   },
+   "settings": {
+    "dim": 160,
+    "heads": 5,
+    "ratio": 2
+   }
+  },
+  {
+   "id": "encoder.norm3",
+   "inputs": [
+    "encoder.block3.1"
+   ],
+   "op": "channel_norm",
+   "output": "encoder.norm3",
+   "parameters": {
+    "bias": "encoder.norm3.bias",
+    "weight": "encoder.norm3.weight"
+   },
+   "settings": {
+    "channels": 160,
+    "eps": 1e-06
+   }
+  },
+  {
+   "id": "encoder.patch_embed4",
+   "inputs": [
+    "encoder.norm3"
+   ],
+   "op": "overlap_embedding",
+   "output": "encoder.patch_embed4",
+   "parameters": {
+    "norm.bias": "encoder.patch_embed4.norm.bias",
+    "norm.weight": "encoder.patch_embed4.norm.weight",
+    "proj.bias": "encoder.patch_embed4.proj.bias",
+    "proj.weight": "encoder.patch_embed4.proj.weight"
+   },
+   "settings": {
+    "cin": 160,
+    "cout": 256,
+    "kernel": 3,
+    "stride": 2
+   }
+  },
+  {
+   "id": "encoder.block4.0",
+   "inputs": [
+    "encoder.patch_embed4"
+   ],
+   "op": "mit_block",
+   "output": "encoder.block4.0",
+   "parameters": {
+    "attn.kv.bias": "encoder.block4.0.attn.kv.bias",
+    "attn.kv.weight": "encoder.block4.0.attn.kv.weight",
+    "attn.proj.bias": "encoder.block4.0.attn.proj.bias",
+    "attn.proj.weight": "encoder.block4.0.attn.proj.weight",
+    "attn.q.bias": "encoder.block4.0.attn.q.bias",
+    "attn.q.weight": "encoder.block4.0.attn.q.weight",
+    "mlp.dwconv.dwconv.bias": "encoder.block4.0.mlp.dwconv.dwconv.bias",
+    "mlp.dwconv.dwconv.weight": "encoder.block4.0.mlp.dwconv.dwconv.weight",
+    "mlp.fc1.bias": "encoder.block4.0.mlp.fc1.bias",
+    "mlp.fc1.weight": "encoder.block4.0.mlp.fc1.weight",
+    "mlp.fc2.bias": "encoder.block4.0.mlp.fc2.bias",
+    "mlp.fc2.weight": "encoder.block4.0.mlp.fc2.weight",
+    "norm1.bias": "encoder.block4.0.norm1.bias",
+    "norm1.weight": "encoder.block4.0.norm1.weight",
+    "norm2.bias": "encoder.block4.0.norm2.bias",
+    "norm2.weight": "encoder.block4.0.norm2.weight"
+   },
+   "settings": {
+    "dim": 256,
+    "heads": 8,
+    "ratio": 1
+   }
+  },
+  {
+   "id": "encoder.block4.1",
+   "inputs": [
+    "encoder.block4.0"
+   ],
+   "op": "mit_block",
+   "output": "encoder.block4.1",
+   "parameters": {
+    "attn.kv.bias": "encoder.block4.1.attn.kv.bias",
+    "attn.kv.weight": "encoder.block4.1.attn.kv.weight",
+    "attn.proj.bias": "encoder.block4.1.attn.proj.bias",
+    "attn.proj.weight": "encoder.block4.1.attn.proj.weight",
+    "attn.q.bias": "encoder.block4.1.attn.q.bias",
+    "attn.q.weight": "encoder.block4.1.attn.q.weight",
+    "mlp.dwconv.dwconv.bias": "encoder.block4.1.mlp.dwconv.dwconv.bias",
+    "mlp.dwconv.dwconv.weight": "encoder.block4.1.mlp.dwconv.dwconv.weight",
+    "mlp.fc1.bias": "encoder.block4.1.mlp.fc1.bias",
+    "mlp.fc1.weight": "encoder.block4.1.mlp.fc1.weight",
+    "mlp.fc2.bias": "encoder.block4.1.mlp.fc2.bias",
+    "mlp.fc2.weight": "encoder.block4.1.mlp.fc2.weight",
+    "norm1.bias": "encoder.block4.1.norm1.bias",
+    "norm1.weight": "encoder.block4.1.norm1.weight",
+    "norm2.bias": "encoder.block4.1.norm2.bias",
+    "norm2.weight": "encoder.block4.1.norm2.weight"
+   },
+   "settings": {
+    "dim": 256,
+    "heads": 8,
+    "ratio": 1
+   }
+  },
+  {
+   "id": "encoder.norm4",
+   "inputs": [
+    "encoder.block4.1"
+   ],
+   "op": "channel_norm",
+   "output": "encoder.norm4",
+   "parameters": {
+    "bias": "encoder.norm4.bias",
+    "weight": "encoder.norm4.weight"
+   },
+   "settings": {
+    "channels": 256,
+    "eps": 1e-06
+   }
+  },
+  {
+   "id": "decoder.pyramid",
+   "inputs": [
+    "encoder.norm1",
+    "encoder.norm2",
+    "encoder.norm3",
+    "encoder.norm4"
+   ],
+   "op": "project_pyramid",
+   "output": "decoder.pyramid",
+   "parameters": {
+    "projections.0.bias": "decoder.mlp_stage.0.linear.bias",
+    "projections.0.weight": "decoder.mlp_stage.0.linear.weight",
+    "projections.1.bias": "decoder.mlp_stage.1.linear.bias",
+    "projections.1.weight": "decoder.mlp_stage.1.linear.weight",
+    "projections.2.bias": "decoder.mlp_stage.2.linear.bias",
+    "projections.2.weight": "decoder.mlp_stage.2.linear.weight",
+    "projections.3.bias": "decoder.mlp_stage.3.linear.bias",
+    "projections.3.weight": "decoder.mlp_stage.3.linear.weight"
+   },
+   "settings": {
+    "channels": 256
+   }
+  },
+  {
+   "id": "decoder.head",
+   "inputs": [
+    "decoder.pyramid"
+   ],
+   "op": "fuse_head",
+   "output": "decoder.head",
+   "parameters": {
+    "fusion.weight": "decoder.fuse_stage.0.weight",
+    "head.bias": "segmentation_head.0.bias",
+    "head.weight": "segmentation_head.0.weight",
+    "norm.bias": "decoder.fuse_stage.1.bias",
+    "norm.running_mean": "decoder.fuse_stage.1.running_mean",
+    "norm.running_var": "decoder.fuse_stage.1.running_var",
+    "norm.weight": "decoder.fuse_stage.1.weight"
+   },
+   "settings": {
+    "channels": 256,
+    "classes": 2,
+    "eps": 1e-05
+   }
+  },
+  {
+   "id": "logits",
+   "inputs": [
+    "decoder.head"
+   ],
+   "op": "relabel_from_windows",
+   "output": "logits",
+   "parameters": {},
+   "settings": {
+    "bands": [
+     "c0",
+     "c1"
+    ],
+    "grid": {
+     "crs": "EPSG:3857",
+     "height": 224,
+     "kind": "grid",
+     "transform": [
+      2.5,
+      0,
+      1000,
+      0,
+      -2.5,
+      2000
+     ],
+     "width": 224
+    }
+   }
+  }
+ ],
+ "outputs": [
+  "logits"
+ ],
+ "version": 1
+}

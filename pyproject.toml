@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=83"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tensor-ee"
+version = "0.1.0"
+description = "Experimental building blocks for running pretrained PyTorch models natively in Google Earth Engine: a restricted CNN compiler (the SegWater U-Net), a converter for supported attention models (SMP SegFormer-B0; SMP UPerNet with timm's Swin-T), and a planner and runner for staged exports."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Noel Ivan Ulloa"}]
+requires-python = ">=3.11"
+dependencies = ["earthengine-api>=1.7.0", "torch>=2.10", "numpy>=1.26"]
+
+[project.urls]
+Repository = "https://github.com/noelEOS/tensor-ee"
+Issues = "https://github.com/noelEOS/tensor-ee/issues"
+
+[project.optional-dependencies]
+test = ["pytest>=9.0.3"]
+resnet = ["torchvision>=0.20"]
+onnx = ["onnx>=1.22", "onnxruntime>=1.20"]
+segwater = ["segmentation-models-pytorch==0.5.0"]
+swin = ["segmentation-models-pytorch==0.5.0", "timm==1.0.30"]
+plot = ["matplotlib>=3.8"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.cmdclass]
+build_py = "build_support.RuntimeOnlyBuild"
+
+[tool.setuptools.packages.find]
+include = ["tensor_ee*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

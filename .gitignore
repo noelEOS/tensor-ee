@@ -1,0 +1,37 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.DS_Store
+checkpoints/
+downloads/
+build/
+dist/
+*.egg-info/
+release_runs/
+# Browser demo job records and prepared requests (demos/browser, --state-dir default)
+demos/browser/state/
+# Local credentials never belong in the tree (S02 A-02)
+.env
+.env.*
+*.pem
+*.key
+*service-account*.json
+*credentials*.json
+:memory:.ses
+demos/code_editor/node_modules/
+# Local leftovers in folders archived at research-archive-2026-10-12 (L06b).
+# Their tracked files moved to the archive tag or docs/history/; developer
+# checkouts may still hold git-ignored data there. New code must not use these names.
+/ee_attention/
+/swin_block/
+/swin_pair/
+/swin_hierarchy/
+/swin_encoder/
+/swin_image_encoder/
+/upernet/
+/experiments/
+/demo/
+/demo_state/
+/code_editor/
+/results/

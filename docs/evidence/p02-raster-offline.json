@@ -1,0 +1,1585 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "43c6c02579673cb4ef26273e7dde3ac7ce67ddba",
+  "dirty": false,
+  "native_ee": "native_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 14,
+      "requests": 25,
+      "values": 13710,
+      "payload_bytes": 54840,
+      "request_bytes": 289702,
+      "max_values": 2304,
+      "max_request_bytes": 17073,
+      "max_bands": 6,
+      "embedded_constants": 0,
+      "inline_values": 8084,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "raster/pool2d/avg-k2-s2",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 2,
+          "stride": 2,
+          "padding": 0
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output": [
+            8,
+            8,
+            2
+          ]
+        },
+        "seed": 2,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.AvgPool2d(2, 2)",
+        "mirror": null,
+        "history": "docs/history/cnn/results/primitives_float32.json, case average_pool_nearest (AvgPool2d 2 x 2 on 16 x 16): pool pass, max 7.45e-9 vs PyTorch float32",
+        "calibration": true,
+        "notes": "No exact NumPy mirror of the R path exists: compared with PyTorch only."
+      },
+      "inputs_sha256": "4baee82d66dc784102de3d22adff79796001eef123908243a35afddb997142de",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 192,
+          "payload_bytes": 768,
+          "request_bytes": 14877,
+          "graph_sha256": "1e16cd636714f869414c8e921b62999d5702d00640034d75cd2c0738939e55cc",
+          "graph_bytes": 14649,
+          "embedded_constants": 0,
+          "inline_values": 512
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 768,
+          "payload_bytes": 3072,
+          "request_bytes": 12313,
+          "graph_sha256": "a70404994d075716519b00f1314024f30f936a940dafdeeba04f81bc66630f31",
+          "graph_bytes": 12083,
+          "embedded_constants": 0,
+          "inline_values": 512
+        }
+      ],
+      "errors": [],
+      "seconds": 0.028,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/max-k3-s2-p1",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 2,
+          "padding": 1
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output": [
+            8,
+            8,
+            2
+          ]
+        },
+        "seed": 3,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.MaxPool2d(3, 2, 1)",
+        "mirror": null,
+        "history": "docs/history/cnn/results/resnet_primitives.json, cases max3_stride2_padded_even (MaxPool2d 3 x 3 stride 2 padding 1 on 16 x 16): pass, max 0, and max3_stride2_padded_negative_odd (negative inputs, 17 x 15): pass, max 5.2e-8, from inputs that were not float32-exact (input error 5.96e-8)",
+        "calibration": true,
+        "notes": "Selection only: Earth Engine must equal PyTorch bit for bit (tolerance 0). The inputs are all negative, so a pad that contributed (a zero) would change every border window."
+      },
+      "inputs_sha256": "ad3434668f58c2d7e862d47f7a4547dd6e96ba9c8105ca55a5754bea73ebc4ec",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 192,
+          "payload_bytes": 768,
+          "request_bytes": 17073,
+          "graph_sha256": "dbd4a41c0594e85fc6dcba87da2f9eb4434eb19d3160cacd35a2d93b5f3c5e33",
+          "graph_bytes": 16845,
+          "embedded_constants": 0,
+          "inline_values": 512
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 768,
+          "payload_bytes": 3072,
+          "request_bytes": 12365,
+          "graph_sha256": "d7df8022f8afd8464fd416aec0d745d51bb51d6bf5550151a8d473a976a242ef",
+          "graph_bytes": 12135,
+          "embedded_constants": 0,
+          "inline_values": 512
+        }
+      ],
+      "errors": [],
+      "seconds": 0.027,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/nearest_upsample/f2",
+        "lane": "raster",
+        "block": "nearest_upsample",
+        "parts": [],
+        "settings": {
+          "scale_factor": 2
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            8,
+            2
+          ],
+          "output": [
+            16,
+            16,
+            2
+          ]
+        },
+        "seed": 4,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode='nearest')",
+        "mirror": null,
+        "history": "docs/history/cnn/results/primitives_float32.json, case max_pool_nearest (nearest x2 to 16 x 16): up pass, max 0 vs PyTorch float32",
+        "calibration": true,
+        "notes": "A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0)."
+      },
+      "inputs_sha256": "eb028add8c366298d5de27cf2f44db2e6895291d838463c37a22bc22f75b70bb",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0.0,
+              "translateX": 1000,
+              "shearY": 0.0,
+              "scaleY": -20.0,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 768,
+          "payload_bytes": 3072,
+          "request_bytes": 9936,
+          "graph_sha256": "6f2a9d5a8375d0191055dea2bfc38804f9d65e66dd7ab61f82ca401756652556",
+          "graph_bytes": 9698,
+          "embedded_constants": 0,
+          "inline_values": 128
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 192,
+          "payload_bytes": 768,
+          "request_bytes": 7615,
+          "graph_sha256": "0f6382a738af1fa1b4b55bcc09b6e9202ceb2bbb7eb95e32dd7c356326d029ef",
+          "graph_bytes": 7387,
+          "embedded_constants": 0,
+          "inline_values": 128
+        }
+      ],
+      "errors": [],
+      "seconds": 0.032,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/max-k2-s2",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 2,
+          "stride": 2,
+          "padding": 0
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            10,
+            14,
+            2
+          ],
+          "output": [
+            5,
+            7,
+            2
+          ]
+        },
+        "seed": 21,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.MaxPool2d(2)",
+        "mirror": null,
+        "history": "docs/history/cnn/results/primitives_float32.json, case max_pool_nearest (MaxPool2d 2 x 2 on 16 x 16): pool pass, max 0 vs PyTorch float32",
+        "calibration": false,
+        "notes": "Selection only: Earth Engine must equal PyTorch bit for bit (tolerance 0)."
+      },
+      "inputs_sha256": "da494e0455268dae920ce0a5065ab06bcf20f81087b19a0315c72be5ea95f82c",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 105,
+          "payload_bytes": 420,
+          "request_bytes": 12136,
+          "graph_sha256": "b5ccf549291d0845dd881da79ff00e2a3ebc1ac0b1a171e0a2b7cf950f7ecbe5",
+          "graph_bytes": 11908,
+          "embedded_constants": 0,
+          "inline_values": 280
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 420,
+          "payload_bytes": 1680,
+          "request_bytes": 9520,
+          "graph_sha256": "aa325a241924c29a01f637387a6e4144293cc5efbbc7636d349168de04661317",
+          "graph_bytes": 9290,
+          "embedded_constants": 0,
+          "inline_values": 280
+        }
+      ],
+      "errors": [],
+      "seconds": 0.031,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/avg-k3-s3",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 3,
+          "padding": 0
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            12,
+            15,
+            2
+          ],
+          "output": [
+            4,
+            5,
+            2
+          ]
+        },
+        "seed": 22,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.AvgPool2d(3)",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "An average: within 1e-4 of PyTorch."
+      },
+      "inputs_sha256": "848c63787176c5ea38a7476e717d7c756c695bc2bc307a3fb4295d1bbaa3d953",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 30,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -30,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 60,
+          "payload_bytes": 240,
+          "request_bytes": 13123,
+          "graph_sha256": "2f61022b8aa34f6d48d03429f7ab23d3c07fa8d1f98e08344104401ea8e2ea13",
+          "graph_bytes": 12895,
+          "embedded_constants": 0,
+          "inline_values": 360
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 15,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 15,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 540,
+          "payload_bytes": 2160,
+          "request_bytes": 10506,
+          "graph_sha256": "79d0e2021d0f831c38b87c94cc87627ccd60259f709c8b6636320588197bc980",
+          "graph_bytes": 10276,
+          "embedded_constants": 0,
+          "inline_values": 360
+        }
+      ],
+      "errors": [],
+      "seconds": 0.031,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/max-k3-s3",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 3,
+          "padding": 0
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            12,
+            15,
+            2
+          ],
+          "output": [
+            4,
+            5,
+            2
+          ]
+        },
+        "seed": 23,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.MaxPool2d(3)",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "Selection only: Earth Engine must equal PyTorch bit for bit (tolerance 0)."
+      },
+      "inputs_sha256": "45b17071a93c5cc6a7f9fcc1ebce6e38703715ca35ef214eeba5df6d471dab72",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 30,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -30,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 60,
+          "payload_bytes": 240,
+          "request_bytes": 13132,
+          "graph_sha256": "d28838214a8bf1bc564e03a729c6e8e8961f2739b07a0ecf1e3e364774599634",
+          "graph_bytes": 12904,
+          "embedded_constants": 0,
+          "inline_values": 360
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 15,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 15,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 540,
+          "payload_bytes": 2160,
+          "request_bytes": 10516,
+          "graph_sha256": "cf034abdf159afd576d0ecafbf2c8488671f5b2a246866b806e4ca0a8aa4ebb6",
+          "graph_bytes": 10286,
+          "embedded_constants": 0,
+          "inline_values": 360
+        }
+      ],
+      "errors": [],
+      "seconds": 0.031,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/avg-k4-s4",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 4,
+          "stride": 4,
+          "padding": 0
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            12,
+            2
+          ],
+          "output": [
+            4,
+            3,
+            2
+          ]
+        },
+        "seed": 24,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.AvgPool2d(4)",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "An average: within 1e-4 of PyTorch."
+      },
+      "inputs_sha256": "373383272b9e9b4542ee455b8156f11fb0a7c2aec0a2ee7cd766186078ab7525",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 3,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 3,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 36,
+          "payload_bytes": 144,
+          "request_bytes": 13417,
+          "graph_sha256": "322cbf4d0aa0932385611eaed5ffef250d92cf8c2fa528ca89d1339edceb7450",
+          "graph_bytes": 13189,
+          "embedded_constants": 0,
+          "inline_values": 384
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 12,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 12,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 576,
+          "payload_bytes": 2304,
+          "request_bytes": 10800,
+          "graph_sha256": "1dd3a583aa0947cf898fa252e8d40dae9ca1007446cea8ae950f68c4d2087af6",
+          "graph_bytes": 10570,
+          "embedded_constants": 0,
+          "inline_values": 384
+        }
+      ],
+      "errors": [],
+      "seconds": 0.031,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/max-k4-s4",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 4,
+          "stride": 4,
+          "padding": 0
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            12,
+            2
+          ],
+          "output": [
+            4,
+            3,
+            2
+          ]
+        },
+        "seed": 25,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.MaxPool2d(4)",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "Selection only: Earth Engine must equal PyTorch bit for bit (tolerance 0)."
+      },
+      "inputs_sha256": "ee43356f4c538396841f70f0f7059cba269f7ae12d583b7fb389acf243835e15",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 3,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 3,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 36,
+          "payload_bytes": 144,
+          "request_bytes": 13427,
+          "graph_sha256": "e82e31a7d17ef171b38bc4c295b66712c534c9175f94fac807708eb6a713f326",
+          "graph_bytes": 13199,
+          "embedded_constants": 0,
+          "inline_values": 384
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 12,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 12,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 576,
+          "payload_bytes": 2304,
+          "request_bytes": 10811,
+          "graph_sha256": "92854815d06dcd02e636a37fe6b57ecac31f5c5160d8f38011ed2e82d2095172",
+          "graph_bytes": 10581,
+          "embedded_constants": 0,
+          "inline_values": 384
+        }
+      ],
+      "errors": [],
+      "seconds": 0.03,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/max-k3-s1-p1",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 1,
+          "padding": 1
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            12,
+            15,
+            2
+          ],
+          "output": [
+            12,
+            15,
+            2
+          ]
+        },
+        "seed": 26,
+        "tolerance": 0.0,
+        "requests": 1,
+        "reference": "torch.nn.MaxPool2d(3, 1, 1)",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "Selection only: Earth Engine must equal PyTorch bit for bit (tolerance 0). The inputs are all negative, so a pad that contributed (a zero) would change every border pixel."
+      },
+      "inputs_sha256": "203c274b7e54cf74002e800aa8f95bdcb5f4f163b1e2ae34c16f152ed1ad2ed8",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 15,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 15,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 6,
+          "values": 1080,
+          "payload_bytes": 4320,
+          "request_bytes": 12727,
+          "graph_sha256": "986b7ada1719e0aebdb1cc4c51c7db6aeeaa4fd7af2f4180287c998555c64db9",
+          "graph_bytes": 12497,
+          "embedded_constants": 0,
+          "inline_values": 360
+        }
+      ],
+      "errors": [],
+      "seconds": 0.03,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/avg-k3-s1-p1-incl",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 1,
+          "padding": 1,
+          "count_include_pad": true
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            12,
+            15,
+            2
+          ],
+          "output": [
+            12,
+            15,
+            2
+          ]
+        },
+        "seed": 27,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.AvgPool2d(3, 1, 1, count_include_pad=True)",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "count_include_pad=True: PyTorch divides the in-bounds sum by 9. The inputs are positive, so the other divisor rule fails every border pixel."
+      },
+      "inputs_sha256": "573d8f87060e963fbfb0efe93fe95ef24ceb26b56128c95df693faa4ea18f641",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 15,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 15,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 6,
+          "values": 1080,
+          "payload_bytes": 4320,
+          "request_bytes": 12525,
+          "graph_sha256": "b327d8e490202f306b42ab33240e4077933449adac07a0385c71a2c3671ecc59",
+          "graph_bytes": 12295,
+          "embedded_constants": 0,
+          "inline_values": 360
+        }
+      ],
+      "errors": [],
+      "seconds": 0.03,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/avg-k3-s1-p1-excl",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 1,
+          "padding": 1,
+          "count_include_pad": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            12,
+            15,
+            2
+          ],
+          "output": [
+            12,
+            15,
+            2
+          ]
+        },
+        "seed": 28,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.AvgPool2d(3, 1, 1, count_include_pad=False)",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "count_include_pad=False: PyTorch divides by the in-bounds count (4 at a corner, 6 on an edge). The inputs are positive, so the other divisor rule fails every border pixel."
+      },
+      "inputs_sha256": "bbeea2d896da5d03d9b6af828b01f7b12d78c2d8dab3d37d4545f7a930be04bb",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 15,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 15,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 6,
+          "values": 1080,
+          "payload_bytes": 4320,
+          "request_bytes": 12300,
+          "graph_sha256": "4b60a914879594c6116f80330e8ccd0e647a02608a061b06aec061ad35406c87",
+          "graph_bytes": 12070,
+          "embedded_constants": 0,
+          "inline_values": 360
+        }
+      ],
+      "errors": [],
+      "seconds": 0.031,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/pool2d/max-k3-s2-p1-odd",
+        "lane": "raster",
+        "block": "pool2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 2,
+          "padding": 1
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            13,
+            15,
+            2
+          ],
+          "output": [
+            7,
+            8,
+            2
+          ]
+        },
+        "seed": 31,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.MaxPool2d(3, 2, 1)",
+        "mirror": null,
+        "history": "docs/history/cnn/results/resnet_primitives.json, case max3_stride2_padded_negative_odd (negative inputs, 17 x 15): pass, max 5.2e-8, from inputs that were not float32-exact (input error 5.96e-8)",
+        "calibration": false,
+        "notes": "Selection only: Earth Engine must equal PyTorch bit for bit (tolerance 0). The inputs are all negative, so a pad that contributed (a zero) would change every border pixel."
+      },
+      "inputs_sha256": "059cdc72cc6e75787eb7830c2499c0c671b45b00df4a7ef958ecf7410f15918c",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 168,
+          "payload_bytes": 672,
+          "request_bytes": 15754,
+          "graph_sha256": "70b45aeae8cfeb6671b853face6d0dbb930aa39cdf30dac49cb1ebbebed57609",
+          "graph_bytes": 15526,
+          "embedded_constants": 0,
+          "inline_values": 390
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 15,
+              "height": 13
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 15,
+          "height": 13,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 585,
+          "payload_bytes": 2340,
+          "request_bytes": 10929,
+          "graph_sha256": "eeceeb24524e39297a6e1417c0f228091c0eab401e764de828144d5e254107ee",
+          "graph_bytes": 10699,
+          "embedded_constants": 0,
+          "inline_values": 390
+        }
+      ],
+      "errors": [],
+      "seconds": 0.031,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/nearest_upsample/f3",
+        "lane": "raster",
+        "block": "nearest_upsample",
+        "parts": [],
+        "settings": {
+          "scale_factor": 3
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            6,
+            2
+          ],
+          "output": [
+            24,
+            18,
+            2
+          ]
+        },
+        "seed": 29,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=3, mode='nearest')",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0). Input grid 30 m, output grid 10 m."
+      },
+      "inputs_sha256": "1998bb1cf6a0747d3a3a3d0ea79d5ad39be9a267a4987ec2a2c22ae7918a46c9",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 18,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0.0,
+              "translateX": 1000,
+              "shearY": 0.0,
+              "scaleY": -10.0,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 18,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 1296,
+          "payload_bytes": 5184,
+          "request_bytes": 9669,
+          "graph_sha256": "664ca3aac0164de3e826bf06956d68448e290ae7a2c1c8063a96f141ba4986c3",
+          "graph_bytes": 9431,
+          "embedded_constants": 0,
+          "inline_values": 96
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 6,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 30,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -30,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 6,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 144,
+          "payload_bytes": 576,
+          "request_bytes": 7294,
+          "graph_sha256": "49cbcc8925a5e78d793558de460250386ed8be21c910c056e79bc7e69b690a6a",
+          "graph_bytes": 7066,
+          "embedded_constants": 0,
+          "inline_values": 96
+        }
+      ],
+      "errors": [],
+      "seconds": 0.031,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/nearest_upsample/f4",
+        "lane": "raster",
+        "block": "nearest_upsample",
+        "parts": [],
+        "settings": {
+          "scale_factor": 4
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            6,
+            2
+          ],
+          "output": [
+            32,
+            24,
+            2
+          ]
+        },
+        "seed": 30,
+        "tolerance": 0.0,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=4, mode='nearest')",
+        "mirror": null,
+        "history": "none: a new setting (P02)",
+        "calibration": false,
+        "notes": "A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0). Input grid 40 m, output grid 10 m."
+      },
+      "inputs_sha256": "1667d68069cc695112027a4dea89e8e332b757af2da7bdd1e06fd20389e3c533",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 32
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0.0,
+              "translateX": 1000,
+              "shearY": 0.0,
+              "scaleY": -10.0,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 32,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 2304,
+          "payload_bytes": 9216,
+          "request_bytes": 9656,
+          "graph_sha256": "5641942165cde99793af8c7ff7209cc713e3132fd6befdf7fa40dd03023ad86c",
+          "graph_bytes": 9418,
+          "embedded_constants": 0,
+          "inline_values": 96
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 6,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 6,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 144,
+          "payload_bytes": 576,
+          "request_bytes": 7281,
+          "graph_sha256": "d5eab056be8bf7b146cd68ab4ae9babf1b2025cf6b7330683699170ed17e77dd",
+          "graph_bytes": 7053,
+          "embedded_constants": 0,
+          "inline_values": 96
+        }
+      ],
+      "errors": [],
+      "seconds": 0.03,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

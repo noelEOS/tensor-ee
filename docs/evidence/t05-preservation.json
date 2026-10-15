@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Offline exact graph/coefficient preservation; no numerical execution, remote inspection or cloud call",
+  "cloud_calls": 0,
+  "accepted_base": "ca9827dbd2d1b5116eca45b1d030a8525696d156",
+  "baseline_runtime_identical_to_accepted_base": true,
+  "trained": {
+    "baseline_revision": "e537904736d7f47dda2dbbef9b1086f084795371",
+    "candidate_revision": "328e4d67a15dc9fe0106299d1fb9595a99afa7c4",
+    "compared_sections": [
+      "resources",
+      "unet",
+      "swin"
+    ],
+    "graph_count": 8,
+    "unet_effective_convolutions": 31,
+    "largest_unet_effective_coefficient": 4.360016822814941,
+    "result": "All serialized preprocessing/execution graphs, weight identities, asset mappings and checkpoint/manifest hashes are equal."
+  },
+  "ordinary_inline": {
+    "baseline_revision": "6f5aa160c6691bbbe9b44138aef735b5167d24fa",
+    "candidate_revision": "b12ad29f768c322255e629eba8081d32e46be196",
+    "cases": [
+      "nonwater",
+      "tiny_unet",
+      "conv_bn_pointwise_softmax"
+    ],
+    "variants": 6,
+    "result": "All serialized outputs and diagnostic nodes, grids, ordered bands, folded keys and effective coefficient identities are equal."
+  },
+  "environment": {
+    "python": "<checkout>/.venv/bin/python",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "artifacts": [
+    {
+      "path": "<checkout>/downloads/t05_integration/trained-baseline.json",
+      "sha256": "bbea158327b3b2b546658c47ff96ca52af01188c14216e81ede7ffbaf4fd7130",
+      "bytes": 10003
+    },
+    {
+      "path": "<checkout>/downloads/t05_integration/trained-candidate.json",
+      "sha256": "065d041536861e4f4579ad3a80f3df591fa385858bf8d6ecab5119e135d47662",
+      "bytes": 10013
+    },
+    {
+      "path": "<checkout>/downloads/t05_integration/t05-inline-baseline.json",
+      "sha256": "a0591dc8d15fa6bf79d8b841f196e049e5116cf0236545143409cf40353170a7",
+      "bytes": 15121
+    },
+    {
+      "path": "<checkout>/downloads/t05_integration/t05-inline-candidate.json",
+      "sha256": "5d0a8586a3d1a87ad3eb72b32d95bfc515af21ced020b1b8cac516f8553a7877",
+      "bytes": 15131
+    },
+    {
+      "path": "<checkout>/downloads/t05_integration/t04-graph-regression.py",
+      "sha256": "93916285ea81098aca81b38e4c59d06867fa2d44acd7beaeec91b729b9dfef73",
+      "bytes": 3954
+    },
+    {
+      "path": "<checkout>/docs/evidence/t05-trained-preservation.py",
+      "sha256": "2cd62463ad97dc8e2f4096333436e91eb445800d434c8004fc0a17289652fcbe",
+      "bytes": 5567
+    }
+  ],
+  "interpretation": "Combined T05 preserves the trained computation alongside accepted prior live evidence. New recipe assembly is separately checked against the historical Swin demo. This does not claim a new trained live run or model accuracy."
+}

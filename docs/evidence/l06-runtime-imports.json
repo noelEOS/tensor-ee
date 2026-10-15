@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "source_base": "55ffb33",
+  "scope": "Observed runtime import closure, in one fresh interpreter, of native_ee.swin, native_ee.swin_workflow, the segwater_* recipe (segwater_inference, segwater_preprocessing, segwater_pytorch) and native_ee.examples.nonwater: their imports, then, under the L00 harness's offline Earth Engine (zero cloud calls), the three Swin adapter stages with placeholder server arrays, the Swin workflow's stage graphs, the SegWater recipe over 2 x 2 chips, the nonwater example, the trained graphs through the validated checkpoint/manifest loaders, and the two fixed local model constructors (load_swin_t224_model, load_segwater_checkpoint). All 21 graphs equal their L00 golden hashes. Includes package __init__ files. Graph construction is not numerical parity. Supersedes t01-runtime-imports.json as the packaging reference (contract Q2); that file stays as history.",
+  "observation": {
+    "script": "docs/evidence/l06-runtime-imports.py",
+    "graphs": [
+      "examples/nonwater/image",
+      "examples/nonwater/metadata",
+      "segwater_recipe/mosaic_448",
+      "swin_adapter/A",
+      "swin_adapter/A_local_arrays",
+      "swin_adapter/B",
+      "swin_adapter/C",
+      "swin_workflow/prepared_logits/A",
+      "swin_workflow/prepared_logits/C",
+      "swin_workflow/segwater_water/A",
+      "swin_workflow/segwater_water/B",
+      "swin_workflow/segwater_water/C",
+      "trained/swin/A",
+      "trained/swin/B",
+      "trained/swin/C",
+      "trained/swin/prepared",
+      "trained/swin/validity",
+      "trained/unet/prediction",
+      "trained/unet/prediction_448",
+      "trained/unet/prepared",
+      "trained/unet/raw"
+    ],
+    "harness": "tools/graph_identity.py (loaded by path as an observation tool; not part of the closure)",
+    "environment": {
+      "python": "3.14.6",
+      "platform": "darwin-arm64"
+    }
+  },
+  "module_count": 55,
+  "modules": {
+    "native_ee": "native_ee/__init__.py",
+    "native_ee._swin_parameters": "native_ee/_swin_parameters.py",
+    "native_ee.blocks": "native_ee/blocks/__init__.py",
+    "native_ee.blocks.raster": "native_ee/blocks/raster/__init__.py",
+    "native_ee.blocks.raster.activations": "native_ee/blocks/raster/activations.py",
+    "native_ee.blocks.raster.conv": "native_ee/blocks/raster/conv.py",
+    "native_ee.blocks.raster.merge": "native_ee/blocks/raster/merge.py",
+    "native_ee.blocks.raster.outputs": "native_ee/blocks/raster/outputs.py",
+    "native_ee.blocks.raster.pooling": "native_ee/blocks/raster/pooling.py",
+    "native_ee.blocks.raster.resample": "native_ee/blocks/raster/resample.py",
+    "native_ee.blocks.window": "native_ee/blocks/window/__init__.py",
+    "native_ee.blocks.window.activations": "native_ee/blocks/window/activations.py",
+    "native_ee.blocks.window.attention": "native_ee/blocks/window/attention.py",
+    "native_ee.blocks.window.conv": "native_ee/blocks/window/conv.py",
+    "native_ee.blocks.window.linear": "native_ee/blocks/window/linear.py",
+    "native_ee.blocks.window.merge": "native_ee/blocks/window/merge.py",
+    "native_ee.blocks.window.normalization": "native_ee/blocks/window/normalization.py",
+    "native_ee.blocks.window.patch": "native_ee/blocks/window/patch.py",
+    "native_ee.blocks.window.pooling": "native_ee/blocks/window/pooling.py",
+    "native_ee.blocks.window.resample": "native_ee/blocks/window/resample.py",
+    "native_ee.comparison": "native_ee/comparison.py",
+    "native_ee.compatibility": "native_ee/compatibility.py",
+    "native_ee.compiler": "native_ee/compiler.py",
+    "native_ee.core": "native_ee/core/__init__.py",
+    "native_ee.core.errors": "native_ee/core/errors.py",
+    "native_ee.core.grid": "native_ee/core/grid.py",
+    "native_ee.core.metadata": "native_ee/core/metadata.py",
+    "native_ee.core.ops": "native_ee/core/ops.py",
+    "native_ee.core.precision": "native_ee/core/precision.py",
+    "native_ee.core.tensor": "native_ee/core/tensor.py",
+    "native_ee.examples": "native_ee/examples/__init__.py",
+    "native_ee.examples.nonwater": "native_ee/examples/nonwater.py",
+    "native_ee.layouts": "native_ee/layouts/__init__.py",
+    "native_ee.layouts.raster": "native_ee/layouts/raster.py",
+    "native_ee.layouts.shift": "native_ee/layouts/shift.py",
+    "native_ee.layouts.window": "native_ee/layouts/window.py",
+    "native_ee.models": "native_ee/models/__init__.py",
+    "native_ee.models.fixtures": "native_ee/models/fixtures.py",
+    "native_ee.models.swin_t224": "native_ee/models/swin_t224/__init__.py",
+    "native_ee.models.swin_t224.configuration": "native_ee/models/swin_t224/configuration.py",
+    "native_ee.models.swin_t224.decoder": "native_ee/models/swin_t224/decoder.py",
+    "native_ee.models.swin_t224.encoder": "native_ee/models/swin_t224/encoder.py",
+    "native_ee.outputs": "native_ee/outputs.py",
+    "native_ee.primitives": "native_ee/primitives.py",
+    "native_ee.segwater_inference": "native_ee/segwater_inference.py",
+    "native_ee.segwater_preprocessing": "native_ee/segwater_preprocessing.py",
+    "native_ee.segwater_pytorch": "native_ee/segwater_pytorch.py",
+    "native_ee.semantics": "native_ee/semantics.py",
+    "native_ee.swin": "native_ee/swin.py",
+    "native_ee.swin_workflow": "native_ee/swin_workflow.py",
+    "native_ee.weight_assets": "native_ee/weight_assets.py",
+    "native_ee.weight_mapping": "native_ee/weight_mapping.py",
+    "native_ee.weights": "native_ee/weights/__init__.py",
+    "native_ee.weights.assets": "native_ee/weights/assets.py",
+    "native_ee.weights.constants": "native_ee/weights/constants.py"
+  },
+  "research_modules": [],
+  "third_party": {
+    "direct": [
+      "ee",
+      "google",
+      "numpy",
+      "segmentation_models_pytorch",
+      "torch"
+    ],
+    "named_but_not_loaded": [],
+    "loaded_count": 34,
+    "loaded": {
+      "PIL": [
+        "pillow"
+      ],
+      "anyio": [
+        "anyio"
+      ],
+      "certifi": [
+        "certifi"
+      ],
+      "charset_normalizer": [
+        "charset-normalizer"
+      ],
+      "cryptography": [
+        "cryptography"
+      ],
+      "ee": [
+        "earthengine-api"
+      ],
+      "filelock": [
+        "filelock"
+      ],
+      "google": [
+        "google-api-core",
+        "google-auth",
+        "google-cloud-core",
+        "google-cloud-storage",
+        "google-resumable-media",
+        "googleapis-common-protos",
+        "protobuf"
+      ],
+      "google_auth_httplib2": [
+        "google-auth-httplib2"
+      ],
+      "googleapiclient": [
+        "google-api-python-client"
+      ],
+      "h11": [
+        "h11"
+      ],
+      "httpcore2": [
+        "httpcore2"
+      ],
+      "httplib2": [
+        "httplib2"
+      ],
+      "httpx2": [
+        "httpx2"
+      ],
+      "huggingface_hub": [
+        "huggingface_hub"
+      ],
+      "idna": [
+        "idna"
+      ],
+      "mpmath": [
+        "mpmath"
+      ],
+      "numpy": [
+        "numpy"
+      ],
+      "packaging": [
+        "packaging"
+      ],
+      "pyparsing": [
+        "pyparsing"
+      ],
+      "requests": [
+        "requests"
+      ],
+      "safetensors": [
+        "safetensors"
+      ],
+      "segmentation_models_pytorch": [
+        "segmentation_models_pytorch"
+      ],
+      "sympy": [
+        "sympy"
+      ],
+      "timm": [
+        "timm"
+      ],
+      "torch": [
+        "torch"
+      ],
+      "torchgen": [
+        "torch"
+      ],
+      "torchvision": [
+        "torchvision"
+      ],
+      "tqdm": [
+        "tqdm"
+      ],
+      "truststore": [
+        "truststore"
+      ],
+      "typing_extensions": [
+        "typing_extensions"
+      ],
+      "uritemplate": [
+        "uritemplate"
+      ],
+      "urllib3": [
+        "urllib3"
+      ],
+      "yaml": [
+        "PyYAML"
+      ]
+    },
+    "note": "direct: top-level third-party modules that the closure's native_ee modules import (module level or function-local) and that were loaded. loaded: every non-stdlib, non-repository top-level module in sys.modules at the end, with its distributions; environment-specific (transitive dependencies of ee, torch, timm and SMP). Site hooks (sitecustomize, usercustomize) and interpreter internals (cython_runtime) are omitted."
+  }
+}

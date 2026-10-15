@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ee">
+  <title>SegWater | Native Earth Engine</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%230e716b'/%3E%3Cpath d='M12 27c8-9 13 9 21 0s13 9 19 0M12 39c8-9 13 9 21 0s13 9 19 0' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="SegWater home">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M7 15c6-7 10 7 16 0s9 7 11 0M7 25c6-7 10 7 16 0s9 7 11 0"/></svg></span>
+      <span><strong>SegWater<span class="brand-divider">/</span><span class="brand-descriptor">Native Earth Engine</span></strong><small>Water segmentation from Sentinel-1</small></span>
+    </a>
+    <div class="header-meta"><span id="local-badge" class="local-badge"><span aria-hidden="true"></span><span id="local-badge-text">Local demo</span></span><span id="model-label" class="model-label">ResNet18 U-Net</span></div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar" aria-label="Inference controls">
+      <div class="intro"><p class="eyebrow">RADAR → WATER</p><h1 id="intro-title">A closer look<br>at water.</h1><p id="intro-copy">Choose an area and a radar scene. Run the trained model in Earth Engine.</p></div>
+      <div id="global-error" class="notice notice-error" role="alert" hidden><p id="global-error-text"></p><button id="retry-config" class="text-button" type="button">Retry connection</button></div>
+
+      <section class="step" aria-labelledby="area-title">
+        <div class="step-heading"><span class="step-number" id="area-step">01</span><h2 id="area-title">Choose your area</h2></div>
+        <div class="area-actions"><button id="draw-button" class="button button-outline" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4h12v12H4z"/><path d="M2 4h4M4 2v4M14 16h4M16 14v4"/></svg><span>Draw an area</span></button><button id="preset-button" class="button button-soft" type="button" disabled>Sun Moon Lake</button></div>
+        <p id="draw-help" class="helper">Click two opposite corners on the map.</p>
+        <div id="area-summary" class="area-summary" hidden><div><span id="area-name">Selected area</span><strong id="area-size"></strong></div><button id="clear-area" class="icon-button" type="button" aria-label="Clear selected area" title="Clear selected area"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8M14 6l-8 8"/></svg></button><p id="area-coordinates"></p></div>
+        <p id="limit-note" class="limit-note">Keep the first demo area small<br>(up to four model chips).</p>
+      </section>
+
+      <section class="step" aria-labelledby="scene-title">
+        <div class="step-heading"><span class="step-number" id="scene-step">02</span><h2 id="scene-title">Select a radar scene</h2></div>
+        <div class="date-fields"><label>From<input id="start-date" type="date" value="2024-01-01" disabled></label><label>Until<input id="end-date" type="date" value="2024-01-07" disabled></label></div>
+        <button id="search-button" class="button button-outline button-full" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5"/><path d="m12.5 12.5 4 4"/></svg><span>Find available scenes</span></button>
+        <p id="scene-message" class="helper" aria-live="polite">Select an area to search Sentinel-1.</p>
+        <div id="scene-error" class="notice notice-error" role="alert" hidden></div>
+        <div id="scene-list" class="scene-list" role="radiogroup" aria-label="Available Sentinel-1 scenes"></div>
+        <p id="grid-summary" class="grid-summary" hidden></p>
+      </section>
+
+      <section class="step run-step" aria-labelledby="run-title">
+        <div class="step-heading"><span class="step-number" id="run-step">03</span><h2 id="run-title">Map the water</h2></div>
+        <button id="run-button" class="button button-primary button-full" type="button" disabled><span>Run native inference</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5"/></svg></button>
+        <p id="run-help" class="helper">Batch inference can take several minutes.</p>
+        <div id="job-card" class="job-card" aria-live="polite" hidden>
+          <div class="job-header"><span id="job-status-icon" class="status-icon" aria-hidden="true"></span><strong id="job-status">Preparing</strong><span id="job-time"></span></div>
+          <p id="job-message"></p>
+          <div id="job-progress" class="job-progress" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <p id="job-detached" class="detached-note" hidden>This run uses an earlier selection. <button id="restore-job" class="text-button" type="button">Return to this run</button></p>
+          <p id="job-result-error" class="result-error" hidden></p>
+          <div id="job-details" class="job-details" hidden><span>EARTH ENGINE ASSET</span><code id="job-asset" title=""></code></div>
+        </div>
+      </section>
+
+      <div id="example-section" class="example-section" hidden><p>See it in action</p><button id="example-button" class="example-button" type="button"><span class="example-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m8 5 7 5-7 5z"/></svg></span><span><strong id="example-title">Completed example</strong><small>Open a previous Earth Engine result</small></span><svg class="example-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg></button><p id="example-error" class="result-error" role="alert" hidden></p></div>
+      <footer class="sidebar-footer"><span class="footer-dot" aria-hidden="true"></span><p id="footer-note">Inference runs in Earth Engine.<br>Independent 224 px chips may show seams.</p></footer>
+    </aside>
+
+    <section class="map-panel" aria-label="Area and water result map">
+      <div id="map" aria-label="Interactive map. Use the draw area button, then click two opposite corners." tabindex="0"></div>
+      <div class="map-title"><span class="map-kicker" id="map-kicker">AREA EXPLORER</span><h2 id="map-title">Sun Moon Lake, Taiwan</h2><p id="map-subtitle">Draw a small area or use the lake preset.</p></div>
+      <button id="fit-button" class="map-button" type="button" disabled title="Fit selected area"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7V4h3m6 0h3v3m0 6v3h-3m-6 0H4v-3"/><circle cx="10" cy="10" r="2"/></svg><span>Fit area</span></button>
+      <div id="drawing-banner" class="drawing-banner" role="status" hidden><span class="drawing-dot" aria-hidden="true"></span><span id="drawing-instruction">Click the first corner</span><span class="keyboard-hint">Esc to cancel</span></div>
+      <div id="map-feedback" class="map-feedback" role="status" hidden></div>
+      <div id="layers-panel" class="layers-panel" hidden>
+        <div class="layers-heading"><span>MAP LAYERS</span><span id="layer-origin">Selected scene</span></div>
+        <div class="layer-options" role="radiogroup" aria-label="Map layer"><button class="layer-option" data-layer="probability" role="radio" aria-checked="false" type="button" disabled>Probability</button><button class="layer-option" data-layer="water" role="radio" aria-checked="false" type="button" disabled>Water mask</button><button class="layer-option" data-layer="source" role="radio" aria-checked="false" type="button" disabled>Radar VV</button></div>
+        <div class="opacity-control"><label for="layer-opacity">Opacity</label><input id="layer-opacity" type="range" min="0" max="100" value="85"><output id="opacity-value" for="layer-opacity">85%</output></div>
+        <div id="legend" class="legend"><p id="legend-title">Water probability</p><div id="legend-gradient" class="legend-gradient"></div><div id="legend-labels" class="legend-labels"><span>0</span><span>1</span></div><div id="legend-water" class="legend-water" hidden><span aria-hidden="true"></span>Water · probability ≥ 0.50</div></div>
+      </div>
+      <div id="map-empty-note" class="map-empty-note"><span aria-hidden="true"></span>Choose a scene to preview the radar image.</div>
+      <noscript><div class="noscript-notice">Enable JavaScript to use this map and run inference.</div></noscript>
+    </section>
+  </main>
+</body>
+</html>

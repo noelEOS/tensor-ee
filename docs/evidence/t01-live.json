@@ -1,0 +1,397 @@
+{
+  "schema_version": 1,
+  "task": "T01",
+  "accepted_base": "c36784339700ccaf2347494c4a30abcab74d9695",
+  "branch": "codex/t01-swin-runtime",
+  "worktree": "<checkout>",
+  "numerical_runtime_revision": "db214c7ca580ecd4185f58c9cf927c9999dc9dbf",
+  "initial_executed_runner_revision": "187bd4cb435893e3a5afb2ee16789392fb6263cd",
+  "resumed_runner_revision": "146812d91b3a1b2a463132a9181a50d46b0f2d18",
+  "source_dirty_at_initial_run": false,
+  "runtime_changed_between_runs": false,
+  "scope": "Exactly catalogue224,hpo_val_00,hpo_val_04; three separate persisted stages per fixture, with A/B exports and C computePixels. Numerical equivalence on these fixtures, not model accuracy or arbitrary transformers.",
+  "project": "ORIGINAL_PROJECT",
+  "asset_folder": "projects/ORIGINAL_PROJECT/assets/upernet/t01_swin_runtime_db214c7",
+  "checkpoint_sha256": "5c7a7c44d29b3c75bd69f59809fb1b63a039313bec021d897ff3876d2cea42a5",
+  "manifest_file_sha256": "dbd3cdaf450e4e2d128ec557843dc1c761cd9ab66d7d3581bb5cd255532fc9a3",
+  "manifest_canonical_json_sha256": "38f06b5323227e561069d6e1c01c4c2fb879ae61373282b4282ac5bf34912ee6",
+  "onnx_sha256": "75a5ad2e1e2e506072b918d15f848483ad33c4c4f6bf07f1246f74d8aab967f8",
+  "versions": {
+    "earthengine-api": "1.7.45",
+    "numpy": "2.5.3",
+    "torch": "2.14.0",
+    "segmentation-models-pytorch": "0.5.0",
+    "timm": "1.0.30",
+    "onnxruntime": "1.30.0"
+  },
+  "reference_dtype": "float32 ORT fixed batch32",
+  "execution_dtype": "existing Swin float32 materialization/double work",
+  "offline": {
+    "affected_suite": {
+      "passed": 334,
+      "skipped": 76,
+      "seconds": 22.13
+    },
+    "runner_recovery_suite": {
+      "passed": 4,
+      "seconds": 0.68
+    },
+    "git_diff_check": "pass",
+    "provenance_assertions": "worktree native_ee.swin, main .venv read-only, PYTHONDONTWRITEBYTECODE=1",
+    "formula_extraction_ast_identical_helpers": 26,
+    "observed_runtime_module_closure": 53
+  },
+  "prepared_inputs": {
+    "catalogue224": {
+      "source_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+      "asserted_grid": {
+        "crs": "EPSG:32651",
+        "transform": [
+          10,
+          0,
+          287680.95335071225,
+          0,
+          -10,
+          2640838.8405420803
+        ],
+        "width": 224,
+        "height": 224
+      },
+      "input_sha256": "3fd570138177d655344e930ba48c4007a56f2bea930135ee8d81c68004985207",
+      "per_channel_valid_count": [
+        50176,
+        50176
+      ],
+      "bit_identical_retained_input": true
+    },
+    "hpo_val_00": {
+      "source_id": "projects/ORIGINAL_PROJECT/assets/upernet/m12/inputs/m12_input_hpo_val_00_d209d1",
+      "asserted_grid": {
+        "crs": "EPSG:32651",
+        "transform": [
+          10,
+          0,
+          283200.95335071225,
+          0,
+          -10,
+          2645318.8405420803
+        ],
+        "width": 224,
+        "height": 224
+      },
+      "input_sha256": "bd01e6e665f464950ccd0dca903e345ce68ed24f798b06ea6990d745cbf15db4",
+      "per_channel_valid_count": [
+        50176,
+        50176
+      ],
+      "bit_identical_retained_input": true
+    },
+    "hpo_val_04": {
+      "source_id": "projects/ORIGINAL_PROJECT/assets/upernet/m12/inputs/m12_input_hpo_val_04_3a5fbf",
+      "asserted_grid": {
+        "crs": "EPSG:32651",
+        "transform": [
+          10,
+          0,
+          283200.95335071225,
+          0,
+          -10,
+          2645318.8405420803
+        ],
+        "width": 224,
+        "height": 224
+      },
+      "input_sha256": "394708eb5f1b67e26bf7c58a0f7d5d3b3444c1b3f4adaf635ac5430b3f2cd3eb",
+      "per_channel_valid_count": [
+        50176,
+        50176
+      ],
+      "bit_identical_retained_input": true
+    }
+  },
+  "exports": {
+    "catalogue224_A": {
+      "asset_id": "projects/ORIGINAL_PROJECT/assets/upernet/t01_swin_runtime_db214c7/catalogue224_A",
+      "request_bytes": 794723,
+      "request_sha256": "cf100cfe0a8cde56ab39e93bad0505c28a18fa191d3af53ba318b6155f49eeeb",
+      "request_id": "6146fd03-fd18-41ae-b148-6d7242a2c5b3",
+      "task_id": "W3YXY52NW7IQQGK5VCPIDOUY",
+      "operation_name": "projects/ORIGINAL_PROJECT/operations/W3YXY52NW7IQQGK5VCPIDOUY",
+      "state": "COMPLETED",
+      "attempt": 1,
+      "creation_timestamp_ms": 1791605126538,
+      "start_timestamp_ms": 1791605129165,
+      "update_timestamp_ms": 1791605306514,
+      "run_seconds": 177.349,
+      "batch_eecu_usage_seconds": 51.92916488647461
+    },
+    "catalogue224_B": {
+      "asset_id": "projects/ORIGINAL_PROJECT/assets/upernet/t01_swin_runtime_db214c7/catalogue224_B",
+      "request_bytes": 323246,
+      "request_sha256": "332c110e29bc64beaaed06cfb8d09e3b112b6e608231b36c601e002c080ec80e",
+      "request_id": "0ff431c7-5cd6-42b1-bb45-65c4aae66b60",
+      "task_id": "N4SBOVZMGWBERQAXWUYVQATL",
+      "operation_name": "projects/ORIGINAL_PROJECT/operations/N4SBOVZMGWBERQAXWUYVQATL",
+      "state": "COMPLETED",
+      "attempt": 1,
+      "creation_timestamp_ms": 1791605856210,
+      "start_timestamp_ms": 1791605858833,
+      "update_timestamp_ms": 1791605961697,
+      "run_seconds": 102.864,
+      "batch_eecu_usage_seconds": 21.722911834716797
+    },
+    "hpo_val_00_A": {
+      "asset_id": "projects/ORIGINAL_PROJECT/assets/upernet/t01_swin_runtime_db214c7/hpo_val_00_A",
+      "request_bytes": 789400,
+      "request_sha256": "3e893519931bdc9fc74816e8dc70ae81ac3800f362b9d43cd78e915148d5fde5",
+      "request_id": "703ce519-7960-4f0b-b91d-39e6d68df3c2",
+      "task_id": "QTREJQZ67MHT6OBFG5KVFE46",
+      "operation_name": "projects/ORIGINAL_PROJECT/operations/QTREJQZ67MHT6OBFG5KVFE46",
+      "state": "COMPLETED",
+      "attempt": 1,
+      "creation_timestamp_ms": 1791605131733,
+      "start_timestamp_ms": 1791605135098,
+      "update_timestamp_ms": 1791605240615,
+      "run_seconds": 105.517,
+      "batch_eecu_usage_seconds": 50.47685241699219
+    },
+    "hpo_val_00_B": {
+      "asset_id": "projects/ORIGINAL_PROJECT/assets/upernet/t01_swin_runtime_db214c7/hpo_val_00_B",
+      "request_bytes": 323240,
+      "request_sha256": "bfb941ef1c418fe131d789a25402ef8873dc7987260be2a8cfb6e289665034e2",
+      "request_id": "ecd5bb2d-eed6-4a07-859e-cf8a75d67960",
+      "task_id": "RDPG24JD4WVHTE2BBMGU7AFX",
+      "operation_name": "projects/ORIGINAL_PROJECT/operations/RDPG24JD4WVHTE2BBMGU7AFX",
+      "state": "COMPLETED",
+      "attempt": 1,
+      "creation_timestamp_ms": 1791605858529,
+      "start_timestamp_ms": 1791605862005,
+      "update_timestamp_ms": 1791606111495,
+      "run_seconds": 249.49,
+      "batch_eecu_usage_seconds": 18.415245056152344
+    },
+    "hpo_val_04_A": {
+      "asset_id": "projects/ORIGINAL_PROJECT/assets/upernet/t01_swin_runtime_db214c7/hpo_val_04_A",
+      "request_bytes": 789400,
+      "request_sha256": "52c3ee4d8953d3aef9d587fd28e986f2e22dddbe07b7db9fe2895b32362a1d94",
+      "request_id": "fe8bffe1-a5ce-4a97-bfd8-a73238b8b371",
+      "task_id": "BFCYLWCDTT7VZYFYBFUFW57W",
+      "operation_name": "projects/ORIGINAL_PROJECT/operations/BFCYLWCDTT7VZYFYBFUFW57W",
+      "state": "COMPLETED",
+      "attempt": 1,
+      "creation_timestamp_ms": 1791605691380,
+      "start_timestamp_ms": 1791605694186,
+      "update_timestamp_ms": 1791605851528,
+      "run_seconds": 157.342,
+      "batch_eecu_usage_seconds": 49.72264862060547
+    },
+    "hpo_val_04_B": {
+      "asset_id": "projects/ORIGINAL_PROJECT/assets/upernet/t01_swin_runtime_db214c7/hpo_val_04_B",
+      "request_bytes": 323240,
+      "request_sha256": "9db5138bb97f18a8f25651986c0168d982b0c16796406612cfa98d3424169c3f",
+      "request_id": "bbbcb9f8-6823-4d82-aa8e-724352ed0052",
+      "task_id": "CJM4CS6U2ALDHQWRBTYF7I4X",
+      "operation_name": "projects/ORIGINAL_PROJECT/operations/CJM4CS6U2ALDHQWRBTYF7I4X",
+      "state": "COMPLETED",
+      "attempt": 1,
+      "creation_timestamp_ms": 1791606115807,
+      "start_timestamp_ms": 1791606118805,
+      "update_timestamp_ms": 1791606284919,
+      "run_seconds": 166.114,
+      "batch_eecu_usage_seconds": 22.37962532043457
+    }
+  },
+  "comparison": {
+    "catalogue224": {
+      "max_absolute_error": 1.2993812561035156e-05,
+      "mae": 5.624885106173153e-07,
+      "rmse": 1.1409696106803246e-06,
+      "max_relative_error_floor_1e-3": 0.002947998211379388,
+      "probability_max_absolute_error": 5.4836273193359375e-06,
+      "argmax_disagreements": 0,
+      "threshold_disagreements": 0,
+      "near_margin": {
+        "row": 5,
+        "column": 114,
+        "reference_logit_margin": 0.00047215819358825684,
+        "reference_probability": 0.5001180171966553,
+        "actual_probability": 0.5001180171966553
+      },
+      "logit_tolerance": 0.0001,
+      "probability_tolerance": 0.0001,
+      "valid_pixel_count": 50176,
+      "pass": true,
+      "actual_sha256": "1e37be2d9dafb6153e7a5e6199ff9d5cd2d6858465ee05782272e80ee2775904",
+      "reference_sha256": "a838d3e89033bf67c24a32424b54b70aa527f0a21e9614c77d7a22cb3a087d29",
+      "dense_logit_mask": true
+    },
+    "hpo_val_00": {
+      "max_absolute_error": 4.082918167114258e-06,
+      "mae": 3.14149588990979e-07,
+      "rmse": 4.247899443577087e-07,
+      "max_relative_error_floor_1e-3": 0.0007750812493556963,
+      "probability_max_absolute_error": 1.2516975402832031e-06,
+      "argmax_disagreements": 0,
+      "threshold_disagreements": 0,
+      "near_margin": {
+        "row": 76,
+        "column": 33,
+        "reference_logit_margin": 0.0008033215999603271,
+        "reference_probability": 0.4997991621494293,
+        "actual_probability": 0.49979954957962036
+      },
+      "logit_tolerance": 0.0001,
+      "probability_tolerance": 0.0001,
+      "valid_pixel_count": 50176,
+      "pass": true,
+      "actual_sha256": "5ae9693acadd846118d0598d304e14199c7b126c883a22e25865c0e853f8c245",
+      "reference_sha256": "29cba061e8e8289043e922fca360ac8ca09cf12aa7c170425e3b086523b294cf",
+      "dense_logit_mask": true
+    },
+    "hpo_val_04": {
+      "max_absolute_error": 1.4573335647583008e-05,
+      "mae": 8.758990474418903e-07,
+      "rmse": 1.4384067239672335e-06,
+      "max_relative_error_floor_1e-3": 0.004356057409049079,
+      "probability_max_absolute_error": 6.467103958129883e-06,
+      "argmax_disagreements": 0,
+      "threshold_disagreements": 0,
+      "near_margin": {
+        "row": 96,
+        "column": 140,
+        "reference_logit_margin": 9.5367431640625e-07,
+        "reference_probability": 0.5000002384185791,
+        "actual_probability": 0.5000013709068298
+      },
+      "logit_tolerance": 0.0001,
+      "probability_tolerance": 0.0001,
+      "valid_pixel_count": 50176,
+      "pass": true,
+      "actual_sha256": "87395d72bcc2ab3386750623674c4feafb00a789eaed26a737404a748df634f8",
+      "reference_sha256": "8af9cba3ff022d69763c774c600965ae2c6730edd489a707a114f77b124c1ad4",
+      "dense_logit_mask": true
+    }
+  },
+  "manual_cloud_calls": {
+    "getAsset_source": 3,
+    "computePixels_prepared": 3,
+    "getAsset_destination_folder": 1,
+    "createAsset_folder": 1,
+    "newTaskId": 6,
+    "exportImage": 6,
+    "getTaskList_recovery": 2,
+    "getTaskStatus_batches_before_repair": null,
+    "before_repair_poll_note": "Two UUID request IDs were polled at five-second intervals until local interruption; batch count was not instrumented.",
+    "sdk_initialization_requests": "not instrumented",
+    "getTaskStatus_batches_after_repair": 112,
+    "getTaskStatus_ids_after_repair": 132,
+    "computePixels_C": 3
+  },
+  "orchestration_incident": {
+    "initial_runner_revision": "187bd4cb435893e3a5afb2ee16789392fb6263cd",
+    "failure": "Polled caller request UUIDs instead of actual returned operation IDs; no numerical comparison had run.",
+    "local_process_exit": 130,
+    "recovery_task_list_calls": 2,
+    "first_recovery_failure": "Correct asset destination appeared as EE UI URL; strict raw string check rejected it before metadata persistence.",
+    "recovery": "Exact descriptions and parsed destination IDs matched two existing COMPLETED attempt-one operations; no export was resubmitted."
+  },
+  "artifacts": {
+    "catalogue224_logits.npy": {
+      "path": "<checkout>/downloads/t01_live_db214c7/catalogue224_logits.npy",
+      "bytes": 401536,
+      "sha256": "ad9aa047798de454f6a901e85e7c03aff5c9404ef83e3f9861c406cccc39f058"
+    },
+    "catalogue224_prepared.npy": {
+      "path": "<checkout>/downloads/t01_live_db214c7/catalogue224_prepared.npy",
+      "bytes": 401536,
+      "sha256": "ad236d11b8b3fd2f57dd970c44decd5bbea6c7c4792ede66243305d15a27a021"
+    },
+    "hpo_val_00_logits.npy": {
+      "path": "<checkout>/downloads/t01_live_db214c7/hpo_val_00_logits.npy",
+      "bytes": 401536,
+      "sha256": "81a5df6248ca29a6e82b6b54a5c762acab68e45ca45457dcc78dba84a9ba08d6"
+    },
+    "hpo_val_00_prepared.npy": {
+      "path": "<checkout>/downloads/t01_live_db214c7/hpo_val_00_prepared.npy",
+      "bytes": 401536,
+      "sha256": "79761341edee143a76305a3652d64ee133ccfb4ecc5799a4fe8028008cf5a9b4"
+    },
+    "hpo_val_04_logits.npy": {
+      "path": "<checkout>/downloads/t01_live_db214c7/hpo_val_04_logits.npy",
+      "bytes": 401536,
+      "sha256": "b588810626555b4ca8ed0ac1bad1cf1bdc700c3af5ded64fe359ba318ee4ff06"
+    },
+    "hpo_val_04_prepared.npy": {
+      "path": "<checkout>/downloads/t01_live_db214c7/hpo_val_04_prepared.npy",
+      "bytes": 401536,
+      "sha256": "22275b771d06e03374830b876474a708a7946f7c85bbe89747e772b73650d964"
+    },
+    "orchestration-errors.txt": {
+      "path": "<checkout>/downloads/t01_live_db214c7/orchestration-errors.txt",
+      "bytes": 1247,
+      "sha256": "aa99451f903c31e51ed462b631ba197dd953b2077bb70b014dfc6e3631af28ba"
+    },
+    "recovered_tasks.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/recovered_tasks.json",
+      "bytes": 1813,
+      "sha256": "e2cdd7c8e40437c24306d46d3b9b416f77d2fa7e783bdfa990b572293356acf9"
+    },
+    "report.interrupted.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/report.interrupted.json",
+      "bytes": 5534,
+      "sha256": "84f784916b67466b5ba18e317f10cd8aed2be7858289546271a8bc6421afdffc"
+    },
+    "report.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/report.json",
+      "bytes": 18505,
+      "sha256": "ce607c4f55fd3991b340c3915cd3d3cd191a0eebd79d973cea6c459e6c9190b8"
+    },
+    "request_catalogue224_A.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/request_catalogue224_A.json",
+      "bytes": 3785165,
+      "sha256": "9837933f3132a0f1b04b2de37f9aa311f5c4867837118c286a39d31810c067f7"
+    },
+    "request_catalogue224_B.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/request_catalogue224_B.json",
+      "bytes": 1514117,
+      "sha256": "97fb49a3dbdcf85039e0e543c93a4963951dabd765e860206c9c5a8c3fbdf1b7"
+    },
+    "request_hpo_val_00_A.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/request_hpo_val_00_A.json",
+      "bytes": 3762139,
+      "sha256": "ff175a7148c2edc96723f707fad05a925a486bfbddd2cca1ea4d39c48515d292"
+    },
+    "request_hpo_val_00_B.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/request_hpo_val_00_B.json",
+      "bytes": 1514111,
+      "sha256": "4c7045cec3e16db1d225e516e8ee1c6bb3c68a4e773602d9a6d25a4b5601e2ba"
+    },
+    "request_hpo_val_04_A.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/request_hpo_val_04_A.json",
+      "bytes": 3762139,
+      "sha256": "c2d3bf3ec43acb786b92a967a1535999fd0592eb9ee849e40cd22a33bd6b768a"
+    },
+    "request_hpo_val_04_B.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/request_hpo_val_04_B.json",
+      "bytes": 1514111,
+      "sha256": "4e7a5933c0a1a91b1e26250ef438865a4efb70f5b32e8a687a05da05fc139efe"
+    },
+    "task_recovery_candidates.json": {
+      "path": "<checkout>/downloads/t01_live_db214c7/task_recovery_candidates.json",
+      "bytes": 1327,
+      "sha256": "24942e8eef4ce5b0cf415f293434209b1bc8fea4a969292c41dee7a51cf8ab0f"
+    }
+  },
+  "numerical_gate": "pass",
+  "independent_final_review": "pending",
+  "remaining_gates": [
+    "Installed-wheel Swin import/loading/staged construction outside both checkouts is T05",
+    "Public checkpoint access/terms and resource cleanup remain lead/author gates"
+  ],
+  "mask_evidence": {
+    "kind": "live runner guards and report",
+    "checks": "Original per-channel validity was compared with the retained source fixture; retrieved prepared-model and logit mask channels were required to equal1 everywhere inside each224-square grid.",
+    "retention": "Only prepared value and raw-logit channels were retained as NPY arrays. Validity/dense mask channels were checked during retrieval but were not retained separately.",
+    "independent_raw_mask_recomputation": false
+  }
+}

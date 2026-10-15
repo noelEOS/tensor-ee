@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="850" viewBox="0 0 1400 850">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/></marker><marker id="skip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#15958a"/></marker></defs>
+<rect width="1400" height="850" fill="#f8fafc"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#172b42}.title{font-size:34px;font-weight:700}.sub{font-size:18px;fill:#52667b}.name{font-size:22px;font-weight:700}.body{font-size:18px}.small{font-size:16px;fill:#52667b}.note{font-size:17px;fill:#52667b}.shape{font-size:20px;font-weight:700}</style>
+<text x="50" y="63" class="title" text-anchor="start">Tiny U-Net · native Earth Engine inference</text>
+<text x="50" y="96" class="sub" text-anchor="start">Two pooling levels  •  29,689 parameters  •  channels: 8 → 16 → 32</text>
+<text x="50" y="130" class="small" text-anchor="start">Spatial sizes below show the 64 × 64 Sentinel-1 execution test.</text>
+<text x="340" y="182" class="small" text-anchor="middle">ENCODER</text>
+<text x="970" y="182" class="small" text-anchor="middle">DECODER</text>
+<rect x="35" y="230" width="150" height="120" rx="16" fill="#eef2f6" stroke="#becbd8" stroke-width="2"/>
+<text x="110.0" y="263" class="name" text-anchor="middle">Input</text>
+<text x="110.0" y="293" class="body" text-anchor="middle">VV + VH</text>
+<text x="110.0" y="320" class="shape" text-anchor="middle">64 × 64 × 2</text>
+<rect x="230" y="230" width="220" height="120" rx="16" fill="#e0f4ef" stroke="#65afa2" stroke-width="2"/>
+<text x="340.0" y="263" class="name" text-anchor="middle">Encoder 1</text>
+<text x="340.0" y="293" class="body" text-anchor="middle">2 → 8 → 8 channels</text>
+<text x="340.0" y="320" class="shape" text-anchor="middle">64 × 64 × 8</text>
+<rect x="230" y="440" width="220" height="120" rx="16" fill="#e0f4ef" stroke="#65afa2" stroke-width="2"/>
+<text x="340.0" y="473" class="name" text-anchor="middle">Encoder 2</text>
+<text x="340.0" y="503" class="body" text-anchor="middle">8 → 16 → 16 channels</text>
+<text x="340.0" y="530" class="shape" text-anchor="middle">32 × 32 × 16</text>
+<rect x="480" y="635" width="270" height="120" rx="16" fill="#ece8fa" stroke="#a195cd" stroke-width="2"/>
+<text x="615.0" y="668" class="name" text-anchor="middle">Bottleneck</text>
+<text x="615.0" y="698" class="body" text-anchor="middle">16 → 32 → 32 channels</text>
+<text x="615.0" y="725" class="shape" text-anchor="middle">16 × 16 × 32</text>
+<rect x="860" y="440" width="220" height="120" rx="16" fill="#e4efff" stroke="#85a7d4" stroke-width="2"/>
+<text x="970.0" y="473" class="name" text-anchor="middle">Decoder 2</text>
+<text x="970.0" y="503" class="body" text-anchor="middle">48 → 16 → 16 channels</text>
+<text x="970.0" y="530" class="shape" text-anchor="middle">32 × 32 × 16</text>
+<rect x="860" y="230" width="220" height="120" rx="16" fill="#e4efff" stroke="#85a7d4" stroke-width="2"/>
+<text x="970.0" y="263" class="name" text-anchor="middle">Decoder 1</text>
+<text x="970.0" y="293" class="body" text-anchor="middle">24 → 8 → 8 channels</text>
+<text x="970.0" y="320" class="shape" text-anchor="middle">64 × 64 × 8</text>
+<rect x="1130" y="215" width="235" height="150" rx="16" fill="#fff2d9" stroke="#dca64d" stroke-width="2"/>
+<text x="1247.5" y="248" class="name" text-anchor="middle">Output head</text>
+<text x="1247.5" y="278" class="body" text-anchor="middle">1 × 1 conv: 8 → 1</text>
+<text x="1247.5" y="305" class="body" text-anchor="middle">Sigmoid → probability</text>
+<text x="1247.5" y="332" class="shape" text-anchor="middle">64 × 64 × 1</text>
+<path d="M 185 290 H 230" fill="none" stroke="#475569" stroke-width="3" stroke-linejoin="round"  marker-end="url(#arrow)"/>
+<path d="M 340 350 V 440" fill="none" stroke="#475569" stroke-width="3" stroke-linejoin="round"  marker-end="url(#arrow)"/>
+<text x="365" y="391" class="small" text-anchor="start">2 × 2 average pool</text>
+<text x="365" y="414" class="small" text-anchor="start">stride 2</text>
+<path d="M 340 560 V 695 H 480" fill="none" stroke="#475569" stroke-width="3" stroke-linejoin="round"  marker-end="url(#arrow)"/>
+<text x="365" y="599" class="small" text-anchor="start">2 × 2 average pool</text>
+<text x="365" y="622" class="small" text-anchor="start">stride 2</text>
+<path d="M 450 290 H 778" fill="none" stroke="#15958a" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 6" marker-end="url(#skip)"/>
+<text x="610" y="260" class="small" text-anchor="middle">Skip · 8 channels</text>
+<text x="800" y="207" class="small" text-anchor="middle">Concat: 16 + 8 = 24</text>
+<path d="M 450 500 H 778" fill="none" stroke="#15958a" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 6" marker-end="url(#skip)"/>
+<text x="605" y="470" class="small" text-anchor="middle">Skip · 16 channels</text>
+<text x="800" y="418" class="small" text-anchor="middle">Concat: 32 + 16 = 48</text>
+<path d="M 750 695 H 800 V 522" fill="none" stroke="#475569" stroke-width="3" stroke-linejoin="round"  marker-end="url(#arrow)"/>
+<text x="829" y="625" class="small" text-anchor="start">Nearest upsample ×2</text>
+<text x="829" y="648" class="small" text-anchor="start">32 channels</text>
+<path d="M 970 440 V 385 H 800 V 312" fill="none" stroke="#475569" stroke-width="3" stroke-linejoin="round"  marker-end="url(#arrow)"/>
+<text x="1010" y="387" class="small" text-anchor="start">Nearest ×2</text>
+<text x="1010" y="410" class="small" text-anchor="start">16 channels</text>
+<circle cx="800" cy="290" r="22" fill="#fff2d9" stroke="#dca64d" stroke-width="2"/>
+<text x="800" y="297" class="name" text-anchor="middle">C</text>
+<circle cx="800" cy="500" r="22" fill="#fff2d9" stroke="#dca64d" stroke-width="2"/>
+<text x="800" y="507" class="name" text-anchor="middle">C</text>
+<path d="M 822 500 H 860" fill="none" stroke="#475569" stroke-width="3" stroke-linejoin="round"  marker-end="url(#arrow)"/>
+<path d="M 822 290 H 860" fill="none" stroke="#475569" stroke-width="3" stroke-linejoin="round"  marker-end="url(#arrow)"/>
+<path d="M 1080 290 H 1130" fill="none" stroke="#475569" stroke-width="3" stroke-linejoin="round"  marker-end="url(#arrow)"/>
+<path d="M 50 784 H 1350" stroke="#d7e0e9"/>
+<text x="50" y="812" class="note" text-anchor="start">Each encoder, bottleneck, and decoder block: 3 × 3 Conv + ReLU, twice (same padding).</text>
+<text x="50" y="837" class="small" text-anchor="start">C = channel concatenation. Random weights used for execution/parity testing; no BatchNorm in this fixture.</text>
+</svg>

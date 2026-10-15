@@ -1,0 +1,110 @@
+{
+ "schema_version": 1,
+ "cloud_calls": 0,
+ "environment": {
+  "python": "3.14.6",
+  "implementation": "CPython",
+  "platform": "darwin-arm64",
+  "packages": {
+   "earthengine-api": "1.7.45",
+   "torch": "2.14.0",
+   "numpy": "2.5.3",
+   "onnx": "1.23.0",
+   "timm": "1.0.30",
+   "segmentation-models-pytorch": "0.5.0",
+   "torchvision": "0.29.0"
+  }
+ },
+ "source_revision": "9143b49846f3f3ac16a2e3ffb1f7ff01e1de42b4",
+ "probes": {
+  "depth_to_space": {
+   "identical": false,
+   "sha256": {
+    "production_patch_merge": "a23ec962ae8f08c421a891b00390af137f5f7ded16042135fdf36da679332ff2",
+    "research_spatial_attention": "6bea8bfd742dcc94d2ea70d065a2e5464eeda7a776058a621d005431cc8a9b96"
+   }
+  },
+  "depth_to_space_wrappers": {
+   "identical": true,
+   "sha256": {
+    "production_patch_merge_to_float": "9f9a7fe9a6b2e1a7314c6ca70200e9c0e6e9aa19fd7d910f42eb196b56c19bef",
+    "layout_to_dense": "9f9a7fe9a6b2e1a7314c6ca70200e9c0e6e9aa19fd7d910f42eb196b56c19bef"
+   }
+  },
+  "layer_norm2d": {
+   "identical": true,
+   "sha256": {
+    "fpn_layer_norm": "32b33e027daa74136611f5d08475323a6416e470bb01d46a46cad0a7b6b5eef1",
+    "unused_normalization_layer_norm2d": "32b33e027daa74136611f5d08475323a6416e470bb01d46a46cad0a7b6b5eef1"
+   }
+  },
+  "layer_norm2d_psp": {
+   "identical": true,
+   "sha256": {
+    "psp_layer_norm": "96dafb58e0a3c4673d35eac826372831c5f46df312a931fec1f28962f955a31e",
+    "unused_normalization_layer_norm2d": "96dafb58e0a3c4673d35eac826372831c5f46df312a931fec1f28962f955a31e"
+   }
+  },
+  "window_relu": {
+   "identical": true,
+   "sha256": {
+    "psp_inline": "9232750beecacc843e0b5ef10da286fcb4bde25997ab1d441e2236dd0824632f",
+    "normalization_relu": "9232750beecacc843e0b5ef10da286fcb4bde25997ab1d441e2236dd0824632f",
+    "feature_ops_relu_unreferenced": "9232750beecacc843e0b5ef10da286fcb4bde25997ab1d441e2236dd0824632f"
+   }
+  },
+  "to_windows": {
+   "identical": true,
+   "sha256": {
+    "layout_to_windows": "ce18654ea8a67c07c0434e1f7521f80303d81f71555c4c2267da6463c16baddd",
+    "patch_embed_to_windows_masked": "ce18654ea8a67c07c0434e1f7521f80303d81f71555c4c2267da6463c16baddd"
+   }
+  },
+  "grid_projection": {
+   "identical": false,
+   "sha256": {
+    "compiler_grid": "d1912c1797db32f9d122879e5183d809d9bbcdf301d43ff70353398117f1d87d",
+    "token_grid": "939a405f25567de43c61ce4519f89353642c9a0c377b6d13ec4feb6d01ac3a22",
+    "feature_grid": "8f60a60351c522e6dff4e9aab1202347ce5d3d160553b800c5eb0bdc4cf4e3c7"
+   }
+  },
+  "grid_literal_types": {
+   "identical": false,
+   "sha256": {
+    "int_zeros": "d1912c1797db32f9d122879e5183d809d9bbcdf301d43ff70353398117f1d87d",
+    "float_zeros": "eb24aba302333e09fe1f8d7c0818b6b3238c8066540cb353d470b754bb26a16a"
+   }
+  },
+  "grid_domain_mask": {
+   "identical": false,
+   "sha256": {
+    "compiler_grid_mask": "45a9f9305ee17116fa013b30b5f583a7633e9d381cfaf16a66366302ef9342dc",
+    "token_grid_domain": "ec4803c570d029cfd3d759912920d27209f926dd8bc671432d640f39f933dc94",
+    "feature_grid_domain": "82b13ef62cd4cc00010c99aeb545a1157dee192b4428f724c548df05c809fb2a",
+    "periodic_extension_domain_mask": "0d05fc3563eb70030e289d5114d3b71f034af2f7e8bd24e67c7926ba1e6d3052"
+   }
+  },
+  "stride_sample_2": {
+   "identical": false,
+   "sha256": {
+    "compiler_stride_sample": "e1efbee8fb34e3646d510bcdbf7fbbb06dd9b192faa9398a4bf8f74869632f8e",
+    "feature_transport_stride_sample": "50ab07a23c04b3f2b3b98f7dcd197abc692b8f0ddc2619ad21d91521a48e800a",
+    "spatial_attention_stride_samples_first": "0c333ef7aa436701b250d4dae4b4e3d4837c870fe42f84d2f783acb716ad04fa"
+   }
+  },
+  "integer_translate": {
+   "identical": false,
+   "sha256": {
+    "swin_pair_shift_translate": "cb22679297dcdc711a6a6cfdf6ae4545b145dbc23da835b543a78053537bf4ef",
+    "feature_interface_translate": "d8b09980d78d6a2faa6eecfecf7128a4e82ed661a578fdedaf3e12526218b62d"
+   }
+  },
+  "score_validity": {
+   "identical": false,
+   "sha256": {
+    "segwater_valid_logits": "d3535c18ced1e98a7cfa225dc36ef0863ddad1cbdb25024dc477e5b9dd8f7536",
+    "compiler_common_score_mask": "3f4d9530fa28273cf29841ba9cb35560bd08ffad85e4830d46841a0265ebdfac"
+   }
+  }
+ }
+}

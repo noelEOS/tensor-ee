@@ -1,0 +1,3501 @@
+{
+  "format": "native_ee_featurecollection_weights_v2",
+  "status": "ready",
+  "asset_namespace": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w",
+  "started_unix": 1791451675.41187,
+  "serialization": "JSON strings of numeric chunks; 9 significant decimal digits for float32; float() restoration",
+  "dummy_geometry": "Point(0, 0); EE table exports require non-null geometry",
+  "max_collection_payload_bytes": 8000000,
+  "max_active_tasks": 2,
+  "parameter_count": 36747964,
+  "layers": {
+    "layers.0.blocks.0.norm1.weight": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.0.norm1.weight",
+      "sha256": "24aa185e1c98b621f97a4ed24918d25a82834f492ab5613e8a9921d1c346a56b",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.0.norm1.bias": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.0.norm1.bias",
+      "sha256": "8605da847bb6354d377efe8ac11a6a2ad91c79958e10442734342630d5f6fbdc",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.0.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        3
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.0.attn.relative_position_bias_table",
+      "sha256": "284b289f168c748ce24e984bd7bdae8fff204ede91e79e97d88a561e23934666",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.0.attn.qkv": {
+      "shape": [
+        288,
+        96
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.0.blocks.0.attn.qkv.weight",
+      "sha256": "3ff7056fc85b54be68df32c9b0f6b22361378f78e5954de226eabb1b06a98056",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.0.attn.proj": {
+      "shape": [
+        96,
+        96
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.0.blocks.0.attn.proj.weight",
+      "sha256": "b076f59043677abbcf390ace478e777a4ba12352c0fb5d28a38790ccceb60b9d",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.0.norm2.weight": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.0.norm2.weight",
+      "sha256": "5dff297fd3e7ea141bf8f4f99ef914622b5236eb10892698d630b1129a43c534",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.0.norm2.bias": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.0.norm2.bias",
+      "sha256": "bd51a99e3e1338cb587c7fc123ad77e225143ec84b923500de4f1e7f452e4e13",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.0.mlp.fc1": {
+      "shape": [
+        384,
+        96
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.0.blocks.0.mlp.fc1.weight",
+      "sha256": "d61fa579a262b715991b948bd8accb516f5b55d0865b1785bf37318fb432d225",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.0.mlp.fc2": {
+      "shape": [
+        96,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.0.blocks.0.mlp.fc2.weight",
+      "sha256": "7fd986f96cf3061262a0ef062bbcbb6a4d40666471b35e7e3dbad544ac00a880",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.norm1.weight": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.1.norm1.weight",
+      "sha256": "3c01f6bccf3a51d23b1fc80440163a363f130106c887a5b836d9af7497bca42a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.norm1.bias": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.1.norm1.bias",
+      "sha256": "557df70bc340138a9474926321c6101a805ff51b50e4063c28cbb07054c70ea9",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        3
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.1.attn.relative_position_bias_table",
+      "sha256": "896d1f2769632cd53f54f2c894d434363d3ea0c846c5d7025d24eb87e2b8d9b9",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.attn.qkv": {
+      "shape": [
+        288,
+        96
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.0.blocks.1.attn.qkv.weight",
+      "sha256": "5c56580cdc7c02fe8f390f8e4cb9d2bb35c128689b09e8e89d6ac1732cd2693f",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.attn.proj": {
+      "shape": [
+        96,
+        96
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.0.blocks.1.attn.proj.weight",
+      "sha256": "ee4b3c4858839bbcf5c1b027570eab5b0b6ab17109fc8b9a928c75b5a815cc48",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.norm2.weight": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.1.norm2.weight",
+      "sha256": "616c9482cc0ba406b2d248f50c2156a74bcb20dde4c4bae4f367cc3a74672e08",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.norm2.bias": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.0.blocks.1.norm2.bias",
+      "sha256": "457023e0336236e7f7da5af7e8462cb22cb4bbe82cd649abd28c2f90affca466",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.mlp.fc1": {
+      "shape": [
+        384,
+        96
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.0.blocks.1.mlp.fc1.weight",
+      "sha256": "bf70c43b8a2616eb30998ecec3dbeb8d6b719ff26f144e3d5cf02a282bc4e678",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.0.blocks.1.mlp.fc2": {
+      "shape": [
+        96,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.0.blocks.1.mlp.fc2.weight",
+      "sha256": "6b8b339b57c0923aa6a5a8b6f8b0758811fd29b5701667747f2161dc184cb1b0",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.1.downsample.norm.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.downsample.norm.weight",
+      "sha256": "364cf910b87d241a8c81dab60de5f34fe0402b0402bc572a381183ecd3c8bf6f",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.1.downsample.norm.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.downsample.norm.bias",
+      "sha256": "23fe21e8df91fccc02d002967f46d7f8cefd30dc0bd32602470e02a38aab7cda",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.1.downsample.reduction": {
+      "shape": [
+        192,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.downsample.reduction.weight",
+      "sha256": "25cf083bf5cebd14581423afcd33743a9af8b1b98ab7b7b6b9698baddaae4ae3",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.1.blocks.0.norm1.weight": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.0.norm1.weight",
+      "sha256": "9053ad80ab02feada13993b5b4b6889d086cb10e8cb27a5d0f491bdd40c7f37e",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.1.blocks.0.norm1.bias": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.0.norm1.bias",
+      "sha256": "8267084bef1e0ab1ce93141df96a1a72f15fccbdce41b9bbbe1e5c2e5c3735f2",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.1.blocks.0.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        6
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.0.attn.relative_position_bias_table",
+      "sha256": "4de2bc6bb56820c5c82fb01f6144a0c1a0bfaa137a890e955a765d3338477e2c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000"
+      ]
+    },
+    "layers.1.blocks.0.attn.qkv": {
+      "shape": [
+        576,
+        192
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.1.blocks.0.attn.qkv.weight",
+      "sha256": "e018b6b61eca5bf2ed8a308043b209e60250905afdc73c8af11699781d3be6ce",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.0.attn.proj": {
+      "shape": [
+        192,
+        192
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.1.blocks.0.attn.proj.weight",
+      "sha256": "3bca0fe79645cc6f15abe45251444760379632617ded6cbe9a77119d3d4ac426",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.0.norm2.weight": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.0.norm2.weight",
+      "sha256": "fd7ef4a5596c351f227bb221c3ea77d5559637dde171dd2e6c7e79286d1491d7",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.0.norm2.bias": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.0.norm2.bias",
+      "sha256": "4454484ed02969b10bdcbffa487e10e4084de73ce2b794dfece965361d3454ca",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.0.mlp.fc1": {
+      "shape": [
+        768,
+        192
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.1.blocks.0.mlp.fc1.weight",
+      "sha256": "10c72e70307df063e87d91cbb16139381ba73ea4fc65c557ddfb95da58192246",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.0.mlp.fc2": {
+      "shape": [
+        192,
+        768
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.1.blocks.0.mlp.fc2.weight",
+      "sha256": "270a95ad0b2810a931b949651fb5608f4c79275a5f530a96a65de2045b9e9203",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.1.norm1.weight": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.1.norm1.weight",
+      "sha256": "d2bb119d660a15dfe40df5ecfa0d56cfcb8548bdb1d4bf1366dba7b20e923823",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.1.norm1.bias": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.1.norm1.bias",
+      "sha256": "9d9d48a6b31a2ec6158acdba83ebfa166bd286df2cf634b555ec3c73cb203952",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.1.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        6
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.1.attn.relative_position_bias_table",
+      "sha256": "2b5b0348be8a870a8de29951c25ba91eb5aac15be6d05c9bcc34450e22b8923d",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001"
+      ]
+    },
+    "layers.1.blocks.1.attn.qkv": {
+      "shape": [
+        576,
+        192
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.1.blocks.1.attn.qkv.weight",
+      "sha256": "787df0b426b9638e1761d2c8ff0bc9001976e9d3697e8b14e071e8c1e32e8c93",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002"
+      ]
+    },
+    "layers.1.blocks.1.attn.proj": {
+      "shape": [
+        192,
+        192
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.1.blocks.1.attn.proj.weight",
+      "sha256": "e7c75d25a17eea578bb768b006a446c4332ba1ff35c5fd31db687b6f7e91a182",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002"
+      ]
+    },
+    "layers.1.blocks.1.norm2.weight": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.1.norm2.weight",
+      "sha256": "61aafac80354054c72aa2401e3c960c5e90a7def32f40db3bdd08d505b6421e3",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002"
+      ]
+    },
+    "layers.1.blocks.1.norm2.bias": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.1.blocks.1.norm2.bias",
+      "sha256": "ef176a450d80ddb2998284ce498778a5e5842083c4d5251bdec2cc0b1b6a3188",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002"
+      ]
+    },
+    "layers.1.blocks.1.mlp.fc1": {
+      "shape": [
+        768,
+        192
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.1.blocks.1.mlp.fc1.weight",
+      "sha256": "bcc9f1882367c0752cf16956b6c4292fc291262914646c5299969294d479c769",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002"
+      ]
+    },
+    "layers.1.blocks.1.mlp.fc2": {
+      "shape": [
+        192,
+        768
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.1.blocks.1.mlp.fc2.weight",
+      "sha256": "455ddfb25792966d1893092e4060a3bd10b225eb788eac38aa9dd0327ad916b8",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002"
+      ]
+    },
+    "layers.2.downsample.norm.weight": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.downsample.norm.weight",
+      "sha256": "4b3e29cb8d44f2d5ab26c576a7427585f13fcc149b262a673d9eb4d7c9ae29f9",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002"
+      ]
+    },
+    "layers.2.downsample.norm.bias": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.downsample.norm.bias",
+      "sha256": "0ab05aec00f6254519f9de51f478d964775d17a51691ea2b51fd798731df6f0b",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002"
+      ]
+    },
+    "layers.2.downsample.reduction": {
+      "shape": [
+        384,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.downsample.reduction.weight",
+      "sha256": "2ffa491c3adbf9351b4126820eb064807e7b1641798078251ebb7844ff2ff1b8",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0003"
+      ]
+    },
+    "layers.2.blocks.0.norm1.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.0.norm1.weight",
+      "sha256": "42530286f364ca66d189adcffa0ca5325c09771bd0c5c96430a2b03b38a0835f",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0003"
+      ]
+    },
+    "layers.2.blocks.0.norm1.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.0.norm1.bias",
+      "sha256": "f6bf53e1e56031ff99b780e6dcfd1362f93db32addeae06d4bfadfd082ecf2e1",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0003"
+      ]
+    },
+    "layers.2.blocks.0.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        12
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.0.attn.relative_position_bias_table",
+      "sha256": "616d0b77157467cdeb04558057b6669fd870bf589525da3e4d0528dea2cc7a3d",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0003"
+      ]
+    },
+    "layers.2.blocks.0.attn.qkv": {
+      "shape": [
+        1152,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.0.attn.qkv.weight",
+      "sha256": "a66f3e9acc539d79ab7dac456ce0c2f5a29b2827070ebaf16bbd6ec362bd31d6",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0003",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0004"
+      ]
+    },
+    "layers.2.blocks.0.attn.proj": {
+      "shape": [
+        384,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.0.attn.proj.weight",
+      "sha256": "5909a29fa98fa0d73e563a94d5d9bbda961ae60ed8e7f581581f08c4340eb541",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0004"
+      ]
+    },
+    "layers.2.blocks.0.norm2.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.0.norm2.weight",
+      "sha256": "ad98aac00a69ddbf6c96f982b29b6e2a0b208a6c2930f741aecdd1b6eca3397a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0004"
+      ]
+    },
+    "layers.2.blocks.0.norm2.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.0.norm2.bias",
+      "sha256": "c1b9048fd2f3f105be262abdf8a1c8401000a8c132448360ed46637b5ff6a632",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0004"
+      ]
+    },
+    "layers.2.blocks.0.mlp.fc1": {
+      "shape": [
+        1536,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.0.mlp.fc1.weight",
+      "sha256": "5137ff8551029616bc0ce9cf23f1e73c809f549dc230e7f297339fa217f22a81",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0004",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0005"
+      ]
+    },
+    "layers.2.blocks.0.mlp.fc2": {
+      "shape": [
+        384,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.0.mlp.fc2.weight",
+      "sha256": "223c62053d189e995e151f16c5547319f86822bd7cc6d6b2133eb829d2082be4",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0005",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0006",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0007"
+      ]
+    },
+    "layers.2.blocks.1.norm1.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.1.norm1.weight",
+      "sha256": "f9132ba9d13c5b9800437e900a2b68f116bf139cdbba643b27a7dfb98ee44f09",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0007"
+      ]
+    },
+    "layers.2.blocks.1.norm1.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.1.norm1.bias",
+      "sha256": "7003865520d318a41335c0499355fc51e951d3e95dc3a9c68d70e59786b158a4",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0007"
+      ]
+    },
+    "layers.2.blocks.1.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        12
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.1.attn.relative_position_bias_table",
+      "sha256": "f4094d827595a5cfce8d7ae2760df96f95f90a6dadd1a3aedc7a5977705277fe",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0007"
+      ]
+    },
+    "layers.2.blocks.1.attn.qkv": {
+      "shape": [
+        1152,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.1.attn.qkv.weight",
+      "sha256": "c3551e0ac4d9c0557db92a7f6c5607d349e910c673fe5ae87c1066a96ee2f599",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0007",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0008"
+      ]
+    },
+    "layers.2.blocks.1.attn.proj": {
+      "shape": [
+        384,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.1.attn.proj.weight",
+      "sha256": "ae1517279879bc0a41687fd43b8de43834d5ce0a5e12a1445d733bd0c36242fd",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0008"
+      ]
+    },
+    "layers.2.blocks.1.norm2.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.1.norm2.weight",
+      "sha256": "f3e77d9343625f2e0e817ed89c6675650942a74022fecb8c718e857c9fab8e5d",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0008"
+      ]
+    },
+    "layers.2.blocks.1.norm2.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.1.norm2.bias",
+      "sha256": "d824752e2b6cee246bcf880663c3a3d31be083cb9c358c8c3a62b5e5d809e3b4",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0008"
+      ]
+    },
+    "layers.2.blocks.1.mlp.fc1": {
+      "shape": [
+        1536,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.1.mlp.fc1.weight",
+      "sha256": "bf5f1e23b26d2c560c7f2a4746a224a4c4c45e3ee028f4acc018efc79abbd55c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0008",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0009"
+      ]
+    },
+    "layers.2.blocks.1.mlp.fc2": {
+      "shape": [
+        384,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.1.mlp.fc2.weight",
+      "sha256": "8b547b9ad76bf39fe37f5f302b592b6ac59947ed55ec1daed55f3d2f75a2d0d3",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0009",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0010"
+      ]
+    },
+    "layers.2.blocks.2.norm1.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.2.norm1.weight",
+      "sha256": "cbacbf144b6bdafdd9b8eb41134a666ca7289e3152aa14fc95be74d95f152fb4",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0010"
+      ]
+    },
+    "layers.2.blocks.2.norm1.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.2.norm1.bias",
+      "sha256": "daaab534111a827e5ab036998508335647d6f9f01933e1824bc907ce8851efc8",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0010"
+      ]
+    },
+    "layers.2.blocks.2.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        12
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.2.attn.relative_position_bias_table",
+      "sha256": "fac0aaf72049ba1c84b0ac3980637d95baf2e746efbe091a68328e0174a0f89a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0010"
+      ]
+    },
+    "layers.2.blocks.2.attn.qkv": {
+      "shape": [
+        1152,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.2.attn.qkv.weight",
+      "sha256": "46767a5b7788a18694b188ed353def916930c4de95448b2ffb58b52ef7cf3cfa",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0010",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0011"
+      ]
+    },
+    "layers.2.blocks.2.attn.proj": {
+      "shape": [
+        384,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.2.attn.proj.weight",
+      "sha256": "55668082703e6684a0b521a731e1a5349f6e8aeb6968a3edc1e3a23b5b53b0ec",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0011",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0012"
+      ]
+    },
+    "layers.2.blocks.2.norm2.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.2.norm2.weight",
+      "sha256": "072a101703f97533a557b568b19731bed528cc7bf6ace72c316c68de469abda8",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0012"
+      ]
+    },
+    "layers.2.blocks.2.norm2.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.2.norm2.bias",
+      "sha256": "ee199c5f9bae98683d1b97f96ac9ce5e0e71a51d2ef037480dd836d7b1b7e2ba",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0012"
+      ]
+    },
+    "layers.2.blocks.2.mlp.fc1": {
+      "shape": [
+        1536,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.2.mlp.fc1.weight",
+      "sha256": "8fe694c16e3ad99efe24a4f9e7fc3ec999eb093a50113a17fd836980bf22c42a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0012",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0013"
+      ]
+    },
+    "layers.2.blocks.2.mlp.fc2": {
+      "shape": [
+        384,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.2.mlp.fc2.weight",
+      "sha256": "684042b4a858f94deebae28315f89d20ade9617dcc819de6442d91b7a315bc60",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0013",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0014"
+      ]
+    },
+    "layers.2.blocks.3.norm1.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.3.norm1.weight",
+      "sha256": "af088ebb17ef2ff740f55f9f483024dfe164c7f3975864aa938d3d04280e108f",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0014"
+      ]
+    },
+    "layers.2.blocks.3.norm1.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.3.norm1.bias",
+      "sha256": "9193cde85263a49f2123526374e566b29f7ed07d97c16408addf6aef8581f6c9",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0014"
+      ]
+    },
+    "layers.2.blocks.3.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        12
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.3.attn.relative_position_bias_table",
+      "sha256": "debf382d47e51f250776f96bc6d0e48c6086eb99433e0c9a79f23c9c474a2154",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0014"
+      ]
+    },
+    "layers.2.blocks.3.attn.qkv": {
+      "shape": [
+        1152,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.3.attn.qkv.weight",
+      "sha256": "12c082925050ae9e5722fdcf6d5e19efbe6301e4f169ebeaa2017380984fd4dc",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0014",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0015"
+      ]
+    },
+    "layers.2.blocks.3.attn.proj": {
+      "shape": [
+        384,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.3.attn.proj.weight",
+      "sha256": "fcc9ec90d0e33dc8b519e8c87fcd970fa1bb4588e7ca8c7349c352f42786be3a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0015"
+      ]
+    },
+    "layers.2.blocks.3.norm2.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.3.norm2.weight",
+      "sha256": "22841141f6f1b13c7253df4e7f794ab530c00b8c3f0b4f8210669c944c7dfb69",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0015"
+      ]
+    },
+    "layers.2.blocks.3.norm2.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.3.norm2.bias",
+      "sha256": "b2af99ef2a8cd1a86291f1c54ebd7af86e6a7d70ff214a723e5324cc06b8ce71",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0015"
+      ]
+    },
+    "layers.2.blocks.3.mlp.fc1": {
+      "shape": [
+        1536,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.3.mlp.fc1.weight",
+      "sha256": "d4c09d53dbc6e63bc4da88c307f6699717ffdc14dfd85c47439335ef7fb0cafa",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0015",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0016",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0017"
+      ]
+    },
+    "layers.2.blocks.3.mlp.fc2": {
+      "shape": [
+        384,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.3.mlp.fc2.weight",
+      "sha256": "f02a7b32863d1ea90143e40648701e66cf24bb060e00b69521212f361f296518",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0017",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0018"
+      ]
+    },
+    "layers.2.blocks.4.norm1.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.4.norm1.weight",
+      "sha256": "c2b12da8d2a8e4fba6cc6fd7bad4e424bfc485a92fc34e54c02ff12996673ae7",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0018"
+      ]
+    },
+    "layers.2.blocks.4.norm1.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.4.norm1.bias",
+      "sha256": "a2a0df613fab7e697d323385d6ebf4e685a39f012f9330a26473db48bf3ab560",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0018"
+      ]
+    },
+    "layers.2.blocks.4.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        12
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.4.attn.relative_position_bias_table",
+      "sha256": "105cae218a20007fcbe2e122e5893b5b5f7d5225c36cc10ee059b3ad5962621d",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0018"
+      ]
+    },
+    "layers.2.blocks.4.attn.qkv": {
+      "shape": [
+        1152,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.4.attn.qkv.weight",
+      "sha256": "91c8b35570d1a771ad08379cd89093590133295d57c06c470b89d8f36067e6d0",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0018",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0019"
+      ]
+    },
+    "layers.2.blocks.4.attn.proj": {
+      "shape": [
+        384,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.4.attn.proj.weight",
+      "sha256": "1f1f023161d425faeef9a2bc7d74a92cde4636de1325b720b3e68f40bbb9b71c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0019"
+      ]
+    },
+    "layers.2.blocks.4.norm2.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.4.norm2.weight",
+      "sha256": "649b4f7e25bb65ef2302890c3617a3697821ed61a2abb59d02aeffec3bd8c364",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0019"
+      ]
+    },
+    "layers.2.blocks.4.norm2.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.4.norm2.bias",
+      "sha256": "8c8d7d69a6225cc7bcdcff58509d213511909508dd33f1a302b4b14809a9fde3",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0019"
+      ]
+    },
+    "layers.2.blocks.4.mlp.fc1": {
+      "shape": [
+        1536,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.4.mlp.fc1.weight",
+      "sha256": "f1ae8c3bd1051ab0f7af42b871fb7e260a62ad813be0b70c8d33909f10803be6",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0019",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0020"
+      ]
+    },
+    "layers.2.blocks.4.mlp.fc2": {
+      "shape": [
+        384,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.4.mlp.fc2.weight",
+      "sha256": "eb10ca329378f8cf6d4cc60e5c234d99840fac9f30248d76ab2e36f6d0cb858c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0020",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0021"
+      ]
+    },
+    "layers.2.blocks.5.norm1.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.5.norm1.weight",
+      "sha256": "87a4f53db928817b6de62cf98ac1914cccb7908907d640efa283c9ae05e8bf5a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0021"
+      ]
+    },
+    "layers.2.blocks.5.norm1.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.5.norm1.bias",
+      "sha256": "3bb126eaa51c23b7e7906cb6bbf572817f58ae4cab5a0fca752a973f06f6b436",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0021"
+      ]
+    },
+    "layers.2.blocks.5.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        12
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.5.attn.relative_position_bias_table",
+      "sha256": "3c79ee0084402682b435105ce5169ccc7cb1dd8255971e4f04b614c751edc12c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0021"
+      ]
+    },
+    "layers.2.blocks.5.attn.qkv": {
+      "shape": [
+        1152,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.5.attn.qkv.weight",
+      "sha256": "1e199d4338c309ca85e6cb040e76c56156f829d20f104d5635457a7ddb60faa8",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0021",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0022"
+      ]
+    },
+    "layers.2.blocks.5.attn.proj": {
+      "shape": [
+        384,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.5.attn.proj.weight",
+      "sha256": "5888b4c984f339158ebe2762ca9f94f442fac11e449e2bdf31495669e669cf67",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0022",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0023"
+      ]
+    },
+    "layers.2.blocks.5.norm2.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.5.norm2.weight",
+      "sha256": "a29c040d5b956ea2dafcdf7a1d37df18fbb046784b0342957f5eeaf5ddc32380",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0023"
+      ]
+    },
+    "layers.2.blocks.5.norm2.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.2.blocks.5.norm2.bias",
+      "sha256": "948c200b13d1ccd054c5c6c94ab41f5516ccc76a4ed5883d1dc51c4af85a9930",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0023"
+      ]
+    },
+    "layers.2.blocks.5.mlp.fc1": {
+      "shape": [
+        1536,
+        384
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.5.mlp.fc1.weight",
+      "sha256": "cb9e8d87c568911e5b67bcb87c995be55a826ed9de95ce183a24387d6f159ec1",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0023",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0024"
+      ]
+    },
+    "layers.2.blocks.5.mlp.fc2": {
+      "shape": [
+        384,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.2.blocks.5.mlp.fc2.weight",
+      "sha256": "73d053bf1d61eba6772e68e2285bddb4c4f16d944b40bd6eab3c86165dc5f814",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0024",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0025"
+      ]
+    },
+    "layers.3.downsample.norm.weight": {
+      "shape": [
+        1,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.downsample.norm.weight",
+      "sha256": "453311dc1a85d8844e48010ad4c10fde51ad4a70edee2b0cbc03ce4eef5afdc8",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0025"
+      ]
+    },
+    "layers.3.downsample.norm.bias": {
+      "shape": [
+        1,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.downsample.norm.bias",
+      "sha256": "07f384bcd1a97aed90c7a3fd40fb0bca7199d65402b424a68b91a212530741e4",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0025"
+      ]
+    },
+    "layers.3.downsample.reduction": {
+      "shape": [
+        768,
+        1536
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.downsample.reduction.weight",
+      "sha256": "0eff03f1bc855af3f548a42110bf0adfded37daad220e21cbe371164f90290cd",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0025",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0026",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0027"
+      ]
+    },
+    "layers.3.blocks.0.norm1.weight": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.0.norm1.weight",
+      "sha256": "df24defa259555aeeba094c6221cea389a9d29a2309d706e71292a307ad8d084",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0027"
+      ]
+    },
+    "layers.3.blocks.0.norm1.bias": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.0.norm1.bias",
+      "sha256": "378f0d5dd0df9a95d81a1b310e0bef73c37252786db9f5a057e0f07f10072bf2",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0027"
+      ]
+    },
+    "layers.3.blocks.0.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        24
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.0.attn.relative_position_bias_table",
+      "sha256": "9b886b6bccd8426f3f4c6c6a54ed59a6a59ae60356bd7877683194a3093a0b68",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0027"
+      ]
+    },
+    "layers.3.blocks.0.attn.qkv": {
+      "shape": [
+        2304,
+        768
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.3.blocks.0.attn.qkv.weight",
+      "sha256": "77a6ab73625c6ee41e7bfe9baf88b5b3b5adc187fa58e21386398f5fd258d0f6",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0027",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0028",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0029",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0030",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0031"
+      ]
+    },
+    "layers.3.blocks.0.attn.proj": {
+      "shape": [
+        768,
+        768
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.3.blocks.0.attn.proj.weight",
+      "sha256": "aff1947ac67336fa89501725133afcf2b3b72f8b2a93b78f0e5857aa5f97e0e3",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0031",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0032"
+      ]
+    },
+    "layers.3.blocks.0.norm2.weight": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.0.norm2.weight",
+      "sha256": "57f58777eeef7c8d195188db8902ec3ec7c03f5d3d9b4f1fa1d7d8c64097004c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0032"
+      ]
+    },
+    "layers.3.blocks.0.norm2.bias": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.0.norm2.bias",
+      "sha256": "4c4396295874a4b70331968098fcfd727d75be62ae9c6fd72b1c3e75d6b7b607",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0032"
+      ]
+    },
+    "layers.3.blocks.0.mlp.fc1": {
+      "shape": [
+        3072,
+        768
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.3.blocks.0.mlp.fc1.weight",
+      "sha256": "7c66844bb1de81d5bc20a42d66daabf3e9a1cda234a8d2d3869aafa67d2fb818",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0032",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0033",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0034",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0035",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0036",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0037"
+      ]
+    },
+    "layers.3.blocks.0.mlp.fc2": {
+      "shape": [
+        768,
+        3072
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.3.blocks.0.mlp.fc2.weight",
+      "sha256": "8ab2bede873aa36b938436fe16033dbbc5020430107bdb2c3f798eeacecaca98",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0037",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0038",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0039",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0040",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0041",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0042"
+      ]
+    },
+    "layers.3.blocks.1.norm1.weight": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.1.norm1.weight",
+      "sha256": "d0855972027568ec069f6341f27b3450ac134ffaaddbddc3dbf950221e3b0a26",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0042"
+      ]
+    },
+    "layers.3.blocks.1.norm1.bias": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.1.norm1.bias",
+      "sha256": "2cac2935f50e814f0d0e6c401c590d468d64f03a321f045731ede02ddc13bfe1",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0042"
+      ]
+    },
+    "layers.3.blocks.1.attn.relative_position_bias_table": {
+      "shape": [
+        169,
+        24
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.1.attn.relative_position_bias_table",
+      "sha256": "228a7c3369f73e49d34042bc114a54110d6c27f005ff462dada3c762c5b5eb3e",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0042"
+      ]
+    },
+    "layers.3.blocks.1.attn.qkv": {
+      "shape": [
+        2304,
+        768
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.3.blocks.1.attn.qkv.weight",
+      "sha256": "3e3ebe045bca2ce43a203721fc7bcf0385cb35fc78a7de58bcaa87129f8ce44e",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0042",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0043",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0044",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0045"
+      ]
+    },
+    "layers.3.blocks.1.attn.proj": {
+      "shape": [
+        768,
+        768
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.3.blocks.1.attn.proj.weight",
+      "sha256": "78f918997cb6bd694a88dbbd1e8a14589d0d20103d6e08327b022e7efbd232dc",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0045",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0046"
+      ]
+    },
+    "layers.3.blocks.1.norm2.weight": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.1.norm2.weight",
+      "sha256": "0fecbdb66185781b0913363dc87891ece7fa49e95b4a13d93513af665fb7c457",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0046"
+      ]
+    },
+    "layers.3.blocks.1.norm2.bias": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "layers.3.blocks.1.norm2.bias",
+      "sha256": "1db1571ea6ef449026a88049883015ef7eb08b3347f4d1902c2e5e10bc46e382",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0046"
+      ]
+    },
+    "layers.3.blocks.1.mlp.fc1": {
+      "shape": [
+        3072,
+        768
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.3.blocks.1.mlp.fc1.weight",
+      "sha256": "9c27079e6815306d5cd579ff223b73e8a8ec8116f8f3a1f153a2a12563317a6d",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0046",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0047",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0048",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0049",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0050",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0051"
+      ]
+    },
+    "layers.3.blocks.1.mlp.fc2": {
+      "shape": [
+        768,
+        3072
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "layers.3.blocks.1.mlp.fc2.weight",
+      "sha256": "9aab4465d179e4033554bfcc126d494bd822f3c3a32b93f7757bbc0462a4b0f9",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0051",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0052",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0053",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0054",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0055",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0056"
+      ]
+    },
+    "patch_embed.proj": {
+      "shape": [
+        96,
+        32
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "patch_embed.proj.weight",
+      "sha256": "b9e4ea46dd395bc2e8cf18bd836a0f72a4f6912309264c3e814e6318ddc5554b",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0056"
+      ]
+    },
+    "patch_embed.norm.weight": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "patch_embed.norm.weight",
+      "sha256": "ffd7c2f2002b84d775f4114b6dcb0a3835f9be29e8b602cd6f1503749f99242f",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0056"
+      ]
+    },
+    "patch_embed.norm.bias": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "patch_embed.norm.bias",
+      "sha256": "8600faa78d271ff32a2b55ef0551e7631b9b0e5f484f63023f8ff76a2ceb5345",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0056"
+      ]
+    },
+    "decoder.fusion_block.0": {
+      "shape": [
+        256,
+        9216
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fusion_block.0.weight",
+      "sha256": "dd84fca67fe79a3f7dda694eb82f203ca65ab41e683ef79c4ec66ec702765703",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0056",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0057",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0058",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0059",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0060"
+      ]
+    },
+    "decoder.fusion_block.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fusion_block.1.weight",
+      "sha256": "1d16a5c1795d76d20db322d3e087ff8a5ea20271416e2486753e0563ae4eec4f",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0060"
+      ]
+    },
+    "decoder.fusion_block.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fusion_block.1.bias",
+      "sha256": "6c2cccc1db4eedabb6690e1102325e687252ddcc4b06437233c28f9027b1a062",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0060"
+      ]
+    },
+    "decoder.fusion_block.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fusion_block.1.running_mean",
+      "sha256": "bdfd6e03014a874d49697b7f895394c5fdcb83685450407a986fb2c939f612b7",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0060"
+      ]
+    },
+    "decoder.fusion_block.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fusion_block.1.running_var",
+      "sha256": "6950c4526e671680773c7eacdf2e9fb3b18f059fd8bb609d0adf41f669c477d7",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0060"
+      ]
+    },
+    "decoder.psp.out_conv.0": {
+      "shape": [
+        256,
+        16128
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.out_conv.0.weight",
+      "sha256": "99997509da9e4ea32bab3566f805dfa00d597d6ad91b8dc095b7bf3b32091a4e",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0060",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0061",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0062",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0063",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0064",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0065",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0066",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0067",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0068"
+      ]
+    },
+    "decoder.psp.out_conv.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.out_conv.1.weight",
+      "sha256": "4d17b3b4455327fb448ea41279a5de6f2524f1c6bc8c8acfa32ccd55f89ffe75",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0068"
+      ]
+    },
+    "decoder.psp.out_conv.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.out_conv.1.bias",
+      "sha256": "6cc49a6be046af1235e248a874f2e0b0b0488172200e1db73924c76ec27f224e",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0068"
+      ]
+    },
+    "decoder.psp.out_conv.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.out_conv.1.running_mean",
+      "sha256": "027bd1f37c429a7157e3852a6a99d51833472223608d978efa29625dd1e22779",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0068"
+      ]
+    },
+    "decoder.psp.out_conv.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.out_conv.1.running_var",
+      "sha256": "fc44cc98fc01d9f08286845fac865f0140fc49da394cd73d00d2a67213b979a1",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0068"
+      ]
+    },
+    "decoder.fpn_conv_blocks.0.0": {
+      "shape": [
+        256,
+        2304
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.0.0.weight",
+      "sha256": "99afbef880c8cb0494c25fd610398657ec084cbf4f624271d7c41162592133a5",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0068",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0069",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0070"
+      ]
+    },
+    "decoder.fpn_conv_blocks.0.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.0.1.weight",
+      "sha256": "daac165ae3a01b7680f4edec1d8cd324acba0ceeef39b990fcec1802011a4c82",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0070"
+      ]
+    },
+    "decoder.fpn_conv_blocks.0.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.0.1.bias",
+      "sha256": "18e8365a14ade51545e24f1adc410fd6f4b17330003c1f4da781363881e69310",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0070"
+      ]
+    },
+    "decoder.fpn_conv_blocks.0.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.0.1.running_mean",
+      "sha256": "b51a95f4b63ba650488bc0489dc2b07616a9ff7318fb7a446e4d38efbc88bbf0",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0070"
+      ]
+    },
+    "decoder.fpn_conv_blocks.0.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.0.1.running_var",
+      "sha256": "ca207e06c5bfe64df6308a00d8de7becaff395a19f5ae4eb5063813b4a9f34da",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0070"
+      ]
+    },
+    "decoder.fpn_conv_blocks.1.0": {
+      "shape": [
+        256,
+        2304
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.1.0.weight",
+      "sha256": "fd947dd2c15ddf0420138e0a9b5b5fc223fe81abf831957c60f623849fa4efd1",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0070",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0071"
+      ]
+    },
+    "decoder.fpn_conv_blocks.1.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.1.1.weight",
+      "sha256": "b6654ec1f3cbcb5cf0d412f6f10843f59c49ed2f0e46556b9178e75426595f86",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0071"
+      ]
+    },
+    "decoder.fpn_conv_blocks.1.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.1.1.bias",
+      "sha256": "52da47df770f634d908c73165a646cba0a554f100aa01ba720570a259115f74c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0071"
+      ]
+    },
+    "decoder.fpn_conv_blocks.1.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.1.1.running_mean",
+      "sha256": "212c7597edc00e24f4048b5f42d7186450c2e69a7d80a10219311d2ec7a43558",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0071"
+      ]
+    },
+    "decoder.fpn_conv_blocks.1.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.1.1.running_var",
+      "sha256": "99182eb66f52b9be57c1f10624011d90b6e288e24ceeb2f879296ab58b4103ed",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0071"
+      ]
+    },
+    "decoder.fpn_conv_blocks.2.0": {
+      "shape": [
+        256,
+        2304
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.2.0.weight",
+      "sha256": "c94fbb433d9385ef0b2cc3bef7568fc4a8fc8b3ce2d7897ef18a16a2c2e3d7ea",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0071",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.fpn_conv_blocks.2.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.2.1.weight",
+      "sha256": "b7dadfbe1b21e6794387fcb0bcd22b7a411f6b5b0ad1dfd9092989ec4b4810c5",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.fpn_conv_blocks.2.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.2.1.bias",
+      "sha256": "7f91ad582625b5dbf69626e5404f8a9a2ebf172489ba12db44a497e64b57e1b2",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.fpn_conv_blocks.2.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.2.1.running_mean",
+      "sha256": "c20d9f88c1b25566f089885c7d1606e4d3ad87531ba9d85e24b52f7af0ea8daa",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.fpn_conv_blocks.2.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_conv_blocks.2.1.running_var",
+      "sha256": "a60ac29c3bfdd1ae02df25e5dfe2cda1f4d7750a43dd565fd3740a4d705eff8a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.psp.blocks.0.1.0": {
+      "shape": [
+        256,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.0.1.0.weight",
+      "sha256": "283456dc5a493b57c56d6a1ac2a77ce133a2f258d4021de954fcb6797cef93ce",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.psp.blocks.0.1.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.0.1.1.weight",
+      "sha256": "615a6fd134345d6d19f2a14e664737653334e5320de2bec08bba222966436937",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.psp.blocks.0.1.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.0.1.1.bias",
+      "sha256": "3d5516158d72caf66a4a524feb29c253b07038c9bb8240bba9ac4233a9763f3c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.psp.blocks.0.1.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.0.1.1.running_mean",
+      "sha256": "a950409451d6f278acd140bc15e33caeb79351c087e8cdbf242f200fa4164ee3",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.psp.blocks.0.1.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.0.1.1.running_var",
+      "sha256": "dc71e1e15251848728127d05fe8bfbd03aeaad0edc2a02f9a0e8027b9fad7cae",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072"
+      ]
+    },
+    "decoder.psp.blocks.1.1.0": {
+      "shape": [
+        256,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.1.1.0.weight",
+      "sha256": "dd58b82c70da36f322d3be136ffaf079fe596d90852f87575559fbd36e0d8944",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.1.1.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.1.1.1.weight",
+      "sha256": "45a68cf735d6dc8d10853fee7f76305f7d9c914cc559ebbc3bff0af0297b2520",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.1.1.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.1.1.1.bias",
+      "sha256": "731e9c50d7ba8688aeaa373e083096e328580d9c93f027c2ab7082a207f3b5be",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.1.1.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.1.1.1.running_mean",
+      "sha256": "fa1b755fca68b2dd153129d1d3f80e9b53351bdf7bba6cbd3661544bfe23a542",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.1.1.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.1.1.1.running_var",
+      "sha256": "0f38c58b722cb34163090fb92c3dfbf29dad4405b0f07233f3ef13ad64af028b",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.2.1.0": {
+      "shape": [
+        256,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.2.1.0.weight",
+      "sha256": "f8c4330c19b12d643d743083a25fc50737e70e8033f08c95c677a2a7d9eaf474",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.2.1.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.2.1.1.weight",
+      "sha256": "5756b3c3210de52c52ad21c51fe3fc73844b880e65238a22d40c67540e74cd82",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.2.1.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.2.1.1.bias",
+      "sha256": "4a08ac2d5d6bfda5bfa4d36ad0a094480c4cf3c1f8f3cea71087b104b423c787",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.2.1.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.2.1.1.running_mean",
+      "sha256": "4f9d7e8286ce9d671453070cd894ff26ca93043b573399233782c273e582ba87",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.2.1.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.2.1.1.running_var",
+      "sha256": "5ffb661325bd5add1bed0c439226fed6a24b8dc03c7da0037ec6fdd6a7e23704",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073"
+      ]
+    },
+    "decoder.psp.blocks.3.1.0": {
+      "shape": [
+        256,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.3.1.0.weight",
+      "sha256": "bb9342a4181b14739c62c9f3300acf11f3afcba76703f2e1cf9ccd135a5d8c4a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073",
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.psp.blocks.3.1.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.3.1.1.weight",
+      "sha256": "ffa25d0c57a0d104b7fa9db2e0511e8ee2d8dd2f0a6fbe81a97285934dfc5297",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.psp.blocks.3.1.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.3.1.1.bias",
+      "sha256": "a7fe8a97eb8be76d342c881af8cce854646eee5c7e550ed1c2ce179c65bced73",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.psp.blocks.3.1.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.3.1.1.running_mean",
+      "sha256": "ea2f3d5b2e7a4ee3cded3d387697c6b116214b2f4bb4c053e8ba3f05fa3a48d9",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.psp.blocks.3.1.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.psp.blocks.3.1.1.running_var",
+      "sha256": "c6048874e4e4527ee8616d13c2522daaa8ac0e0a4a5843afb6e44a083f4acf1c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.0.conv_norm_relu.0": {
+      "shape": [
+        256,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.0.conv_norm_relu.0.weight",
+      "sha256": "ee3c2a4fe9c24e0e579e08a45fccf061a6bd19efc97a5a8f45b5012a6b93346f",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.weight",
+      "sha256": "ca5e38aa08867ab4f4c435cf87e8094c89eaeb82fc828805525a73cbe5a90ad3",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.bias",
+      "sha256": "663116825fb05d6b1da1063d5aa55ad962f814c64e0d4cf527a726c6fbde26e5",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.running_mean",
+      "sha256": "43f969f4d2c6955d0f4f741227177fe2fe5d0735be37e9006c143a1a9db8b336",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.running_var",
+      "sha256": "2a040700e84202fec2ea8bfb1e35522b7367af1e7d47488f334f353b88687add",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.1.conv_norm_relu.0": {
+      "shape": [
+        256,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.1.conv_norm_relu.0.weight",
+      "sha256": "a2f2506d52f8d386a715dac6d3c8e4252f3301d992f3ac364c7925c954f3a00a",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.weight",
+      "sha256": "fafd1b95a3eeb5a41d8ab46b75317636f3300d181547ccafb17540747cce9b0d",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.bias",
+      "sha256": "afc3b2d3a3f75403d2acd0991992d73acb5df20a2a08a55ef6674a8d95640f7d",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.running_mean",
+      "sha256": "e61534f5fd700b89d849cb6246ac7df6e456b688aaecddd07ab8e9413959737b",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.running_var",
+      "sha256": "16aea69fbb890e5cc8464f1250ac660ce019ce2e0d73f4dca7c20b3999741da4",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.2.conv_norm_relu.0": {
+      "shape": [
+        256,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.2.conv_norm_relu.0.weight",
+      "sha256": "faa49fac84fcf363dcac4f8d2805e86f67830d5a74d1ac5c5408c2d152c7aba8",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.weight": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.weight",
+      "sha256": "e136abbb7c34a97732093019dbd11d8cd42a5616d0f17b3749afb32b6acd3685",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.bias": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.bias",
+      "sha256": "620522b70487b174baa79a7624c9d37be318eedaa8ba58b3560d37218b670336",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.running_mean": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.running_mean",
+      "sha256": "01e0ddf554d5d09e5405d09e3b6ecdd29a69f41d3645c1a69489c738de0edecc",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.running_var": {
+      "shape": [
+        1,
+        256
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.running_var",
+      "sha256": "75c0213bb192c937b51c8fed91de5e175b72aa2b6f5b563d0012b5c5190d9dd7",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.feature_norms.0.weight": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.feature_norms.0.weight",
+      "sha256": "e59b2143d9507a51af1e9e6fa021190e3c7ca92fc5d742bae84b276c8bca724c",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.feature_norms.0.bias": {
+      "shape": [
+        1,
+        96
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.feature_norms.0.bias",
+      "sha256": "5d3e841b4290330c56fb7c02ae00647a6202c0338bb64f441a055776c7576ca9",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.feature_norms.1.weight": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.feature_norms.1.weight",
+      "sha256": "abeb91647b149291a74ededba4527000431257536b29a3b862e99d12059f0185",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.feature_norms.1.bias": {
+      "shape": [
+        1,
+        192
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.feature_norms.1.bias",
+      "sha256": "18621fdcf65ac8d4d95bb60b074aedaa6b33ef117acbc1ace5bd13181271c005",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.feature_norms.2.weight": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.feature_norms.2.weight",
+      "sha256": "1fa6835e90a8ac4cf9f93673654a81243edf861ddda0daa6e990f4f292dea96f",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.feature_norms.2.bias": {
+      "shape": [
+        1,
+        384
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.feature_norms.2.bias",
+      "sha256": "8b176e983e9be214f5e964d083c7cd33e71e10d9dc49eef0aeab0ce00fbad017",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.feature_norms.3.weight": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.feature_norms.3.weight",
+      "sha256": "88983a199f17f87f700aebd76076a961f8ca59a0c3cd8a071825387674227303",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "decoder.feature_norms.3.bias": {
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32",
+      "bias": false,
+      "source": "decoder.feature_norms.3.bias",
+      "sha256": "a50b352ae4f31296920132a29e3a2798679bd0cc56b8fb49cfbcfb3d0e7ae381",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    },
+    "segmentation_head.0": {
+      "shape": [
+        2,
+        256
+      ],
+      "dtype": "float32",
+      "bias": true,
+      "source": "segmentation_head.0.weight",
+      "sha256": "6110c05fdffbcc9e36cd9cb0df82227f49eddc1f6123374f223ef5ebdbbf575b",
+      "assets": [
+        "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074"
+      ]
+    }
+  },
+  "shards": [
+    {
+      "index": 0,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0000",
+      "rows": 2869,
+      "layers": [
+        "layers.0.blocks.0.attn.proj",
+        "layers.0.blocks.0.attn.qkv",
+        "layers.0.blocks.0.attn.relative_position_bias_table",
+        "layers.0.blocks.0.mlp.fc1",
+        "layers.0.blocks.0.mlp.fc2",
+        "layers.0.blocks.0.norm1.bias",
+        "layers.0.blocks.0.norm1.weight",
+        "layers.0.blocks.0.norm2.bias",
+        "layers.0.blocks.0.norm2.weight",
+        "layers.0.blocks.1.attn.proj",
+        "layers.0.blocks.1.attn.qkv",
+        "layers.0.blocks.1.attn.relative_position_bias_table",
+        "layers.0.blocks.1.mlp.fc1",
+        "layers.0.blocks.1.mlp.fc2",
+        "layers.0.blocks.1.norm1.bias",
+        "layers.0.blocks.1.norm1.weight",
+        "layers.0.blocks.1.norm2.bias",
+        "layers.0.blocks.1.norm2.weight",
+        "layers.1.blocks.0.attn.qkv",
+        "layers.1.blocks.0.attn.relative_position_bias_table",
+        "layers.1.blocks.0.norm1.bias",
+        "layers.1.blocks.0.norm1.weight",
+        "layers.1.downsample.norm.bias",
+        "layers.1.downsample.norm.weight",
+        "layers.1.downsample.reduction"
+      ],
+      "collection_payload_bytes": 6182231,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 1,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0001",
+      "rows": 1849,
+      "layers": [
+        "layers.1.blocks.0.attn.proj",
+        "layers.1.blocks.0.attn.qkv",
+        "layers.1.blocks.0.mlp.fc1",
+        "layers.1.blocks.0.mlp.fc2",
+        "layers.1.blocks.0.norm2.bias",
+        "layers.1.blocks.0.norm2.weight",
+        "layers.1.blocks.1.attn.qkv",
+        "layers.1.blocks.1.attn.relative_position_bias_table",
+        "layers.1.blocks.1.norm1.bias",
+        "layers.1.blocks.1.norm1.weight"
+      ],
+      "collection_payload_bytes": 6543146,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 2,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0002",
+      "rows": 1461,
+      "layers": [
+        "layers.1.blocks.1.attn.proj",
+        "layers.1.blocks.1.attn.qkv",
+        "layers.1.blocks.1.mlp.fc1",
+        "layers.1.blocks.1.mlp.fc2",
+        "layers.1.blocks.1.norm2.bias",
+        "layers.1.blocks.1.norm2.weight",
+        "layers.2.downsample.norm.bias",
+        "layers.2.downsample.norm.weight",
+        "layers.2.downsample.reduction"
+      ],
+      "collection_payload_bytes": 6667536,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 3,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0003",
+      "rows": 1119,
+      "layers": [
+        "layers.2.blocks.0.attn.qkv",
+        "layers.2.blocks.0.attn.relative_position_bias_table",
+        "layers.2.blocks.0.norm1.bias",
+        "layers.2.blocks.0.norm1.weight",
+        "layers.2.downsample.reduction"
+      ],
+      "collection_payload_bytes": 6776900,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 4,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0004",
+      "rows": 1212,
+      "layers": [
+        "layers.2.blocks.0.attn.proj",
+        "layers.2.blocks.0.attn.qkv",
+        "layers.2.blocks.0.mlp.fc1",
+        "layers.2.blocks.0.norm2.bias",
+        "layers.2.blocks.0.norm2.weight"
+      ],
+      "collection_payload_bytes": 6758547,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 5,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0005",
+      "rows": 1197,
+      "layers": [
+        "layers.2.blocks.0.mlp.fc1",
+        "layers.2.blocks.0.mlp.fc2"
+      ],
+      "collection_payload_bytes": 6759360,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 6,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0006",
+      "rows": 331,
+      "layers": [
+        "layers.2.blocks.0.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7037898,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 7,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0007",
+      "rows": 1239,
+      "layers": [
+        "layers.2.blocks.0.mlp.fc2",
+        "layers.2.blocks.1.attn.qkv",
+        "layers.2.blocks.1.attn.relative_position_bias_table",
+        "layers.2.blocks.1.norm1.bias",
+        "layers.2.blocks.1.norm1.weight"
+      ],
+      "collection_payload_bytes": 6743794,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 8,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0008",
+      "rows": 1213,
+      "layers": [
+        "layers.2.blocks.1.attn.proj",
+        "layers.2.blocks.1.attn.qkv",
+        "layers.2.blocks.1.mlp.fc1",
+        "layers.2.blocks.1.norm2.bias",
+        "layers.2.blocks.1.norm2.weight"
+      ],
+      "collection_payload_bytes": 6763284,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 9,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0009",
+      "rows": 942,
+      "layers": [
+        "layers.2.blocks.1.mlp.fc1",
+        "layers.2.blocks.1.mlp.fc2"
+      ],
+      "collection_payload_bytes": 6840577,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 10,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0010",
+      "rows": 612,
+      "layers": [
+        "layers.2.blocks.1.mlp.fc2",
+        "layers.2.blocks.2.attn.qkv",
+        "layers.2.blocks.2.attn.relative_position_bias_table",
+        "layers.2.blocks.2.norm1.bias",
+        "layers.2.blocks.2.norm1.weight"
+      ],
+      "collection_payload_bytes": 6955919,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 11,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0011",
+      "rows": 1215,
+      "layers": [
+        "layers.2.blocks.2.attn.proj",
+        "layers.2.blocks.2.attn.qkv"
+      ],
+      "collection_payload_bytes": 6758425,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 12,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0012",
+      "rows": 1215,
+      "layers": [
+        "layers.2.blocks.2.attn.proj",
+        "layers.2.blocks.2.mlp.fc1",
+        "layers.2.blocks.2.norm2.bias",
+        "layers.2.blocks.2.norm2.weight"
+      ],
+      "collection_payload_bytes": 6762308,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 13,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0013",
+      "rows": 685,
+      "layers": [
+        "layers.2.blocks.2.mlp.fc1",
+        "layers.2.blocks.2.mlp.fc2"
+      ],
+      "collection_payload_bytes": 6935893,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 14,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0014",
+      "rows": 876,
+      "layers": [
+        "layers.2.blocks.2.mlp.fc2",
+        "layers.2.blocks.3.attn.qkv",
+        "layers.2.blocks.3.attn.relative_position_bias_table",
+        "layers.2.blocks.3.norm1.bias",
+        "layers.2.blocks.3.norm1.weight"
+      ],
+      "collection_payload_bytes": 6867983,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 15,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0015",
+      "rows": 1214,
+      "layers": [
+        "layers.2.blocks.3.attn.proj",
+        "layers.2.blocks.3.attn.qkv",
+        "layers.2.blocks.3.mlp.fc1",
+        "layers.2.blocks.3.norm2.bias",
+        "layers.2.blocks.3.norm2.weight"
+      ],
+      "collection_payload_bytes": 6760967,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 16,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0016",
+      "rows": 1215,
+      "layers": [
+        "layers.2.blocks.3.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6760622,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 17,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0017",
+      "rows": 424,
+      "layers": [
+        "layers.2.blocks.3.mlp.fc1",
+        "layers.2.blocks.3.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7025924,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 18,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0018",
+      "rows": 1139,
+      "layers": [
+        "layers.2.blocks.3.mlp.fc2",
+        "layers.2.blocks.4.attn.qkv",
+        "layers.2.blocks.4.attn.relative_position_bias_table",
+        "layers.2.blocks.4.norm1.bias",
+        "layers.2.blocks.4.norm1.weight"
+      ],
+      "collection_payload_bytes": 6774281,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 19,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0019",
+      "rows": 1215,
+      "layers": [
+        "layers.2.blocks.4.attn.proj",
+        "layers.2.blocks.4.attn.qkv",
+        "layers.2.blocks.4.mlp.fc1",
+        "layers.2.blocks.4.norm2.bias",
+        "layers.2.blocks.4.norm2.weight"
+      ],
+      "collection_payload_bytes": 6759556,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 20,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0020",
+      "rows": 1041,
+      "layers": [
+        "layers.2.blocks.4.mlp.fc1",
+        "layers.2.blocks.4.mlp.fc2"
+      ],
+      "collection_payload_bytes": 6811039,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 21,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0021",
+      "rows": 526,
+      "layers": [
+        "layers.2.blocks.4.mlp.fc2",
+        "layers.2.blocks.5.attn.qkv",
+        "layers.2.blocks.5.attn.relative_position_bias_table",
+        "layers.2.blocks.5.norm1.bias",
+        "layers.2.blocks.5.norm1.weight"
+      ],
+      "collection_payload_bytes": 6982588,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 22,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0022",
+      "rows": 1217,
+      "layers": [
+        "layers.2.blocks.5.attn.proj",
+        "layers.2.blocks.5.attn.qkv"
+      ],
+      "collection_payload_bytes": 6757409,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 23,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0023",
+      "rows": 1216,
+      "layers": [
+        "layers.2.blocks.5.attn.proj",
+        "layers.2.blocks.5.mlp.fc1",
+        "layers.2.blocks.5.norm2.bias",
+        "layers.2.blocks.5.norm2.weight"
+      ],
+      "collection_payload_bytes": 6759239,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 24,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0024",
+      "rows": 773,
+      "layers": [
+        "layers.2.blocks.5.mlp.fc1",
+        "layers.2.blocks.5.mlp.fc2"
+      ],
+      "collection_payload_bytes": 6896919,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 25,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0025",
+      "rows": 335,
+      "layers": [
+        "layers.2.blocks.5.mlp.fc2",
+        "layers.3.downsample.norm.bias",
+        "layers.3.downsample.norm.weight",
+        "layers.3.downsample.reduction"
+      ],
+      "collection_payload_bytes": 7045698,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 26,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0026",
+      "rows": 332,
+      "layers": [
+        "layers.3.downsample.reduction"
+      ],
+      "collection_payload_bytes": 7043483,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 27,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0027",
+      "rows": 499,
+      "layers": [
+        "layers.3.blocks.0.attn.qkv",
+        "layers.3.blocks.0.attn.relative_position_bias_table",
+        "layers.3.blocks.0.norm1.bias",
+        "layers.3.blocks.0.norm1.weight",
+        "layers.3.downsample.reduction"
+      ],
+      "collection_payload_bytes": 6978342,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 28,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0028",
+      "rows": 647,
+      "layers": [
+        "layers.3.blocks.0.attn.qkv"
+      ],
+      "collection_payload_bytes": 6949428,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 29,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0029",
+      "rows": 647,
+      "layers": [
+        "layers.3.blocks.0.attn.qkv"
+      ],
+      "collection_payload_bytes": 6949838,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 30,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0030",
+      "rows": 645,
+      "layers": [
+        "layers.3.blocks.0.attn.qkv"
+      ],
+      "collection_payload_bytes": 6945501,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 31,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0031",
+      "rows": 644,
+      "layers": [
+        "layers.3.blocks.0.attn.proj",
+        "layers.3.blocks.0.attn.qkv"
+      ],
+      "collection_payload_bytes": 6949193,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 32,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0032",
+      "rows": 645,
+      "layers": [
+        "layers.3.blocks.0.attn.proj",
+        "layers.3.blocks.0.mlp.fc1",
+        "layers.3.blocks.0.norm2.bias",
+        "layers.3.blocks.0.norm2.weight"
+      ],
+      "collection_payload_bytes": 6952228,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 33,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0033",
+      "rows": 646,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6952176,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 34,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0034",
+      "rows": 645,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6942550,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 35,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0035",
+      "rows": 646,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6952847,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 36,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0036",
+      "rows": 645,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6942938,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 37,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0037",
+      "rows": 410,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc1",
+        "layers.3.blocks.0.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7027184,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 38,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0038",
+      "rows": 169,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7080880,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 39,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0039",
+      "rows": 169,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7080439,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 40,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0040",
+      "rows": 169,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7081422,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 41,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0041",
+      "rows": 169,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7081428,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 42,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0042",
+      "rows": 778,
+      "layers": [
+        "layers.3.blocks.0.mlp.fc2",
+        "layers.3.blocks.1.attn.qkv",
+        "layers.3.blocks.1.attn.relative_position_bias_table",
+        "layers.3.blocks.1.norm1.bias",
+        "layers.3.blocks.1.norm1.weight"
+      ],
+      "collection_payload_bytes": 6889694,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 43,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0043",
+      "rows": 647,
+      "layers": [
+        "layers.3.blocks.1.attn.qkv"
+      ],
+      "collection_payload_bytes": 6946596,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 44,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0044",
+      "rows": 645,
+      "layers": [
+        "layers.3.blocks.1.attn.qkv"
+      ],
+      "collection_payload_bytes": 6945915,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 45,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0045",
+      "rows": 644,
+      "layers": [
+        "layers.3.blocks.1.attn.proj",
+        "layers.3.blocks.1.attn.qkv"
+      ],
+      "collection_payload_bytes": 6943236,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 46,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0046",
+      "rows": 644,
+      "layers": [
+        "layers.3.blocks.1.attn.proj",
+        "layers.3.blocks.1.mlp.fc1",
+        "layers.3.blocks.1.norm2.bias",
+        "layers.3.blocks.1.norm2.weight"
+      ],
+      "collection_payload_bytes": 6942551,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 47,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0047",
+      "rows": 646,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6952413,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 48,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0048",
+      "rows": 645,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6943610,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 49,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0049",
+      "rows": 645,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6943180,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 50,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0050",
+      "rows": 645,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc1"
+      ],
+      "collection_payload_bytes": 6942584,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 51,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0051",
+      "rows": 454,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc1",
+        "layers.3.blocks.1.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7004119,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 52,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0052",
+      "rows": 169,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7079648,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 53,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0053",
+      "rows": 169,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7081401,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 54,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0054",
+      "rows": 169,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7080806,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 55,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0055",
+      "rows": 169,
+      "layers": [
+        "layers.3.blocks.1.mlp.fc2"
+      ],
+      "collection_payload_bytes": 7081217,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 56,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0056",
+      "rows": 261,
+      "layers": [
+        "decoder.fusion_block.0",
+        "layers.3.blocks.1.mlp.fc2",
+        "patch_embed.norm.bias",
+        "patch_embed.norm.weight",
+        "patch_embed.proj"
+      ],
+      "collection_payload_bytes": 7045153,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 57,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0057",
+      "rows": 165,
+      "layers": [
+        "decoder.fusion_block.0"
+      ],
+      "collection_payload_bytes": 7057828,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 58,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0058",
+      "rows": 165,
+      "layers": [
+        "decoder.fusion_block.0"
+      ],
+      "collection_payload_bytes": 7057995,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 59,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0059",
+      "rows": 165,
+      "layers": [
+        "decoder.fusion_block.0"
+      ],
+      "collection_payload_bytes": 7059624,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 60,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0060",
+      "rows": 162,
+      "layers": [
+        "decoder.fusion_block.0",
+        "decoder.fusion_block.1.bias",
+        "decoder.fusion_block.1.running_mean",
+        "decoder.fusion_block.1.running_var",
+        "decoder.fusion_block.1.weight",
+        "decoder.psp.out_conv.0"
+      ],
+      "collection_payload_bytes": 7092471,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 61,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0061",
+      "rows": 125,
+      "layers": [
+        "decoder.psp.out_conv.0"
+      ],
+      "collection_payload_bytes": 7079277,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 62,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0062",
+      "rows": 125,
+      "layers": [
+        "decoder.psp.out_conv.0"
+      ],
+      "collection_payload_bytes": 7078419,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 63,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0063",
+      "rows": 125,
+      "layers": [
+        "decoder.psp.out_conv.0"
+      ],
+      "collection_payload_bytes": 7078412,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 64,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0064",
+      "rows": 125,
+      "layers": [
+        "decoder.psp.out_conv.0"
+      ],
+      "collection_payload_bytes": 7075341,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 65,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0065",
+      "rows": 125,
+      "layers": [
+        "decoder.psp.out_conv.0"
+      ],
+      "collection_payload_bytes": 7078722,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 66,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0066",
+      "rows": 125,
+      "layers": [
+        "decoder.psp.out_conv.0"
+      ],
+      "collection_payload_bytes": 7077681,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 67,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0067",
+      "rows": 125,
+      "layers": [
+        "decoder.psp.out_conv.0"
+      ],
+      "collection_payload_bytes": 7078311,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 68,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0068",
+      "rows": 130,
+      "layers": [
+        "decoder.fpn_conv_blocks.0.0",
+        "decoder.psp.out_conv.0",
+        "decoder.psp.out_conv.1.bias",
+        "decoder.psp.out_conv.1.running_mean",
+        "decoder.psp.out_conv.1.running_var",
+        "decoder.psp.out_conv.1.weight"
+      ],
+      "collection_payload_bytes": 7119948,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 69,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0069",
+      "rows": 223,
+      "layers": [
+        "decoder.fpn_conv_blocks.0.0"
+      ],
+      "collection_payload_bytes": 7063301,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 70,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0070",
+      "rows": 227,
+      "layers": [
+        "decoder.fpn_conv_blocks.0.0",
+        "decoder.fpn_conv_blocks.0.1.bias",
+        "decoder.fpn_conv_blocks.0.1.running_mean",
+        "decoder.fpn_conv_blocks.0.1.running_var",
+        "decoder.fpn_conv_blocks.0.1.weight",
+        "decoder.fpn_conv_blocks.1.0"
+      ],
+      "collection_payload_bytes": 7075920,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 71,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0071",
+      "rows": 227,
+      "layers": [
+        "decoder.fpn_conv_blocks.1.0",
+        "decoder.fpn_conv_blocks.1.1.bias",
+        "decoder.fpn_conv_blocks.1.1.running_mean",
+        "decoder.fpn_conv_blocks.1.1.running_var",
+        "decoder.fpn_conv_blocks.1.1.weight",
+        "decoder.fpn_conv_blocks.2.0"
+      ],
+      "collection_payload_bytes": 7075729,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 72,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0072",
+      "rows": 467,
+      "layers": [
+        "decoder.fpn_conv_blocks.2.0",
+        "decoder.fpn_conv_blocks.2.1.bias",
+        "decoder.fpn_conv_blocks.2.1.running_mean",
+        "decoder.fpn_conv_blocks.2.1.running_var",
+        "decoder.fpn_conv_blocks.2.1.weight",
+        "decoder.psp.blocks.0.1.0",
+        "decoder.psp.blocks.0.1.1.bias",
+        "decoder.psp.blocks.0.1.1.running_mean",
+        "decoder.psp.blocks.0.1.1.running_var",
+        "decoder.psp.blocks.0.1.1.weight",
+        "decoder.psp.blocks.1.1.0"
+      ],
+      "collection_payload_bytes": 6994926,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 73,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0073",
+      "rows": 653,
+      "layers": [
+        "decoder.psp.blocks.1.1.0",
+        "decoder.psp.blocks.1.1.1.bias",
+        "decoder.psp.blocks.1.1.1.running_mean",
+        "decoder.psp.blocks.1.1.1.running_var",
+        "decoder.psp.blocks.1.1.1.weight",
+        "decoder.psp.blocks.2.1.0",
+        "decoder.psp.blocks.2.1.1.bias",
+        "decoder.psp.blocks.2.1.1.running_mean",
+        "decoder.psp.blocks.2.1.1.running_var",
+        "decoder.psp.blocks.2.1.1.weight",
+        "decoder.psp.blocks.3.1.0"
+      ],
+      "collection_payload_bytes": 6931944,
+      "status": "COMPLETED"
+    },
+    {
+      "index": 74,
+      "asset_id": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba/w_part_0074",
+      "rows": 812,
+      "layers": [
+        "decoder.feature_norms.0.bias",
+        "decoder.feature_norms.0.weight",
+        "decoder.feature_norms.1.bias",
+        "decoder.feature_norms.1.weight",
+        "decoder.feature_norms.2.bias",
+        "decoder.feature_norms.2.weight",
+        "decoder.feature_norms.3.bias",
+        "decoder.feature_norms.3.weight",
+        "decoder.fpn_lateral_blocks.0.conv_norm_relu.0",
+        "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.bias",
+        "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.running_mean",
+        "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.running_var",
+        "decoder.fpn_lateral_blocks.0.conv_norm_relu.1.weight",
+        "decoder.fpn_lateral_blocks.1.conv_norm_relu.0",
+        "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.bias",
+        "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.running_mean",
+        "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.running_var",
+        "decoder.fpn_lateral_blocks.1.conv_norm_relu.1.weight",
+        "decoder.fpn_lateral_blocks.2.conv_norm_relu.0",
+        "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.bias",
+        "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.running_mean",
+        "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.running_var",
+        "decoder.fpn_lateral_blocks.2.conv_norm_relu.1.weight",
+        "decoder.psp.blocks.3.1.0",
+        "decoder.psp.blocks.3.1.1.bias",
+        "decoder.psp.blocks.3.1.1.running_mean",
+        "decoder.psp.blocks.3.1.1.running_var",
+        "decoder.psp.blocks.3.1.1.weight",
+        "segmentation_head.0"
+      ],
+      "collection_payload_bytes": 2805830,
+      "status": "COMPLETED"
+    }
+  ],
+  "finished_unix": 1791457771.817502,
+  "collection_payload_bytes": 516301722,
+  "upload_wall_seconds": 6096.4090230464935,
+  "manifest_hash": "1f398d3256ba6eb9a3fad421f964fc0775b2f4a10420951cef4674bcd6e5e253",
+  "namespace_folder": "projects/tensor-ee/assets/upernet/trained/swint_step6000_last_fp32_1f398d3256ba",
+  "source_checkpoint": "gdrive:segwater_v2_dataset_v3_results/stage2_v3_hpo10pct/upernet_tu-swin_tiny_patch4_window7_224/20261006-033738_s42/upernet_tu-swin_tiny_patch4_window7_224_s42_step6000_last.pth",
+  "source_checkpoint_sha256": "5c7a7c44d29b3c75bd69f59809fb1b63a039313bec021d897ff3876d2cea42a5",
+  "public_copy": {
+    "assets": "server-side copies (Earth Engine copyAsset) of this manifest's original upload, in the public project tensor-ee",
+    "link_record": "docs/evidence/s01-weights-link.json",
+    "removed_shard_fields": [
+      "task_id",
+      "task_status",
+      "started_unix",
+      "finished_unix"
+    ]
+  }
+}

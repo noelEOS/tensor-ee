@@ -1,0 +1,7 @@
+{
+  "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+  "crs": "EPSG:32651",
+  "transform": [10, 0, 286030, 0, -10, 2640860],
+  "width": 224,
+  "height": 224
+}

@@ -1,0 +1,75 @@
+{
+ "task": "S01",
+ "kind": "s01_public_weights_live_run",
+ "claim": "storage: 104 server-side copies equal to their sources (type, sizeBytes, feature count), each readable by all users, and every layer's sampled rows exactly equal to the checkpoint's; not model output parity",
+ "passed": true,
+ "approved": "the user approved docs/evidence/s01-live-plan.md as written on 2026-10-15; call budget 1,163 with --max-calls 1200 (the user's decision of the same day)",
+ "code": {
+  "revision": "2602af3",
+  "tool": "tools/public_weights.py",
+  "plan_sha256": "82c012aee2644a17ea6e26e4bcee828e8db8a49d80b9f62839bed25cf0bd7f3d"
+ },
+ "identity": "Application Default Credentials of the tensor-ee owner, supplied to the run's process only via GOOGLE_APPLICATION_CREDENTIALS (a separate gcloud configuration); the laptop's default login was left unchanged. Never read from credential files: the second account holds no role on tensor-ee, so the run's writes there show it was not the second account",
+ "public_manifests_sha256": {
+  "unet": "3bd0bf7bf454caa0e7b8550dad24b6a28982ca128a1a4f0ba0cd25ce797846fa",
+  "swin": "dbc530d0c115d2cb891d41da5a27d00af8169a35bcae4189fa11849d4da58d47"
+ },
+ "public_manifests_equal_link_record": true,
+ "calls": {
+  "total": 1164,
+  "cap": 1200,
+  "by_kind": {
+   "computeValue": 428,
+   "copyAsset": 104,
+   "createFolder": 3,
+   "getAsset": 315,
+   "getAssetAcl": 208,
+   "listAssets": 2,
+   "setAssetAcl": 104
+  },
+  "planned": 1163,
+  "extra": "1: the destination-root listing, attempted twice (see stops)",
+  "exports": 0,
+  "batch_tasks": 0
+ },
+ "copies": {
+  "count": 104,
+  "equal_to_source": 104,
+  "readable_by_all_users": 104,
+  "other_acl_entries_changed": 0,
+  "folders_created": 3
+ },
+ "row_check": {
+  "swin": {
+   "layers": 189,
+   "passed": 189,
+   "largest_absolute_error": 0
+  },
+  "unet": {
+   "layers": 31,
+   "passed": 31,
+   "largest_absolute_error": 0
+  }
+ },
+ "access_checks": {
+  "script": "docs/evidence/s01-public-access-check.js",
+  "account": "the second account (the original project's owner), no role on tensor-ee, in the Code Editor",
+  "pilot": "2 of 2 passed, 0 failed (reported by the user, 2026-10-15)",
+  "full": "104 of 104 passed, 0 failed (reported by the user, 2026-10-15)"
+ },
+ "stops": [
+  "Two earlier attempts stopped inside ee.Initialize (HTTP 403 USER_PROJECT_DENIED on tensor-ee) before any counted call and before a state file existed: the laptop's default Application Default Credentials were not the tensor-ee owner's. Resolved by the separate login above; no role was granted on tensor-ee.",
+  "The run STOPPED in the preflight at listAssets projects/tensor-ee/assets (HTTP 404, asset root not found) after 209 calls, all reads, with all 104 sources readable and their feature counts equal to the manifests. The asset root of the new, empty project became listable after the tensor-ee owner opened its Assets tab in the Code Editor; the lead resumed and the listing passed."
+ ],
+ "timeline_utc": {
+  "started": "2026-10-15T01:53:18Z",
+  "stopped_at_root_listing": "2026-10-15T01:55:02Z",
+  "resumed": "2026-10-15T01:57:54Z",
+  "awaiting_pilot_check": "2026-10-15T01:58:45Z",
+  "pilot_check_passed": "2026-10-15T02:06:26Z",
+  "completed": "2026-10-15T02:13:23Z"
+ },
+ "state_sha256": "ea712ada4f08513d70b23e5fb7f231c5bf18837d8f6bde9e12150b526f9470db",
+ "state_location": "a git-ignored run directory under release_runs/ (it names the original assets and is never committed)",
+ "left_behind": "104 table assets and 3 folders in tensor-ee; the original assets are kept"
+}

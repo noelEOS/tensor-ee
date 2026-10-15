@@ -1,0 +1,3221 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "07cf47e5d6c41db5306f23bba648e8ea232339e9",
+  "dirty": false,
+  "native_ee": "native_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 24,
+      "requests": 29,
+      "values": 358236,
+      "payload_bytes": 1432944,
+      "request_bytes": 2790282,
+      "max_values": 141120,
+      "max_request_bytes": 390368,
+      "max_bands": 290,
+      "embedded_constants": 76754,
+      "inline_values": 59404,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/relative_position_bias/w7",
+        "lane": "window",
+        "block": "relative_position_bias",
+        "parts": [],
+        "settings": {
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "table": [
+            169,
+            2
+          ],
+          "heads": 2,
+          "output": [
+            2,
+            49,
+            49
+          ]
+        },
+        "seed": 11,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm WindowAttention(window_size=7)._get_rel_pos_bias(), random table",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror (bias)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/swin_block/notes/findings.md, answer 8: the bias equals timm's bit for bit",
+        "calibration": true,
+        "notes": "A V value read back row by row ([49, 1, 49] per head)."
+      },
+      "inputs_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "weights_sha256": "d2fa3bcc88ff11f6160f9e539f47508d9efd4b82b76980650f50edc363bc7c4f",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 49
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 49,
+          "readouts": [
+            {
+              "name": "bias_h0",
+              "kind": "output",
+              "channels": 49
+            },
+            {
+              "name": "bias_h1",
+              "kind": "output",
+              "channels": 49
+            }
+          ],
+          "bands": 100,
+          "values": 4900,
+          "payload_bytes": 19600,
+          "request_bytes": 16269,
+          "graph_sha256": "6fd9e92beff02169dd7c2012c4982817e713460baae0a9184afd4919bba121fb",
+          "graph_bytes": 16042,
+          "embedded_constants": 338,
+          "inline_values": 0
+        }
+      ],
+      "errors": [],
+      "seconds": 0.839,
+      "outputs": {
+        "bias_h0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2401,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.4249075651168823,
+              "expected": 0.4249075651168823
+            }
+          }
+        },
+        "bias_h1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2401,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.38415396213531494,
+              "expected": -0.38415396213531494
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/attention/w7-s3",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "shifted_window_mask",
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 7,
+          "shift": 3,
+          "value": -100.0
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "windows": [
+            2,
+            2
+          ],
+          "dim": 16,
+          "heads": 2,
+          "head_dim": 8
+        },
+        "seed": 12,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(window_size=7, shift_size=3) SW-MSA, non-fused, up to the output projection; its attn_mask",
+        "mirror": {
+          "source": "reference.swin_pair.ee_mirror_shifted.ShiftedMirror (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/swin_pair/notes/findings.md, answer 10 and section 3 tests 4-5: EE mask element-identical to timm's attn_mask; attention per head bit-identical to the mirror, <= 7.6e-6 vs PyTorch",
+        "calibration": true,
+        "notes": "Policies of the parts: linear double_round_once, naive_attention round_each_op, mask double_round_once. The input is periodic so the cyclic shift is exact; the concatenated heads are compared in the shifted layout."
+      },
+      "inputs_sha256": "3015ba99cad4e6bd829d83ae36707675ec5f6b6b1eda782fdb005f807797a8c4",
+      "weights_sha256": "d7d93b90dcf44776c43bde30f02d190a761cbf5fe96b1156635d0b9e547dbfd7",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "mask",
+              "kind": "output",
+              "channels": 49
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 16
+            }
+          ],
+          "bands": 84,
+          "values": 16464,
+          "payload_bytes": 65856,
+          "request_bytes": 133029,
+          "graph_sha256": "6e0dc7cbee718567285187510863bb2d757d441603f760a3446aefe4cfcaa536",
+          "graph_bytes": 132801,
+          "embedded_constants": 3458,
+          "inline_values": 3136
+        }
+      ],
+      "errors": [],
+      "seconds": 0.023,
+      "outputs": {
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 1.3113021850585938e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 5,
+              "actual": -0.8346167802810669,
+              "expected": -0.834618091583252
+            }
+          }
+        },
+        "mask": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 9604,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/layer_norm2d/w7-eps1e-6",
+        "lane": "window",
+        "block": "layer_norm2d",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "eps": 1e-06
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "channels": 8
+        },
+        "seed": 13,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "SMP 0.5.0 LayerNorm2d(8, eps=1e-6), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.layer_norm2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/upernet/notes/milestone7_findings.md, feature normalization rows: LayerNorm2d bit-identical to the mirror, <= 5.7e-6 vs SMP float32",
+        "calibration": true,
+        "notes": ""
+      },
+      "inputs_sha256": "500d795694996ce463e5213f00fca7106666c33cc674e141d72b5d3cc65046b5",
+      "weights_sha256": "a10dd390ae4b2b9c66a789c09b4e9d0494c3e92dabcf76471b25bdec56054874",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 18,
+          "values": 3528,
+          "payload_bytes": 14112,
+          "request_bytes": 71809,
+          "graph_sha256": "9b3865551a9294eda36153dd218b79630d100c37abcd43f6fd5db23f36ed001b",
+          "graph_bytes": 71581,
+          "embedded_constants": 784,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.041,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 2,
+              "channel": 1,
+              "actual": -2.080789089202881,
+              "expected": -2.0807886123657227
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_merge/w7",
+        "lane": "window",
+        "block": "patch_merge",
+        "parts": [
+          "gather_windows",
+          "merge_windows"
+        ],
+        "settings": {
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "channels": 8,
+          "output_tokens": [
+            7,
+            7
+          ],
+          "output_channels": 16
+        },
+        "seed": 14,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchMerging(dim=8), random weights, step by step",
+        "mirror": {
+          "source": "PatchMergeMirror's steps (reference.swin_hierarchy gather_windows; reference.swin_block layer_norm_formula with sequential_sum; one rounded product)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/swin_hierarchy/notes/milestone4_findings.md, answers 1, 4, 5, 13: gather exact; LayerNorm and reduction bit-identical to the mirror, <= 3.6e-6 vs PyTorch",
+        "calibration": true,
+        "notes": "The mirror sums the LayerNorm left to right, Earth Engine's order (PatchMergeMirror.norm itself uses torch's order)."
+      },
+      "inputs_sha256": "ea8f6f45b61a3ef030f39a30086db0196a6e64f349a51c6a8d404f8cdd485d22",
+      "weights_sha256": "3fb01e86f33580aa2d1f99f1127bb407549f07066e0c7f450f82dfb58aee2a79",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "cat",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "norm",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 16
+            }
+          ],
+          "bands": 83,
+          "values": 4067,
+          "payload_bytes": 16268,
+          "request_bytes": 93669,
+          "graph_sha256": "52d58538f73a5cf1e83322ed747e45fe0ce089ddac40e7bb97b5d4903cacc617",
+          "graph_bytes": 93443,
+          "embedded_constants": 3648,
+          "inline_values": 1568
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 9,
+          "values": 1764,
+          "payload_bytes": 7056,
+          "request_bytes": 26738,
+          "graph_sha256": "dc3e7658b7c177ca00b6497e10ffc98c031d2f4a32de2765b7732dd657f4fafd",
+          "graph_bytes": 26510,
+          "embedded_constants": 0,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.021,
+      "outputs": {
+        "cat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.5090042352676392,
+              "expected": 0.5090042352676392
+            }
+          }
+        },
+        "norm": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 1,
+              "channel": 21,
+              "actual": -2.546978235244751,
+              "expected": -2.5469777584075928
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 3,
+              "channel": 2,
+              "actual": -2.044381618499756,
+              "expected": -2.0443811416625977
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/conv3x3_window/k3-w7",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "k": 3,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "in": 4,
+          "out": 4,
+          "bias": true
+        },
+        "seed": 15,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.conv3x3 (window_im2col)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/history/upernet/notes/milestone7_findings.md, rows '3x3 Conv tiny 2 -> 3' and '256 -> 256' (window im2col): bit-identical to the mirror, <= 8.1e-6 vs PyTorch",
+        "calibration": true,
+        "notes": "The 2 x 2-window raster makes every halo cross a window edge or the zero border."
+      },
+      "inputs_sha256": "dec7d72c707ff2ad0edf27ff5392585187a127c4e10b080c30b830cd12f7228f",
+      "weights_sha256": "1ed4bceb0bcc41a8b0ae31e979253c3a1f597dc4dd62b27421d7176670d594a5",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 1960,
+          "payload_bytes": 7840,
+          "request_bytes": 73920,
+          "graph_sha256": "68438139db4f1b2d9b03796a8bef5c889fac1bd1d230d575f6f67a2db9d423ee",
+          "graph_bytes": 73692,
+          "embedded_constants": 340,
+          "inline_values": 784
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 4,
+              "channel": 2,
+              "actual": 1.2455466985702515,
+              "expected": 1.2455470561981201
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/attention/w7-single",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 7,
+          "shift": 3
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            7,
+            7
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "dim": 16,
+          "heads": 2,
+          "head_dim": 8
+        },
+        "seed": 1072,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(input_resolution=(7, 7), window_size=7, shift_size=3): timm disables the shift on one window; its W-MSA, non-fused, up to the output projection",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror(window=7) (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New fixture (P01): the 224 chip's stage 4 is one 7 x 7 window; production runs it unshifted (docs/history/swin_encoder/notes/milestone5_findings.md).",
+        "calibration": false,
+        "notes": "The shift 3 is requested; timm sets it to 0 on a single window, and the library builds W-MSA there (shifted_window_mask and the cyclic shift refuse a 1 x 1 window grid; the model's stage_shifted(1, 1) is False). Exact: Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 16, 8 and 49)."
+      },
+      "inputs_sha256": "f8fe3d7d15e13fc0d89121f10a298ff1d65effb85e093d0d9e6136cd52fc62d6",
+      "weights_sha256": "7398b67448c4562af12b765029bd7af0d4ddcfd806be635b2bcfb16964d5cb4c",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 16
+            }
+          ],
+          "bands": 34,
+          "values": 1666,
+          "payload_bytes": 6664,
+          "request_bytes": 92896,
+          "graph_sha256": "254f20d321b37f942f17d20f923e5f09b470c0146744b9cc4be2890d6bc13479",
+          "graph_bytes": 92670,
+          "embedded_constants": 3458,
+          "inline_values": 784
+        }
+      ],
+      "errors": [],
+      "seconds": 0.018,
+      "outputs": {
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 9.5367431640625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 5,
+              "channel": 15,
+              "actual": -2.847992420196533,
+              "expected": -2.847991466522217
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/layer_norm2d/w5-eps1e-6",
+        "lane": "window",
+        "block": "layer_norm2d",
+        "parts": [],
+        "settings": {
+          "window": 5,
+          "eps": 1e-06
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            10,
+            10
+          ],
+          "channels": 8
+        },
+        "seed": 1053,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "SMP 0.5.0 LayerNorm2d(8, eps=1e-6), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.layer_norm2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/layer_norm2d/w7-eps1e-6.",
+        "calibration": false,
+        "notes": "Exact: per token, so independent of the window: sums left to right in double and one rounding, as the graph. The window sets the constants' rows (25) and the layout conversions."
+      },
+      "inputs_sha256": "0b89407c7ac96e196fd66c0a01a85a0e5a6603f4954a79dd91fcdf03378aeaa1",
+      "weights_sha256": "e5bc725f0462b25e2e44573da32ab4eea67489a7a9f5d91b75acee86975053ee",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 18,
+          "values": 1800,
+          "payload_bytes": 7200,
+          "request_bytes": 45050,
+          "graph_sha256": "a12852e18afe7ba74b6f81eeae9c6b9ce5c3122c20e4116c04d70dffc91219d4",
+          "graph_bytes": 44822,
+          "embedded_constants": 400,
+          "inline_values": 800
+        }
+      ],
+      "errors": [],
+      "seconds": 0.016,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 800,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 9,
+              "col": 3,
+              "channel": 6,
+              "actual": 1.5358762741088867,
+              "expected": 1.535875916481018
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_merge/w5",
+        "lane": "window",
+        "block": "patch_merge",
+        "parts": [
+          "gather_windows",
+          "merge_windows"
+        ],
+        "settings": {
+          "window": 5
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            10,
+            10
+          ],
+          "channels": 8,
+          "output_tokens": [
+            5,
+            5
+          ],
+          "output_channels": 16
+        },
+        "seed": 1054,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchMerging(dim=8), random weights, step by step",
+        "mirror": {
+          "source": "reference.swin_hierarchy.ee_mirror_hierarchy.PatchMergeMirror (window=5, sequential_sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/patch_merge/w7.",
+        "calibration": false,
+        "notes": "A stage-1 grid of 2 x 2 windows (10 x 10 tokens) merged into one stage-2 window. Exact: the gather moves values; LayerNorm(4C) sums left to right in double, one rounding; Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (the reduction, K = 32)."
+      },
+      "inputs_sha256": "04c2c475e86f2dba4ec96b49aae87d2bb2a13b3086eb2207e6bbf0c61c1d8439",
+      "weights_sha256": "d15c67cf8d472745b6354216523e3ca7701255d44859de04bce993f64ad70574",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "cat",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "norm",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 16
+            }
+          ],
+          "bands": 83,
+          "values": 2075,
+          "payload_bytes": 8300,
+          "request_bytes": 66265,
+          "graph_sha256": "1358181c513ecdf802c51730dd27b2e0a04dfd028fa7cca42b8b47d58f70591e",
+          "graph_bytes": 66039,
+          "embedded_constants": 2112,
+          "inline_values": 800
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 9,
+          "values": 900,
+          "payload_bytes": 3600,
+          "request_bytes": 17359,
+          "graph_sha256": "862e769f38427e89aab4b63c50b0a8cd580900e85ef96cd7f42acd7959b39d7a",
+          "graph_bytes": 17131,
+          "embedded_constants": 0,
+          "inline_values": 800
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "cat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 800,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.1809844970703125,
+              "expected": -0.1809844970703125
+            }
+          }
+        },
+        "norm": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 800,
+            "max_abs": 2.384185791015625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 2,
+              "actual": -1.444332242012024,
+              "expected": -1.4443320035934448
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 400,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 1,
+              "channel": 3,
+              "actual": 1.7399822473526,
+              "expected": 1.7399827241897583
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/conv3x3_window/k3-w5",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "k": 3,
+          "window": 5
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            10,
+            10
+          ],
+          "in": 4,
+          "out": 4,
+          "bias": true
+        },
+        "seed": 1055,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.conv3x3 (window_im2col)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/conv3x3_window/k3-w7.",
+        "calibration": false,
+        "notes": "The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: one im2col product per token in (ky, kx, c) order, Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 36); the bias added in double; one rounding. The kernel stays 3 (P04)."
+      },
+      "inputs_sha256": "73b5d740ddd2ee776c44f465c8f0c54e3937ccfff1a63e01ccd37d7fcb85762c",
+      "weights_sha256": "4e88b9b25728f9ed405bb85f7e1b7fb661cf78299f0d3502b78ca5c36bd08359",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 1000,
+          "payload_bytes": 4000,
+          "request_bytes": 51557,
+          "graph_sha256": "bdcba1a2decfc8e25fba431e9dd1aa89686e00feb6ab6e2004aa08e7a31cab69",
+          "graph_bytes": 51329,
+          "embedded_constants": 244,
+          "inline_values": 400
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 400,
+            "max_abs": 1.7881393432617188e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 4,
+              "channel": 0,
+              "actual": -0.8100335597991943,
+              "expected": -0.81003338098526
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/relative_position_bias/w5",
+        "lane": "window",
+        "block": "relative_position_bias",
+        "parts": [],
+        "settings": {
+          "window": 5
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "table": [
+            81,
+            3
+          ],
+          "heads": 3,
+          "output": [
+            3,
+            25,
+            25
+          ]
+        },
+        "seed": 1050,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm WindowAttention(window_size=5)._get_rel_pos_bias(), random table",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror(window=5) (bias)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/relative_position_bias/w7.",
+        "calibration": false,
+        "notes": "Exact: a one-hot gather, so every value is one table entry whatever the order of the sum. Each head's [25, 25] bias is read as a 5 x 5 grid of its rows ([5, 5, 25]). The one-hot matrix is [625, 81] on the server (built from sequences; not counted in the embedded constants)."
+      },
+      "inputs_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "weights_sha256": "cf4c69eaba89cf54f6ff451130bef4f647753ecede7b046b530b1ca3e3feb51e",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "bias_h0",
+              "kind": "output",
+              "channels": 25
+            },
+            {
+              "name": "bias_h1",
+              "kind": "output",
+              "channels": 25
+            },
+            {
+              "name": "bias_h2",
+              "kind": "output",
+              "channels": 25
+            }
+          ],
+          "bands": 78,
+          "values": 1950,
+          "payload_bytes": 7800,
+          "request_bytes": 17172,
+          "graph_sha256": "336d259bff1c2b974f56cdd962bea48f6486b1966859f9ebc0931b8d0b4214f9",
+          "graph_bytes": 16946,
+          "embedded_constants": 243,
+          "inline_values": 0
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "bias_h0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 625,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.3461568355560303,
+              "expected": -0.3461568355560303
+            }
+          }
+        },
+        "bias_h1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 625,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.4184904098510742,
+              "expected": 0.4184904098510742
+            }
+          }
+        },
+        "bias_h2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 625,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.5853561162948608,
+              "expected": -0.5853561162948608
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/attention/w5-s2",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "shifted_window_mask",
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 5,
+          "shift": 2,
+          "value": -100.0
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            10,
+            10
+          ],
+          "windows": [
+            2,
+            2
+          ],
+          "dim": 12,
+          "heads": 3,
+          "head_dim": 4
+        },
+        "seed": 1051,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(window_size=5, shift_size=2) SW-MSA and SwinTransformerBlock(window_size=5, shift_size=0) W-MSA, non-fused, up to the output projection; the shifted block's attn_mask",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror and reference.swin_pair.ee_mirror_shifted.ShiftedMirror(window=5, shift=2) (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/attention/w7-s3.",
+        "calibration": false,
+        "notes": "Exact: Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 12, 4 and 25); row sums left to right (sequential_sums); the linear in double_round_once and the attention core in round_each_op, as the graph. wmsa: W-MSA on the 2 x 2 windows (original layout); concat: SW-MSA in the shifted layout; unshifted: concat moved back by unshift_windows (timm's window_reverse and roll by +shift); mask: the shifted-window mask (timm's attn_mask). The input is periodic so the cyclic shift is exact."
+      },
+      "inputs_sha256": "3b700bd3782f0440a67968849184c3670fbfd3101a7d1f31b7ba767393c98e57",
+      "weights_sha256": "062b50dbc81d2ce3da707ad69dc37b9eb61556b38ffde6d1006ea486cbdcee60",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 10
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 10,
+          "readouts": [
+            {
+              "name": "wmsa",
+              "kind": "output",
+              "channels": 12
+            },
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 12
+            },
+            {
+              "name": "unshifted",
+              "kind": "output",
+              "channels": 12
+            },
+            {
+              "name": "mask",
+              "kind": "output",
+              "channels": 25
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 12
+            }
+          ],
+          "bands": 78,
+          "values": 7800,
+          "payload_bytes": 31200,
+          "request_bytes": 101403,
+          "graph_sha256": "3b8e9944f17f9f8f0f1d6d83753cf51c9f3fb31bec00e5dafd26c312aa0a6185",
+          "graph_bytes": 101175,
+          "embedded_constants": 1575,
+          "inline_values": 1200
+        }
+      ],
+      "errors": [],
+      "seconds": 0.019,
+      "outputs": {
+        "wmsa": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1200,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 2,
+              "channel": 2,
+              "actual": 2.1267642974853516,
+              "expected": 2.1267638206481934
+            }
+          }
+        },
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1200,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 2,
+              "channel": 2,
+              "actual": 1.7030028104782104,
+              "expected": 1.7030022144317627
+            }
+          }
+        },
+        "unshifted": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1200,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 1,
+              "actual": 1.9428579807281494,
+              "expected": 1.9428573846817017
+            }
+          }
+        },
+        "mask": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2500,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/attention/w5-single",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 5,
+          "shift": 2
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            5,
+            5
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "dim": 12,
+          "heads": 3,
+          "head_dim": 4
+        },
+        "seed": 1052,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(input_resolution=(5, 5), window_size=5, shift_size=2): timm disables the shift on one window; its W-MSA, non-fused, up to the output projection",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror(window=5) (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/attention/w7-single.",
+        "calibration": false,
+        "notes": "The shift 2 is requested; timm sets it to 0 on a single window, and the library builds W-MSA there (shifted_window_mask and the cyclic shift refuse a 1 x 1 window grid; the model's stage_shifted(1, 1) is False). Exact: Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 12, 4 and 25)."
+      },
+      "inputs_sha256": "da0576851365f93c7e89d4093f79850f6f4a657c300368824860c471efe68227",
+      "weights_sha256": "8b6d026f3cb7ec92e7a41c6295d20feb29678f4b130893b0f00c06feb5502bbf",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 12
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 12
+            }
+          ],
+          "bands": 26,
+          "values": 650,
+          "payload_bytes": 2600,
+          "request_bytes": 64469,
+          "graph_sha256": "611a05bf04008101cf007d22d34d366e92d897c664690362c0dc64bcf9a4cc20",
+          "graph_bytes": 64243,
+          "embedded_constants": 1575,
+          "inline_values": 300
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 300,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 1,
+              "channel": 4,
+              "actual": 2.587778329849243,
+              "expected": 2.587777853012085
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/layer_norm2d/w8-eps1e-6",
+        "lane": "window",
+        "block": "layer_norm2d",
+        "parts": [],
+        "settings": {
+          "window": 8,
+          "eps": 1e-06
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            16,
+            16
+          ],
+          "channels": 8
+        },
+        "seed": 1083,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "SMP 0.5.0 LayerNorm2d(8, eps=1e-6), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.layer_norm2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/layer_norm2d/w7-eps1e-6.",
+        "calibration": false,
+        "notes": "Exact: per token, so independent of the window: sums left to right in double and one rounding, as the graph. The window sets the constants' rows (64) and the layout conversions."
+      },
+      "inputs_sha256": "9f2c33fda018bcbe35d7e161d0a8f53b5747bc464ab8dd13920f0812e5d402b6",
+      "weights_sha256": "7e65e82bcce7cba71cc0e156a03ba6b637ab17a04222c039baccc7ed848f42f6",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 18,
+          "values": 4608,
+          "payload_bytes": 18432,
+          "request_bytes": 88161,
+          "graph_sha256": "fba097be37b325347e1bc68d6738db1f83b0deb9c52a0346ae56b78f51e9026f",
+          "graph_bytes": 87933,
+          "embedded_constants": 1024,
+          "inline_values": 2048
+        }
+      ],
+      "errors": [],
+      "seconds": 0.089,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2048,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 7,
+              "col": 4,
+              "channel": 3,
+              "actual": 2.2158994674682617,
+              "expected": 2.21589994430542
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_merge/w8",
+        "lane": "window",
+        "block": "patch_merge",
+        "parts": [
+          "gather_windows",
+          "merge_windows"
+        ],
+        "settings": {
+          "window": 8
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            16,
+            16
+          ],
+          "channels": 8,
+          "output_tokens": [
+            8,
+            8
+          ],
+          "output_channels": 16
+        },
+        "seed": 1084,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchMerging(dim=8), random weights, step by step",
+        "mirror": {
+          "source": "reference.swin_hierarchy.ee_mirror_hierarchy.PatchMergeMirror (window=8, sequential_sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/patch_merge/w7.",
+        "calibration": false,
+        "notes": "A stage-1 grid of 2 x 2 windows (16 x 16 tokens) merged into one stage-2 window. Exact: the gather moves values; LayerNorm(4C) sums left to right in double, one rounding; Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (the reduction, K = 32)."
+      },
+      "inputs_sha256": "be297b1441b22ba8682843bb54b49758e8c9eaf62d7201e20b2edc6203cfe0ef",
+      "weights_sha256": "52b5a31e48d61db147e1181ef7180e7260e372a7df229f017a0554f8810594b0",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "cat",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "norm",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 16
+            }
+          ],
+          "bands": 83,
+          "values": 5312,
+          "payload_bytes": 21248,
+          "request_bytes": 110492,
+          "graph_sha256": "44099c3bf63ddd7202ad35703868909ff2367d41376bec840ef23203646624e3",
+          "graph_bytes": 110266,
+          "embedded_constants": 4608,
+          "inline_values": 2048
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 9,
+          "values": 2304,
+          "payload_bytes": 9216,
+          "request_bytes": 32588,
+          "graph_sha256": "2f111e727fd2301ee5f4a7286dbd81db0f362554cf0ba53a36c3cc669050f7ee",
+          "graph_bytes": 32360,
+          "embedded_constants": 0,
+          "inline_values": 2048
+        }
+      ],
+      "errors": [],
+      "seconds": 0.018,
+      "outputs": {
+        "cat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2048,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.46264195442199707,
+              "expected": 0.46264195442199707
+            }
+          }
+        },
+        "norm": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2048,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 0,
+              "channel": 17,
+              "actual": -1.5712411403656006,
+              "expected": -1.571240782737732
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1024,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 1,
+              "actual": -1.528591513633728,
+              "expected": -1.5285910367965698
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/conv3x3_window/k3-w8",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "k": 3,
+          "window": 8
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            16,
+            16
+          ],
+          "in": 4,
+          "out": 4,
+          "bias": true
+        },
+        "seed": 1085,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.conv3x3 (window_im2col)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/conv3x3_window/k3-w7.",
+        "calibration": false,
+        "notes": "The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: one im2col product per token in (ky, kx, c) order, Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 36); the bias added in double; one rounding. The kernel stays 3 (P04)."
+      },
+      "inputs_sha256": "dff34d683c49f39808449fd245559c2c208446ec9f5a38265a7c960a19dcec59",
+      "weights_sha256": "9b3d3438f44c4b31b192ecdf11b14b136f9ec1a079c5d8ea693ab478d980c9ab",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 2560,
+          "payload_bytes": 10240,
+          "request_bytes": 87921,
+          "graph_sha256": "aced5702c3b28f1c81319152b988b6bc5520eaf4fde096a04f33469fecdb587e",
+          "graph_bytes": 87693,
+          "embedded_constants": 400,
+          "inline_values": 1024
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1024,
+            "max_abs": 2.384185791015625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 4,
+              "channel": 1,
+              "actual": 1.1978713274002075,
+              "expected": 1.1978715658187866
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/relative_position_bias/w8",
+        "lane": "window",
+        "block": "relative_position_bias",
+        "parts": [],
+        "settings": {
+          "window": 8
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "table": [
+            225,
+            3
+          ],
+          "heads": 3,
+          "output": [
+            3,
+            64,
+            64
+          ]
+        },
+        "seed": 1080,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm WindowAttention(window_size=8)._get_rel_pos_bias(), random table",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror(window=8) (bias)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/relative_position_bias/w7.",
+        "calibration": false,
+        "notes": "Exact: a one-hot gather, so every value is one table entry whatever the order of the sum. Each head's [64, 64] bias is read as a 8 x 8 grid of its rows ([8, 8, 64]). The one-hot matrix is [4096, 225] on the server (built from sequences; not counted in the embedded constants)."
+      },
+      "inputs_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "weights_sha256": "6b5cc3529d5469e78075735c603ced6c1779687a827aa2c5724b9b811e95cad6",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "bias_h0",
+              "kind": "output",
+              "channels": 64
+            },
+            {
+              "name": "bias_h1",
+              "kind": "output",
+              "channels": 64
+            },
+            {
+              "name": "bias_h2",
+              "kind": "output",
+              "channels": 64
+            }
+          ],
+          "bands": 195,
+          "values": 12480,
+          "payload_bytes": 49920,
+          "request_bytes": 24634,
+          "graph_sha256": "24ad02b6321c56fff5478fcc81b0e043f21d4b4a851c7d449725e08384594e0d",
+          "graph_bytes": 24408,
+          "embedded_constants": 675,
+          "inline_values": 0
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "bias_h0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4096,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.6706235408782959,
+              "expected": -0.6706235408782959
+            }
+          }
+        },
+        "bias_h1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4096,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.4482482671737671,
+              "expected": -0.4482482671737671
+            }
+          }
+        },
+        "bias_h2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4096,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.7607547044754028,
+              "expected": 0.7607547044754028
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/attention/w8-s4",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "shifted_window_mask",
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 8,
+          "shift": 4,
+          "value": -100.0
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            16,
+            16
+          ],
+          "windows": [
+            2,
+            2
+          ],
+          "dim": 16,
+          "heads": 2,
+          "head_dim": 8
+        },
+        "seed": 1081,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(window_size=8, shift_size=4) SW-MSA and SwinTransformerBlock(window_size=8, shift_size=0) W-MSA, non-fused, up to the output projection; the shifted block's attn_mask",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror and reference.swin_pair.ee_mirror_shifted.ShiftedMirror(window=8, shift=4) (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/attention/w7-s3.",
+        "calibration": false,
+        "notes": "Exact: Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 16, 8 and 64); row sums left to right (sequential_sums); the linear in double_round_once and the attention core in round_each_op, as the graph. wmsa: W-MSA on the 2 x 2 windows (original layout); concat: SW-MSA in the shifted layout; unshifted: concat moved back by unshift_windows (timm's window_reverse and roll by +shift); mask: the shifted-window mask (timm's attn_mask). The input is periodic so the cyclic shift is exact."
+      },
+      "inputs_sha256": "dc8592f9cc53e8a4b4495e9e7795d0e5b89126ca58c0d2d2aa8e43630cb99c40",
+      "weights_sha256": "38d672071bc667de654a95d6aa69123623ee13619011a41e825a598fe6a13fa5",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "wmsa",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "unshifted",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "mask",
+              "kind": "output",
+              "channels": 64
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 16
+            }
+          ],
+          "bands": 133,
+          "values": 34048,
+          "payload_bytes": 136192,
+          "request_bytes": 170207,
+          "graph_sha256": "8177814a94d0237de433e77766e00f6498a7a9afaf33de43e9b1d5e79d373bf6",
+          "graph_bytes": 169979,
+          "embedded_constants": 4290,
+          "inline_values": 4096
+        }
+      ],
+      "errors": [],
+      "seconds": 0.019,
+      "outputs": {
+        "wmsa": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4096,
+            "max_abs": 1.430511474609375e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 6,
+              "channel": 9,
+              "actual": -2.016549825668335,
+              "expected": -2.0165512561798096
+            }
+          }
+        },
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4096,
+            "max_abs": 2.384185791015625e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 13,
+              "col": 5,
+              "channel": 12,
+              "actual": -4.016945838928223,
+              "expected": -4.016948223114014
+            }
+          }
+        },
+        "unshifted": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4096,
+            "max_abs": 2.384185791015625e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 9,
+              "channel": 12,
+              "actual": -4.016945838928223,
+              "expected": -4.016948223114014
+            }
+          }
+        },
+        "mask": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 16384,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/attention/w8-single",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 8,
+          "shift": 4
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            8,
+            8
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "dim": 16,
+          "heads": 2,
+          "head_dim": 8
+        },
+        "seed": 1082,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(input_resolution=(8, 8), window_size=8, shift_size=4): timm disables the shift on one window; its W-MSA, non-fused, up to the output projection",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror(window=8) (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/attention/w7-single.",
+        "calibration": false,
+        "notes": "The shift 4 is requested; timm sets it to 0 on a single window, and the library builds W-MSA there (shifted_window_mask and the cyclic shift refuse a 1 x 1 window grid; the model's stage_shifted(1, 1) is False). Exact: Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 16, 8 and 64)."
+      },
+      "inputs_sha256": "621372256a7a14f5e7de195fb03594d38710acc6e9897faa0b40f68dacd67a3b",
+      "weights_sha256": "99026dd0df6b39c262946537b56d044189a42f7ec6fe395b48535a37bfb99176",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 16
+            }
+          ],
+          "bands": 34,
+          "values": 2176,
+          "payload_bytes": 8704,
+          "request_bytes": 108232,
+          "graph_sha256": "192a03d9ac5e36d8d4146daacec011e8be7fb261d9d9c213d5517e0dd66c31df",
+          "graph_bytes": 108006,
+          "embedded_constants": 4290,
+          "inline_values": 1024
+        }
+      ],
+      "errors": [],
+      "seconds": 0.019,
+      "outputs": {
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1024,
+            "max_abs": 1.1920928955078125e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 0,
+              "channel": 2,
+              "actual": 1.7050187587738037,
+              "expected": 1.7050175666809082
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/layer_norm2d/w12-eps1e-6",
+        "lane": "window",
+        "block": "layer_norm2d",
+        "parts": [],
+        "settings": {
+          "window": 12,
+          "eps": 1e-06
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            24,
+            24
+          ],
+          "channels": 8
+        },
+        "seed": 1123,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "SMP 0.5.0 LayerNorm2d(8, eps=1e-6), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.layer_norm2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/layer_norm2d/w7-eps1e-6.",
+        "calibration": false,
+        "notes": "Exact: per token, so independent of the window: sums left to right in double and one rounding, as the graph. The window sets the constants' rows (144) and the layout conversions."
+      },
+      "inputs_sha256": "06cdb17f58590c3dfe9b6ff7a41c98193875b742d991f5a16fd593a345276fd5",
+      "weights_sha256": "7228242cb7b8c2c8f08cc588c3ffc1efba48cd9173f5895d0addbba3a0f1e49f",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 18,
+          "values": 10368,
+          "payload_bytes": 41472,
+          "request_bytes": 177721,
+          "graph_sha256": "f4574e10b39f01c2e664db680f235879d750dfc71d0eefd4c6a743947b9c2c83",
+          "graph_bytes": 177493,
+          "embedded_constants": 2304,
+          "inline_values": 4608
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4608,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 22,
+              "channel": 4,
+              "actual": 1.6094120740890503,
+              "expected": 1.609411597251892
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/patch_merge/w12",
+        "lane": "window",
+        "block": "patch_merge",
+        "parts": [
+          "gather_windows",
+          "merge_windows"
+        ],
+        "settings": {
+          "window": 12
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            24,
+            24
+          ],
+          "channels": 8,
+          "output_tokens": [
+            12,
+            12
+          ],
+          "output_channels": 16
+        },
+        "seed": 1124,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm PatchMerging(dim=8), random weights, step by step",
+        "mirror": {
+          "source": "reference.swin_hierarchy.ee_mirror_hierarchy.PatchMergeMirror (window=12, sequential_sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/patch_merge/w7.",
+        "calibration": false,
+        "notes": "A stage-1 grid of 2 x 2 windows (24 x 24 tokens) merged into one stage-2 window. Exact: the gather moves values; LayerNorm(4C) sums left to right in double, one rounding; Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (the reduction, K = 32)."
+      },
+      "inputs_sha256": "28a76a38336b640dc25fc2634bc486044d24767e8ff1a49959d768cd1a9c9527",
+      "weights_sha256": "53516165906e5dd1fa5540f3eefed005ed49090f6d36021516220fc3fed26278",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 12,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 12,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "cat",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "norm",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 16
+            }
+          ],
+          "bands": 83,
+          "values": 11952,
+          "payload_bytes": 47808,
+          "request_bytes": 201338,
+          "graph_sha256": "2e8bccd32cfb21ce8130c109b26421be545d4f62a80c15489cbafe3bf91bf2aa",
+          "graph_bytes": 201110,
+          "embedded_constants": 9728,
+          "inline_values": 4608
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 9,
+          "values": 5184,
+          "payload_bytes": 20736,
+          "request_bytes": 63845,
+          "graph_sha256": "c3bdb511d7a4b2efae468fccbb9881fa58756ed3cf0804cce6d8f8e7e6528d0e",
+          "graph_bytes": 63617,
+          "embedded_constants": 0,
+          "inline_values": 4608
+        }
+      ],
+      "errors": [],
+      "seconds": 0.018,
+      "outputs": {
+        "cat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4608,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.9407141208648682,
+              "expected": 0.9407141208648682
+            }
+          }
+        },
+        "norm": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4608,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 10,
+              "channel": 26,
+              "actual": 1.9908373355865479,
+              "expected": 1.9908369779586792
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2304,
+            "max_abs": 7.152557373046875e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 8,
+              "channel": 0,
+              "actual": -2.302903890609741,
+              "expected": -2.302903175354004
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/conv3x3_window/k3-w12",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "k": 3,
+          "window": 12
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            24,
+            24
+          ],
+          "in": 4,
+          "out": 4,
+          "bias": true
+        },
+        "seed": 1125,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1), random weights",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.conv3x3 (window_im2col)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/conv3x3_window/k3-w7.",
+        "calibration": false,
+        "notes": "The 2 x 2-window raster makes every halo cross a window edge or the zero border. Exact: one im2col product per token in (ky, kx, c) order, Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 36); the bias added in double; one rounding. The kernel stays 3 (P04)."
+      },
+      "inputs_sha256": "093c7354b847724943ac7eafb12ad28120d4c9e72e6d1494056f9e1ca6ff5732",
+      "weights_sha256": "365cf8e216432c254ecc82b1c49e3e507a19c94e85dbb52acb13dd2b0b8d5e87",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 5760,
+          "payload_bytes": 23040,
+          "request_bytes": 162470,
+          "graph_sha256": "2290213a9633f8054d6edcb00f52a2b33c8e49f596cf546c1a9727b74decae77",
+          "graph_bytes": 162242,
+          "embedded_constants": 720,
+          "inline_values": 2304
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 2304,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 11,
+              "channel": 2,
+              "actual": 0.9641396999359131,
+              "expected": 0.9641401767730713
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/relative_position_bias/w12",
+        "lane": "window",
+        "block": "relative_position_bias",
+        "parts": [],
+        "settings": {
+          "window": 12
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "table": [
+            529,
+            3
+          ],
+          "heads": 3,
+          "output": [
+            3,
+            144,
+            144
+          ]
+        },
+        "seed": 1120,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "timm WindowAttention(window_size=12)._get_rel_pos_bias(), random table",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror(window=12) (bias)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/relative_position_bias/w7.",
+        "calibration": false,
+        "notes": "Exact: a one-hot gather, so every value is one table entry whatever the order of the sum. Each head's [144, 144] bias is read as a 12 x 12 grid of its rows ([12, 12, 144]). The one-hot matrix is [20736, 529] on the server (built from sequences; not counted in the embedded constants)."
+      },
+      "inputs_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "weights_sha256": "8e94b5d3239356144cd67f2fcfd3dcfd7cd4529ff5711efdcc550db4ec983b34",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 12,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 12,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "bias_h0",
+              "kind": "output",
+              "channels": 144
+            },
+            {
+              "name": "bias_h1",
+              "kind": "output",
+              "channels": 144
+            }
+          ],
+          "bands": 290,
+          "values": 41760,
+          "payload_bytes": 167040,
+          "request_bytes": 36259,
+          "graph_sha256": "12a9ab241182f493c474c61d1baa4329b9b368d16127c77723610eed0513111d",
+          "graph_bytes": 36031,
+          "embedded_constants": 1587,
+          "inline_values": 0
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 12,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 12,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "bias_h2",
+              "kind": "output",
+              "channels": 144
+            }
+          ],
+          "bands": 145,
+          "values": 20880,
+          "payload_bytes": 83520,
+          "request_bytes": 31927,
+          "graph_sha256": "0775d50323b7aa74be5eaedc197e84220e0ead8d401e5904b02ef205830c6cc5",
+          "graph_bytes": 31699,
+          "embedded_constants": 1587,
+          "inline_values": 0
+        }
+      ],
+      "errors": [],
+      "seconds": 0.017,
+      "outputs": {
+        "bias_h0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 20736,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.6338266134262085,
+              "expected": 0.6338266134262085
+            }
+          }
+        },
+        "bias_h1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 20736,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.687470555305481,
+              "expected": 0.687470555305481
+            }
+          }
+        },
+        "bias_h2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 20736,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.6626875400543213,
+              "expected": 0.6626875400543213
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/attention/w12-s6",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "shifted_window_mask",
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 12,
+          "shift": 6,
+          "value": -100.0
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            24,
+            24
+          ],
+          "windows": [
+            2,
+            2
+          ],
+          "dim": 24,
+          "heads": 3,
+          "head_dim": 8
+        },
+        "seed": 1121,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(window_size=12, shift_size=6) SW-MSA and SwinTransformerBlock(window_size=12, shift_size=0) W-MSA, non-fused, up to the output projection; the shifted block's attn_mask",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror and reference.swin_pair.ee_mirror_shifted.ShiftedMirror(window=12, shift=6) (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/attention/w7-s3.",
+        "calibration": false,
+        "notes": "Exact: Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 24, 8 and 144); row sums left to right (sequential_sums); the linear in double_round_once and the attention core in round_each_op, as the graph. wmsa: W-MSA on the 2 x 2 windows (original layout); concat: SW-MSA in the shifted layout; unshifted: concat moved back by unshift_windows (timm's window_reverse and roll by +shift); mask: the shifted-window mask (timm's attn_mask). The input is periodic so the cyclic shift is exact. One window-12 W-MSA P V value (about -3.3e-4; the review's margin ratio 0.85) lies within a reordering error bound of a float32 rounding boundary: a single differing wmsa value would point to summation order, not a library error."
+      },
+      "inputs_sha256": "1bcc03645d1b31009f985ea3e2f6baeb5dd529ca821f4c3818285bb85018c0c8",
+      "weights_sha256": "90e91e3df041601a857e85e914099a32ef82979cf40d539cc3ab8e093c4eedb9",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 24,
+              "height": 24
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 24,
+          "height": 24,
+          "readouts": [
+            {
+              "name": "wmsa",
+              "kind": "output",
+              "channels": 24
+            },
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 24
+            },
+            {
+              "name": "unshifted",
+              "kind": "output",
+              "channels": 24
+            },
+            {
+              "name": "mask",
+              "kind": "output",
+              "channels": 144
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 24
+            }
+          ],
+          "bands": 245,
+          "values": 141120,
+          "payload_bytes": 564480,
+          "request_bytes": 390368,
+          "graph_sha256": "1c94303aa123fcc5631c0ece77679317063721a79635d999974f40fce26f867c",
+          "graph_bytes": 390140,
+          "embedded_constants": 13683,
+          "inline_values": 13824
+        }
+      ],
+      "errors": [],
+      "seconds": 0.023,
+      "outputs": {
+        "wmsa": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 13824,
+            "max_abs": 3.4570693969726562e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 16,
+              "col": 14,
+              "channel": 10,
+              "actual": 0.5651536583900452,
+              "expected": 0.5651502013206482
+            }
+          }
+        },
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 13824,
+            "max_abs": 6.67572021484375e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 11,
+              "col": 11,
+              "channel": 19,
+              "actual": 5.942780494689941,
+              "expected": 5.942787170410156
+            }
+          }
+        },
+        "unshifted": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 13824,
+            "max_abs": 6.67572021484375e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 17,
+              "col": 17,
+              "channel": 19,
+              "actual": 5.942780494689941,
+              "expected": 5.942787170410156
+            }
+          }
+        },
+        "mask": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 82944,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/attention/w12-single",
+        "lane": "window",
+        "block": "window_attention",
+        "parts": [
+          "relative_position_bias",
+          "naive_attention",
+          "split_heads",
+          "linear"
+        ],
+        "settings": {
+          "window": 12,
+          "shift": 6
+        },
+        "policy": "composite",
+        "shapes": {
+          "tokens": [
+            12,
+            12
+          ],
+          "windows": [
+            1,
+            1
+          ],
+          "dim": 24,
+          "heads": 3,
+          "head_dim": 8
+        },
+        "seed": 1122,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm SwinTransformerBlock(input_resolution=(12, 12), window_size=12, shift_size=6): timm disables the shift on one window; its W-MSA, non-fused, up to the output projection",
+        "mirror": {
+          "source": "reference.swin_block.ee_mirror.Mirror(window=12) (sequential sums)",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (P01): no milestone ran this window. The regression check is the window-7 fixture, window/attention/w7-single.",
+        "calibration": false,
+        "notes": "The shift 6 is requested; timm sets it to 0 on a single window, and the library builds W-MSA there (shifted_window_mask and the cyclic shift refuse a 1 x 1 window grid; the model's stage_shifted(1, 1) is False). Exact: Earth Engine's matrixMultiply sums each dot product left to right in double, and the float32 outputs are unchanged under strictly sequential summation (checked on the reference environment; torch's float64 matmul is not itself sequential at every shape) (K = 24, 8 and 144)."
+      },
+      "inputs_sha256": "cd1d87da49677af1dd1bc7f2a18497f16426bde4b24785e69ef0672c069f19f3",
+      "weights_sha256": "450bd6dfc80de84e5722f672ed0047d01df9129c2e2401cd591ca2e0f433087b",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 12,
+              "height": 12
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 12,
+          "height": 12,
+          "readouts": [
+            {
+              "name": "concat",
+              "kind": "output",
+              "channels": 24
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 24
+            }
+          ],
+          "bands": 50,
+          "values": 7200,
+          "payload_bytes": 28800,
+          "request_bytes": 232514,
+          "graph_sha256": "fa964b1c564eb9210a7e4661ce195f25def12bdbfd11705af95e9b663f7abd35",
+          "graph_bytes": 232286,
+          "embedded_constants": 13683,
+          "inline_values": 3456
+        }
+      ],
+      "errors": [],
+      "seconds": 0.018,
+      "outputs": {
+        "concat": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3456,
+            "max_abs": 2.384185791015625e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 0,
+              "channel": 10,
+              "actual": 2.2956409454345703,
+              "expected": 2.2956385612487793
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

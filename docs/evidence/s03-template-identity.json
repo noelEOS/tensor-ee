@@ -1,0 +1,1312 @@
+{
+ "task": "S03",
+ "script": "docs/evidence/s03-template-identity.py",
+ "claim": "the module after the rename to TensorEE packs the same template as S01's module, byte for byte; the module differs in comment lines and the recipe field only; S01's chip, sentinel and identity facts therefore carry over, as does the user's live Code Editor check (docs/evidence/s01-user-check.json), which read this template",
+ "cloud_calls": [],
+ "s01_record": "docs/evidence/s01-template-identity.json",
+ "carried_over_from": {
+  "record": "docs/evidence/s01-template-identity.json",
+  "keys": [
+   "placeholders",
+   "sentinels",
+   "sentinel_total",
+   "domain",
+   "collisions",
+   "identity",
+   "equality_definitions",
+   "standalone_chip_vs_mosaic_chip",
+   "negative_controls",
+   "aois",
+   "chips",
+   "l06d_procedure",
+   "previous",
+   "substitution",
+   "s01_claim",
+   "resources",
+   "environment"
+  ],
+  "reason": "the decoded template is byte-identical, so every chip-level fact holds"
+ },
+ "s01_module": {
+  "module_bytes": 192378,
+  "module_sha256": "10378f22861ba05e50cb65e0aa4ee965e2c348b6f204a1744366448e3ac361dc",
+  "module_lines": 417,
+  "template_bytes": 1162056,
+  "template_sha256": "d3ea625ff288326fcd658491299cbc1bb5d817783090045b2115e5a16d17d95d"
+ },
+ "module": {
+  "module_bytes": 192378,
+  "module_sha256": "67dd5093fb20e26a9cd92502256efcd2a050dcaea3b27315a07b0411c9d2ff28",
+  "module_lines": 417,
+  "template_bytes": 1162056,
+  "template_sha256": "d3ea625ff288326fcd658491299cbc1bb5d817783090045b2115e5a16d17d95d",
+  "template_sha256_in_metadata": "d3ea625ff288326fcd658491299cbc1bb5d817783090045b2115e5a16d17d95d"
+ },
+ "template_equal": true,
+ "placeholder_names": {
+  "s01_build": "NATIVE_EE_PLACEHOLDER/SCENE",
+  "s03_build": "TENSOR_EE_PLACEHOLDER/SCENE",
+  "carried_over_value": "the 'placeholders' and 'aois' sections keep S01's names as recorded",
+  "why_the_template_is_identical": "the placeholder scene is replaced by a sentinel before packing, so neither name reaches the template (0 occurrences of PLACEHOLDER in it)",
+  "placeholder_occurrences_in_template": 0
+ },
+ "module_differences": [
+  {
+   "change": "removed",
+   "kind": "comment",
+   "line": " * SegWater U-Net for the Earth Engine Code Editor, from the native_ee library."
+  },
+  {
+   "change": "added",
+   "kind": "comment",
+   "line": " * SegWater U-Net for the Earth Engine Code Editor, from the tensor_ee library."
+  },
+  {
+   "change": "removed",
+   "kind": "comment",
+   "line": " * recipe (native_ee.segwater_inference.predict_segwater) builds for one 224 x 224 chip,"
+  },
+  {
+   "change": "added",
+   "kind": "comment",
+   "line": " * recipe (tensor_ee.segwater_inference.predict_segwater) builds for one 224 x 224 chip,"
+  },
+  {
+   "change": "removed",
+   "kind": "metadata: recipe",
+   "line": "  \"recipe\": \"native_ee.segwater_inference.predict_segwater\","
+  },
+  {
+   "change": "added",
+   "kind": "metadata: recipe",
+   "line": "  \"recipe\": \"tensor_ee.segwater_inference.predict_segwater\","
+  },
+  {
+   "change": "removed",
+   "kind": "comment",
+   "line": "/** The grid's rectangle in its CRS, as native_ee.Grid.geometry(). */"
+  },
+  {
+   "change": "added",
+   "kind": "comment",
+   "line": "/** The grid's rectangle in its CRS, as tensor_ee.Grid.geometry(). */"
+  },
+  {
+   "change": "removed",
+   "kind": "comment",
+   "line": "/** Pixels inside the grid, as native_ee.Grid.mask(). */"
+  },
+  {
+   "change": "added",
+   "kind": "comment",
+   "line": "/** Pixels inside the grid, as tensor_ee.Grid.mask(). */"
+  },
+  {
+   "change": "removed",
+   "kind": "comment",
+   "line": "  // predict_segwater's mosaic of its per-chip images (native_ee/segwater_inference.py)."
+  },
+  {
+   "change": "added",
+   "kind": "comment",
+   "line": "  // predict_segwater's mosaic of its per-chip images (tensor_ee/segwater_inference.py)."
+  }
+ ],
+ "module_differences_kinds": [
+  "comment",
+  "metadata: recipe"
+ ],
+ "metadata_differences": {
+  "recipe": {
+   "previous": "native_ee.segwater_inference.predict_segwater",
+   "current": "tensor_ee.segwater_inference.predict_segwater"
+  }
+ },
+ "feasibility": {
+  "reference_t05_one_chip_prediction_bytes": 1163258,
+  "template_source_chip_bytes": 1162025,
+  "template_bytes": 1162056,
+  "template_sha256": "d3ea625ff288326fcd658491299cbc1bb5d817783090045b2115e5a16d17d95d",
+  "module": "demos/code_editor/segwater.js",
+  "module_bytes": 192378,
+  "module_sha256": "67dd5093fb20e26a9cd92502256efcd2a050dcaea3b27315a07b0411c9d2ff28",
+  "module_lines": 417,
+  "packed_lines": 90,
+  "packed_chars_per_line": 2000,
+  "packed_chars": 178840,
+  "template_encoding": "lzw-base64-v1",
+  "code_editor_script_limit": "512 KB: the Code Editor refused the 1.2 MB unpacked module (user check, 2026-10-13)",
+  "module_limit_bytes": 500000,
+  "js_mosaic_bytes": {
+   "segwater_sun_moon_lake_1x1": 1074742,
+   "segwater_sun_moon_lake_2x2": 1436287,
+   "south33_2x2": 1436322,
+   "zone01_north_1x2": 1197304,
+   "zone60_south_2x1": 1197000,
+   "zone31_origin_4x1": 1435252,
+   "zone10_large_1x4": 1436185,
+   "zone50_south_1x3": 1316741
+  },
+  "storage": "one Code Editor module script: the template LZW-compressed as base64 string lines (PACKED), restored exactly by the module's unpack() on load and checked against the recorded length and FNV-1a hash; the Node runs below execute that decoder"
+ },
+ "regeneration": {
+  "command": "PYTHONPATH=. python -m demos.code_editor.build --resources <checkout>",
+  "identical_to_committed": true,
+  "note": "the rebuilt module equals the committed one byte for byte (S03, 2026-10-15); the source graph bytes are S01's",
+  "source_bytes": 1162025,
+  "source_sha256": "fc3429bc10f82b5265dc0c7b7406ad8a65504574b65d250d58129d32da54c751",
+  "cloud_calls": []
+ },
+ "placeholders": {
+  "crs": "EPSG:32660",
+  "scene": "NATIVE_EE_PLACEHOLDER/SCENE",
+  "aoi_origin": [
+   91000000,
+   97000000
+  ],
+  "chip_origin": [
+   91002240,
+   96997760
+  ],
+  "source_layout_rows_columns": [
+   2,
+   2
+  ],
+  "source_chip_row_column": [
+   1,
+   1
+  ]
+ },
+ "sentinels": {
+  "ax+0i": 1,
+  "ay+0i": 1,
+  "crs": 1,
+  "scene": 1,
+  "tx+0i": 13,
+  "tx+2160f": 1,
+  "tx+2200f": 1,
+  "tx+2220f": 1,
+  "tx+2230f": 1,
+  "tx+2235f": 1,
+  "tx+2240f": 1,
+  "tx+2240i": 1,
+  "tx-10f": 2,
+  "tx-20f": 2,
+  "tx-40f": 2,
+  "tx-5f": 2,
+  "tx-80f": 2,
+  "ty+0i": 13,
+  "ty+10f": 2,
+  "ty+20f": 2,
+  "ty+40f": 2,
+  "ty+5f": 2,
+  "ty+80f": 2,
+  "ty-2160f": 1,
+  "ty-2200f": 1,
+  "ty-2220f": 1,
+  "ty-2230f": 1,
+  "ty-2235f": 1,
+  "ty-2240f": 1,
+  "ty-2240i": 1
+ },
+ "sentinel_total": 64,
+ "domain": {
+  "crs": "EPSG:(326|327)(0[1-9]|[1-5][0-9]|60)",
+  "scene": "COPERNICUS/S1_GRD/[A-Za-z0-9_]{1,200}",
+  "x": [
+   0,
+   1000000
+  ],
+  "y": [
+   0,
+   10010000
+  ]
+ },
+ "collisions": {
+  "constants": 8798,
+  "constants_with_sentinels": 26,
+  "possible_collisions": [
+   {
+    "constants": [
+     [
+      [
+       "int",
+       10
+      ],
+      [
+       "int",
+       0
+      ],
+      [
+       "slot",
+       "ax+0i"
+      ],
+      [
+       "int",
+       0
+      ],
+      [
+       "int",
+       -10
+      ],
+      [
+       "slot",
+       "ay+0i"
+      ]
+     ],
+     [
+      [
+       "int",
+       10
+      ],
+      [
+       "int",
+       0
+      ],
+      [
+       "slot",
+       "tx+0i"
+      ],
+      [
+       "int",
+       0
+      ],
+      [
+       "int",
+       -10
+      ],
+      [
+       "slot",
+       "ty+0i"
+      ]
+     ]
+    ],
+    "conditions": [
+     "tx - ax == 0",
+     "ty - ay == 0"
+    ]
+   }
+  ]
+ },
+ "identity": {
+  "chips": 24,
+  "aois": 8,
+  "zones": [
+   "EPSG:32601",
+   "EPSG:32610",
+   "EPSG:32631",
+   "EPSG:32651",
+   "EPSG:32733",
+   "EPSG:32750",
+   "EPSG:32760"
+  ],
+  "raw_bytes_equal_every_chip_not_at_aoi_origin": true,
+  "chips_at_aoi_origin": 8,
+  "raw_bytes_equal_at_aoi_origin": [
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false
+  ],
+  "python_round_trip_bytes_equal_every_chip": true,
+  "js_substitution_equals_python_mirror_every_chip": true,
+  "js_round_trip_structurally_equal_every_chip": true,
+  "js_mosaic_structurally_equal_every_aoi": true
+ },
+ "equality_definitions": {
+  "bytes": "the UTF-8 text equals the library's ee.Image.serialize() output",
+  "python_round_trip": "ee.deserializer.fromJSON(text).serialize() equals the library's serialize(); at the AOI-origin chip the template keeps the AOI projection and the chip projection as two equal values, which the library's serializer shares as one",
+  "structural": "demos/code_editor/verify.py graph_differences: no differences"
+ },
+ "standalone_chip_vs_mosaic_chip": {
+  "chip": "segwater_sun_moon_lake_2x2-r1c1",
+  "standalone_grid_origin": [
+   288270,
+   2638620
+  ],
+  "differences": [
+   {
+    "path": [
+     "Image.select.input",
+     "Image.reproject.crs",
+     "Projection.transform"
+    ],
+    "kind": "constant",
+    "mosaic": [
+     10,
+     0,
+     286030,
+     0,
+     -10,
+     2640860
+    ],
+    "standalone": [
+     10,
+     0,
+     288270,
+     0,
+     -10,
+     2638620
+    ]
+   }
+  ]
+ },
+ "negative_controls": {
+  "chip_origin_shifted_10m": {
+   "bytes_equal": false,
+   "structural_differences": 20
+  },
+  "other_scene": {
+   "bytes_equal": false,
+   "structural_differences": 1
+  }
+ },
+ "aois": [
+  {
+   "name": "segwater_sun_moon_lake_1x1",
+   "source": "demos/code_editor/presets/segwater_sun_moon_lake_1x1.json",
+   "crs": "EPSG:32651",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+   "x": 286030,
+   "y": 2640860,
+   "rows": 1,
+   "columns": 1,
+   "chips": 1,
+   "library_sha256": "906301576940696d2f3710f9974139f073136e347bfdf80c005b1f7d2325302d",
+   "library_bytes": 1163047,
+   "js_mosaic": {
+    "structurally_equal": true,
+    "compared_pairs": 10690,
+    "chip_count": 1,
+    "bytes": 1074742,
+    "differences": []
+   }
+  },
+  {
+   "name": "segwater_sun_moon_lake_2x2",
+   "source": "demos/code_editor/presets/segwater_sun_moon_lake_2x2.json",
+   "crs": "EPSG:32651",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+   "x": 286030,
+   "y": 2640860,
+   "rows": 2,
+   "columns": 2,
+   "chips": 4,
+   "library_sha256": "2dbf1e1b815e12d1e736e68574fad32a6a80feb43d8f64f743f42f4c893a33d8",
+   "library_bytes": 1573491,
+   "js_mosaic": {
+    "structurally_equal": true,
+    "compared_pairs": 14147,
+    "chip_count": 4,
+    "bytes": 1436287,
+    "differences": []
+   }
+  },
+  {
+   "name": "south33_2x2",
+   "source": "docs/evidence/l06d-template-identity.py",
+   "crs": "EPSG:32733",
+   "scene": "COPERNICUS/S1_GRD/S1B_IW_GRDH_1SDV_20210305T050000_20210305T050025_025900_031735_A1B2",
+   "x": 448000,
+   "y": 10001600,
+   "rows": 2,
+   "columns": 2,
+   "chips": 4,
+   "library_sha256": "bf65a92a44a295196f594ae59d2502aa47f01fdcaa5996b8cf286bd82124fa47",
+   "library_bytes": 1573538,
+   "js_mosaic": {
+    "structurally_equal": true,
+    "compared_pairs": 14147,
+    "chip_count": 4,
+    "bytes": 1436322,
+    "differences": []
+   }
+  },
+  {
+   "name": "zone01_north_1x2",
+   "source": "docs/evidence/l06d-template-identity.py",
+   "crs": "EPSG:32601",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20230611T175000_20230611T175025_048950_05E2A1_C3D4",
+   "x": 499520,
+   "y": 6720000,
+   "rows": 1,
+   "columns": 2,
+   "chips": 2,
+   "library_sha256": "e8f3242d739dc297e8565b5a0e613a99bf5b8d7dbed435f446e9c6737b8548ba",
+   "library_bytes": 1301977,
+   "js_mosaic": {
+    "structurally_equal": true,
+    "compared_pairs": 11848,
+    "chip_count": 2,
+    "bytes": 1197304,
+    "differences": []
+   }
+  },
+  {
+   "name": "zone60_south_2x1",
+   "source": "docs/evidence/l06d-template-identity.py",
+   "crs": "EPSG:32760",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20220120T064000_20220120T064025_041560_04F0B2_E5F6",
+   "x": 224000,
+   "y": 4480000,
+   "rows": 2,
+   "columns": 1,
+   "chips": 2,
+   "library_sha256": "2d85b1e601f6e859a252b23b0ad49fc6adbb6734a6b267bd4ff5066e536ac8b1",
+   "library_bytes": 1301659,
+   "js_mosaic": {
+    "structurally_equal": true,
+    "compared_pairs": 11846,
+    "chip_count": 2,
+    "bytes": 1197000,
+    "differences": []
+   }
+  },
+  {
+   "name": "zone31_origin_4x1",
+   "source": "docs/evidence/l06d-template-identity.py",
+   "crs": "EPSG:32631",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240815T174000_20240815T174025_055220_06BC33_A7B8",
+   "x": 0,
+   "y": 8960,
+   "rows": 4,
+   "columns": 1,
+   "chips": 4,
+   "library_sha256": "726fe51abc45ef1917afcbad227b49102eb1c6ceee61bbba10368e497895a007",
+   "library_bytes": 1572214,
+   "js_mosaic": {
+    "structurally_equal": true,
+    "compared_pairs": 14144,
+    "chip_count": 4,
+    "bytes": 1435252,
+    "differences": []
+   }
+  },
+  {
+   "name": "zone10_large_1x4",
+   "source": "docs/evidence/l06d-template-identity.py",
+   "crs": "EPSG:32610",
+   "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20200930T141000_20200930T141025_034560_040611_C9D0",
+   "x": 992320,
+   "y": 9340800,
+   "rows": 1,
+   "columns": 4,
+   "chips": 4,
+   "library_sha256": "3708ae395cd17d0e9540c4fc2a45d459bd866cb9f9b23724aa528bf87aa433a3",
+   "library_bytes": 1573377,
+   "js_mosaic": {
+    "structurally_equal": true,
+    "compared_pairs": 14146,
+    "chip_count": 4,
+    "bytes": 1436185,
+    "differences": []
+   }
+  },
+  {
+   "name": "zone50_south_1x3",
+   "source": "docs/evidence/l06d-template-identity.py",
+   "crs": "EPSG:32750",
+   "scene": "COPERNICUS/S1_GRD/S1B_IW_GRDH_1SDV_20191102T213000_20191102T213025_018780_0236F1_EAFB",
+   "x": 336000,
+   "y": 6720000,
+   "rows": 1,
+   "columns": 3,
+   "chips": 3,
+   "library_sha256": "51c196396ea477bb53edcd613150f3a42c529a94c78a362bbd61c54a1f74cfe3",
+   "library_bytes": 1437673,
+   "js_mosaic": {
+    "structurally_equal": true,
+    "compared_pairs": 12997,
+    "chip_count": 3,
+    "bytes": 1316741,
+    "differences": []
+   }
+  }
+ ],
+ "chips": [
+  {
+   "chip": "segwater_sun_moon_lake_1x1-r0c0",
+   "aoi": "segwater_sun_moon_lake_1x1",
+   "row": 0,
+   "column": 0,
+   "chip_origin": [
+    286030,
+    2640860
+   ],
+   "at_aoi_origin": true,
+   "library_sha256": "848b68cf7d8890343497b4a82296c67287cc77e243a49fb4d861a97d88fb6e1a",
+   "library_bytes": 1161808,
+   "substituted_sha256": "a460203591836feb8139aa33f26da6befd37a82a7c013dd7b0703a0e9b00cece",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": false,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5806
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": false,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10678,
+    "bytes": 1073643
+   },
+   "l06d_substituted_sha256": "b1baffb241352066ef715a1b82f7abeb7b2e4ec34296914ba8d394886497f7be",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "segwater_sun_moon_lake_2x2-r0c0",
+   "aoi": "segwater_sun_moon_lake_2x2",
+   "row": 0,
+   "column": 0,
+   "chip_origin": [
+    286030,
+    2640860
+   ],
+   "at_aoi_origin": true,
+   "library_sha256": "848b68cf7d8890343497b4a82296c67287cc77e243a49fb4d861a97d88fb6e1a",
+   "library_bytes": 1161808,
+   "substituted_sha256": "a460203591836feb8139aa33f26da6befd37a82a7c013dd7b0703a0e9b00cece",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": false,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5806
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": false,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10678,
+    "bytes": 1073643
+   },
+   "l06d_substituted_sha256": "b1baffb241352066ef715a1b82f7abeb7b2e4ec34296914ba8d394886497f7be",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "segwater_sun_moon_lake_2x2-r0c1",
+   "aoi": "segwater_sun_moon_lake_2x2",
+   "row": 0,
+   "column": 1,
+   "chip_origin": [
+    288270,
+    2640860
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "ec4e59f9cda263508d8b3c8af806fc47db0ff068e6d568f5b3419784eb1910bc",
+   "library_bytes": 1161990,
+   "substituted_sha256": "ec4e59f9cda263508d8b3c8af806fc47db0ff068e6d568f5b3419784eb1910bc",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "d02d95ba2599ee049916134fe338c1659cc5d9c0203df1070b5aa66c7bdd9ec3",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "segwater_sun_moon_lake_2x2-r1c0",
+   "aoi": "segwater_sun_moon_lake_2x2",
+   "row": 1,
+   "column": 0,
+   "chip_origin": [
+    286030,
+    2638620
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "fd910c0551098ed76e0b5a91f31d80e192ab10b4ee81281199a2e1a5605dc269",
+   "library_bytes": 1161990,
+   "substituted_sha256": "fd910c0551098ed76e0b5a91f31d80e192ab10b4ee81281199a2e1a5605dc269",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "84e48260e1a68982be1252a271ecb1a616d7890d7a9b4069a39b6ff2f77f7864",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "segwater_sun_moon_lake_2x2-r1c1",
+   "aoi": "segwater_sun_moon_lake_2x2",
+   "row": 1,
+   "column": 1,
+   "chip_origin": [
+    288270,
+    2638620
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "14fbe3446e0f3ef9105122a20b9152aa1854cc6b5eb5da6d4dd5fce387cf7f78",
+   "library_bytes": 1161990,
+   "substituted_sha256": "14fbe3446e0f3ef9105122a20b9152aa1854cc6b5eb5da6d4dd5fce387cf7f78",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "3ac4a507c376c6f7f2921be22b698211c1389241de19098d1967d051e822a036",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "south33_2x2-r0c0",
+   "aoi": "south33_2x2",
+   "row": 0,
+   "column": 0,
+   "chip_origin": [
+    448000,
+    10001600
+   ],
+   "at_aoi_origin": true,
+   "library_sha256": "687bec6396c352cef5ae1f72faf52620e9a751cdcb2d4fb00b34125c63e0a742",
+   "library_bytes": 1161831,
+   "substituted_sha256": "6b55ab5e92a551475e7caf56937cbff9e1aaa02921782642d46ea20c1146409b",
+   "substituted_bytes": 1162014,
+   "substituted_equals_library_bytes": false,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5806
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": false,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10678,
+    "bytes": 1073660
+   },
+   "l06d_substituted_sha256": "a97f37dede119ec6e5e80b7070aead0bdeda7a11d9e1732fb64eb70b3f4761e2",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "south33_2x2-r0c1",
+   "aoi": "south33_2x2",
+   "row": 0,
+   "column": 1,
+   "chip_origin": [
+    450240,
+    10001600
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "718df550c6f9dafc0f1e54ec167d985995a8cc22b91c2f260ae0d9f9fcfa6f28",
+   "library_bytes": 1162014,
+   "substituted_sha256": "718df550c6f9dafc0f1e54ec167d985995a8cc22b91c2f260ae0d9f9fcfa6f28",
+   "substituted_bytes": 1162014,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073835
+   },
+   "l06d_substituted_sha256": "b45dec577b2184fd3c6c1863e20aa0b8fd7a61a1eafaa0c56790d13faddee6f9",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "south33_2x2-r1c0",
+   "aoi": "south33_2x2",
+   "row": 1,
+   "column": 0,
+   "chip_origin": [
+    448000,
+    9999360
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "d9a4704d0625b205f03c11e456c3e9f0b2a963aae2d5c4c679a559f839ee7c58",
+   "library_bytes": 1161991,
+   "substituted_sha256": "d9a4704d0625b205f03c11e456c3e9f0b2a963aae2d5c4c679a559f839ee7c58",
+   "substituted_bytes": 1161991,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073818
+   },
+   "l06d_substituted_sha256": "cacdd13bc4359a9b1f3c84b60b09eee0b31bf38f4e494791ffad2b000ca79fa1",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "south33_2x2-r1c1",
+   "aoi": "south33_2x2",
+   "row": 1,
+   "column": 1,
+   "chip_origin": [
+    450240,
+    9999360
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "aeb183c29c4d17c14355544318728a260d9a753c0633c15957c565b973bd11e1",
+   "library_bytes": 1161991,
+   "substituted_sha256": "aeb183c29c4d17c14355544318728a260d9a753c0633c15957c565b973bd11e1",
+   "substituted_bytes": 1161991,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073818
+   },
+   "l06d_substituted_sha256": "f54acbaea504faa8fdc3ef332cb4819ea50b533add131ba7a965d8fa8997db61",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone01_north_1x2-r0c0",
+   "aoi": "zone01_north_1x2",
+   "row": 0,
+   "column": 0,
+   "chip_origin": [
+    499520,
+    6720000
+   ],
+   "at_aoi_origin": true,
+   "library_sha256": "035da09c3caa1bb2af3dc078c96d4a53399667f604ab63fa466d239aaee3910e",
+   "library_bytes": 1161808,
+   "substituted_sha256": "abb209f70c303ee55b76e63f508aac5a56025fa2716680119ea783363b1b1cca",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": false,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5806
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": false,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10678,
+    "bytes": 1073643
+   },
+   "l06d_substituted_sha256": "e601a22a6db734045fa425173736a6e38f9bc5a87ad6541b0de28d85651ef303",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone01_north_1x2-r0c1",
+   "aoi": "zone01_north_1x2",
+   "row": 0,
+   "column": 1,
+   "chip_origin": [
+    501760,
+    6720000
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "bff2d99c2b331d5e3c044f10d59d92d6c6898f89f34f90163d2384f3353b7e13",
+   "library_bytes": 1161990,
+   "substituted_sha256": "bff2d99c2b331d5e3c044f10d59d92d6c6898f89f34f90163d2384f3353b7e13",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "616f0f33450f97c6e255ba3c9fb3df2d2742fd999d90152fa9c7fa4cc2f3497d",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone60_south_2x1-r0c0",
+   "aoi": "zone60_south_2x1",
+   "row": 0,
+   "column": 0,
+   "chip_origin": [
+    224000,
+    4480000
+   ],
+   "at_aoi_origin": true,
+   "library_sha256": "871d46d07be453c0e94e1cb1191fc370ec54de21bea9779721554592f4a5de21",
+   "library_bytes": 1161808,
+   "substituted_sha256": "b4b19744ea2a6e51f683b5409fbe9a68989b9ed4fc52377b253c44c95b848acc",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": false,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5806
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": false,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10678,
+    "bytes": 1073643
+   },
+   "l06d_substituted_sha256": "b76733187b92999347075266027569e0c2702ca47a48e5622c01418985f6f9cc",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone60_south_2x1-r1c0",
+   "aoi": "zone60_south_2x1",
+   "row": 1,
+   "column": 0,
+   "chip_origin": [
+    224000,
+    4477760
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "1f2d872c79f5d8f3b2efe8bee5e48d99cb9777db9940722ac1f884c250d2390a",
+   "library_bytes": 1161990,
+   "substituted_sha256": "1f2d872c79f5d8f3b2efe8bee5e48d99cb9777db9940722ac1f884c250d2390a",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "c15769de5e4fdd81a264ba89bd118d3bc2cd99708606330bfc6183ef2435a17c",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone31_origin_4x1-r0c0",
+   "aoi": "zone31_origin_4x1",
+   "row": 0,
+   "column": 0,
+   "chip_origin": [
+    0,
+    8960
+   ],
+   "at_aoi_origin": true,
+   "library_sha256": "a6c1f13369bc3044b6587e46258f48bb5e2fb7d959051f8927dafeac7e064df2",
+   "library_bytes": 1161607,
+   "substituted_sha256": "8287c51a5cfdb0688022fda0bfe2b2e4a713fb9976b4cbf1055ff414662e283c",
+   "substituted_bytes": 1161781,
+   "substituted_equals_library_bytes": false,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5806
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": false,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10678,
+    "bytes": 1073495
+   },
+   "l06d_substituted_sha256": "b55c5cabcb744e146e4ee06c93a4a28a2bec3937be7dfb285043314a73d1bbc5",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone31_origin_4x1-r1c0",
+   "aoi": "zone31_origin_4x1",
+   "row": 1,
+   "column": 0,
+   "chip_origin": [
+    0,
+    6720
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "db14348f4423811365afe3a7d794f59967dd46eedaf13034c2694cd2ca6eba4c",
+   "library_bytes": 1161781,
+   "substituted_sha256": "db14348f4423811365afe3a7d794f59967dd46eedaf13034c2694cd2ca6eba4c",
+   "substituted_bytes": 1161781,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073661
+   },
+   "l06d_substituted_sha256": "4f3e9c4e7ea9f081ffa0435cbec68f2ed68e1f4f856806e4f140abb3dbd9548e",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone31_origin_4x1-r2c0",
+   "aoi": "zone31_origin_4x1",
+   "row": 2,
+   "column": 0,
+   "chip_origin": [
+    0,
+    4480
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "9e3508514b19d53f9d6d3ab17e96c9a731fecccc5e0f9ffd60eed4a0c7be56b4",
+   "library_bytes": 1161781,
+   "substituted_sha256": "9e3508514b19d53f9d6d3ab17e96c9a731fecccc5e0f9ffd60eed4a0c7be56b4",
+   "substituted_bytes": 1161781,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073661
+   },
+   "l06d_substituted_sha256": "c6601e9569d6e5bfafc910be901b88aa12aa72b25f0bba3e11417806d4728ec0",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone31_origin_4x1-r3c0",
+   "aoi": "zone31_origin_4x1",
+   "row": 3,
+   "column": 0,
+   "chip_origin": [
+    0,
+    2240
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "652e7f26f9804d7ecddaf4f308d62f94633e097b862cd0169398dea0fe3b07d0",
+   "library_bytes": 1161764,
+   "substituted_sha256": "652e7f26f9804d7ecddaf4f308d62f94633e097b862cd0169398dea0fe3b07d0",
+   "substituted_bytes": 1161764,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073647
+   },
+   "l06d_substituted_sha256": "dcd9ba6255083e00ebafc310b1d4669944ab0f019e8ab02cfc9b4d0750b31a51",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone10_large_1x4-r0c0",
+   "aoi": "zone10_large_1x4",
+   "row": 0,
+   "column": 0,
+   "chip_origin": [
+    992320,
+    9340800
+   ],
+   "at_aoi_origin": true,
+   "library_sha256": "611b98424e1f30734c92ca365b1ea9456ba350b386ff61ab1d09f7309b0f5fc6",
+   "library_bytes": 1161808,
+   "substituted_sha256": "46a1fa204419ddad3d8fe07cda2e47dcfe31b8c728b95396b01673c9f6515af5",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": false,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5806
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": false,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10678,
+    "bytes": 1073643
+   },
+   "l06d_substituted_sha256": "463bf8ea2e69053beb0801d1322f6fbb3153ce22bab908ec1b92160f1f25982d",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone10_large_1x4-r0c1",
+   "aoi": "zone10_large_1x4",
+   "row": 0,
+   "column": 1,
+   "chip_origin": [
+    994560,
+    9340800
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "91017d718caea86ed3676a59db493408806e349df965b9fde192df75c09b355a",
+   "library_bytes": 1161990,
+   "substituted_sha256": "91017d718caea86ed3676a59db493408806e349df965b9fde192df75c09b355a",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "47e64a985806152bb4f684018df7649dbe70ca587324a5e9cd5b4c46d191d18a",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone10_large_1x4-r0c2",
+   "aoi": "zone10_large_1x4",
+   "row": 0,
+   "column": 2,
+   "chip_origin": [
+    996800,
+    9340800
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "11defa42fd30d3be31dff8ffec5abc4f021ec81b0e56345cd4b0d4ddb0f64849",
+   "library_bytes": 1161990,
+   "substituted_sha256": "11defa42fd30d3be31dff8ffec5abc4f021ec81b0e56345cd4b0d4ddb0f64849",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "5dd6012f4ebf9191a0696462dfb86f8557bea8d3a4710cabc16f209747476b9f",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone10_large_1x4-r0c3",
+   "aoi": "zone10_large_1x4",
+   "row": 0,
+   "column": 3,
+   "chip_origin": [
+    999040,
+    9340800
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "ef9d5f196cb818348c625151ec6ad68fff83a26bfd7381fd3f36e827a430b92f",
+   "library_bytes": 1161997,
+   "substituted_sha256": "ef9d5f196cb818348c625151ec6ad68fff83a26bfd7381fd3f36e827a430b92f",
+   "substituted_bytes": 1161997,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073823
+   },
+   "l06d_substituted_sha256": "482fe433693658bf07fb50d878fead3849369d8edffbb0e17ca0f875b23d567f",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone50_south_1x3-r0c0",
+   "aoi": "zone50_south_1x3",
+   "row": 0,
+   "column": 0,
+   "chip_origin": [
+    336000,
+    6720000
+   ],
+   "at_aoi_origin": true,
+   "library_sha256": "467322ddd91fb7e19f7ab7b919c48114a4c91db10fc9b2d9f7c6613292a1fe30",
+   "library_bytes": 1161808,
+   "substituted_sha256": "8105881e13faae57dbdb52979f9b821256591fcb70f07ef702f54450585a8138",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": false,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5806
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": false,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10678,
+    "bytes": 1073643
+   },
+   "l06d_substituted_sha256": "2d98f8f910ec24c97acfe7d0103bcdf9d729e7762b9fbb57c22efed497de3a59",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone50_south_1x3-r0c1",
+   "aoi": "zone50_south_1x3",
+   "row": 0,
+   "column": 1,
+   "chip_origin": [
+    338240,
+    6720000
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "df217a5f5497761627dcff453c3b246fc43a64aa2adab6d70307314859e162e9",
+   "library_bytes": 1161990,
+   "substituted_sha256": "df217a5f5497761627dcff453c3b246fc43a64aa2adab6d70307314859e162e9",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "9a6002403f858b385b3323a8fa06523714004b8bb31b1c89dee85cd2894b07f1",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  },
+  {
+   "chip": "zone50_south_1x3-r0c2",
+   "aoi": "zone50_south_1x3",
+   "row": 0,
+   "column": 2,
+   "chip_origin": [
+    340480,
+    6720000
+   ],
+   "at_aoi_origin": false,
+   "library_sha256": "b3d4d7b8eafa5886ba2ea7548a9409c8d24945a71f58b97015f67f472e3e5ecc",
+   "library_bytes": 1161990,
+   "substituted_sha256": "b3d4d7b8eafa5886ba2ea7548a9409c8d24945a71f58b97015f67f472e3e5ecc",
+   "substituted_bytes": 1161990,
+   "substituted_equals_library_bytes": true,
+   "python_round_trip_equals_library_bytes": true,
+   "values_entries": [
+    5807,
+    5807
+   ],
+   "js_substituted_equals_python_bytes": true,
+   "js_substituted_equals_library_bytes": true,
+   "js_round_trip": {
+    "structurally_equal": true,
+    "compared_pairs": 10680,
+    "bytes": 1073817
+   },
+   "l06d_substituted_sha256": "6872fb6a0f51864cd0c44a9a007916ae0a89ef8763447090bcfa50b2f4549d69",
+   "substituted_equals_l06d_with_prefix_substituted": true
+  }
+ ],
+ "l06d_procedure": "docs/evidence/l06d-template-identity.py",
+ "previous": {
+  "record": "docs/evidence/l06d-template-identity.json",
+  "module_revision": "93f63baf5432e03fd464ca2f68670737595db652",
+  "module_sha256": "65a0266fe4a0a4314a4d1026bc75c278cda5f1ed970589445e1ca1fa13e4e7f3",
+  "module_bytes": 192460,
+  "template_sha256": "56d72c99aae905b4a76834a8b41d1764717e8ab4a32615ef7ee88a2520b139ed",
+  "template_bytes": 1162172,
+  "equals_l06d_record": true
+ },
+ "substitution": {
+  "old_prefix": "projects/<original>/assets/, read from L06d's module's weight assets (not recorded)",
+  "new_prefix": "projects/tensor-ee/assets/",
+  "new_prefix_absent_from_previous_template": true,
+  "old_prefix_occurrences_in_previous_template": 29,
+  "old_prefix_occurrences_in_new_template": 0,
+  "new_prefix_occurrences_in_new_template": 29,
+  "original_project_occurrences_in_new_module": 0,
+  "template_equals_previous_with_prefix_substituted": true,
+  "weight_assets_equal_previous_with_prefix_substituted": true,
+  "weight_assets": 29,
+  "metadata_fields_differing": [
+   "manifestSha256",
+   "templateBytes",
+   "templateCodes",
+   "templateFnv1a32",
+   "templateSha256",
+   "weightAssets"
+  ],
+  "metadata_differs_only_in_derived_fields": true,
+  "sentinels_equal_previous": true,
+  "chips": 24,
+  "chips_substituted_equal_l06d_with_prefix_substituted": 24,
+  "l06d_chips_substituted_reproduced_from_previous_template": 24
+ },
+ "s01_claim": "the committed template (build.parse_module) equals L06d's template with the weight assets' prefix substituted, byte for byte; L06d's procedure holds for it unchanged",
+ "resources": {
+  "checkpoint": {
+   "sha256": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+   "bytes": 172104107
+  },
+  "manifest": {
+   "sha256": "3bd0bf7bf454caa0e7b8550dad24b6a28982ca128a1a4f0ba0cd25ce797846fa",
+   "bytes": 23419
+  }
+ },
+ "environment": {
+  "python": "3.14.6",
+  "platform": "darwin-arm64",
+  "packages": {
+   "earthengine-api": "1.7.45",
+   "torch": "2.14.0",
+   "numpy": "2.5.3",
+   "segmentation-models-pytorch": "0.5.0"
+  },
+  "node": "v26.8.1",
+  "earthengine_js": "1.7.46",
+  "node_path": "NODE_PATH: a node_modules directory with @google/earthengine"
+ },
+ "passed": true
+}

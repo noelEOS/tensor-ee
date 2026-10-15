@@ -1,0 +1,150 @@
+{
+ "task": "L06d",
+ "check": "the user's live Code Editor check (docs/evidence/l06d-user-check.md)",
+ "claim": "the rebuilt Code Editor demo runs in the Earth Engine Code Editor, and its export of the preset chip equals, value for value, the archived demo's verified export of the same chip; a numerical check on one chip, not an accuracy claim",
+ "date": "2026-10-13",
+ "run_by": "the user, in the Earth Engine Code Editor",
+ "module": {
+  "commit": "93f63ba",
+  "path": "demos/code_editor/segwater.js",
+  "bytes": 192460,
+  "template_sha256": "56d72c99aae905b4a76834a8b41d1764717e8ab4a32615ef7ee88a2520b139ed",
+  "note": "the first save, of the 1.2 MB module at 467755a, failed with \"File too large (larger than 512KB)\"; 93f63ba stores the same template LZW-compressed"
+ },
+ "user_report": {
+  "saved_and_ran": true,
+  "result": "looks good",
+  "asset_id": "projects/ORIGINAL_PROJECT/assets/segwater_code_editor_1791853324331"
+ },
+ "export_task": {
+  "id": "O3DLGAO6VGW3AJZKVY4SBAH6",
+  "state": "COMPLETED",
+  "task_type": "EXPORT_IMAGE",
+  "attempt": 1,
+  "batch_eecu_usage_seconds": 64.94512176513672,
+  "running_seconds": 140.301,
+  "creation_to_completion_seconds": 142.736,
+  "creation_timestamp_ms": 1791853382972,
+  "start_timestamp_ms": 1791853385407,
+  "update_timestamp_ms": 1791853525708
+ },
+ "asset": {
+  "bands": [
+   "logit_0",
+   "logit_1",
+   "water_probability",
+   "water_mask",
+   "coverage"
+  ],
+  "precisions": [
+   "FLOAT"
+  ],
+  "grid": {
+   "affineTransform": {
+    "scaleX": 10,
+    "scaleY": -10,
+    "translateX": 286030,
+    "translateY": 2640860
+   },
+   "crsCode": "EPSG:32651",
+   "dimensions": {
+    "height": 224,
+    "width": 224
+   }
+  },
+  "one_grid_for_all_bands": true,
+  "properties": {
+   "aoi_coverage_fraction": 1,
+   "checkpoint_sha256": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+   "chip_count": 1,
+   "grid_crs": "EPSG:32651",
+   "grid_height": 224,
+   "grid_width": 224,
+   "inference": "native_ee_predict_segwater_code_editor",
+   "module_format": "native_ee_segwater_code_editor_template_v1",
+   "source_scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+   "template_sha256": "56d72c99aae905b4a76834a8b41d1764717e8ab4a32615ef7ee88a2520b139ed"
+  }
+ },
+ "expected_properties": {
+  "checkpoint_sha256": true,
+  "template_sha256": true,
+  "chip_count": true
+ },
+ "comparison": {
+  "reference": "projects/ORIGINAL_PROJECT/assets/segwater_code_editor_1790661717611",
+  "reference_record": "docs/history/cnn/results/segwater_code_editor_export.json (bit-identical to the library's Python result)",
+  "grid": {
+   "crs": "EPSG:32651",
+   "crsTransform": [
+    10,
+    0,
+    286030,
+    0,
+    -10,
+    2640860
+   ],
+   "pixels": 50176
+  },
+  "per_band": {
+   "logit_0": {
+    "max_absolute_difference": 0,
+    "compared_pixels": 50176,
+    "differing_values": 0,
+    "nan_values": 0
+   },
+   "logit_1": {
+    "max_absolute_difference": 0,
+    "compared_pixels": 50176,
+    "differing_values": 0,
+    "nan_values": 0
+   },
+   "water_probability": {
+    "max_absolute_difference": 0,
+    "compared_pixels": 50176,
+    "differing_values": 0,
+    "nan_values": 0
+   },
+   "water_mask": {
+    "max_absolute_difference": 0,
+    "compared_pixels": 50176,
+    "differing_values": 0,
+    "nan_values": 0
+   },
+   "coverage": {
+    "max_absolute_difference": 0,
+    "compared_pixels": 50176,
+    "differing_values": 0,
+    "nan_values": 0
+   }
+  },
+  "result": "identical: max |new - archived| = 0 and 0 differing values in all five bands over 50,176 pixels; no NaN"
+ },
+ "stats": {
+  "coverage_count": 50176,
+  "coverage_max": 1,
+  "coverage_mean": 1,
+  "coverage_min": 1,
+  "logit_0_count": 50176,
+  "logit_0_max": 2.822754383087158,
+  "logit_0_mean": -0.6613696860713587,
+  "logit_0_min": -2.917501449584961,
+  "logit_1_count": 50176,
+  "logit_1_max": 2.938009023666382,
+  "logit_1_mean": 0.1530190723021286,
+  "logit_1_min": -2.7260119915008545,
+  "water_mask_count": 50176,
+  "water_mask_max": 1,
+  "water_mask_mean": 0.6019810267857143,
+  "water_mask_min": 0,
+  "water_probability_count": 50176,
+  "water_probability_max": 0.9905005693435669,
+  "water_probability_mean": 0.5977079155791959,
+  "water_probability_min": 0.008382517844438553
+ },
+ "reads_by_the_lead": [
+  "getAsset of the new asset and of the archived asset",
+  "1 getInfo (four reduceRegion: differences, differing values, NaN counts, stats)",
+  "1 getTaskList (the export task's record)"
+ ]
+}

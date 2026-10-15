@@ -1,0 +1,28 @@
+{
+ "task": "S03",
+ "claim": "the export requests the browser demo prepares for its offline fixture job are unchanged by the rename and the server changes: SHA-256 of each prepared request body, with the job id pinned (uuid4 -> 32 x 'f') and the simulated task ids, built from the trained checkpoints (read-only) and the committed manifests",
+ "recorded_at": "the S03 base (origin/main 2fd8041), before any change; tests/test_s03_demo_requests.py rebuilds them and requires equality",
+ "cloud_calls": [],
+ "requests": {
+  "unet": {
+   "request.json": {
+    "sha256": "355a854ddb73d2dab6cceb8745d48be38196006e5be0b367f86cc7aa90a40399",
+    "bytes": 3763954
+   }
+  },
+  "swin-t": {
+   "request_A.json": {
+    "sha256": "549dcbee8d370125234fd7c007d012ab64bcece73537a5222b14fd55f09d3e99",
+    "bytes": 3950841
+   },
+   "request_B.json": {
+    "sha256": "2fdb9de51adab246d31c21d94468b9aba2aeb0e76c5c3190beccc375323f9afa",
+    "bytes": 1623876
+   },
+   "request_C.json": {
+    "sha256": "159d7517c0224e54eb40323ca89533d33b0698ec832e6d6fb92342c5a23fc0e4",
+    "bytes": 2969745
+   }
+  }
+ }
+}

@@ -1,0 +1,200 @@
+{
+ "schema_version": 1,
+ "kind": "s01_public_weights_link",
+ "passed": true,
+ "substitution": {
+  "old_prefix": "projects/<original>/assets/, read from the tracked manifests' asset paths (not recorded)",
+  "new_prefix": "projects/tensor-ee/assets/"
+ },
+ "manifests": {
+  "tracked": {
+   "unet": {
+    "path": "data/manifests/segwater_r18_weight_manifest.json",
+    "sha256": "87c2f53f842f555fd58518924f2ab72bce3deceac0c62409a28297ef9af4b65a",
+    "bytes": 47292
+   },
+   "swin": {
+    "path": "data/manifests/m12_trained_weights_manifest.json",
+    "sha256": "dbd3cdaf450e4e2d128ec557843dc1c761cd9ab66d7d3581bb5cd255532fc9a3",
+    "bytes": 181757
+   }
+  },
+  "public": {
+   "unet": {
+    "file": "segwater_r18_weight_manifest.json",
+    "sha256": "3bd0bf7bf454caa0e7b8550dad24b6a28982ca128a1a4f0ba0cd25ce797846fa",
+    "bytes": 23419
+   },
+   "swin": {
+    "file": "m12_trained_weights_manifest.json",
+    "sha256": "dbc530d0c115d2cb891d41da5a27d00af8169a35bcae4189fa11849d4da58d47",
+    "bytes": 117593
+   }
+  }
+ },
+ "summary": {
+  "graphs": 45,
+  "fixture_graphs_built_once": 36,
+  "trained_graphs_built_twice": 9,
+  "old_equal_golden": 45,
+  "new_equal_golden": 40,
+  "new_differ": 5,
+  "prefix_substitutions_exact": 5,
+  "other_differences": 0
+ },
+ "trained_identities": {
+  "checkpoints_equal": true,
+  "unet_coefficients_equal": true,
+  "matched_asset_keys_equal": true,
+  "tracked_manifests_are_the_pins": true
+ },
+ "t05_continuity_of_the_old_graphs": true,
+ "changed": {
+  "trained/swin/A": {
+   "old_sha256": "5c837fbef60aa3b9986c4af432281bdd3625ae19566098e88dda6e009b0d3146",
+   "old_bytes": 849679,
+   "new_sha256": "b01d45867640be51b66afa2d35ed1514f561710151e863622700013f77fcd5f9",
+   "new_bytes": 849571,
+   "old_equals_golden": true,
+   "old_equals_t05": true,
+   "new_prefix_absent_from_old": true,
+   "old_prefix_occurrences_in_old": 27,
+   "old_prefix_occurrences_in_new": 0,
+   "original_project_occurrences_in_new": 0,
+   "new_prefix_occurrences_in_new": 27,
+   "prefix_substitution_exact": true,
+   "other_fields_equal": true
+  },
+  "trained/swin/B": {
+   "old_sha256": "9ab705e9904dfc6c46fdb45adcef151b1e79bee4f53e2512c5ab4959ccf9292b",
+   "old_bytes": 345418,
+   "new_sha256": "7ce8d270d7bb7a437bcaea968f27505a66b98ba1f4a68bf8ec2843b173808706",
+   "new_bytes": 345290,
+   "old_equals_golden": true,
+   "old_equals_t05": true,
+   "new_prefix_absent_from_old": true,
+   "old_prefix_occurrences_in_old": 32,
+   "old_prefix_occurrences_in_new": 0,
+   "original_project_occurrences_in_new": 0,
+   "new_prefix_occurrences_in_new": 32,
+   "prefix_substitution_exact": true,
+   "other_fields_equal": true
+  },
+  "trained/swin/C": {
+   "old_sha256": "aca2b06ea72894463287fcab80c3fbc8a92f1c41cbc4d31e5f6f3dcbe6d21afa",
+   "old_bytes": 595739,
+   "new_sha256": "21615e257ea9a31fa6983d782c50165865fceb50670a79074e6d9df111e3e9e1",
+   "new_bytes": 595663,
+   "old_equals_golden": true,
+   "old_equals_t05": true,
+   "new_prefix_absent_from_old": true,
+   "old_prefix_occurrences_in_old": 19,
+   "old_prefix_occurrences_in_new": 0,
+   "original_project_occurrences_in_new": 0,
+   "new_prefix_occurrences_in_new": 19,
+   "prefix_substitution_exact": true,
+   "other_fields_equal": true
+  },
+  "trained/unet/prediction": {
+   "old_sha256": "268ba2700d52a80adcb626bca73a4c93761e8026a67f0d8ddddd273b65115e6f",
+   "old_bytes": 1163258,
+   "new_sha256": "483ba0de75c3b0d82d5c543d447f17dce0ef366dab3d3785ad29027b8bf2d3f7",
+   "new_bytes": 1163142,
+   "old_equals_golden": true,
+   "old_equals_t05": true,
+   "new_prefix_absent_from_old": true,
+   "old_prefix_occurrences_in_old": 29,
+   "old_prefix_occurrences_in_new": 0,
+   "original_project_occurrences_in_new": 0,
+   "new_prefix_occurrences_in_new": 29,
+   "prefix_substitution_exact": true,
+   "other_fields_equal": true
+  },
+  "trained/unet/prediction_448": {
+   "old_sha256": "0f0676f37c5f989e1be7450d46591c02d60832dda2a74a6c348750d78d6a7571",
+   "old_bytes": 1573702,
+   "new_sha256": "1b56e19671613b7b41ddbf7327950db3937ded46629aa15f98f1a9bcf19bfd9b",
+   "new_bytes": 1573586,
+   "old_equals_golden": true,
+   "new_prefix_absent_from_old": true,
+   "old_prefix_occurrences_in_old": 29,
+   "old_prefix_occurrences_in_new": 0,
+   "original_project_occurrences_in_new": 0,
+   "new_prefix_occurrences_in_new": 29,
+   "prefix_substitution_exact": true,
+   "other_fields_equal": true
+  }
+ },
+ "unchanged": {
+  "examples/building_blocks": "10bcdd04d1beb6e137edae7698dc51001cc7986730770859adfd3556ed429f4b",
+  "examples/composition/clip_false": "49a6f75839663a9dd1f846e3f8f2f41db04db44ef44509c3768f3e13f2da5444",
+  "examples/composition/clip_true": "d6ca632ffc3ca799c1582a35a57a4135ea4c24c4469fb7538f937d7bd15519c4",
+  "examples/nonwater/image": "64fe51490c7e43390e23b860dd4cc4e0cac7f2736c4e97c9f1d4d079fc7bbdd9",
+  "examples/nonwater/metadata": "c167acf1e10fd2ad6bccff490cb27065e90801c15904a5325cac0e66b04a8d09",
+  "examples/water_chip/export_payload": "4a05c37d6f6fe2ee715f188b243305a3ba82290442dc2564f42b4086a5336d2e",
+  "examples/water_chip/normalized_input": "2792466d87128b5830afeba00f2db8b1f68cf30826d42228ef9c9edccefc959a",
+  "examples/water_chip/prediction": "abe19afc5879e33c263f44525be37ec5b34822746b9e40ea6facc4c6703f3de8",
+  "examples/water_chip/raw_input": "ea8844a56084c276b7a9936131a6def9d5617a928e2c9d4a84ebc405f990b432",
+  "inline/large_coefficients": "282eb77b97ec856c42719822e4a6561a0ab21a61d4c8e1afd1bcce5459a7d382",
+  "inline/ordinary_conv1x1": "e5e4518341a12d178b178ad2f92b6f0672c83920709d3f4fd5fb82efe8482d67",
+  "onnx_import/conv_resize": "f02954641878fb8c5fd85576cd50252b69799641d8f0115a9576f6b96fbcd8aa",
+  "outputs/binary_threshold": "3360fffa423c9c8ad985ad215d70fa13de5061d264e1d999bc8898df689408cc",
+  "outputs/classes": "c38747d9575e8196de4b83244ece0fd9117d70a6d037e1458df4e3d85f00ce01",
+  "outputs/logits": "b5e7e3720501655a33ced10001d1654d321ba1282c67d8e233ae51cedac3e2ed",
+  "outputs/probabilities": "ef73cb3f09a039018f8be9cd4061da93f6f593dc1e99637f1c632621ed639fb5",
+  "resnet18_unet/asset_weights": "0226637bbb96dc31473f2336aa887f6b288b167a4712f00b3d3f7d4fad7723c9",
+  "resnet18_unet/inline": "7d8381fdf33263366fe10601499798c962b593d8b606aba5553909d7c86a94ec",
+  "segwater_recipe/mosaic_448": "0ec8df154448cea45fd884df5b9429923ac80c339f9c497f9c4b2f7e4532ad5a",
+  "swin_adapter/A": "9b25578d6b6b34e6afef724a66cd5a2be52901234b841aeee9755433a3ced538",
+  "swin_adapter/A_local_arrays": "431d2d8556b515d1dfbab2421f2c8068a6710164d894ee561c18fe36c22ee33c",
+  "swin_adapter/B": "ec60ebc261955695ee11559587ed4bb162fab9bb79245f394b087de07d69d137",
+  "swin_adapter/C": "408e8031b30608b17bc699f5051c77ae8f9a2a3d46e229f6ebb0a02bb05b3aa8",
+  "swin_workflow/prepared_logits/A": "ff76876db15ed441b89fad5cc273474b94a1f72bb23b9d9fffab0cb99f8fc16f",
+  "swin_workflow/prepared_logits/C": "26a0ce339e5e4e57611f99cf71f53dc02e5404404392b5196aea20c6062bbb52",
+  "swin_workflow/segwater_water/A": "87d832f52a7b9a15f18b9cc96ac9eb23582dfe4af81dd2c65edf02a74831e8ea",
+  "swin_workflow/segwater_water/B": "de46e4c064b5316b3c312545e919fd8c9d83e238248521515540f784b92be82a",
+  "swin_workflow/segwater_water/C": "650756d26349de534207a442359e9cda18047bf734d274e804527d0468e3fa02",
+  "t04/conv_bn_pointwise_softmax/diagnostics": "5bad8626b53cce9bda4cb743017ba2b97c2ffea78637fef599e9aea0447de420",
+  "t04/conv_bn_pointwise_softmax/plain": "5bad8626b53cce9bda4cb743017ba2b97c2ffea78637fef599e9aea0447de420",
+  "t04/nonwater/diagnostics": "1f3fb996fc19f3c76a88f5207f518f6ba2116a4d24ebf293ec49cebf8f4e495a",
+  "t04/nonwater/plain": "1f3fb996fc19f3c76a88f5207f518f6ba2116a4d24ebf293ec49cebf8f4e495a",
+  "t04/tiny_unet/diagnostics": "408329916d765ee591f89ec331cb6627441b4012f8b7d9fa17ec01e1e20ec90a",
+  "t04/tiny_unet/plain": "408329916d765ee591f89ec331cb6627441b4012f8b7d9fa17ec01e1e20ec90a",
+  "tiling/tiny_unet": "610f629a92773c38237f3e2fcd544a8dea98267413fcaa563e6fde5f616a3a39",
+  "tiling/tiny_unet/head_node": "d35f46ab3e814a104e86f68bd8e5f2d6374e6233dcea130eb9bdddff500a4b5a",
+  "trained/swin/prepared": "0076ce07a109bc93b2587abd511f08aacad40b4c3d45c29cea97f73210ee0351",
+  "trained/swin/validity": "1d1d32f0ad8db9c56593cf4072f91d5c54534e148aab24a7fe3437c552857a28",
+  "trained/unet/prepared": "4498df18c00914c7bc64f21b37db5511205ff4c61193de5d04561101a520ebdc",
+  "trained/unet/raw": "251f471b9946de23523f856ac9630d4d32e4baccb398b6f79420b8e8d503857a"
+ },
+ "environment": {
+  "python": "3.14.6",
+  "implementation": "CPython",
+  "platform": "darwin-arm64",
+  "packages": {
+   "earthengine-api": "1.7.45",
+   "torch": "2.14.0",
+   "numpy": "2.5.3",
+   "onnx": "1.23.0",
+   "timm": "1.0.30",
+   "segmentation-models-pytorch": "0.5.0",
+   "torchvision": "0.29.0"
+  }
+ },
+ "provenance": {
+  "source_revision": "3a8754fa697a89b5477f948a1cc6fe4f2050733a",
+  "runtime_paths": [
+   "native_ee",
+   "examples",
+   "data/manifests/segwater_r18_weight_manifest.json",
+   "data/manifests/m12_trained_weights_manifest.json",
+   "tools/graph_identity.py",
+   "tools/public_weights.py"
+  ],
+  "runtime_paths_uncommitted_changes": [],
+  "command": "python tools/graph_identity.py --resources RESOURCES --link-weights docs/evidence/s01-weights-link.json",
+  "golden": "docs/evidence/l00-golden-graphs.json",
+  "date": "2026-10-15",
+  "cloud_calls": 0
+ }
+}

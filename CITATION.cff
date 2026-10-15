@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use these building blocks in research, please cite this software."
+type: software
+repository-code: "https://github.com/noelEOS/tensor-ee"
+title: "TensorEE: PyTorch-compatible neural-network building blocks for Earth Engine"
+authors:
+  - family-names: Ulloa
+    given-names: Noel Ivan
+version: 0.1.0
+license: MIT
+abstract: >-
+  Experimental building blocks that run pretrained PyTorch models natively in
+  Google Earth Engine, as Earth Engine raster and array operations with no
+  model-serving endpoint. A restricted CNN compiler translates the SegWater
+  ResNet18 U-Net, a converter maps supported attention models (SMP SegFormer-B0,
+  and SMP UPerNet with timm's Swin-T) onto the library's blocks, and a planner
+  and runner split their graphs into staged exports.

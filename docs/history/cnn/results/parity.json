@@ -1,0 +1,317 @@
+{
+  "project": "ORIGINAL_PROJECT",
+  "mode": "live_earth_engine",
+  "input": "synthetic pixelCoordinates image; no satellite imagery download",
+  "comparison": "local synthetic references embedded; only scalar metrics returned by EE",
+  "width": 16,
+  "height": 16,
+  "cases": [
+    {
+      "name": "conv3_asymmetric",
+      "parameters": 57,
+      "nodes": {},
+      "torch_output_min": -2.08111310005188,
+      "torch_output_max": 2.473527669906616,
+      "torch_output_std": 0.8181453347206116,
+      "torch_output_shape": [
+        1,
+        3,
+        16,
+        16
+      ],
+      "compile_seconds": 0.0031865001656115055,
+      "graph_bytes": 10878,
+      "checked_node_count": 0,
+      "compiled_node_count": 2,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 3.278099820480662e-07,
+        "rmse": 5.904025259106245e-08,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 32641,
+        "evaluation_seconds": 0.31474266620352864,
+        "ee_output_min": -0.7389105554431011,
+        "ee_output_max": 1.037989571630809,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "conv1",
+      "parameters": 8,
+      "nodes": {},
+      "torch_output_min": -1.8131831884384155,
+      "torch_output_max": 1.3605306148529053,
+      "torch_output_std": 0.5219557285308838,
+      "torch_output_shape": [
+        1,
+        2,
+        16,
+        16
+      ],
+      "compile_seconds": 0.0040256669744849205,
+      "graph_bytes": 10905,
+      "checked_node_count": 0,
+      "compiled_node_count": 2,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 1.26266743727399e-07,
+        "rmse": 2.4953181360493295e-08,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 27068,
+        "evaluation_seconds": 0.39522099983878434,
+        "ee_output_min": -0.8063444047609796,
+        "ee_output_max": 0.6837720075786695,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "average_pool_nearest",
+      "parameters": 0,
+      "nodes": {},
+      "torch_output_min": -0.5,
+      "torch_output_max": 0.5,
+      "torch_output_std": 0.24704191088676453,
+      "torch_output_shape": [
+        1,
+        2,
+        16,
+        16
+      ],
+      "compile_seconds": 0.0036452088970690966,
+      "graph_bytes": 11191,
+      "checked_node_count": 0,
+      "compiled_node_count": 3,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 7.450580596923828e-09,
+        "rmse": 1.1406325468715177e-09,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 22342,
+        "evaluation_seconds": 0.34669387503527105,
+        "ee_output_min": -0.3472222089767456,
+        "ee_output_max": 0.3194444477558136,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "max_pool_nearest",
+      "parameters": 0,
+      "nodes": {},
+      "torch_output_min": 0.0,
+      "torch_output_max": 1.0,
+      "torch_output_std": 0.27323728799819946,
+      "torch_output_shape": [
+        1,
+        2,
+        16,
+        16
+      ],
+      "compile_seconds": 0.0037016659043729305,
+      "graph_bytes": 11190,
+      "checked_node_count": 0,
+      "compiled_node_count": 3,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 0,
+        "rmse": 0.0,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 21942,
+        "evaluation_seconds": 1.1119832498952746,
+        "ee_output_min": 0.2777777910232544,
+        "ee_output_max": 1,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "small_cnn",
+      "parameters": 191,
+      "nodes": {
+        "head": {
+          "status": "pass",
+          "max_absolute_error": 1.8455208872225626e-07,
+          "rmse": 4.628621784631345e-08,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 31816,
+          "evaluation_seconds": 0.3929702499881387,
+          "ee_output_min": -0.7579145729328125,
+          "ee_output_max": 0.993223575043135,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_min": 0.31909921765327454,
+      "torch_output_max": 0.729724109172821,
+      "torch_output_std": 0.09563331305980682,
+      "torch_output_shape": [
+        1,
+        1,
+        16,
+        16
+      ],
+      "compile_seconds": 0.0113065829500556,
+      "graph_bytes": 23102,
+      "checked_node_count": 1,
+      "compiled_node_count": 7,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 5.919792467334872e-08,
+        "rmse": 2.244739157563168e-08,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 33182,
+        "evaluation_seconds": 0.34607720794156194,
+        "ee_output_min": 0.3190992061360599,
+        "ee_output_max": 0.7297241683707457,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "unet_one_level",
+      "parameters": 1693,
+      "nodes": {
+        "head": {
+          "status": "pass",
+          "max_absolute_error": 6.574972033490667e-08,
+          "rmse": 1.5507858987065854e-08,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 88632,
+          "evaluation_seconds": 0.6453755828551948,
+          "ee_output_min": -0.20715360967708557,
+          "ee_output_max": 0.1334959866685749,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_min": 0.4483959674835205,
+      "torch_output_max": 0.5333245396614075,
+      "torch_output_std": 0.013803388923406601,
+      "torch_output_shape": [
+        1,
+        1,
+        16,
+        16
+      ],
+      "compile_seconds": 0.005921666976064444,
+      "graph_bytes": 78580,
+      "checked_node_count": 1,
+      "compiled_node_count": 18,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 5.7170401634998314e-08,
+        "rmse": 2.3475645999001713e-08,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 89917,
+        "evaluation_seconds": 0.7462909580208361,
+        "ee_output_min": 0.4483960042778845,
+        "ee_output_max": 0.5333245211738983,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "unet_two_level",
+      "parameters": 29689,
+      "nodes": {
+        "head": {
+          "status": "pass",
+          "max_absolute_error": 1.5314047485670557e-07,
+          "rmse": 3.200221961632648e-08,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 753553,
+          "evaluation_seconds": 4.792823625029996,
+          "ee_output_min": -0.1479430905577653,
+          "ee_output_max": 0.3510605643262129,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_min": 0.4630815386772156,
+      "torch_output_max": 0.5868747234344482,
+      "torch_output_std": 0.01920747011899948,
+      "torch_output_shape": [
+        1,
+        1,
+        16,
+        16
+      ],
+      "compile_seconds": 0.021088333101943135,
+      "graph_bytes": 743612,
+      "checked_node_count": 1,
+      "compiled_node_count": 29,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 5.101488820269395e-08,
+        "rmse": 2.25769172963296e-08,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 754895,
+        "evaluation_seconds": 6.7548022088594735,
+        "ee_output_min": 0.4630815394915325,
+        "ee_output_max": 0.5868747393559244,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "unet_max_pool",
+      "parameters": 1693,
+      "nodes": {
+        "head": {
+          "status": "pass",
+          "max_absolute_error": 2.463646661537977e-07,
+          "rmse": 6.541469618852225e-08,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 88556,
+          "evaluation_seconds": 0.7387007081415504,
+          "ee_output_min": -0.5181922597507191,
+          "ee_output_max": 0.4539489377656114,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_min": 0.3732750415802002,
+      "torch_output_max": 0.6115777492523193,
+      "torch_output_std": 0.03954870626330376,
+      "torch_output_shape": [
+        1,
+        1,
+        16,
+        16
+      ],
+      "compile_seconds": 0.01399833313189447,
+      "graph_bytes": 78550,
+      "checked_node_count": 1,
+      "compiled_node_count": 18,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 7.138980218091007e-08,
+        "rmse": 2.5803206647084056e-08,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 89926,
+        "evaluation_seconds": 0.7484466249588877,
+        "ee_output_min": 0.3732750408850515,
+        "ee_output_max": 0.6115777180348712,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    }
+  ],
+  "torch_version": "2.14.0",
+  "started_unix": 1790557454.3373592,
+  "reference_dtype": "float32",
+  "credentials_source": "adc",
+  "earthengine_api_version": "1.7.45",
+  "finished_unix": 1790557474.9674802,
+  "status": "pass"
+}

@@ -1,0 +1,1307 @@
+{
+  "schema_version": 1,
+  "task": "T06 independent reader rehearsal",
+  "status": "technical_rehearsal_pass_lead_acceptance_pending",
+  "candidate_revision": "f22574c10f36e1f5eeeba60d26b793d042c1a741",
+  "plan_revision": "98544252e9b2bf3a61c476dc12868233d4e862b3",
+  "completed_utc": "2026-10-10T08:12:02.116980+00:00",
+  "runtime_changed": false,
+  "environment_record": "t06-environment.json",
+  "source_archive_installation": "Exact candidate git archive -> /private/tmp/t06-build-source -> fresh noneditable venv install using only documented extras/cache wheels;mainvenv/sitepackages not reused.",
+  "installed_runtime": "/private/tmp/t06-reader-environment/lib/python3.14/site-packages/native_ee",
+  "offline": {
+    "distinct_passed": 1102,
+    "subtests_passed": 181,
+    "skipped": 170,
+    "disabled_live": 129,
+    "missing_local_fixtures": 41,
+    "initial_permission_failures": 4,
+    "narrow_permission_retry_passed": 4,
+    "full_runs": 1
+  },
+  "nonwater": {
+    "schema_version": 1,
+    "status": "pass",
+    "failures": [],
+    "absolute_tolerance": 0.0001,
+    "reference_dtype": "float32",
+    "execution_dtype": "float32",
+    "prepared": {
+      "shape": [
+        4,
+        12,
+        16
+      ],
+      "dtype": "float32",
+      "bands": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "grid": {
+        "crs": "EPSG:3857",
+        "transform": [
+          30,
+          0,
+          1200,
+          0,
+          -30,
+          2400
+        ],
+        "width": 16,
+        "height": 12
+      },
+      "valid_values": 768,
+      "values_sha256": "c9212e609fea77822e2331a7d68938140a04584cfab03785cc089d0417dace84",
+      "mask_sha256": "1b1c08af714b3f3f6f5cafb74783b571dc82d6ac612ecffbe816df938117b099"
+    },
+    "logits": {
+      "shape": [
+        3,
+        12,
+        16
+      ],
+      "dtype": "float32",
+      "bands": [
+        "score_a",
+        "score_b",
+        "score_c"
+      ],
+      "grid": {
+        "crs": "EPSG:3857",
+        "transform": [
+          30,
+          0,
+          1200,
+          0,
+          -30,
+          2400
+        ],
+        "width": 16,
+        "height": 12
+      },
+      "valid_values": 576,
+      "values_sha256": "9d28cabe3962910556734101e4b66a93779ad979f1bd413553ee6eb200655ef5",
+      "mask_sha256": "6c6897240943a4e1218c0016a09d07f5ce5f57fe99c390cad571e4c2adb30015"
+    },
+    "probabilities": {
+      "shape": [
+        3,
+        12,
+        16
+      ],
+      "dtype": "float32",
+      "bands": [
+        "probability_a",
+        "probability_b",
+        "probability_c"
+      ],
+      "grid": {
+        "crs": "EPSG:3857",
+        "transform": [
+          30,
+          0,
+          1200,
+          0,
+          -30,
+          2400
+        ],
+        "width": 16,
+        "height": 12
+      },
+      "valid_values": 570,
+      "values_sha256": "d28a10526400146553cff957f578f47325cd028a728eaf338db436954a3fe1f3",
+      "mask_sha256": "8669883ff026d6b3d5614c50a9fb414989a0f16548a89c5fe910fe0dfd1ec41b"
+    },
+    "classes": {
+      "shape": [
+        1,
+        12,
+        16
+      ],
+      "dtype": "int32",
+      "bands": [
+        "class_index"
+      ],
+      "grid": {
+        "crs": "EPSG:3857",
+        "transform": [
+          30,
+          0,
+          1200,
+          0,
+          -30,
+          2400
+        ],
+        "width": 16,
+        "height": 12
+      },
+      "valid_values": 190,
+      "values_sha256": "899fff7ac48ad83b4ea8088d66dc6fd1130fbb81d88d0ce579019bbf5aac126e",
+      "mask_sha256": "89e6561dcb16dbb165601bce6811e62641468a3bfcab80e88bfcce7ecc56174b"
+    },
+    "prepared_bit_mismatches": 0,
+    "prepared_bit_mismatch_locations_chw": [],
+    "mask_mismatches": {
+      "logits": 0,
+      "probabilities": 0,
+      "classes": 0
+    },
+    "valid_output_pixels": 190,
+    "logit_errors": {
+      "valid_count": 576,
+      "max_absolute_error": 7.450580596923828e-09,
+      "mae": 5.303364661004808e-10,
+      "rmse": 1.816808542658827e-09,
+      "max_relative_error_floor_1e_3": 1.0934348857338676e-07,
+      "tolerance_pass": true
+    },
+    "probability_errors": {
+      "valid_count": 570,
+      "max_absolute_error": 2.9802322387695312e-08,
+      "mae": 1.0247816119277687e-08,
+      "rmse": 1.7475946891557386e-08,
+      "max_relative_error_floor_1e_3": 9.473996154315481e-08,
+      "tolerance_pass": true
+    },
+    "probability_range_pass": true,
+    "max_probability_sum_error": 2.9802322387695312e-08,
+    "probability_sum_tolerance": 2e-06,
+    "class_disagreements": 0,
+    "near_margin_pixels": [],
+    "binary_threshold": null,
+    "accuracy": "not_measured",
+    "recipe": {
+      "means": [
+        1.0,
+        -2.0,
+        0.0,
+        4.0
+      ],
+      "stds": [
+        2.0,
+        4.0,
+        1.0,
+        0.5
+      ],
+      "source_missing": [
+        "all channels at row0,column0",
+        "d at row5,column7"
+      ],
+      "raw_values_sha256": "472a670a5b3f06a7074839f29eb5d7aca57ddcd900f989ad23c3ca7ffced6834",
+      "source_mask_sha256": "da0c7d4d4cb4842284a312ed6ba0ff080835695156ae38864c450fc88359a3f4",
+      "prepared_sha256": "c9212e609fea77822e2331a7d68938140a04584cfab03785cc089d0417dace84",
+      "source_valid_values": 763,
+      "expected_valid_output_pixels": 190
+    },
+    "runner_failures": []
+  },
+  "unet": {
+    "status": "pass",
+    "valid_pixels": 50176,
+    "all_exported_masks_dense_inside_and_excluded_border": true,
+    "logit_errors": {
+      "valid_values": 100352,
+      "max_absolute_error": 1.3455748558044434e-05,
+      "mae": 4.3468958457238766e-07,
+      "rmse": 7.704209338840108e-07,
+      "max_relative_error_floor_1e_3": 0.001544883610639978
+    },
+    "probability_errors": {
+      "valid_values": 50176,
+      "max_absolute_error": 6.4373016357421875e-06,
+      "mae": 4.198021514992211e-08,
+      "rmse": 2.2990321145442724e-07,
+      "max_relative_error_floor_1e_3": 1.2544702949399048e-05
+    },
+    "argmax_disagreements": 0,
+    "threshold_disagreements": 0,
+    "near_margin_pixels": [],
+    "preprocessing_ieee_bitwise_equal": true,
+    "reference": "Original unfused CPU float32 model on retrieved ee_z",
+    "accuracy": "not_measured"
+  },
+  "swin": {
+    "status": "pass",
+    "valid_pixels": 50176,
+    "grid": {
+      "crs": "EPSG:32651",
+      "transform": [
+        10,
+        0,
+        287680.95335071225,
+        0,
+        -10,
+        2640838.8405420803
+      ],
+      "width": 224,
+      "height": 224
+    },
+    "ordered_bands": [
+      "logit_0",
+      "logit_1",
+      "water_probability",
+      "water_mask",
+      "coverage"
+    ],
+    "source_valid_values": 100352,
+    "prepared_ieee_bitwise_equal": true,
+    "preprocessing_bitwise_equal": true,
+    "retained_t01_prepared_bitwise_equal": true,
+    "all_masks_and_border_match": true,
+    "logit_errors": {
+      "valid_values": 100352,
+      "max_absolute_error": 5.9604644775390625e-06,
+      "mae": 8.054874322413758e-07,
+      "rmse": 1.0523891458040862e-06,
+      "max_relative_error_floor_1e_3": 0.0015487516975554172
+    },
+    "probability_errors": {
+      "valid_values": 50176,
+      "max_absolute_error": 1.1622905731201172e-06,
+      "mae": 4.7765381020085166e-08,
+      "rmse": 9.846039326407603e-08,
+      "max_relative_error_floor_1e_3": 6.852538456556343e-06
+    },
+    "argmax_disagreements": 0,
+    "threshold_disagreements": 0,
+    "exported_mask_matches_probability": true,
+    "near_margin_pixels": [],
+    "reference": "Original loaded CPU float32 SMP Swin-T/UPerNet model on actual retrieved prepared values",
+    "accuracy": "not_measured"
+  },
+  "operations": {
+    "unet": {
+      "state": "COMPLETED",
+      "description": "native_ee_water_chip_224",
+      "priority": 100,
+      "creation_timestamp_ms": 1791618362085,
+      "update_timestamp_ms": 1791618451791,
+      "start_timestamp_ms": 1791618364277,
+      "task_type": "EXPORT_IMAGE",
+      "destination_uris": [
+        "https://code.earthengine.google.com/?asset=projects/ORIGINAL_PROJECT/assets/native_ee_t06_20261010_unet_chip"
+      ],
+      "attempt": 1,
+      "batch_eecu_usage_seconds": 64.31562042236328,
+      "id": "FWARGMIK4BHG6P4VEMPJHI3K",
+      "name": "projects/ORIGINAL_PROJECT/operations/FWARGMIK4BHG6P4VEMPJHI3K"
+    },
+    "swin_A": {
+      "state": "COMPLETED",
+      "description": "native_swin_d9c4e582b69a5d78_A",
+      "priority": 100,
+      "creation_timestamp_ms": 1791618571124,
+      "update_timestamp_ms": 1791618822943,
+      "start_timestamp_ms": 1791618575800,
+      "task_type": "EXPORT_IMAGE",
+      "destination_uris": [
+        "https://code.earthengine.google.com/?asset=projects/ORIGINAL_PROJECT/assets/native_ee_t06_20261010_swin_A"
+      ],
+      "attempt": 1,
+      "batch_eecu_usage_seconds": 45.614131927490234,
+      "id": "CNMTL57PRFS3U4IWTB5736UU",
+      "name": "projects/ORIGINAL_PROJECT/operations/CNMTL57PRFS3U4IWTB5736UU"
+    },
+    "swin_B": {
+      "state": "COMPLETED",
+      "description": "native_swin_d9c4e582b69a5d78_B",
+      "priority": 100,
+      "creation_timestamp_ms": 1791618984122,
+      "update_timestamp_ms": 1791619038829,
+      "start_timestamp_ms": 1791618985396,
+      "task_type": "EXPORT_IMAGE",
+      "destination_uris": [
+        "https://code.earthengine.google.com/?asset=projects/ORIGINAL_PROJECT/assets/native_ee_t06_20261010_swin_B"
+      ],
+      "attempt": 1,
+      "batch_eecu_usage_seconds": 17.382022857666016,
+      "id": "UJP5XT5VIMMHZGAFIQ62XVLB",
+      "name": "projects/ORIGINAL_PROJECT/operations/UJP5XT5VIMMHZGAFIQ62XVLB"
+    },
+    "swin_C": {
+      "state": "COMPLETED",
+      "description": "native_swin_d9c4e582b69a5d78_C",
+      "priority": 100,
+      "creation_timestamp_ms": 1791619332502,
+      "update_timestamp_ms": 1791619470746,
+      "start_timestamp_ms": 1791619334861,
+      "task_type": "EXPORT_IMAGE",
+      "destination_uris": [
+        "https://code.earthengine.google.com/?asset=projects/ORIGINAL_PROJECT/assets/native_ee_t06_20261010_swin_C"
+      ],
+      "attempt": 1,
+      "batch_eecu_usage_seconds": 52.71554946899414,
+      "id": "EECBCSCMVCNPJVTRDNGS2ZIG",
+      "name": "projects/ORIGINAL_PROJECT/operations/EECBCSCMVCNPJVTRDNGS2ZIG"
+    }
+  },
+  "task_execution_observations": {
+    "unet": {
+      "seconds": 87.514,
+      "batch_eecu_seconds": 64.31562042236328,
+      "attempt": 1
+    },
+    "swin_A": {
+      "seconds": 247.143,
+      "batch_eecu_seconds": 45.614131927490234,
+      "attempt": 1
+    },
+    "swin_B": {
+      "seconds": 53.433,
+      "batch_eecu_seconds": 17.382022857666016,
+      "attempt": 1
+    },
+    "swin_C": {
+      "seconds": 135.885,
+      "batch_eecu_seconds": 52.71554946899414,
+      "attempt": 1
+    }
+  },
+  "accounting": {
+    "exports": 4,
+    "peak_active_observed": 1,
+    "max_active_allowed": 2,
+    "computation_queries": 7,
+    "getAsset_reads": 7,
+    "lead_resource_manager_read_only_requests": 2,
+    "task_status_calls": {
+      "unet": 2,
+      "swin_A": 3,
+      "swin_B": 2,
+      "swin_C": 2
+    },
+    "total_task_status_calls": 9,
+    "weight_uploads": 0,
+    "folder_creations": 0,
+    "export_resubmissions": 0,
+    "failed_computation_queries": 0,
+    "sdk_initialization_transport_requests": "unmeasured"
+  },
+  "restart_evidence": "Separate installed prepare/submit/status processes resumed persisted requests/stage state. No intentional live lost-response failure/recovery injection;existing offline lifecycle tests cover ambiguity/no replay/UNKNOWN/recovery.",
+  "approval_incidents": {
+    "denied_unet_before_process": 2,
+    "denied_swin_A_before_process": 1,
+    "task_allocations_from_denials": 0,
+    "human_grant": {
+      "record": "main3374bb1",
+      "request": "May I run the four planned exports\u2014one U-Net chip and Swin stages A/B/C\u2014in ORIGINAL_PROJECT to finish T06?",
+      "answer": "Yes please, run what you need to complete T06",
+      "accepted_by_lead": true
+    },
+    "resolution": "Lead verified ACTIVE project <project number> and ADC asset/export rights with two read-only ResourceManager requests;parent-context fresh reviews approved SAME original public commands/payloads/destinations. Parent submitted each once;reader owned checks/status/diagnostics. No altered route/tool/payload/destination or automatic replay.",
+    "runtime_defects_observed": 0
+  },
+  "exact_successful_commands": [
+    {
+      "action": "destination_checks",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "<checkout>/docs/evidence/t06-reader-diagnostics.py",
+        "--action",
+        "destinations",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--output",
+        "<checkout>/downloads/t06_live/destinations.json",
+        "--run"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "nonwater",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.examples.nonwater",
+        "--project",
+        "ORIGINAL_PROJECT",
+        "--credentials",
+        "adc",
+        "--output",
+        "<checkout>/downloads/t06_live/nonwater.json"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "unet_export",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-m",
+        "examples.water_chip",
+        "--project",
+        "ORIGINAL_PROJECT",
+        "--credentials",
+        "adc",
+        "--checkpoint",
+        "<checkout>/checkpoints/unet_resnet18_s42_step6000_last.pth",
+        "--manifest",
+        "<checkout>/results/segwater_r18_weight_manifest.json",
+        "--asset-id",
+        "projects/ORIGINAL_PROJECT/assets/native_ee_t06_20261010_unet_chip"
+      ],
+      "cwd": "<checkout>",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "parent",
+      "exit_code": 0
+    },
+    {
+      "action": "unet_public_verifier",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-m",
+        "examples.verify_water_chip",
+        "--project",
+        "ORIGINAL_PROJECT",
+        "--credentials",
+        "adc",
+        "--checkpoint",
+        "<checkout>/checkpoints/unet_resnet18_s42_step6000_last.pth",
+        "--asset-id",
+        "projects/ORIGINAL_PROJECT/assets/native_ee_t06_20261010_unet_chip",
+        "--output",
+        "<checkout>/downloads/t06_live/unet_public.npz"
+      ],
+      "cwd": "<checkout>",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "unet_masks",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "<checkout>/docs/evidence/t06-reader-diagnostics.py",
+        "--action",
+        "unet",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--output",
+        "<checkout>/downloads/t06_live/unet_diagnostics.json",
+        "--unet-verifier",
+        "<checkout>/downloads/t06_live/unet_public.npz",
+        "--run"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_A_prepare",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "A",
+        "--action",
+        "prepare",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_A_submit",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "A",
+        "--action",
+        "submit",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "parent",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_A_status",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "A",
+        "--action",
+        "status",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "stdout": "<checkout>/downloads/t06_live/swin_A_status_001.stdout.json",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_A_status",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "A",
+        "--action",
+        "status",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "stdout": "<checkout>/downloads/t06_live/swin_A_status_002.stdout.json",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_A_status",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "A",
+        "--action",
+        "status",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "stdout": "<checkout>/downloads/t06_live/swin_A_status_003.stdout.json",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_A_metadata",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "<checkout>/docs/evidence/t06-reader-diagnostics.py",
+        "--action",
+        "stage_A",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--output",
+        "<checkout>/downloads/t06_live/swin_A_metadata.json",
+        "--run"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_B_prepare",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "B",
+        "--action",
+        "prepare",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_B_submit",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "B",
+        "--action",
+        "submit",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "parent",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_B_status",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "B",
+        "--action",
+        "status",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "stdout": "<checkout>/downloads/t06_live/swin_B_status_001.stdout.json",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_B_status",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "B",
+        "--action",
+        "status",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "stdout": "<checkout>/downloads/t06_live/swin_B_status_002.stdout.json",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_B_metadata",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "<checkout>/docs/evidence/t06-reader-diagnostics.py",
+        "--action",
+        "stage_B",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--output",
+        "<checkout>/downloads/t06_live/swin_B_metadata.json",
+        "--run"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_C_prepare",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "C",
+        "--action",
+        "prepare",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_C_submit",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "C",
+        "--action",
+        "submit",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "parent",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_C_status",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "C",
+        "--action",
+        "status",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "stdout": "<checkout>/downloads/t06_live/swin_C_status_001.stdout.json",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_C_status",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "-m",
+        "native_ee.swin_workflow",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--state",
+        "<checkout>/downloads/t06_live/swin_state",
+        "--stage",
+        "C",
+        "--action",
+        "status",
+        "--credentials",
+        "adc"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "stdout": "<checkout>/downloads/t06_live/swin_C_status_002.stdout.json",
+      "exit_code": 0
+    },
+    {
+      "action": "swin_diagnostics",
+      "argv": [
+        "/private/tmp/t06-reader-environment/bin/python",
+        "-I",
+        "<checkout>/docs/evidence/t06-reader-diagnostics.py",
+        "--action",
+        "swin",
+        "--config",
+        "<checkout>/downloads/t06_preflight/swin-resources.json",
+        "--output",
+        "<checkout>/downloads/t06_live/swin_diagnostics.json",
+        "--run"
+      ],
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "executor": "reader",
+      "exit_code": 0
+    },
+    {
+      "action": "unet_status",
+      "python": "/private/tmp/t06-reader-environment/bin/python",
+      "mode": "-I stdin script",
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "credential_source": "explicit google.auth.default ADC with EE/cloud-platform scopes",
+      "project": "ORIGINAL_PROJECT",
+      "ee_call": "ee.data.getTaskStatus(['FWARGMIK4BHG6P4VEMPJHI3K'])",
+      "output": "<checkout>/downloads/t06_live/unet_status_001.json",
+      "exit_code": 0
+    },
+    {
+      "action": "unet_status",
+      "python": "/private/tmp/t06-reader-environment/bin/python",
+      "mode": "-I stdin script",
+      "cwd": "/private/tmp",
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "credential_source": "explicit google.auth.default ADC with EE/cloud-platform scopes",
+      "project": "ORIGINAL_PROJECT",
+      "ee_call": "ee.data.getTaskStatus(['FWARGMIK4BHG6P4VEMPJHI3K'])",
+      "output": "<checkout>/downloads/t06_live/unet_status_002.json",
+      "exit_code": 0
+    }
+  ],
+  "external_gates": [
+    "Both checkpoints were author-supplied local fixtures, not public downloads.",
+    "Checkpoint download/terms and U-Net training-data provenance pending.",
+    "Unrelated-account checkpoint download, resource/history audit, hosted CI and explicit publication approval remain open.",
+    "Known historical U-Net impulse absolute-logit target failure remains."
+  ],
+  "publication_ready": false,
+  "lead_acceptance": "pending",
+  "artifacts": [
+    {
+      "path": "<checkout>/downloads/t06_live/automatic-approval-rejection-after-human-grant.json",
+      "bytes": 1036,
+      "sha256": "d68e259a26086afb413300f3bc64a6bd84db8dd5d523349605b0494128abb011"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/automatic-approval-rejection-swin-A.json",
+      "bytes": 776,
+      "sha256": "b2a3fd04b572461cb1ed751ed9956d1bda6ec8de4a03875d1372a4e7dec6531f"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/automatic-approval-rejection.json",
+      "bytes": 1481,
+      "sha256": "73e9ef7e031fa4c46f853aa0b3113b2609a76654a0cca5edac1b51c8171d5fa4"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/destinations.json",
+      "bytes": 668,
+      "sha256": "eb25ac2ce3dede6b97c0b92433c931949856979d7c516932717f93519e98ab84"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/nonwater.json",
+      "bytes": 15316,
+      "sha256": "54d350ceeb8bc2942d81e86b1280dff95391f6fb8c0c6ebfa21016befc430b89"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/nonwater.pixels.npy",
+      "bytes": 43488,
+      "sha256": "0b45803cf0b3ef724e198188829b22fbfe0358a84a42b32788efc3b68889500f"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/nonwater.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/nonwater.stdout.log",
+      "bytes": 15316,
+      "sha256": "54d350ceeb8bc2942d81e86b1280dff95391f6fb8c0c6ebfa21016befc430b89"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_metadata.json",
+      "bytes": 326438,
+      "sha256": "185a7f22646e212ab625e487a3e9648fd55392ebd3f4bba0d966f670c2250e8d"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_metadata.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_metadata.stdout.json",
+      "bytes": 114,
+      "sha256": "d555747cf83987b0326c6b1a6a8c714a2648478f86301f79fc744d8f5f651fde"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_prepare.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_prepare.stdout.json",
+      "bytes": 9876,
+      "sha256": "57cd47b59dd66c25867d7a53adc0ed4d86cb45be8229ed9c1ed3c7ff9f09298d"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_status_001.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_status_001.stdout.json",
+      "bytes": 10915,
+      "sha256": "efa6e3cd02d243a4e09bf587eacc9e0f2cd04c9d3da52f9e000834483602dce8"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_status_002.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_status_002.stdout.json",
+      "bytes": 10915,
+      "sha256": "efa6e3cd02d243a4e09bf587eacc9e0f2cd04c9d3da52f9e000834483602dce8"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_status_003.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_status_003.stdout.json",
+      "bytes": 11115,
+      "sha256": "f09a7a62e66bb1f7556741f08c3df44d1178566ad2291201e566764469d01b33"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_submit.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_A_submit.stdout.json",
+      "bytes": 10506,
+      "sha256": "a1cce63e3ffd2d20aae836101fb1d5f34c483798228f710a800eabe31e21c9c9"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_metadata.json",
+      "bytes": 370900,
+      "sha256": "9c58c1af8dcde1da83006f79322a25d4a3b4b5af1e81bc4f40acb602725842ee"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_metadata.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_metadata.stdout.json",
+      "bytes": 114,
+      "sha256": "37cf1c1ae42b06e3336fc7c05d058244c26a8069dd7048061012dd2bcb33e212"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_prepare.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_prepare.stdout.json",
+      "bytes": 9878,
+      "sha256": "1157d693ecb3c7a7ed258c46932ce3737ee6cebc83d9a2438af211aae2ae5830"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_status_001.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_status_001.stdout.json",
+      "bytes": 10917,
+      "sha256": "868b1af3079dec552c48ad4583a9012f8aff5e09b8134dcfbeb6b4b2b83447a3"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_status_002.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_status_002.stdout.json",
+      "bytes": 11117,
+      "sha256": "b544976477793162eb47fabb575461c78b0e02a05d421e8c29f77e1be6fadb85"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_submit.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_B_submit.stdout.json",
+      "bytes": 10508,
+      "sha256": "58b24e6204202f10f276e12d4a0eddb04262e67f989885d54d6e99d995723b88"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_C_prepare.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_C_prepare.stdout.json",
+      "bytes": 863,
+      "sha256": "3d8fd8dd4cc0de65fb49daa40ac692571cfce74092111a848b10e974ba27568e"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_C_status_001.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_C_status_001.stdout.json",
+      "bytes": 1902,
+      "sha256": "f26cb6dc072b1a8e1e3d48d4ee0e624cfc22a72819deb77c413dcc7f39469097"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_C_status_002.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_C_status_002.stdout.json",
+      "bytes": 2101,
+      "sha256": "a47f182ddcf0ec0586f39bbc07a7067801d84eac2139d789296dee3944303b8b"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_C_submit.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_C_submit.stdout.json",
+      "bytes": 1493,
+      "sha256": "0da61a4029a9495f5f2973a4c2db09c50388e7016eb67b1574c405fe45b24591"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_diagnostics.json",
+      "bytes": 7563,
+      "sha256": "d68777f3e9562527f8ddb476eb075f8daae38fac7c464799fdd5d5d9ba577818"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_diagnostics.pixels.npy",
+      "bytes": 4903936,
+      "sha256": "c8984956dd44b2fe4f1a37551ddcf0609140637d1d66f6245dd30bc7b2e1415e"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_diagnostics.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_diagnostics.stdout.json",
+      "bytes": 111,
+      "sha256": "c100b68720f09076f5f03631f3e73fe341f71e15c0160c2eca1c7dfa25812896"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_state/request_A.json",
+      "bytes": 3785151,
+      "sha256": "80170cba194148889145dad18781c8060a938d3fd79161a894ea6eef4d08341c"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_state/request_B.json",
+      "bytes": 1514085,
+      "sha256": "62bc3c2d7653712d6152dbc62ad916f6044570fc2ce265a3598b90d4d6e78454"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_state/request_C.json",
+      "bytes": 2961149,
+      "sha256": "ac811c2ee389f0b2ab45e01591153da5de0e046f573c7d986c04cb1c34b2218a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/swin_state/state.json",
+      "bytes": 32302,
+      "sha256": "9b6181badd5eba8fd05b881147b0f74965f0187df5832668acbc3f4b90e38805"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_diagnostics.json",
+      "bytes": 5286,
+      "sha256": "12367edf96a31b36fc7adcdd5379c2a0d93c7aa9357a8260eeff6e4dfe8224b5"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_diagnostics.pixels.npy",
+      "bytes": 2656272,
+      "sha256": "d6a5692cfbcc6fe1e2c978f667d14d1d88e71ccc5c6131243505ca07d5bf4b7d"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_diagnostics.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_diagnostics.stdout.json",
+      "bytes": 111,
+      "sha256": "7970e1f945f8c009735e76d0faf447d89a3c4991fccd80a39b4c8f9b9334b26e"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_export.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_export.stdout.log",
+      "bytes": 208,
+      "sha256": "e52264c0cc9d2fccaf5c7833293ce29d8807d81f0768a6fc752fcb406ed66a79"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_public.json",
+      "bytes": 449,
+      "sha256": "bddb43eade084373f0489bff9037b3bc19c9f6dfa28da6d53f3ba5395c0303e6"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_public.npz",
+      "bytes": 1539181,
+      "sha256": "3952190c9221869cdfd7e832fa890da2e9b90f185b3a312c5c94ce6b4aa17624"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_public_verifier.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_public_verifier.stdout.json",
+      "bytes": 449,
+      "sha256": "bddb43eade084373f0489bff9037b3bc19c9f6dfa28da6d53f3ba5395c0303e6"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_status_001.json",
+      "bytes": 462,
+      "sha256": "279ff8411f285933c65887f975f2c3da79110fbb1870fc6b4823f63e3a253900"
+    },
+    {
+      "path": "<checkout>/downloads/t06_live/unet_status_002.json",
+      "bytes": 662,
+      "sha256": "4cc8055df6561d42b3192f77d984e7acd9860acf5eef2648b706e3a57013c56a"
+    }
+  ],
+  "lead_independent_records": [
+    {
+      "path": "<checkout>/downloads/t06_lead/project-access-check.json",
+      "bytes": 1258,
+      "sha256": "878b0cb85397c2007471501af6c626e131f8ba222072b370d433acb62f1bd0d8"
+    },
+    {
+      "path": "<checkout>/downloads/t06_lead/unet-local-recheck.json",
+      "bytes": 974,
+      "sha256": "07add0f8ab114f1c3ce687844627f804f1732f0e50747bbc05ae50dc9d2c7991"
+    },
+    {
+      "path": "<checkout>/downloads/t06_lead/swin-stage-metadata-recheck.json",
+      "bytes": 521,
+      "sha256": "26130c3111581f7456bd7f574b1d3840ce8b43ee73ffe0b5827a2362aee29b5b"
+    },
+    {
+      "path": "<checkout>/downloads/t06_lead/installed-source-recheck.json",
+      "bytes": 10139,
+      "sha256": "8f5c7d31c0f078266183201f814e53197a57c92b5a1696e4f60165d0d55a92f8"
+    },
+    {
+      "path": "<checkout>/downloads/t06_lead/swin-local-recheck.json",
+      "bytes": 1173,
+      "sha256": "24d7ac7bea341556fd04544df0ce2611c5f331d8952c183ee15d9deb8422b019"
+    }
+  ],
+  "limitations": [
+    "Author-supplied checkpoint/manifest/cache fixtures do not establish public downloadable artifacts/terms.",
+    "Historical impulse failure retained;not freshly rerun or relabeled as pass.",
+    "Measured fixture agreement is not accuracy/universal numeric or capacity/throughput guarantee.",
+    "Observed operation runtimes/EECU are not price or performance guarantees.",
+    "T01 ORT evidence is supporting history;fresh Swin comparison used original CPU float32 model on retrieved prepared tensor."
+  ],
+  "queries": {
+    "nonwater": {
+      "computePixels": 1,
+      "metadata_computeValue": 1
+    },
+    "unet": {
+      "public_getPixels": 1,
+      "bordered_masks_computePixels": 1,
+      "original_export_metadata_computeValue": 1
+    },
+    "swin": {
+      "bordered_source_prepared_validity_final_computePixels": 1,
+      "metadata_computeValue": 1
+    }
+  },
+  "getAsset_accounting": {
+    "absent_fresh_destinations": 4,
+    "public_unet_verifier_checkpoint_identity": 1,
+    "completed_swin_A_B_metadata": 2
+  },
+  "limits_and_caps": {
+    "queued_cadence_seconds": 30,
+    "running_cadence_seconds": 60,
+    "per_stage_max_seconds": 3600,
+    "per_stage_max_status_calls": 120,
+    "overall_max_seconds": 7200,
+    "overall_max_status_calls": 480,
+    "caps_reached": false
+  }
+}

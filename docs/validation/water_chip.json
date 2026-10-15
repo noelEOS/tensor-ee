@@ -1,0 +1,33 @@
+{
+  "pixels": 50176,
+  "absolute_tolerance": 0.0001,
+  "preprocessing_bitwise_equal": true,
+  "max_logit_error": 1.3455748558044434e-05,
+  "max_probability_error": 6.4373016357421875e-06,
+  "mask_mismatches": 0,
+  "exported_mask_matches_probability": true,
+  "status": "pass",
+  "checkpoint_sha256": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+  "validation": "fresh EE export through examples.water_chip; original PyTorch comparison through examples.verify_water_chip",
+  "source_scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+  "grid": {
+    "crs": "EPSG:32651",
+    "transform": [
+      10,
+      0,
+      286030,
+      0,
+      -10,
+      2640860
+    ],
+    "width": 224,
+    "height": 224
+  },
+  "arrays_sha256": "3952190c9221869cdfd7e832fa890da2e9b90f185b3a312c5c94ce6b4aa17624",
+  "versions": {
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "numpy": "2.5.3",
+    "segmentation-models-pytorch": "0.5.0"
+  }
+}

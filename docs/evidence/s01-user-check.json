@@ -1,0 +1,31 @@
+{
+ "task": "S01",
+ "check": "the user's Code Editor check of the rebuilt module (R6), under the second account",
+ "claim": "a reader with no role on tensor-ee runs the committed Code Editor module, which reads the public weight assets, and the preset chip's export equals the earlier verified export (L06d) value for value; a numerical check on one chip, not an accuracy claim",
+ "date": "2026-10-15",
+ "run_by": "the user, in the Earth Engine Code Editor, signed in to the second account (the original project's owner), which holds no role on tensor-ee",
+ "module": {
+  "commit": "b204a2c",
+  "path": "demos/code_editor/segwater.js",
+  "bytes": 192378,
+  "sha256": "10378f22861ba05e50cb65e0aa4ee965e2c348b6f204a1744366448e3ac361dc",
+  "template_sha256_expected": "d3ea625ff288326fcd658491299cbc1bb5d817783090045b2115e5a16d17d95d",
+  "template_sha256_printed": "d3ea625ff288326fcd658491299cbc1bb5d817783090045b2115e5a16d17d95d",
+  "identity_record": "docs/evidence/s01-template-identity.json"
+ },
+ "export": {
+  "chip": "the verified single-chip preset: scene ...20240103T100134_20240103T100159_051941_06469E_B0BD, EPSG:32651, 224 x 224 at (286030, 2640860)",
+  "destination": "an image asset in the second account's own project; its ID was not reported and is not recorded",
+  "completed": true,
+  "note": "completion is shown by the comparison below, which read the finished asset"
+ },
+ "comparison": {
+  "against": "the export recorded by L06d's check (docs/evidence/l06d-user-check.json), itself equal to the archived demo's verified export, which was bit-identical to the library's Python result",
+  "script": "step 9 of docs/evidence/l06d-user-check.md, run by the user in the Code Editor",
+  "max_absolute_difference": {"logit_0": 0, "logit_1": 0, "water_probability": 0, "water_mask": 0, "coverage": 0},
+  "differing_values": {"logit_0": 0, "logit_1": 0, "water_probability": 0, "water_mask": 0, "coverage": 0},
+  "identical": true
+ },
+ "verdict": "pass",
+ "cloud_calls_by_the_lead": 0
+}

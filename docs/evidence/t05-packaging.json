@@ -1,0 +1,544 @@
+{
+  "schema_version": 1,
+  "lane": "T05 packaging and fixed Swin workflow",
+  "accepted_base": "ca9827dbd2d1b5116eca45b1d030a8525696d156",
+  "branch": "codex/t05-swin-packaging",
+  "worktree": "<checkout>",
+  "current_implementation_revision": "ed72b478ba0d64166c92041c8d2244aabe2ad4cb",
+  "scope": "No new cloud calls or numerical runtime change. Earlier isolated wheel proof retained separately; final combined source-archive rebuild and installed comparison/nonwater/Swin gates passed at the identified immutable revision.",
+  "earlier_isolated_wheel": {
+    "status": "PASS",
+    "source_revision": "81207f0e91ab0dadbe1eb84acca027bc109f2386",
+    "scope": "isolated installed-wheel core/model/manifest/offline saved-asset graphs; no cloud numerical evaluation",
+    "wheel": "/private/tmp/t05_packaging_81207/dist/native_ee_unet_proof-0.1.0-py3-none-any.whl",
+    "wheel_sha256": "977aef8d1d160cde4df7b32eabb6c08644c7953cc9504bd0883091ff5171c77c",
+    "wheel_bytes": 170289,
+    "installed": "/private/tmp/t05_packaging_81207/install",
+    "dependency_site_read_only": "<checkout>/.venv/lib/python3.14/site-packages",
+    "python_isolated": true,
+    "site_processing_disabled": true,
+    "core_without_optional_dependencies": "PASS: imports blocked, 4-input/3-output graph built",
+    "checkpoint_sha256": "5c7a7c44d29b3c75bd69f59809fb1b63a039313bec021d897ff3876d2cea42a5",
+    "manifest_file_sha256": "dbd3cdaf450e4e2d128ec557843dc1c761cd9ab66d7d3581bb5cd255532fc9a3",
+    "manifest_canonical_sha256": "38f06b5323227e561069d6e1c01c4c2fb879ae61373282b4282ac5bf34912ee6",
+    "manifest_round_trip": {
+      "records": 189,
+      "values": 36747964,
+      "unchanged_retained_manifest": true,
+      "record_list_sha256": "1f398d3256ba6eb9a3fad421f964fc0775b2f4a10420951cef4674bcd6e5e253"
+    },
+    "fixed_model_load": {
+      "exact_state_tensors": 251,
+      "ambient_dtype": "float16",
+      "output_dtype": "float32",
+      "device": "cpu",
+      "mode": "eval"
+    },
+    "stages": {
+      "A": {
+        "width": 56,
+        "height": 56,
+        "bands": 673,
+        "graph_bytes": 843872,
+        "graph_sha256": "0d4c755c048b74d2da9473e3ad370682bc5a18b38eaff387a4f3446433bf9b4e",
+        "grid": {
+          "crs": "EPSG:3857",
+          "transform": [
+            80,
+            0,
+            1000,
+            0,
+            -80,
+            2000
+          ]
+        }
+      },
+      "B": {
+        "width": 7,
+        "height": 7,
+        "bands": 768,
+        "graph_bytes": 345353,
+        "graph_sha256": "27e4770414c4c4b24b0041d7bf951b9da38ed4708b39f26bc3463b76dee3616f",
+        "grid": {
+          "crs": "EPSG:3857",
+          "transform": [
+            640,
+            0,
+            1000,
+            0,
+            -640,
+            2000
+          ]
+        }
+      },
+      "C": {
+        "width": 224,
+        "height": 224,
+        "bands": 2,
+        "graph_bytes": 595649,
+        "graph_sha256": "e33480c42f8c8082eb042de94c85049aca0bc5b58f5ab51ee49ab293a638bd76",
+        "grid": {
+          "crs": "EPSG:3857",
+          "transform": [
+            20,
+            0,
+            1000,
+            0,
+            -20,
+            2000
+          ]
+        }
+      }
+    },
+    "versions": {
+      "native-ee-unet-proof": "0.1.0",
+      "earthengine-api": "1.7.45",
+      "torch": "2.14.0",
+      "numpy": "2.5.3",
+      "segmentation-models-pytorch": "0.5.0",
+      "timm": "1.0.30",
+      "setuptools": "84.0.0"
+    },
+    "cloud_calls": 0
+  },
+  "raw_report": {
+    "path": "/private/tmp/t05_packaging_81207/smoke/report.json",
+    "bytes": 23358,
+    "sha256": "c6648caea36cc83d52bdf8ce16c703fc9bd07b1d37f4676414367c0a2438fd6b"
+  },
+  "observed_runtime_provenance": {
+    "owned_module_count": 58,
+    "all_under_installed_target": true,
+    "modules": [
+      "ee_attention",
+      "ee_attention.earth_engine",
+      "ee_attention.earth_engine.array_ops",
+      "ee_attention.earth_engine.blockwise_attention",
+      "ee_attention.earth_engine.naive_attention",
+      "ee_attention.earth_engine.spatial_attention",
+      "native_ee",
+      "native_ee._swin_parameters",
+      "native_ee.compatibility",
+      "native_ee.compiler",
+      "native_ee.outputs",
+      "native_ee.primitives",
+      "native_ee.segwater_preprocessing",
+      "native_ee.semantics",
+      "native_ee.swin",
+      "native_ee.swin_workflow",
+      "native_ee.weight_assets",
+      "native_ee.weight_mapping",
+      "swin_block",
+      "swin_block.earth_engine",
+      "swin_block.earth_engine.layer_norm",
+      "swin_block.earth_engine.linear",
+      "swin_block.earth_engine.ops",
+      "swin_block.earth_engine.relative_position",
+      "swin_block.earth_engine.swin_block",
+      "swin_encoder",
+      "swin_encoder.earth_engine",
+      "swin_encoder.earth_engine.configuration",
+      "swin_encoder.earth_engine.stage",
+      "swin_encoder.earth_engine.swin_encoder",
+      "swin_hierarchy",
+      "swin_hierarchy.earth_engine",
+      "swin_hierarchy.earth_engine.patch_merge",
+      "swin_hierarchy.earth_engine.periodic_extension",
+      "swin_image_encoder",
+      "swin_image_encoder.earth_engine",
+      "swin_image_encoder.earth_engine.patch_embed",
+      "swin_pair",
+      "swin_pair.earth_engine",
+      "swin_pair.earth_engine.coordinates",
+      "swin_pair.earth_engine.shift",
+      "swin_pair.earth_engine.shifted_mask",
+      "swin_pair.earth_engine.shifted_swin_block",
+      "upernet.earth_engine",
+      "upernet.earth_engine._coefficients",
+      "upernet.earth_engine._decoder_contract",
+      "upernet.earth_engine.adaptive_pool",
+      "upernet.earth_engine.conv2d",
+      "upernet.earth_engine.feature_interface",
+      "upernet.earth_engine.feature_ops",
+      "upernet.earth_engine.feature_transport",
+      "upernet.earth_engine.fpn",
+      "upernet.earth_engine.fusion",
+      "upernet.earth_engine.layout",
+      "upernet.earth_engine.normalization",
+      "upernet.earth_engine.psp",
+      "upernet.earth_engine.resize",
+      "upernet.earth_engine.segmentation_head"
+    ],
+    "editable_pth_processing": "disabled by python -I -S; explicit dependency site read-only"
+  },
+  "wheel_payload": {
+    "noncore_runtime_file_count": 46,
+    "noncore_runtime_files": [
+      "ee_attention/__init__.py",
+      "ee_attention/earth_engine/__init__.py",
+      "ee_attention/earth_engine/array_ops.py",
+      "ee_attention/earth_engine/blockwise_attention.py",
+      "ee_attention/earth_engine/naive_attention.py",
+      "ee_attention/earth_engine/spatial_attention.py",
+      "swin_block/__init__.py",
+      "swin_block/earth_engine/__init__.py",
+      "swin_block/earth_engine/layer_norm.py",
+      "swin_block/earth_engine/linear.py",
+      "swin_block/earth_engine/ops.py",
+      "swin_block/earth_engine/relative_position.py",
+      "swin_block/earth_engine/swin_block.py",
+      "swin_encoder/__init__.py",
+      "swin_encoder/earth_engine/__init__.py",
+      "swin_encoder/earth_engine/configuration.py",
+      "swin_encoder/earth_engine/stage.py",
+      "swin_encoder/earth_engine/swin_encoder.py",
+      "swin_hierarchy/__init__.py",
+      "swin_hierarchy/earth_engine/__init__.py",
+      "swin_hierarchy/earth_engine/patch_merge.py",
+      "swin_hierarchy/earth_engine/periodic_extension.py",
+      "swin_image_encoder/__init__.py",
+      "swin_image_encoder/earth_engine/__init__.py",
+      "swin_image_encoder/earth_engine/patch_embed.py",
+      "swin_pair/__init__.py",
+      "swin_pair/earth_engine/__init__.py",
+      "swin_pair/earth_engine/coordinates.py",
+      "swin_pair/earth_engine/shift.py",
+      "swin_pair/earth_engine/shifted_mask.py",
+      "swin_pair/earth_engine/shifted_swin_block.py",
+      "upernet/earth_engine/__init__.py",
+      "upernet/earth_engine/_coefficients.py",
+      "upernet/earth_engine/_decoder_contract.py",
+      "upernet/earth_engine/adaptive_pool.py",
+      "upernet/earth_engine/conv2d.py",
+      "upernet/earth_engine/feature_interface.py",
+      "upernet/earth_engine/feature_ops.py",
+      "upernet/earth_engine/feature_transport.py",
+      "upernet/earth_engine/fpn.py",
+      "upernet/earth_engine/fusion.py",
+      "upernet/earth_engine/layout.py",
+      "upernet/earth_engine/normalization.py",
+      "upernet/earth_engine/psp.py",
+      "upernet/earth_engine/resize.py",
+      "upernet/earth_engine/segmentation_head.py"
+    ],
+    "matches_accepted_t01_inventory": true,
+    "data_results_reference_personal_manifests": "absent"
+  },
+  "targeted_offline": {
+    "source_revision": "ed72b478ba0d64166c92041c8d2244aabe2ad4cb",
+    "command": "PYTHONDONTWRITEBYTECODE=1 <checkout>/.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_swin_workflow.py tests/test_runtime_packaging.py",
+    "passed": 11,
+    "skipped": 0,
+    "seconds": 1.31,
+    "checks": [
+      "explicit grid/bands/model/manifest/project/destinations and catalogue image IDs",
+      "measured preparation without ID allocation/submission/asset scans",
+      "request/resource identity and completed predecessor guards",
+      "request UUID vs returned operation/task ID persistence",
+      "lost response UNKNOWN/no replay and explicit exact operation recovery",
+      "UNKNOWN/FAILED/CANCELLED stop without retry",
+      "offline requests cannot submit",
+      "exact accepted noncore runtime packaging allowlist and pinned extras"
+    ]
+  },
+  "trained_recipe_preservation": {
+    "test": "tests/test_swin_workflow.py::test_three_water_stage_graphs_match_historical_demo_exactly",
+    "accepted_demo_source_revision": "ca9827dbd2d1b5116eca45b1d030a8525696d156",
+    "current_workflow_source_revision": "ed72b478ba0d64166c92041c8d2244aabe2ad4cb",
+    "demo_file_sha256": "0e2680fc8175ce42954143bb289c86749bc9bca21dcfcb5cbcb95574fee3e9ea",
+    "stages": {
+      "A": {
+        "parsed_ee_graph_equal": true,
+        "grid_equal": true
+      },
+      "B": {
+        "parsed_ee_graph_equal": true,
+        "grid_equal": true
+      },
+      "C": {
+        "parsed_ee_graph_equal": true,
+        "grid_equal": true
+      }
+    },
+    "fixture": "explicit caller-project/raw_db and saved fresh_A/B assets, EPSG3857 224sq20m grid, fixed zero server parameter arrays",
+    "scope": "graph/formula preservation including preprocessing, per-channel validity, saved asset transport and water/coverage assembly; not numerical parity"
+  },
+  "source_archive": {
+    "earlier_81207_check": "custom build_support.py absent; default sdist collected82 tests",
+    "resolution_revision": "ed72b478ba0d64166c92041c8d2244aabe2ad4cb",
+    "rules": [
+      "include build_support.py",
+      "prune tests"
+    ],
+    "final_combined_sdist_contents_and_wheel_rebuild": "PASS at328e4d67: build_support.py present; tests/research/data absent; extracted sdist rebuilt the verified combined wheel outside every checkout."
+  },
+  "probe_note": "First offline probe auth guard also blocked ApiTestCase canned-signature initialization; probe guard lifetime corrected, runtime unchanged, successful rerun above.",
+  "remaining_gates": [
+    "Independent review and lead integration/acceptance",
+    "Public checkpoint access/terms and central personal-resource cleanup release gates"
+  ],
+  "final_combined_source_revision": "328e4d67a15dc9fe0106299d1fb9595a99afa7c4",
+  "final_combined_package": {
+    "status": "PASS",
+    "source_revision": "328e4d67a15dc9fe0106299d1fb9595a99afa7c4",
+    "combined_checkout_read_only_until_evidence_update": "<checkout>",
+    "build_directory": "/private/tmp/t05_packaging_328e4d6",
+    "durable_artifact_directory": "<checkout>/downloads/t05_packaging/328e4d6",
+    "retention": "Ignored downloads directory; no weights/dependencies copied; wheel/sdist/logs/stdout/raw JSON/graphs/requests retained.",
+    "durable_artifact_hash_manifest": {
+      "path": "<checkout>/downloads/t05_packaging/328e4d6/artifact-hashes.json",
+      "sha256": "ebdde01098d08bb8423ed527301cb3ca39220d9b299a53b7cbca3396bc7d1e98",
+      "files": {
+        "build-report.json": {
+          "bytes": 8597,
+          "sha256": "2e9b4a86c136f498a71e84aba5267510e3c6a6b668d210f2e88f4da23bf501a2"
+        },
+        "cli-report.json": {
+          "bytes": 9083,
+          "sha256": "e772b434b87a80161995e23aad43832153651eef51cd93d10a4f595422e4777c"
+        },
+        "cli_nonwater.stderr.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "cli_nonwater.stdout.json": {
+          "bytes": 6364,
+          "sha256": "1b07183c463db90373b3590880bbe32a0b68cd17bc4272af7b21e934e06596cf"
+        },
+        "cli_swin.stderr.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "cli_swin.stdout.json": {
+          "bytes": 9825,
+          "sha256": "aa6de0116e681507976c7edf5794b99072c1fa3a5486774ca8b1dd7d94123095"
+        },
+        "dist/native_ee_unet_proof-0.1.0-py3-none-any.whl": {
+          "bytes": 181726,
+          "sha256": "0cfe571935e20c2f625a61c70b2ba62990cf8014837120ee1fabad117995de15"
+        },
+        "dist/native_ee_unet_proof-0.1.0.tar.gz": {
+          "bytes": 156509,
+          "sha256": "3bc5bae199d52713ea0f357330502b31a47545373561ddc536aced12d8a8e03d"
+        },
+        "install.log": {
+          "bytes": 164,
+          "sha256": "349a3de6885f55bbf6061d9cd542efe3d6b3e288c68c878d31e67363890c5d6f"
+        },
+        "literal_cli_swin/request_A.json": {
+          "bytes": 3761991,
+          "sha256": "463eba85aff90134075526bc541332c5656570db1043396a73a3f1fd4ad67d07"
+        },
+        "literal_cli_swin/state.json": {
+          "bytes": 14051,
+          "sha256": "095cf34de6c063febbe01cee5155950ebafcc71a81c263d03e5e96ecd5d89604"
+        },
+        "sdist-build.log": {
+          "bytes": 9542,
+          "sha256": "ee37aec7af85cd4c08ad0da9cfe79bad24a186083dc1820ae0d36aec332e37b2"
+        },
+        "smoke/graph_A.json": {
+          "bytes": 843873,
+          "sha256": "87233b639226e9664db7b405da57975e6fc220d5b4addd9511206efc80788028"
+        },
+        "smoke/graph_B.json": {
+          "bytes": 345354,
+          "sha256": "f250bafafd4ae78ac936dca12a68047acf99523f0d23125a9cee76fe9738bddb"
+        },
+        "smoke/graph_C.json": {
+          "bytes": 595650,
+          "sha256": "140530232cca34dea5e5c557afae3b854cd1fd00e8062c6fd10790573f779e9f"
+        },
+        "smoke/offline_cli/request_A.json": {
+          "bytes": 3761991,
+          "sha256": "463eba85aff90134075526bc541332c5656570db1043396a73a3f1fd4ad67d07"
+        },
+        "smoke/offline_cli/state.json": {
+          "bytes": 14051,
+          "sha256": "095cf34de6c063febbe01cee5155950ebafcc71a81c263d03e5e96ecd5d89604"
+        },
+        "smoke/report.json": {
+          "bytes": 34405,
+          "sha256": "7ffaa737e6331b44c2ee1f8de0279bfa3f6b58ccaa25b635305fa94f9ab85d61"
+        },
+        "smoke/resources.json": {
+          "bytes": 1161,
+          "sha256": "de18ae76359ede3cb0aa177b48490820cb596bbad40009db32c96983d12dff64"
+        },
+        "smoke.stderr.log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "smoke.stdout.json": {
+          "bytes": 2011,
+          "sha256": "c55d7d9165ef27739b291450da9e00836c1b7952e1b8a8c0bc4aaafcd3df4bf4"
+        },
+        "wheel-build.log": {
+          "bytes": 781,
+          "sha256": "357d4fe8ebb00f2f0f9031c599f40b42a05e50efaf988624e3a404dd79769e92"
+        }
+      }
+    },
+    "sdist_build_helper_included": true,
+    "sdist_rebuilt_outside_all_checkouts": true,
+    "sdist_tests_research_data_excluded": true,
+    "noncore_runtime_files": 46,
+    "actual_nonwater_and_comparison_modules_packaged": true,
+    "core_without_optional_dependencies": "PASS: imports blocked, 4-input/3-output graph built",
+    "python_isolated": true,
+    "site_processing_disabled": true,
+    "loaded_owned_runtime_module_count": 61,
+    "all_loaded_owned_modules_under_installed_target": true,
+    "installed_target": "/private/tmp/t05_packaging_328e4d6/install",
+    "dependency_site_read_only": "<checkout>/.venv/lib/python3.14/site-packages",
+    "checkpoint_sha256": "5c7a7c44d29b3c75bd69f59809fb1b63a039313bec021d897ff3876d2cea42a5",
+    "manifest_file_sha256": "dbd3cdaf450e4e2d128ec557843dc1c761cd9ab66d7d3581bb5cd255532fc9a3",
+    "manifest_canonical_sha256": "38f06b5323227e561069d6e1c01c4c2fb879ae61373282b4282ac5bf34912ee6",
+    "manifest_round_trip": {
+      "records": 189,
+      "values": 36747964,
+      "unchanged_retained_manifest": true,
+      "record_list_sha256": "1f398d3256ba6eb9a3fad421f964fc0775b2f4a10420951cef4674bcd6e5e253"
+    },
+    "fixed_model_load": {
+      "exact_state_tensors": 251,
+      "ambient_dtype": "float16",
+      "output_dtype": "float32",
+      "device": "cpu",
+      "mode": "eval"
+    },
+    "stages": {
+      "A": {
+        "width": 56,
+        "height": 56,
+        "bands": 673,
+        "graph_bytes": 843872,
+        "graph_sha256": "0d4c755c048b74d2da9473e3ad370682bc5a18b38eaff387a4f3446433bf9b4e",
+        "grid": {
+          "crs": "EPSG:3857",
+          "transform": [
+            80,
+            0,
+            1000,
+            0,
+            -80,
+            2000
+          ]
+        }
+      },
+      "B": {
+        "width": 7,
+        "height": 7,
+        "bands": 768,
+        "graph_bytes": 345353,
+        "graph_sha256": "27e4770414c4c4b24b0041d7bf951b9da38ed4708b39f26bc3463b76dee3616f",
+        "grid": {
+          "crs": "EPSG:3857",
+          "transform": [
+            640,
+            0,
+            1000,
+            0,
+            -640,
+            2000
+          ]
+        }
+      },
+      "C": {
+        "width": 224,
+        "height": 224,
+        "bands": 2,
+        "graph_bytes": 595649,
+        "graph_sha256": "e33480c42f8c8082eb042de94c85049aca0bc5b58f5ab51ee49ab293a638bd76",
+        "grid": {
+          "crs": "EPSG:3857",
+          "transform": [
+            20,
+            0,
+            1000,
+            0,
+            -20,
+            2000
+          ]
+        }
+      }
+    },
+    "versions": {
+      "native-ee-unet-proof": "0.1.0",
+      "earthengine-api": "1.7.45",
+      "torch": "2.14.0",
+      "numpy": "2.5.3",
+      "segmentation-models-pytorch": "0.5.0",
+      "timm": "1.0.30",
+      "setuptools": "84.0.0"
+    },
+    "comparison_local_api_status": "pass",
+    "comparison_scope": "Local public API check with PyTorch-generated exact tensors; no EE numerical parity claim. Primary nonwater live evidence is separate.",
+    "installed_nonwater_offline_prepare": {
+      "status": "offline_graph_only",
+      "source_file": "/private/tmp/t05_packaging_328e4d6/install/native_ee/examples/nonwater.py",
+      "grid": {
+        "crs": "EPSG:3857",
+        "transform": [
+          30,
+          0,
+          1200,
+          0,
+          -30,
+          2400
+        ],
+        "width": 16,
+        "height": 12
+      },
+      "query_grid": {
+        "dimensions": {
+          "width": 18,
+          "height": 14
+        },
+        "crsCode": "EPSG:3857",
+        "affineTransform": {
+          "scaleX": 30,
+          "shearX": 0,
+          "translateX": 1170,
+          "shearY": 0,
+          "scaleY": -30,
+          "translateY": 2430
+        }
+      },
+      "bands": 42,
+      "scalar_fields": 10584,
+      "compute_queries": 2,
+      "graph_bytes": 60061,
+      "graph_sha256": "64fe51490c7e43390e23b860dd4cc4e0cac7f2736c4e97c9f1d4d079fc7bbdd9",
+      "persistent_ee_resources": [],
+      "fixture": "T00 prescribed four-band/three-class nonwater CNN",
+      "compatibility_status": "supported"
+    },
+    "literal_module_main_checks": {
+      "nonwater": {
+        "entrypoint": "python -m native_ee.examples.nonwater --prepare",
+        "exit_code": 0,
+        "plan": {
+          "status": "offline_graph_only",
+          "graph_sha256": "64fe51490c7e43390e23b860dd4cc4e0cac7f2736c4e97c9f1d4d079fc7bbdd9",
+          "graph_bytes": 60061,
+          "bands": 42,
+          "scalar_fields": 10584,
+          "compute_queries": 2
+        },
+        "full_plan_file": "cli_nonwater.stdout.json (retained and hashed)"
+      },
+      "swin": {
+        "entrypoint": "python -m native_ee.swin_workflow --config resources.json --state RUN_DIR --stage A --action prepare --offline",
+        "exit_code": 0,
+        "state": "PREPARED",
+        "request_bytes": 788888,
+        "request_sha256": "1415c7a0f23c44bd23e3eb90a3d1f38a8e034e60ae5507469c893ffab1d9c271",
+        "offline": true
+      }
+    },
+    "literal_mode": "literal installed module __main__ execution under python -I -S/runpy (editable/site processing disabled)",
+    "cloud_calls": 0,
+    "raw_report_and_stdout": "smoke/report.json and smoke.stdout.json; full provenance/metrics and all file hashes retained above."
+  }
+}

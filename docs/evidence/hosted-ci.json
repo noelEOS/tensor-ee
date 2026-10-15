@@ -1,0 +1,325 @@
+{
+  "status": "pass",
+  "date": "2026-10-10",
+  "repository": "noelEOS/native-ee",
+  "visibility": "private",
+  "source_revision": "325f9d41f95d89ed3f1a5fc368873b8ccb5ddef7",
+  "branch": "codex/hosted-ci-20261010",
+  "runtime_candidate": "f22574c10f36e1f5eeeba60d26b793d042c1a741",
+  "runtime_identity": {
+    "unchanged": true,
+    "python_files_equal_to_t06_hashes": 68,
+    "runtime_or_numerical_tolerance_edits": false
+  },
+  "run": {
+    "id": 38059090575,
+    "url": "https://github.com/noelEOS/native-ee/actions/runs/38059090575",
+    "workflow": "Offline tests",
+    "path": ".github/workflows/tests.yml",
+    "event": "push",
+    "attempt": 1,
+    "conclusion": "success",
+    "created_at": "2026-10-10T14:18:33Z",
+    "updated_at": "2026-10-10T14:21:10Z"
+  },
+  "jobs": [
+    {
+      "name": "optional-models",
+      "id": 114233491095,
+      "url": "https://github.com/noelEOS/native-ee/actions/runs/38059090575/job/114233491095",
+      "conclusion": "success",
+      "started_at": "2026-10-10T14:18:36Z",
+      "completed_at": "2026-10-10T14:21:09Z",
+      "duration_seconds": 153,
+      "passed": 1099,
+      "skipped": 176,
+      "subtests_passed": 181,
+      "pytest_seconds": 100.54,
+      "package_versions_from_install_logs": {
+        "numpy": "2.4.6",
+        "torch": "2.14.1+cpu",
+        "torchvision": "0.29.1+cpu",
+        "earthengine-api": "1.7.47",
+        "onnx": "1.23.2",
+        "onnxruntime": "1.31.0",
+        "pytest": "9.1.1",
+        "segmentation-models-pytorch": "0.5.0",
+        "timm": "1.0.30"
+      },
+      "successful_steps": [
+        "Set up job",
+        "Run actions/checkout@v4",
+        "Run actions/setup-python@v5",
+        "Install CPU-only PyTorch and torchvision",
+        "Run python -m pip install -e '.[test,resnet,onnx,segwater,swin]'",
+        "Run python -m pytest -q -ra",
+        "Post Run actions/setup-python@v5",
+        "Post Run actions/checkout@v4",
+        "Complete job"
+      ]
+    },
+    {
+      "name": "core (3.12)",
+      "id": 114233491249,
+      "url": "https://github.com/noelEOS/native-ee/actions/runs/38059090575/job/114233491249",
+      "conclusion": "success",
+      "started_at": "2026-10-10T14:18:36Z",
+      "completed_at": "2026-10-10T14:19:58Z",
+      "duration_seconds": 82,
+      "passed": 810,
+      "skipped": 292,
+      "subtests_passed": 181,
+      "pytest_seconds": 25.74,
+      "package_versions_from_install_logs": {
+        "torch": "2.14.1+cpu",
+        "earthengine-api": "1.7.47",
+        "numpy": "2.5.3",
+        "pytest": "9.1.1"
+      },
+      "successful_steps": [
+        "Set up job",
+        "Run actions/checkout@v4",
+        "Run actions/setup-python@v5",
+        "Install CPU-only PyTorch",
+        "Run python -m pip install -e '.[test]'",
+        "Run python -m pytest -q -ra",
+        "Run python -m pip wheel . --no-deps --wheel-dir dist",
+        "Run python -m pip uninstall -y native-ee-unet-proof && python -m pip install --no-deps dist/*.whl",
+        "Import installed wheel outside checkout",
+        "Post Run actions/setup-python@v5",
+        "Post Run actions/checkout@v4",
+        "Complete job"
+      ]
+    },
+    {
+      "name": "core (3.11)",
+      "id": 114233491256,
+      "url": "https://github.com/noelEOS/native-ee/actions/runs/38059090575/job/114233491256",
+      "conclusion": "success",
+      "started_at": "2026-10-10T14:18:36Z",
+      "completed_at": "2026-10-10T14:19:41Z",
+      "duration_seconds": 65,
+      "passed": 810,
+      "skipped": 292,
+      "subtests_passed": 181,
+      "pytest_seconds": 18.45,
+      "package_versions_from_install_logs": {
+        "torch": "2.14.1+cpu",
+        "earthengine-api": "1.7.47",
+        "numpy": "2.4.6",
+        "pytest": "9.1.1"
+      },
+      "successful_steps": [
+        "Set up job",
+        "Run actions/checkout@v4",
+        "Run actions/setup-python@v5",
+        "Install CPU-only PyTorch",
+        "Run python -m pip install -e '.[test]'",
+        "Run python -m pytest -q -ra",
+        "Run python -m pip wheel . --no-deps --wheel-dir dist",
+        "Run python -m pip uninstall -y native-ee-unet-proof && python -m pip install --no-deps dist/*.whl",
+        "Import installed wheel outside checkout",
+        "Post Run actions/setup-python@v5",
+        "Post Run actions/checkout@v4",
+        "Complete job"
+      ]
+    }
+  ],
+  "summed_job_wall_seconds": 300,
+  "previous_baseline_run": {
+    "id": 37953741197,
+    "url": "https://github.com/noelEOS/native-ee/actions/runs/37953741197",
+    "source_revision": "05078432d4122a972f383cbbf993d09b709c2424",
+    "conclusion": "failure",
+    "diagnosis": [
+      "Core job ran optional timm/SMP-dependent tests without their dependencies.",
+      "Historical exact BLAS order, SIMD zero sign and seeded synthetic manifest digests were asserted across platforms.",
+      "Two contract tests hardcoded the original Torch version despite the package allowing newer versions."
+    ]
+  },
+  "changes": [
+    "43 function/fixture-local timm guards and one SMP guard; independent core tests remain collected.",
+    "All optional extras explicitly installed, including swin.",
+    "CPU-only PyTorch wheels, explicit offline/live-disabled environment, visible skip reasons and finite job timeouts.",
+    "Six historical research observations retain their assertions under a precise recorded environment; force diagnostic option runs them anywhere and fails normally.",
+    "Portable ReLU values, explicit sequential cancellation and current head metadata/coefficient hashes remain tested; model-parity tolerances are unchanged.",
+    "Reported Torch version checked against the installed version, retaining strict SMP 0.5 structure checks."
+  ],
+  "reference_environment": {
+    "marker": "reference_environment",
+    "platform": "darwin",
+    "machine": "arm64",
+    "versions": {
+      "torch": "2.14.0",
+      "numpy": "2.5.3",
+      "timm": "1.0.30",
+      "segmentation-models-pytorch": "0.5.0"
+    },
+    "observation_count": 6,
+    "override": "python -m pytest -q -m reference_environment --run-reference-observations",
+    "local_disposition": "All six original exact assertions passed within the 11-test focused check in the recorded environment."
+  },
+  "hosted_optional_skips": {
+    "disabled_live_batch_large": 129,
+    "missing_local_fixture_entries": 41,
+    "historical_reference_environment": 6,
+    "total": 176,
+    "dependency_import_skips": 0
+  },
+  "local_validation": {
+    "cwd": "<checkout>",
+    "core_environment": "/private/tmp/hosted-ci-core-env",
+    "full_environment": "/private/tmp/t06-reader-environment",
+    "main_environment_modified": false,
+    "core_extras_absent": [
+      "timm",
+      "segmentation_models_pytorch",
+      "torchvision",
+      "onnx",
+      "onnxruntime"
+    ],
+    "results": [
+      {
+        "name": "hosted-ci-core",
+        "passed": 810,
+        "skipped": 292,
+        "subtests_passed": 181,
+        "pytest_seconds": 9.571,
+        "junit": "<checkout>/downloads/hosted_ci/hosted-ci-core.xml"
+      },
+      {
+        "name": "hosted-ci-full",
+        "passed": 1105,
+        "skipped": 170,
+        "subtests_passed": 181,
+        "pytest_seconds": 51.542,
+        "junit": "<checkout>/downloads/hosted_ci/hosted-ci-full.xml"
+      },
+      {
+        "name": "reference-tests",
+        "passed": 11,
+        "skipped": 0,
+        "subtests_passed": 0,
+        "pytest_seconds": 5.251,
+        "junit": "<checkout>/downloads/hosted_ci/reference-tests.xml"
+      }
+    ],
+    "initial_sandbox_failures": "Four cached JS-status tests could not create the ignored downloads/code_editor directory. Original failed logs retained; final core and full suites passed with authorized worktree filesystem permission."
+  },
+  "review": {
+    "reviewer": "Sol 6.1 High, independent from edits",
+    "status": "pass",
+    "scope": "Entire workflow/docs/test patch reviewed; optional guards match actual model dependencies, six historical assertions narrowly scoped, runtime and numerical gates unchanged.",
+    "evidence_verification": "Independent review passed: all 19 raw artifact hashes and lengths, three hosted job results and log totals, three local JUnit reports, optional skip classifications, and all 68 unchanged runtime source hashes match the release records."
+  },
+  "billing": {
+    "remaining_allowance": "unavailable: existing CLI token lacks user billing scope; billing endpoint returned404",
+    "settings_changed": false,
+    "billed_amount_verified": false,
+    "runners": "standard GitHub-hosted Ubuntu Linux"
+  },
+  "limits": [
+    "This is a branch run; remote main is not advanced by this follow-up.",
+    "No release publication, repository visibility change, EE export or private fixture upload.",
+    "The hosted clean-checkout skip counts do not replace fixture-backed and live T06 evidence.",
+    "Historical BLAS-based research mirrors have not established bitwise EE accumulation equivalence on Linux.",
+    "Existing checkout/setup-python actions produced non-blocking Node20 deprecation notices; ubuntu-latest announced a future runner-image migration."
+  ],
+  "raw_artifacts": [
+    {
+      "path": "<checkout>/downloads/hosted_ci/baseline-failed.log",
+      "bytes": 435488,
+      "sha256": "c8b9611fdc01a2f5d00cb3a9aa39688b8f7671ecb8b3532e27e3c0a28a1a4059"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-add-guards.py",
+      "bytes": 2960,
+      "sha256": "87ddb8abcd06a40bbed6667325f0be4e560c439650af81b9bb0fa3f22aa22015"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-core-bootstrap.log",
+      "bytes": 403,
+      "sha256": "f2053c9e2c23f9eaa94093ad7d24302551eaeb337b290ce75176cd9209689515"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-core-constraints.txt",
+      "bytes": 65,
+      "sha256": "bb04ca68598118adcde30ea9118e5ca9d4d8bcfff003bdbc4b13423256626cf4"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-core-install.log",
+      "bytes": 8908,
+      "sha256": "091bc0d9d614657ef2add5e2b7d495ecccc0f56f083623c01af3564a8ae734df"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-core-sandbox-failed.log",
+      "bytes": 35440,
+      "sha256": "1fe69073191d94a0fab8584b267e23284df92afa0de1d6e942a8ef7e2d0171e6"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-core-sandbox-failed.xml",
+      "bytes": 216920,
+      "sha256": "6ace511a4c6f4f2b48b390eeb5a00b044435315a27a33dd255f4f11c78d8b1b7"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-core.log",
+      "bytes": 22734,
+      "sha256": "e28660114f9d0df60a976c5fdbae0bc874e8cd9b7c6c5973c0df2c6983c620ce"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-core.xml",
+      "bytes": 204611,
+      "sha256": "49dbf2a1928237cc203faa3d1f69c11c3185c514516f8565450609c68faea928"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-full-sandbox-failed.log",
+      "bytes": 27666,
+      "sha256": "1a51a3ab2c4e9f1b819257a712293efe9d88e9cc820cf593c63314ec6ce86a0e"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-full-sandbox-failed.xml",
+      "bytes": 210387,
+      "sha256": "da5a63e432930eca63f5511d67bcb1c6dd0657a78186e6a9c6bbf440adaa6665"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-full.log",
+      "bytes": 14767,
+      "sha256": "046abfeb44fc3fe8038a74ff9ca754cc376eeee02f78c9036d179fbc123a0501"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/hosted-ci-full.xml",
+      "bytes": 198000,
+      "sha256": "cdc8b6dd32dd5adfc8c87a7e08e4dac739010866333d70bd2cad2943e39284f1"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/reference-tests.log",
+      "bytes": 99,
+      "sha256": "204567946aae4e361bbbfe66dcb8458a34c1c2ef44fd51985cd9be70144f3daa"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/reference-tests.xml",
+      "bytes": 1534,
+      "sha256": "679b970d5f7282e60c4177ee9567036633001404d35a3b93d5b8693bc62b9f3c"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/run-38059090575-jobs.json",
+      "bytes": 8479,
+      "sha256": "d0996dac7944804441ce40d774a3edb4ea54b75af5aab76665a92dc8f1ddf1ba"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/run-38059090575-watch.log",
+      "bytes": 13158,
+      "sha256": "52971a150e21790e687a9e96eb7fd3796e054461cf45754f6b0a59b3f10223ed"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/run-38059090575.json",
+      "bytes": 12046,
+      "sha256": "16272504986ff2f0048c51ed987ca3bebb0adbb80fb8c048a2e246c27c65443c"
+    },
+    {
+      "path": "<checkout>/downloads/hosted_ci/run-38059090575.log",
+      "bytes": 309960,
+      "sha256": "4bcddccbff431351d0e0d74ba6b1cb06fba136da6afe8d73c31046437366fdb9"
+    }
+  ]
+}

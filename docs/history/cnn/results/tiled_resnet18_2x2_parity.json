@@ -1,0 +1,734 @@
+{
+  "experiment": "native_ee_tiled_inference",
+  "model": {
+    "architecture": "ResNet18UNet",
+    "encoder_kind": "standard_width_resnet18",
+    "base_channels": 64,
+    "in_channels": 2,
+    "encoder_widths": [
+      64,
+      128,
+      256,
+      512
+    ],
+    "encoder_blocks": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "decoder_widths": [
+      256,
+      128,
+      64,
+      32,
+      16
+    ],
+    "seed": 1800,
+    "fixture_initializer": "initialize_resnet_fixture_v1",
+    "pretrained": false
+  },
+  "scope": "every_pixel_numerical_parity",
+  "mode": "live_earth_engine",
+  "input": "one synthetic image generated from global pixel coordinates; no imagery egress",
+  "comparison": "local synthetic references only; EE returns scalar metrics",
+  "execution_dtype": "float32",
+  "reference_dtype": "float32",
+  "clip_footprints": true,
+  "boundary_semantics": "context clamped to true finite global domain",
+  "parameters": 14324945,
+  "project": "ORIGINAL_PROJECT",
+  "execution": "batch",
+  "tile_scale": 4,
+  "seam_width": 2,
+  "seam_pixel_count": 496,
+  "exact_required_aligned_halo": 288,
+  "halo_claim": "structural receptive support, independent of random numerical attenuation",
+  "receptive_field": {
+    "x": {
+      "period": 32,
+      "input_shift": 32,
+      "jump": [
+        1,
+        1
+      ],
+      "phase_bounds": [
+        [
+          -281,
+          249
+        ],
+        [
+          -281,
+          249
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -249,
+          281
+        ],
+        [
+          -249,
+          281
+        ]
+      ],
+      "maximum_support_width": 563
+    },
+    "y": {
+      "period": 32,
+      "input_shift": 32,
+      "jump": [
+        1,
+        1
+      ],
+      "phase_bounds": [
+        [
+          -281,
+          249
+        ],
+        [
+          -281,
+          249
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -281,
+          281
+        ],
+        [
+          -249,
+          281
+        ],
+        [
+          -249,
+          281
+        ]
+      ],
+      "maximum_support_width": 563
+    },
+    "alignment": 32,
+    "period": 32,
+    "safe_halo": 288,
+    "halo_for_any_phase": 320,
+    "aligned_core_requirement": "start and exclusive end divisible by alignment",
+    "context_requirement": "origin and dimensions divisible by alignment",
+    "bounds_convention": "inclusive input pixel indices; structural dependency envelope"
+  },
+  "plan": {
+    "global_dimensions": [
+      704,
+      704
+    ],
+    "global_transform": [
+      10,
+      0,
+      500000,
+      0,
+      -10,
+      2600000
+    ],
+    "roi": {
+      "x": 320,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    "core_size": [
+      32,
+      32
+    ],
+    "halo": [
+      288,
+      288
+    ],
+    "alignment": 32,
+    "tile_count": 4,
+    "core_pixel_count": 4096,
+    "context_pixel_count_sum": 1478656,
+    "vertical_seams": [
+      352
+    ],
+    "horizontal_seams": [
+      352
+    ],
+    "tiles": [
+      {
+        "index": 0,
+        "row": 0,
+        "column": 0,
+        "core": {
+          "x": 320,
+          "y": 320,
+          "width": 32,
+          "height": 32
+        },
+        "context": {
+          "x": 32,
+          "y": 32,
+          "width": 608,
+          "height": 608
+        },
+        "context_transform": [
+          10,
+          0,
+          500320,
+          0,
+          -10,
+          2599680
+        ]
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "column": 1,
+        "core": {
+          "x": 352,
+          "y": 320,
+          "width": 32,
+          "height": 32
+        },
+        "context": {
+          "x": 64,
+          "y": 32,
+          "width": 608,
+          "height": 608
+        },
+        "context_transform": [
+          10,
+          0,
+          500640,
+          0,
+          -10,
+          2599680
+        ]
+      },
+      {
+        "index": 2,
+        "row": 1,
+        "column": 0,
+        "core": {
+          "x": 320,
+          "y": 352,
+          "width": 32,
+          "height": 32
+        },
+        "context": {
+          "x": 32,
+          "y": 64,
+          "width": 608,
+          "height": 608
+        },
+        "context_transform": [
+          10,
+          0,
+          500320,
+          0,
+          -10,
+          2599360
+        ]
+      },
+      {
+        "index": 3,
+        "row": 1,
+        "column": 1,
+        "core": {
+          "x": 352,
+          "y": 352,
+          "width": 32,
+          "height": 32
+        },
+        "context": {
+          "x": 64,
+          "y": 64,
+          "width": 608,
+          "height": 608
+        },
+        "context_transform": [
+          10,
+          0,
+          500640,
+          0,
+          -10,
+          2599360
+        ]
+      }
+    ]
+  },
+  "started_unix": 1790568442.9598489,
+  "status": "pass",
+  "local_tiled_vs_full": {
+    "logits": {
+      "status": "pass",
+      "max_absolute_error": 0.0,
+      "rmse": 0.0,
+      "full_input_dimensions": [
+        704,
+        704
+      ],
+      "reference_shape": [
+        1,
+        1,
+        64,
+        64
+      ],
+      "reference_min": -0.07606987655162811,
+      "reference_max": 0.17847681045532227,
+      "reference_std": 0.03700043261051178
+    },
+    "probability": {
+      "status": "pass",
+      "max_absolute_error": 0.0,
+      "rmse": 0.0,
+      "full_input_dimensions": [
+        704,
+        704
+      ],
+      "reference_shape": [
+        1,
+        1,
+        64,
+        64
+      ],
+      "reference_min": 0.4809916615486145,
+      "reference_max": 0.5445011258125305,
+      "reference_std": 0.00923893228173256
+    }
+  },
+  "torch_reference_seconds": 1.129350374918431,
+  "compile_seconds": 0.27484529092907906,
+  "graph_bytes": 1557064,
+  "output_transform": [
+    10,
+    0,
+    500000,
+    0,
+    -10,
+    2600000
+  ],
+  "output_grid_preserved": true,
+  "asset_manifest": "<checkout>/results/resnet18_b64_weight_manifest.json",
+  "asset_weight_keys": [
+    "dec0_bn1",
+    "dec0_bn2",
+    "dec1_bn1",
+    "dec1_bn2",
+    "dec2_bn1",
+    "dec2_bn2",
+    "dec3_bn1",
+    "dec3_bn2",
+    "dec4_bn1",
+    "dec4_bn2",
+    "encoder_bn1",
+    "encoder_layer1_0_bn1",
+    "encoder_layer1_0_bn2",
+    "encoder_layer1_1_bn1",
+    "encoder_layer1_1_bn2",
+    "encoder_layer2_0_bn1",
+    "encoder_layer2_0_bn2",
+    "encoder_layer2_0_downsample_1",
+    "encoder_layer2_1_bn1",
+    "encoder_layer2_1_bn2",
+    "encoder_layer3_0_bn1",
+    "encoder_layer3_0_bn2",
+    "encoder_layer3_0_downsample_1",
+    "encoder_layer3_1_bn1",
+    "encoder_layer3_1_bn2",
+    "encoder_layer4_0_bn1",
+    "encoder_layer4_0_bn2",
+    "encoder_layer4_0_downsample_1",
+    "encoder_layer4_1_bn1",
+    "encoder_layer4_1_bn2",
+    "head"
+  ],
+  "fallback_weight_keys": [],
+  "shared_weight_provider": true,
+  "request_bytes": 1744538,
+  "batch_verification": {
+    "task_id": "JK2TY3H3GYN5WWZ7KKBYW4WC",
+    "asset_id": "projects/ORIGINAL_PROJECT/assets/native_tiled_resnet18_2x2_c32_1790568447_84e60fdf",
+    "state": "COMPLETED",
+    "contents": "one dummy point; scalar error, range, count and coverage metrics only",
+    "task_status": {
+      "state": "COMPLETED",
+      "description": "native_tiled_resnet18_2x2_c32_1790568447_84e60fdf",
+      "priority": 100,
+      "creation_timestamp_ms": 1790568457598,
+      "update_timestamp_ms": 1790568966250,
+      "start_timestamp_ms": 1790568460899,
+      "task_type": "EXPORT_FEATURES",
+      "destination_uris": [
+        "https://code.earthengine.google.com/?asset=projects/ORIGINAL_PROJECT/assets/native_tiled_resnet18_2x2_c32_1790568447_84e60fdf"
+      ],
+      "attempt": 1,
+      "batch_eecu_usage_seconds": 388.728271484375,
+      "id": "JK2TY3H3GYN5WWZ7KKBYW4WC",
+      "name": "projects/ORIGINAL_PROJECT/operations/JK2TY3H3GYN5WWZ7KKBYW4WC"
+    },
+    "elapsed_seconds": 512.0018153330311
+  },
+  "evaluation_seconds": 522.7459987923503,
+  "raw_scalar_metrics": {
+    "logits_absolute_error_count": 4096,
+    "logits_absolute_error_max": 3.0547380447387695e-07,
+    "logits_absolute_error_mean": 5.706648842362938e-08,
+    "logits_absolute_error_min": 0,
+    "logits_absolute_error_stdDev": 4.5682456582259975e-08,
+    "logits_squared_error_count": 4096,
+    "logits_squared_error_max": 9.331424521974441e-14,
+    "logits_squared_error_mean": 5.343470940394294e-15,
+    "logits_squared_error_min": 0,
+    "logits_squared_error_stdDev": 8.194254499008812e-15,
+    "logits_value_count": 4096,
+    "logits_value_max": 0.17847679555416107,
+    "logits_value_mean": 0.06337372495948301,
+    "logits_value_min": -0.0760698989033699,
+    "logits_value_stdDev": 0.03700043201585878,
+    "probability_absolute_error_count": 4096,
+    "probability_absolute_error_max": 1.1920928955078125e-07,
+    "probability_absolute_error_mean": 1.8168066162616014e-08,
+    "probability_absolute_error_min": 0,
+    "probability_absolute_error_stdDev": 2.7243298634691264e-08,
+    "probability_squared_error_count": 4096,
+    "probability_squared_error_max": 1.4210854715202004e-14,
+    "probability_squared_error_mean": 1.0722759485881639e-15,
+    "probability_squared_error_min": 0,
+    "probability_squared_error_stdDev": 1.6733541206281278e-15,
+    "probability_value_count": 4096,
+    "probability_value_max": 0.5445011258125305,
+    "probability_value_mean": 0.5158329703626805,
+    "probability_value_min": 0.4809916913509369,
+    "probability_value_stdDev": 0.009238931744241837,
+    "seam_logits_absolute_error_count": 496,
+    "seam_logits_absolute_error_max": 2.1979212760925293e-07,
+    "seam_logits_absolute_error_mean": 5.3734120522295274e-08,
+    "seam_logits_absolute_error_min": 0,
+    "seam_logits_absolute_error_stdDev": 4.3063518136914405e-08,
+    "seam_logits_squared_error_count": 496,
+    "seam_logits_squared_error_max": 4.8308579359002124e-14,
+    "seam_logits_squared_error_mean": 4.741822302632911e-15,
+    "seam_logits_squared_error_min": 0,
+    "seam_logits_squared_error_stdDev": 7.243913484400173e-15,
+    "seam_logits_value_count": 496,
+    "seam_logits_value_max": 0.1723771095275879,
+    "seam_logits_value_mean": 0.06423405318192606,
+    "seam_logits_value_min": -0.05680297687649727,
+    "seam_logits_value_stdDev": 0.039133708925121566,
+    "seam_probability_absolute_error_count": 496,
+    "seam_probability_absolute_error_max": 5.960464477539063e-08,
+    "seam_probability_absolute_error_mean": 1.5802441104765862e-08,
+    "seam_probability_absolute_error_min": 0,
+    "seam_probability_absolute_error_stdDev": 2.579382696106317e-08,
+    "seam_probability_squared_error_count": 496,
+    "seam_probability_squared_error_max": 3.552713678800501e-15,
+    "seam_probability_squared_error_mean": 9.15038654166863e-16,
+    "seam_probability_squared_error_min": 0,
+    "seam_probability_squared_error_stdDev": 1.5303609256858283e-15,
+    "seam_probability_value_count": 496,
+    "seam_probability_value_max": 0.5429878830909729,
+    "seam_probability_value_mean": 0.5160471570467756,
+    "seam_probability_value_min": 0.4858030676841736,
+    "seam_probability_value_stdDev": 0.009771212122255906,
+    "seam_tile_coverage_count": 496,
+    "seam_tile_coverage_max": 1,
+    "seam_tile_coverage_mean": 1,
+    "seam_tile_coverage_min": 1,
+    "seam_tile_coverage_stdDev": 0,
+    "tile_coverage_count": 4096,
+    "tile_coverage_max": 1,
+    "tile_coverage_mean": 1,
+    "tile_coverage_min": 1,
+    "tile_coverage_stdDev": 0
+  },
+  "coverage": {
+    "status": "pass",
+    "valid_pixel_count": 4096,
+    "expected_pixel_count": 4096,
+    "minimum_coverage": 1,
+    "maximum_coverage": 1,
+    "every_pixel_has_exactly_one_core": true
+  },
+  "seam_coverage": {
+    "status": "pass",
+    "valid_pixel_count": 496,
+    "expected_pixel_count": 496,
+    "minimum_coverage": 1,
+    "maximum_coverage": 1,
+    "every_pixel_has_exactly_one_core": true
+  },
+  "outputs": {
+    "logits": {
+      "valid_pixel_count": 4096,
+      "expected_pixel_count": 4096,
+      "minimum": -0.0760698989033699,
+      "maximum": 0.17847679555416107,
+      "mean": 0.06337372495948301,
+      "std": 0.03700043201585878,
+      "max_absolute_error": 3.0547380447387695e-07,
+      "rmse": 7.309904883371804e-08,
+      "absolute_error_pixel_count": 4096,
+      "squared_error_pixel_count": 4096,
+      "tolerance": 0.0001,
+      "status": "pass"
+    },
+    "seam_logits": {
+      "valid_pixel_count": 496,
+      "expected_pixel_count": 496,
+      "minimum": -0.05680297687649727,
+      "maximum": 0.1723771095275879,
+      "mean": 0.06423405318192606,
+      "std": 0.039133708925121566,
+      "max_absolute_error": 2.1979212760925293e-07,
+      "rmse": 6.886089095148938e-08,
+      "absolute_error_pixel_count": 496,
+      "squared_error_pixel_count": 496,
+      "tolerance": 0.0001,
+      "status": "pass"
+    },
+    "probability": {
+      "valid_pixel_count": 4096,
+      "expected_pixel_count": 4096,
+      "minimum": 0.4809916913509369,
+      "maximum": 0.5445011258125305,
+      "mean": 0.5158329703626805,
+      "std": 0.009238931744241837,
+      "max_absolute_error": 1.1920928955078125e-07,
+      "rmse": 3.274562487704524e-08,
+      "absolute_error_pixel_count": 4096,
+      "squared_error_pixel_count": 4096,
+      "tolerance": 0.0001,
+      "status": "pass"
+    },
+    "seam_probability": {
+      "valid_pixel_count": 496,
+      "expected_pixel_count": 496,
+      "minimum": 0.4858030676841736,
+      "maximum": 0.5429878830909729,
+      "mean": 0.5160471570467756,
+      "std": 0.009771212122255906,
+      "max_absolute_error": 5.960464477539063e-08,
+      "rmse": 3.0249605851429915e-08,
+      "absolute_error_pixel_count": 496,
+      "squared_error_pixel_count": 496,
+      "tolerance": 0.0001,
+      "status": "pass"
+    }
+  },
+  "finished_unix": 1790568970.1085608
+}

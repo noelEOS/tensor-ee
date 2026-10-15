@@ -1,0 +1,963 @@
+{
+  "schema_version": 1,
+  "task": "T02",
+  "date": "2026-10-10",
+  "base_revision": "c36784339700ccaf2347494c4a30abcab74d9695",
+  "implementation_revision": "802714983a920bf748b1bc61f955de9a6889b9fc",
+  "branch": "codex/t02-pointwise-operators",
+  "worktree": "<checkout>",
+  "environment": {
+    "python": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "interpreter": "<checkout>/.venv/bin/python",
+    "versions": {
+      "earthengine-api": "1.7.45",
+      "torch": "2.14.0",
+      "numpy": "2.5.3"
+    },
+    "shared_venv": "read-only; no dependency mutation"
+  },
+  "offline": {
+    "source_revision": "9d988cb98734b99947c6aabc8ed2fb926322d2d3",
+    "command": {
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "EE_LIVE": "0",
+        "EE_LIVE_BATCH": "0"
+      },
+      "argv": [
+        "<checkout>/.venv/bin/python",
+        "-c",
+        "import pathlib,sys,native_ee,pytest; root=pathlib.Path.cwd().resolve(); assert pathlib.Path(native_ee.__file__).resolve().is_relative_to(root), native_ee.__file__; print(\"SOURCE_IMPORT\",native_ee.__file__,flush=True); rc=pytest.main(['-q', '-rs', '-p', 'no:cacheprovider', 'tests/test_pointwise_operators.py', 'tests/test_compiler.py', 'tests/test_receptive_field.py', 'tests/test_weight_assets.py', 'tests/test_weight_mapping.py', 'tests/test_models.py', 'tests/test_resnet_models.py', 'tests/test_onnx_import.py', 'tests/test_tiling.py', 'tests/test_public_examples.py', 'tests/test_segwater_pytorch.py', 'tests/test_segwater_predict.py', 'tests/test_geospatial_alignment.py', '--junitxml=/tmp/t02-offline-final.xml']); bad=[(n,getattr(m,\"__file__\",None)) for n,m in tuple(sys.modules.items()) if getattr(m,\"__file__\",None) and str(pathlib.Path(m.__file__).resolve()).startswith(\"<checkout>/\") and \"/.venv/\" not in str(pathlib.Path(m.__file__).resolve())]; print(\"UNEXPECTED_MAIN_CHECKOUT_MODULES\",bad,flush=True); sys.exit(rc if not bad else 91)"
+      ],
+      "cwd": "<checkout>"
+    },
+    "exit_code": 0,
+    "passed": 173,
+    "skipped": 9,
+    "subtests_passed": 64,
+    "seconds": 4.54,
+    "skip_reason": "User-supplied trained ONNX checkpoint absent; no artifact download attempted",
+    "unexpected_main_checkout_modules": [],
+    "junit_local_path": "/tmp/t02-offline-final.xml",
+    "scope": "deferred EE structure, exact calling forms/rejections, local double-work formulas, affected CNN/model/importer/support/weight tests; no live claim from serialization"
+  },
+  "core_import": {
+    "status": "passed",
+    "source_revision": "9d988cb98734b99947c6aabc8ed2fb926322d2d3",
+    "forbidden_import_prefixes": [
+      "native_ee.swin",
+      "swin_",
+      "upernet",
+      "ee_attention",
+      "segmentation_models_pytorch",
+      "timm",
+      "torchvision"
+    ],
+    "method": "Fresh Python import under a builtins.__import__ guard; asserted worktree source and no forbidden sys.modules entries",
+    "command": {
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "argv": [
+        "<checkout>/.venv/bin/python",
+        "-c",
+        "import builtins,pathlib,sys\nroot=pathlib.Path.cwd().resolve()\noriginal=builtins.__import__\nforbidden=('native_ee.swin','swin_','upernet','ee_attention','segmentation_models_pytorch','timm','torchvision')\ndef guarded(name,*args,**kwargs):\n    if any(name.startswith(prefix) for prefix in forbidden):\n        raise AssertionError('CORE_IMPORT_DEPENDENCY: '+name)\n    return original(name,*args,**kwargs)\nbuiltins.__import__=guarded\nimport native_ee\nassert pathlib.Path(native_ee.__file__).resolve().is_relative_to(root),native_ee.__file__\nassert not [name for name in sys.modules if any(name.startswith(prefix) for prefix in forbidden)]\nprint('CORE_ONLY_IMPORT_PASS',native_ee.__file__)\n"
+      ],
+      "cwd": "<checkout>"
+    }
+  },
+  "live": {
+    "auth": "explicit caller ADC scopes earthengine and cloud-platform",
+    "project": "ORIGINAL_PROJECT",
+    "total_computation_queries": 12,
+    "compute_pixels_queries": 7,
+    "metadata_queries": 5,
+    "total_scalar_samples": 51936,
+    "ee_tasks": 0,
+    "ee_assets_created": 0,
+    "uploads_exports": 0,
+    "input_asset_reads": 0,
+    "responses": "bounded synchronous pixel/metadata responses, retained locally; no persistent EE resources",
+    "runs": [
+      {
+        "name": "initial",
+        "local_artifact": "/tmp/t02-pointwise-live.json",
+        "queries": 2,
+        "disposition": "failed: fractional center coordinates matched no integer remap entries; original source values/masks invalid",
+        "artifact_sha256": "c9ae0b18d274361c527395544244d453e6cf1b821ed5da0eccf8895796caa70b",
+        "revision": "eeb78943daa3f47675e7e6b5af4c89e3de63cd60",
+        "recorded_status": "failed"
+      },
+      {
+        "name": "coordinates",
+        "local_artifact": "/tmp/t02-pointwise-diagnostic.npy",
+        "queries": 1,
+        "disposition": "diagnostic: centers at half indices; Grid.mask finite rectangle correct",
+        "artifact_sha256": "eef0645d04ed690d82c7005239323fc4b0ccea500752cff88a8398821330faf1"
+      },
+      {
+        "name": "floored",
+        "local_artifact": "/tmp/t02-pointwise-live-corrected.json",
+        "queries": 2,
+        "disposition": "failed: masks now exact; \u00b11e30 literals clamp to int64 bounds and -0 literal loses sign",
+        "artifact_sha256": "e72a2004ac2b665ffc7dcd4fe7838eb17db9a0cc1884f8ffdfab63c806f95203",
+        "revision": "3ed483ec4e09353c3b8967891c8794b05e62b8c9",
+        "recorded_status": "failed"
+      },
+      {
+        "name": "literal_candidates",
+        "local_artifact": "/tmp/t02-literal-diagnostic.json",
+        "queries": 1,
+        "disposition": "diagnostic: parsed-number remap plus runtime negative zero matches every valid float32 bit; plain literal and explicit-double Array candidates still clamp extremes",
+        "artifact_sha256": "61c83809635c165d3042ea7dbe73eb23dd6d19da4777248a0fb2e493b2d892dd"
+      },
+      {
+        "name": "exact_input_first",
+        "local_artifact": "/tmp/t02-pointwise-live-exact.json",
+        "queries": 2,
+        "disposition": "passed on f7915e4; prior to large slope encoding correction",
+        "artifact_sha256": "5e640da3ffe83f7ad986474daadeeb0c75a0ac48f44859c41af58a896e8021f5",
+        "revision": "f7915e47b52a81558d86848a5b439c48a96e0146",
+        "recorded_status": "passed"
+      },
+      {
+        "name": "corrected_core_original",
+        "local_artifact": "/tmp/t02-pointwise-live-final.json",
+        "queries": 2,
+        "disposition": "passed on final numerical source",
+        "artifact_sha256": "0ee3f9b5bf6d668422d7f92679b161b24004c7667b818a400a4e5992e4d88a1f",
+        "revision": "9d988cb98734b99947c6aabc8ed2fb926322d2d3",
+        "recorded_status": "passed"
+      },
+      {
+        "name": "corrected_core_large_slopes",
+        "local_artifact": "/tmp/t02-large-slopes-live.json",
+        "queries": 2,
+        "disposition": "passed: signed huge slopes all zero error, exact bits/masks/grid/type",
+        "artifact_sha256": "5a982c6db2f7e5fc16363c10c24cc125beae0ff999948840634963525209ad2c",
+        "revision": "9d988cb98734b99947c6aabc8ed2fb926322d2d3",
+        "recorded_status": "passed"
+      }
+    ],
+    "passing_fixtures": {
+      "pointwise": {
+        "status": "passed",
+        "revision": "9d988cb98734b99947c6aabc8ed2fb926322d2d3",
+        "dirty": false,
+        "fixture": "pointwise",
+        "grid": {
+          "crs": "EPSG:3857",
+          "transform": [
+            20,
+            0,
+            1000,
+            0,
+            -20,
+            2000
+          ],
+          "width": 18,
+          "height": 2
+        },
+        "bands": [
+          "z",
+          "b",
+          "a"
+        ],
+        "input_sha256": "7dfbd1cb9dc00c904a6a8cc833c3648953d43d7dd09c09f573363a8b5865dfba",
+        "mask_sha256": "c3a76726ca8d68827771b6bb9bcc60a1573a79723e760ec0e3b69ad58a1e36bc",
+        "versions": {
+          "earthengine-api": "1.7.45",
+          "torch": "2.14.0",
+          "numpy": "2.5.3"
+        },
+        "reference_dtype": "float32",
+        "execution_dtype": "float32",
+        "tolerance": "abs(error)<=1e-6+1e-6*abs(reference); dropout bitwise identity",
+        "graph_bytes": 56305,
+        "compute_requests": 2,
+        "scalar_samples": 12000,
+        "queries": [
+          "computePixels NUMPY_NDARRAY 20x4x150",
+          "Dictionary.getInfo metadata"
+        ],
+        "raw_pixel_response": "/tmp/t02-pointwise-live-final.pixels.npy",
+        "raw_pixel_sha256": "70f2886ea5740c919d2b0c823773621c6069d4fae5bee80dd0dd73714aea4e59",
+        "results": {
+          "leaky_0": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_1": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_2": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_3": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_4": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_5": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "silu": {
+            "manual": {
+              "max_absolute_error": 2.384185791015625e-07,
+              "mae": 1.375659729719613e-08,
+              "rmse": 5.7266290783215114e-08,
+              "max_relative_error_floor_1e_3": 8.342957630206245e-08,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 2.384185791015625e-07,
+              "mae": 1.3247093693596273e-08,
+              "rmse": 5.61957984332167e-08,
+              "max_relative_error_floor_1e_3": 8.342957630206245e-08,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "gelu": {
+            "manual": {
+              "max_absolute_error": 1.73225998878479e-07,
+              "mae": 1.3432540413305105e-08,
+              "rmse": 4.400172223437825e-08,
+              "max_relative_error_floor_1e_3": 4.277325209175001e-05,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 1.73225998878479e-07,
+              "mae": 1.2935038916516028e-08,
+              "rmse": 4.317918760895664e-08,
+              "max_relative_error_floor_1e_3": 4.277325209175001e-05,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "tanh": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "dropout_0": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "bitwise_identity": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "bitwise_identity": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "dropout_1": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "bitwise_identity": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "bitwise_identity": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "dropout_2": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 104,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "bitwise_identity": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 108,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "bitwise_identity": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          }
+        },
+        "failures": [],
+        "source_input": {
+          "dtype": "float32",
+          "shape": [
+            3,
+            2,
+            18
+          ],
+          "valid_count": 104,
+          "mask_mismatch_locations_chw_with_border": [],
+          "bit_mismatch_locations_chw": []
+        },
+        "fixture_values": [
+          -1.0000000150474662e+30,
+          -1000.0,
+          -100.0,
+          -20.0,
+          -10.0,
+          -3.0,
+          -1.0,
+          -9.999999974752427e-07,
+          -0.0,
+          0.0,
+          9.999999974752427e-07,
+          1.0,
+          3.0,
+          10.0,
+          20.0,
+          100.0,
+          1000.0,
+          1.0000000150474662e+30
+        ],
+        "command": [
+          "<checkout>/.venv/bin/python",
+          "docs/evidence/t02-pointwise-live.py",
+          "--project",
+          "ORIGINAL_PROJECT",
+          "--output",
+          "/tmp/t02-pointwise-live-final.json"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1"
+        }
+      },
+      "large_slopes": {
+        "status": "passed",
+        "revision": "9d988cb98734b99947c6aabc8ed2fb926322d2d3",
+        "dirty": false,
+        "fixture": "large-slopes",
+        "grid": {
+          "crs": "EPSG:3857",
+          "transform": [
+            20,
+            0,
+            1000,
+            0,
+            -20,
+            2000
+          ],
+          "width": 6,
+          "height": 2
+        },
+        "bands": [
+          "z",
+          "b",
+          "a"
+        ],
+        "input_sha256": "0ecbe4826601d0b748ee3717b8b4705c438ca922519a06f1dd80b3a44ec8e783",
+        "mask_sha256": "4bfff5f7ce4668b58fc62f7e3b55a27d8d91f4a501dc5387349a2f78f56ee975",
+        "versions": {
+          "earthengine-api": "1.7.45",
+          "torch": "2.14.0",
+          "numpy": "2.5.3"
+        },
+        "reference_dtype": "float32",
+        "execution_dtype": "float32",
+        "tolerance": "abs(error)<=1e-6+1e-6*abs(reference); dropout bitwise identity",
+        "graph_bytes": 34415,
+        "compute_requests": 2,
+        "scalar_samples": 2496,
+        "queries": [
+          "computePixels NUMPY_NDARRAY 8x4x78",
+          "Dictionary.getInfo metadata"
+        ],
+        "raw_pixel_response": "/tmp/t02-large-slopes-live.pixels.npy",
+        "raw_pixel_sha256": "88190576a275521c91162e12c86b24fd34047a63d831322a5dc708025a0cd28f",
+        "results": {
+          "leaky_0": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 32,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 36,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_1": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 32,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 36,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_2": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 32,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 36,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_3": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 32,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 36,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_4": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 32,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 36,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          },
+          "leaky_5": {
+            "manual": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 32,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            },
+            "compiled": {
+              "max_absolute_error": 0.0,
+              "mae": 0.0,
+              "rmse": 0.0,
+              "max_relative_error_floor_1e_3": 0.0,
+              "valid_count": 36,
+              "tolerance_pass": true,
+              "finite": true,
+              "mask_match_including_border": true,
+              "dtype": "float32",
+              "dtype_match": true,
+              "bands_match": true,
+              "grid_match": true,
+              "band_types_float32": true,
+              "max_absolute_error_endpoints": 0.0
+            }
+          }
+        },
+        "failures": [],
+        "source_input": {
+          "dtype": "float32",
+          "shape": [
+            3,
+            2,
+            6
+          ],
+          "valid_count": 32,
+          "mask_mismatch_locations_chw_with_border": [],
+          "bit_mismatch_locations_chw": []
+        },
+        "fixture_values": [
+          -1.0000000031710769e-30,
+          -9.999999682655225e-21,
+          -1.000000013351432e-10,
+          -1.0,
+          -0.0,
+          1.0
+        ],
+        "command": [
+          "<checkout>/.venv/bin/python",
+          "docs/evidence/t02-pointwise-live.py",
+          "--project",
+          "ORIGINAL_PROJECT",
+          "--fixture",
+          "large-slopes",
+          "--output",
+          "/tmp/t02-large-slopes-live.json"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1"
+        }
+      }
+    }
+  },
+  "known_limits": [
+    "Prepared Raster inputs must already be finite float32 and keep operator outputs representable in float32. No eager remote scan is hidden in helpers.",
+    "Initial two failed runs were invalid fixture transports, not operator parity evidence; failures are retained separately.",
+    "Training/dropout functional defaults, dynamic options, in-place forms, approximate GELU and unsupported dropout families remain rejected.",
+    "Large integral-valued inline float literals also clipped in the diagnostic explicit-double ee.Array constructor. Existing inline convolution/array coefficient transport was not numerically audited or changed in T02; slope fix does not prove arbitrary float32 coefficient transport.",
+    "Checkpoint-dependent tests skipped honestly; full trained model live/wheel/release gates belong to later tasks."
+  ],
+  "final_review_fix": {
+    "source_revision": "802714983a920bf748b1bc61f955de9a6889b9fc",
+    "finding": "Fraction slightly above float32max rounds to max in float64 and evades a converted-number range check",
+    "change": "Compare original Real slope magnitude to float32max; focused regression covers both signs",
+    "numerical_expression_changed": false,
+    "accepted_fixture_graphs_changed": false,
+    "additional_live_queries": 0,
+    "offline": {
+      "passed": 72,
+      "subtests_passed": 64,
+      "seconds": 1.21,
+      "exit_code": 0,
+      "command": {
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "EE_LIVE": "0",
+          "EE_LIVE_BATCH": "0"
+        },
+        "argv": [
+          "<checkout>/.venv/bin/python",
+          "-c",
+          "import pathlib,sys,native_ee,pytest; root=pathlib.Path.cwd().resolve(); assert pathlib.Path(native_ee.__file__).resolve().is_relative_to(root); print(\"SOURCE_IMPORT\",native_ee.__file__,flush=True); sys.exit(pytest.main([\"-q\",\"-p\",\"no:cacheprovider\",\"tests/test_pointwise_operators.py\",\"tests/test_compiler.py\",\"tests/test_receptive_field.py\",\"tests/test_weight_assets.py\",\"tests/test_weight_mapping.py\"]))"
+        ],
+        "cwd": "<checkout>"
+      }
+    }
+  }
+}

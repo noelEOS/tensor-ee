@@ -1,0 +1,321 @@
+{
+  "status": "pass",
+  "inference_engine": "native_earth_engine",
+  "local_model_forward": false,
+  "jobs": [
+    {
+      "job_id": "55413ad3711c40fe9c599af470aa370c",
+      "status": "COMPLETED",
+      "entrypoint": "browser_draw_date_run",
+      "scene": {
+        "coverage_fraction": 1,
+        "id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+        "orbit": "ASCENDING",
+        "relative_orbit": 69,
+        "date": "2024-01-03T10:01:34Z"
+      },
+      "aoi": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              120.90668557448498,
+              23.85856570687715
+            ],
+            [
+              120.91303222932038,
+              23.85856570687715
+            ],
+            [
+              120.91303222932038,
+              23.86170454515052
+            ],
+            [
+              120.90668557448498,
+              23.86170454515052
+            ],
+            [
+              120.90668557448498,
+              23.85856570687715
+            ]
+          ]
+        ]
+      },
+      "grid": {
+        "crs": "EPSG:32651",
+        "transform": [
+          10,
+          0,
+          286720,
+          0,
+          -10,
+          2640960
+        ],
+        "width": 224,
+        "height": 224,
+        "tile_count": 1,
+        "area_km2": 5.0176
+      },
+      "asset_id": "projects/ORIGINAL_PROJECT/assets/segwater_demo_55413ad3711c40fe9c599af470aa370c",
+      "task_id": "WOMUTBPDHWTLZRR7OWACEZM6",
+      "checkpoint_sha256": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+      "manifest_sha256": "87c2f53f842f555fd58518924f2ab72bce3deceac0c62409a28297ef9af4b65a",
+      "request_bytes": 1083473,
+      "ee_runtime_seconds": 48.38,
+      "batch_eecu_seconds": 59.80316925048828,
+      "elapsed_seconds": 62.12678503990173,
+      "output_bands": [
+        "logit_0",
+        "logit_1",
+        "water_probability",
+        "water_mask",
+        "coverage"
+      ],
+      "output_dtype": "float32",
+      "native_operations": [
+        "AggregateFeatureCollection.array",
+        "Array",
+        "Array.float",
+        "Array.reshape",
+        "Collection.filter",
+        "Collection.limit",
+        "Collection.loadTable",
+        "Collection.merge",
+        "Element.set",
+        "Filter.equals",
+        "GeometryConstructors.Polygon",
+        "GeometryConstructors.Rectangle",
+        "Image.abs",
+        "Image.add",
+        "Image.addBands",
+        "Image.and",
+        "Image.arrayFlatten",
+        "Image.arrayProject",
+        "Image.changeProj",
+        "Image.clamp",
+        "Image.clip",
+        "Image.constant",
+        "Image.divide",
+        "Image.eq",
+        "Image.exp",
+        "Image.floor",
+        "Image.gt",
+        "Image.gte",
+        "Image.load",
+        "Image.lt",
+        "Image.lte",
+        "Image.mask",
+        "Image.matrixMultiply",
+        "Image.max",
+        "Image.mod",
+        "Image.multiply",
+        "Image.neighborhoodToBands",
+        "Image.neq",
+        "Image.or",
+        "Image.pixelCoordinates",
+        "Image.reduce",
+        "Image.reduceNeighborhood",
+        "Image.rename",
+        "Image.reproject",
+        "Image.select",
+        "Image.setDefaultProjection",
+        "Image.subtract",
+        "Image.toArray",
+        "Image.toFloat",
+        "Image.unmask",
+        "Image.updateMask",
+        "Image.where",
+        "ImageCollection.fromImages",
+        "ImageCollection.mosaic",
+        "Kernel.fixed",
+        "Kernel.square",
+        "List.flatten",
+        "List.map",
+        "Projection",
+        "Reducer.max",
+        "Reducer.min",
+        "String",
+        "String.decodeJSON"
+      ],
+      "output_stats": {
+        "coverage_count": 2346,
+        "coverage_max": 1,
+        "coverage_mean": 1,
+        "coverage_min": 1,
+        "water_mask_count": 2346,
+        "water_mask_max": 1,
+        "water_mask_mean": 0.9913634302061889,
+        "water_mask_min": 0,
+        "water_probability_count": 2346,
+        "water_probability_max": 0.9859293103218079,
+        "water_probability_mean": 0.974013802077758,
+        "water_probability_min": 0.021275613456964493
+      }
+    },
+    {
+      "job_id": "b4acb70cbbeb47eab5ae8ee3cbb387cc",
+      "status": "COMPLETED",
+      "entrypoint": "demo_api_preset_scene",
+      "scene": {
+        "coverage_fraction": 1,
+        "id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240105T215301_20240105T215326_051977_0647E8_D7EE",
+        "orbit": "DESCENDING",
+        "relative_orbit": 105,
+        "date": "2024-01-05T21:53:01Z"
+      },
+      "aoi": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              120.902,
+              23.849
+            ],
+            [
+              120.918,
+              23.849
+            ],
+            [
+              120.918,
+              23.863
+            ],
+            [
+              120.902,
+              23.863
+            ],
+            [
+              120.902,
+              23.849
+            ]
+          ]
+        ]
+      },
+      "grid": {
+        "crs": "EPSG:32651",
+        "transform": [
+          10,
+          0,
+          284480,
+          0,
+          -10,
+          2640960
+        ],
+        "width": 448,
+        "height": 224,
+        "tile_count": 2,
+        "area_km2": 10.0352
+      },
+      "asset_id": "projects/ORIGINAL_PROJECT/assets/segwater_demo_b4acb70cbbeb47eab5ae8ee3cbb387cc",
+      "task_id": "GEMOOIN3UFRZ2WIRJBCVLOZI",
+      "checkpoint_sha256": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+      "manifest_sha256": "87c2f53f842f555fd58518924f2ab72bce3deceac0c62409a28297ef9af4b65a",
+      "request_bytes": 1213421,
+      "ee_runtime_seconds": 57.984,
+      "batch_eecu_seconds": 91.20787048339844,
+      "elapsed_seconds": 75.47535800933838,
+      "output_bands": [
+        "logit_0",
+        "logit_1",
+        "water_probability",
+        "water_mask",
+        "coverage"
+      ],
+      "output_dtype": "float32",
+      "native_operations": [
+        "AggregateFeatureCollection.array",
+        "Array",
+        "Array.float",
+        "Array.reshape",
+        "Collection.filter",
+        "Collection.limit",
+        "Collection.loadTable",
+        "Collection.merge",
+        "Element.set",
+        "Filter.equals",
+        "GeometryConstructors.Polygon",
+        "GeometryConstructors.Rectangle",
+        "Image.abs",
+        "Image.add",
+        "Image.addBands",
+        "Image.and",
+        "Image.arrayFlatten",
+        "Image.arrayProject",
+        "Image.changeProj",
+        "Image.clamp",
+        "Image.clip",
+        "Image.constant",
+        "Image.divide",
+        "Image.eq",
+        "Image.exp",
+        "Image.floor",
+        "Image.gt",
+        "Image.gte",
+        "Image.load",
+        "Image.lt",
+        "Image.lte",
+        "Image.mask",
+        "Image.matrixMultiply",
+        "Image.max",
+        "Image.mod",
+        "Image.multiply",
+        "Image.neighborhoodToBands",
+        "Image.neq",
+        "Image.or",
+        "Image.pixelCoordinates",
+        "Image.reduce",
+        "Image.reduceNeighborhood",
+        "Image.rename",
+        "Image.reproject",
+        "Image.select",
+        "Image.setDefaultProjection",
+        "Image.subtract",
+        "Image.toArray",
+        "Image.toFloat",
+        "Image.unmask",
+        "Image.updateMask",
+        "Image.where",
+        "ImageCollection.fromImages",
+        "ImageCollection.mosaic",
+        "Kernel.fixed",
+        "Kernel.square",
+        "List.flatten",
+        "List.map",
+        "Projection",
+        "Reducer.max",
+        "Reducer.min",
+        "String",
+        "String.decodeJSON"
+      ],
+      "output_stats": {
+        "coverage_count": 25577,
+        "coverage_max": 1,
+        "coverage_mean": 1,
+        "coverage_min": 1,
+        "water_mask_count": 25577,
+        "water_mask_max": 1,
+        "water_mask_mean": 0.7888028250839129,
+        "water_mask_min": 0,
+        "water_probability_count": 25577,
+        "water_probability_max": 0.9883888959884644,
+        "water_probability_mean": 0.7793654600602183,
+        "water_probability_min": 0.011990036815404892
+      }
+    }
+  ],
+  "browser_checks": {
+    "draw_rectangle": true,
+    "single_day_search": true,
+    "select_scene_and_preview": true,
+    "run_button_submits_and_displays_completed_result": true,
+    "probability_water_radar_layers": true,
+    "opacity_control": true,
+    "no_scene_date_disables_inference": true,
+    "completed_example_display": true,
+    "saved_job_restored_after_reload": true
+  },
+  "tests": {
+    "python_tests_passed": 514,
+    "subtests_passed": 18,
+    "javascript_syntax": "pass"
+  }
+}

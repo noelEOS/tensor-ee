@@ -1,0 +1,6059 @@
+{
+  "schema_version": 1,
+  "kind": "live_fixture_run",
+  "status": "passed",
+  "command": "python tools/live_fixtures.py --run segformer_b0 --project YOUR_EE_PROJECT",
+  "selection": [
+    "window/depthwise_conv3x3_window/w7-d4-bias",
+    "window/depthwise_conv3x3_window/w7-d4-nobias",
+    "window/depthwise_conv3x3_window/w7-d4-bias-edge",
+    "window/depthwise_conv3x3_window/w7-d1024-bias",
+    "window/naive_attention/segformer-d32-score",
+    "window/naive_attention/segformer-d7-score",
+    "window/naive_attention/segformer-d32-default",
+    "window/linear/segformer-overlap-k7-s4",
+    "window/conv3x3_window/segformer-overlap-k3-s2",
+    "window/linear/segformer-sr-r8-c32-ids",
+    "window/linear/segformer-sr-r4-c64-ids",
+    "window/linear/segformer-sr-r2-c160-ids",
+    "window/naive_attention/segformer-global-kv-4-query-windows",
+    "window/layer_norm/segformer-two-norm-eps",
+    "window/linear/segformer-mix-ffn",
+    "window/concat/segformer-deepest-first",
+    "window/window_resize/segformer-head-56-to-224-corners"
+  ],
+  "project": "YOUR_EE_PROJECT",
+  "credentials": "adc",
+  "revision": "dfe2d5cfcfad9f5b54000fa10ca3f6a808751b9d",
+  "dirty": false,
+  "native_ee": "native_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "started_utc": "2026-10-14T00:44:41+00:00",
+  "budget": {
+    "requests": 40,
+    "raster_side": 64,
+    "window_side": 8,
+    "values": 1000000,
+    "request_bytes": 2000000,
+    "in_flight": 4,
+    "assets": 0,
+    "tasks": 0
+  },
+  "plan": {
+    "fixtures": 17,
+    "requests": 40,
+    "values": 522102,
+    "payload_bytes": 2088408,
+    "request_bytes": 20244422,
+    "max_values": 103488,
+    "max_request_bytes": 1930710,
+    "max_bands": 387,
+    "embedded_constants": 2318934,
+    "inline_values": 910672,
+    "assets": 0,
+    "tasks": 0,
+    "in_flight": 1
+  },
+  "max_in_flight": 1,
+  "errors": [],
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/depthwise_conv3x3_window/w7-d4-bias",
+        "lane": "window",
+        "block": "depthwise_conv3x3_window",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "k": 3,
+          "stride": 1,
+          "padding": 1,
+          "dilation": 1,
+          "multiplier": 1
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 4,
+          "input": [
+            14,
+            14,
+            4
+          ]
+        },
+        "seed": 20261014,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(groups=D,padding=1)",
+        "mirror": {
+          "source": "reference.segformer_b0.blocks.depthwise_conv3x3",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Double reduction order not certified; bounded mirror. Split128-channel readouts at D1024."
+      },
+      "inputs_sha256": "41638ea940a88762bd82ce075b40665daf23613af491093748c18a33d8cc679f",
+      "weights_sha256": "68cc0ab72627c5b4272dfca4cdb882f1e83409a68d23bb215988de34b38c9e43",
+      "status": "passed",
+      "wall_seconds": 1.412,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 2,
+              "channel": 0,
+              "actual": -0.7012488842010498,
+              "expected": -0.7012490034103394
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 1960,
+          "payload_bytes": 7840,
+          "request_bytes": 75046,
+          "graph_sha256": "d30b9803d56e643a74b698ca5ab1d99f2b7964e00ce99def031f23a096c82389",
+          "graph_bytes": 74818,
+          "embedded_constants": 1960,
+          "inline_values": 784,
+          "status": "ok",
+          "wall_seconds": 1.412
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 2,
+              "channel": 0,
+              "actual": -0.7012488842010498,
+              "expected": -0.7012490034103394
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/depthwise_conv3x3_window/w7-d4-nobias",
+        "lane": "window",
+        "block": "depthwise_conv3x3_window",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "k": 3,
+          "stride": 1,
+          "padding": 1,
+          "dilation": 1,
+          "multiplier": 1
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 4,
+          "input": [
+            14,
+            14,
+            4
+          ]
+        },
+        "seed": 20261014,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(groups=D,padding=1)",
+        "mirror": {
+          "source": "reference.segformer_b0.blocks.depthwise_conv3x3",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Double reduction order not certified; bounded mirror. Split128-channel readouts at D1024."
+      },
+      "inputs_sha256": "41638ea940a88762bd82ce075b40665daf23613af491093748c18a33d8cc679f",
+      "weights_sha256": "d2f0804820dda4a3c7b543c3d3b17700ecd6227abd81b3164678036f1f1186af",
+      "status": "passed",
+      "wall_seconds": 0.78,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 7.82310962677002e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 9,
+              "col": 1,
+              "channel": 0,
+              "actual": 0.034058649092912674,
+              "expected": 0.034058570861816406
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 1960,
+          "payload_bytes": 7840,
+          "request_bytes": 74337,
+          "graph_sha256": "6b1806be2fcfec3b9a64b11b0f3606e01420fd7027ed12bbf52c6872ea2cb2b4",
+          "graph_bytes": 74109,
+          "embedded_constants": 1764,
+          "inline_values": 784,
+          "status": "ok",
+          "wall_seconds": 0.78
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 7.82310962677002e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 9,
+              "col": 1,
+              "channel": 0,
+              "actual": 0.034058649092912674,
+              "expected": 0.034058570861816406
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/depthwise_conv3x3_window/w7-d4-bias-edge",
+        "lane": "window",
+        "block": "depthwise_conv3x3_window",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "k": 3,
+          "stride": 1,
+          "padding": 1,
+          "dilation": 1,
+          "multiplier": 1
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 4,
+          "input": [
+            14,
+            14,
+            4
+          ]
+        },
+        "seed": 20261014,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(groups=D,padding=1)",
+        "mirror": {
+          "source": "reference.segformer_b0.blocks.depthwise_conv3x3",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Double reduction order not certified; bounded mirror. Split128-channel readouts at D1024."
+      },
+      "inputs_sha256": "61f0f582ba1faaf114a643a3381fa14a20932a99d8922ae7c73ef5e8737ec02a",
+      "weights_sha256": "68cc0ab72627c5b4272dfca4cdb882f1e83409a68d23bb215988de34b38c9e43",
+      "status": "passed",
+      "wall_seconds": 1.513,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 2.384185791015625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 13,
+              "col": 12,
+              "channel": 3,
+              "actual": -1.3050612211227417,
+              "expected": -1.3050614595413208
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 1960,
+          "payload_bytes": 7840,
+          "request_bytes": 67830,
+          "graph_sha256": "7cbe6efe180d1239de70b27d57a9c14b058069e5e7fbbbb8feb0a8421c92d335",
+          "graph_bytes": 67602,
+          "embedded_constants": 1960,
+          "inline_values": 784,
+          "status": "ok",
+          "wall_seconds": 1.513
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 2.384185791015625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 13,
+              "col": 12,
+              "channel": 3,
+              "actual": -1.3050612211227417,
+              "expected": -1.3050614595413208
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/depthwise_conv3x3_window/w7-d1024-bias",
+        "lane": "window",
+        "block": "depthwise_conv3x3_window",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "k": 3,
+          "stride": 1,
+          "padding": 1,
+          "dilation": 1,
+          "multiplier": 1
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 1024,
+          "input": [
+            7,
+            7,
+            1024
+          ]
+        },
+        "seed": 20261014,
+        "tolerance": 0.0001,
+        "requests": 8,
+        "reference": "torch.nn.functional.conv2d(groups=D,padding=1)",
+        "mirror": {
+          "source": "reference.segformer_b0.blocks.depthwise_conv3x3",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Double reduction order not certified; bounded mirror. Split128-channel readouts at D1024."
+      },
+      "inputs_sha256": "c8824f1081ecf999afbc1400c64be33f146c11da242e435eb8bfad4bd48ae420",
+      "weights_sha256": "98a68872429c2d6cbee8740252b3af7530503a757017402442a559583271789f",
+      "status": "passed",
+      "wall_seconds": 196.676,
+      "failures": [],
+      "offline": {
+        "out_0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.2665987014770508e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 4,
+              "channel": 63,
+              "actual": 0.09362374991178513,
+              "expected": 0.09362387657165527
+            }
+          }
+        },
+        "out_128": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 5,
+              "channel": 14,
+              "actual": -0.7518617510795593,
+              "expected": -0.7518616318702698
+            }
+          }
+        },
+        "out_256": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.2293457984924316e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 3,
+              "channel": 23,
+              "actual": 0.01650572195649147,
+              "expected": 0.01650559902191162
+            }
+          }
+        },
+        "out_384": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 2,
+              "channel": 86,
+              "actual": -0.39980819821357727,
+              "expected": -0.3998080790042877
+            }
+          }
+        },
+        "out_512": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 34,
+              "actual": -0.543333888053894,
+              "expected": -0.5433340072631836
+            }
+          }
+        },
+        "out_640": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 65,
+              "actual": -0.5205113887786865,
+              "expected": -0.5205115079879761
+            }
+          }
+        },
+        "out_768": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 2,
+              "channel": 34,
+              "actual": -0.515395998954773,
+              "expected": -0.5153958797454834
+            }
+          }
+        },
+        "out_896": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.341104507446289e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 4,
+              "channel": 47,
+              "actual": -0.2317107915878296,
+              "expected": -0.23171065747737885
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "out_0",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "out_128",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "out_256",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 387,
+          "values": 18963,
+          "payload_bytes": 75852,
+          "request_bytes": 1659834,
+          "graph_sha256": "f3ea777373f940e99e1c27015e4d3ca396705748d195efc0486486a5f97c26f6",
+          "graph_bytes": 1659608,
+          "embedded_constants": 501760,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 30.063
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "out_384",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "out_512",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 12642,
+          "payload_bytes": 50568,
+          "request_bytes": 1656085,
+          "graph_sha256": "af06a0c0fb073ec2aaa3556da1a62069b0bbe11cda61c7d1b0945cdd52c495e7",
+          "graph_bytes": 1655859,
+          "embedded_constants": 501760,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 42.363
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "out_640",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "out_768",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 12642,
+          "payload_bytes": 50568,
+          "request_bytes": 1656085,
+          "graph_sha256": "cfbb441d198ee634f579d31aa9713e6f4e6b85a855a9289f9cc2ea3471287046",
+          "graph_bytes": 1655859,
+          "embedded_constants": 501760,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 25.826
+        },
+        {
+          "index": 3,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "out_896",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "input_0",
+              "kind": "input",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 12642,
+          "payload_bytes": 50568,
+          "request_bytes": 1571536,
+          "graph_sha256": "e2f9e11c9cf3b08e957d1a969b55a77444a18857733cfdea2347211677ce8b36",
+          "graph_bytes": 1571310,
+          "embedded_constants": 501760,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 35.088
+        },
+        {
+          "index": 4,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_128",
+              "kind": "input",
+              "channels": 128
+            },
+            {
+              "name": "input_256",
+              "kind": "input",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 12642,
+          "payload_bytes": 50568,
+          "request_bytes": 1286737,
+          "graph_sha256": "0b0994822310726d3d4c7d9849d341aabd28064968cf981fd5d5209b1d1f8961",
+          "graph_bytes": 1286511,
+          "embedded_constants": 0,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 15.662
+        },
+        {
+          "index": 5,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_384",
+              "kind": "input",
+              "channels": 128
+            },
+            {
+              "name": "input_512",
+              "kind": "input",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 12642,
+          "payload_bytes": 50568,
+          "request_bytes": 1286737,
+          "graph_sha256": "0a840284e2a6fe2c30275ddfc5e65769a313bcca596ec44c003204d2249794d1",
+          "graph_bytes": 1286511,
+          "embedded_constants": 0,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 17.61
+        },
+        {
+          "index": 6,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_640",
+              "kind": "input",
+              "channels": 128
+            },
+            {
+              "name": "input_768",
+              "kind": "input",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 12642,
+          "payload_bytes": 50568,
+          "request_bytes": 1286737,
+          "graph_sha256": "ed94e3f38c41b9af29fe121cc8f82e6a9bd78d3e00cc076e08574ec85c4658f0",
+          "graph_bytes": 1286511,
+          "embedded_constants": 0,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 18.519
+        },
+        {
+          "index": 7,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_896",
+              "kind": "input",
+              "channels": 128
+            }
+          ],
+          "bands": 129,
+          "values": 6321,
+          "payload_bytes": 25284,
+          "request_bytes": 1283127,
+          "graph_sha256": "1c4349983dd57f099c9fee3fb480dcabbf669d13bbf1941f7fcf48ae0be32609",
+          "graph_bytes": 1282901,
+          "embedded_constants": 0,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 11.527
+        }
+      ],
+      "outputs": {
+        "out_0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.2665987014770508e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 4,
+              "channel": 63,
+              "actual": 0.09362374991178513,
+              "expected": 0.09362387657165527
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_128": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 5,
+              "channel": 14,
+              "actual": -0.7518617510795593,
+              "expected": -0.7518616318702698
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_256": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.2293457984924316e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 3,
+              "channel": 23,
+              "actual": 0.01650572195649147,
+              "expected": 0.01650559902191162
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_384": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 2,
+              "channel": 86,
+              "actual": -0.39980819821357727,
+              "expected": -0.3998080790042877
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_512": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 34,
+              "actual": -0.543333888053894,
+              "expected": -0.5433340072631836
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_640": {
+          "kind": "output",
+          "request": 2,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 65,
+              "actual": -0.5205113887786865,
+              "expected": -0.5205115079879761
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_768": {
+          "kind": "output",
+          "request": 2,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 2,
+              "channel": 34,
+              "actual": -0.515395998954773,
+              "expected": -0.5153958797454834
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_896": {
+          "kind": "output",
+          "request": 3,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.341104507446289e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 4,
+              "channel": 47,
+              "actual": -0.2317107915878296,
+              "expected": -0.23171065747737885
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0": {
+          "kind": "input",
+          "request": 3,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_128": {
+          "kind": "input",
+          "request": 4,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_256": {
+          "kind": "input",
+          "request": 4,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_384": {
+          "kind": "input",
+          "request": 5,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_512": {
+          "kind": "input",
+          "request": 5,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_640": {
+          "kind": "input",
+          "request": 6,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_768": {
+          "kind": "input",
+          "request": 6,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_896": {
+          "kind": "input",
+          "request": 7,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/naive_attention/segformer-d32-score",
+        "lane": "window",
+        "block": "naive_attention",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "tokens": 7,
+          "dim": 32,
+          "score_scale": 0.1767766952966369
+        },
+        "policy": "round_each_op",
+        "shapes": {
+          "query": [
+            14,
+            32
+          ],
+          "key": [
+            7,
+            32
+          ]
+        },
+        "seed": 20261014,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch matmul, post-product scalar multiply, softmax, matmul",
+        "mirror": {
+          "source": "reference.segformer_b0.blocks.attention",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Rectangular Q14/K7; dim7 distinguishes multiply by reciprocal from divide by root."
+      },
+      "inputs_sha256": "1d46086c1fe31801279fb9c454b6247b49000f44fd562057e2ef0dc6abdec3d7",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 0.708,
+      "failures": [],
+      "offline": {
+        "scaled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 1.7881393432617188e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 0,
+              "channel": 5,
+              "actual": 0.7496426105499268,
+              "expected": 0.7496427893638611
+            }
+          }
+        },
+        "attention": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 8.940696716308594e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 0,
+              "channel": 5,
+              "actual": 0.3310481011867523,
+              "expected": 0.3310481905937195
+            }
+          }
+        },
+        "output": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 448,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 0,
+              "channel": 9,
+              "actual": -0.6069133281707764,
+              "expected": -0.6069132089614868
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "scaled",
+              "kind": "output",
+              "channels": 7
+            },
+            {
+              "name": "attention",
+              "kind": "output",
+              "channels": 7
+            },
+            {
+              "name": "output",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "input_q",
+              "kind": "input",
+              "channels": 32
+            }
+          ],
+          "bands": 82,
+          "values": 1148,
+          "payload_bytes": 4592,
+          "request_bytes": 24086,
+          "graph_sha256": "a21ee29146567627fab7e659d491e6fc55a0df397f26302633fc73f0cf57f00f",
+          "graph_bytes": 23859,
+          "embedded_constants": 0,
+          "inline_values": 896,
+          "status": "ok",
+          "wall_seconds": 0.396
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_k",
+              "kind": "input",
+              "channels": 32
+            },
+            {
+              "name": "input_v",
+              "kind": "input",
+              "channels": 32
+            }
+          ],
+          "bands": 66,
+          "values": 462,
+          "payload_bytes": 1848,
+          "request_bytes": 11641,
+          "graph_sha256": "075f438db83b0fc0a626058623c871906aea560efa61baccf47ceb2db9fe62f6",
+          "graph_bytes": 11415,
+          "embedded_constants": 0,
+          "inline_values": 896,
+          "status": "ok",
+          "wall_seconds": 0.31
+        }
+      ],
+      "outputs": {
+        "scaled": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 1.7881393432617188e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 0,
+              "channel": 5,
+              "actual": 0.7496426105499268,
+              "expected": 0.7496427893638611
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "attention": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 8.940696716308594e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 0,
+              "channel": 5,
+              "actual": 0.3310481011867523,
+              "expected": 0.3310481905937195
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "output": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 448,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 0,
+              "channel": 9,
+              "actual": -0.6069133281707764,
+              "expected": -0.6069132089614868
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 448,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_q": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 448,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_k": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            1,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 224,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_v": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            1,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 224,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/naive_attention/segformer-d7-score",
+        "lane": "window",
+        "block": "naive_attention",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "tokens": 7,
+          "dim": 7,
+          "score_scale": 0.37796447300922725
+        },
+        "policy": "round_each_op",
+        "shapes": {
+          "query": [
+            14,
+            7
+          ],
+          "key": [
+            7,
+            7
+          ]
+        },
+        "seed": 20261014,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch matmul, post-product scalar multiply, softmax, matmul",
+        "mirror": {
+          "source": "reference.segformer_b0.blocks.attention",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Rectangular Q14/K7; dim7 distinguishes multiply by reciprocal from divide by root."
+      },
+      "inputs_sha256": "df4a7b243f79248473ee7c7a4be51ac60aebfd81695e9a50f85644d28f9cfcda",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 0.707,
+      "failures": [],
+      "offline": {
+        "scaled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.7571394443511963,
+              "expected": 0.7571395039558411
+            }
+          }
+        },
+        "attention": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 7,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.19471442699432373,
+              "expected": 0.19471445679664612
+            }
+          }
+        },
+        "output": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 6,
+              "actual": 0.3125896155834198,
+              "expected": 0.3125896751880646
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "scaled",
+              "kind": "output",
+              "channels": 7
+            },
+            {
+              "name": "attention",
+              "kind": "output",
+              "channels": 7
+            },
+            {
+              "name": "output",
+              "kind": "output",
+              "channels": 7
+            },
+            {
+              "name": "input_q",
+              "kind": "input",
+              "channels": 7
+            }
+          ],
+          "bands": 32,
+          "values": 448,
+          "payload_bytes": 1792,
+          "request_bytes": 13665,
+          "graph_sha256": "5da219c43ae078883aa5c2eef64990481c13a7468e4d36f3d8093562e9874d53",
+          "graph_bytes": 13438,
+          "embedded_constants": 0,
+          "inline_values": 196,
+          "status": "ok",
+          "wall_seconds": 0.33
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_k",
+              "kind": "input",
+              "channels": 7
+            },
+            {
+              "name": "input_v",
+              "kind": "input",
+              "channels": 7
+            }
+          ],
+          "bands": 16,
+          "values": 112,
+          "payload_bytes": 448,
+          "request_bytes": 6540,
+          "graph_sha256": "5f0c61bbe8668fa3ff2080d4a65dd4b23becf105c2636b7bc65658b6637a5ae3",
+          "graph_bytes": 6314,
+          "embedded_constants": 0,
+          "inline_values": 196,
+          "status": "ok",
+          "wall_seconds": 0.375
+        }
+      ],
+      "outputs": {
+        "scaled": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.7571394443511963,
+              "expected": 0.7571395039558411
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "attention": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 7,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.19471442699432373,
+              "expected": 0.19471445679664612
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "output": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 6,
+              "actual": 0.3125896155834198,
+              "expected": 0.3125896751880646
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_q": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_k": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 49,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_v": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 49,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/naive_attention/segformer-d32-default",
+        "lane": "window",
+        "block": "naive_attention",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "tokens": 7,
+          "dim": 32,
+          "score_scale": null
+        },
+        "policy": "round_each_op",
+        "shapes": {
+          "query": [
+            14,
+            32
+          ],
+          "key": [
+            7,
+            32
+          ]
+        },
+        "seed": 20261014,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch matmul, post-product scalar multiply, softmax, matmul",
+        "mirror": {
+          "source": "reference.segformer_b0.blocks.attention",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Rectangular Q14/K7; dim7 distinguishes multiply by reciprocal from divide by root."
+      },
+      "inputs_sha256": "1d46086c1fe31801279fb9c454b6247b49000f44fd562057e2ef0dc6abdec3d7",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 1.537,
+      "failures": [],
+      "offline": {
+        "scaled": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 1.7881393432617188e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 0,
+              "channel": 5,
+              "actual": 0.7496426701545715,
+              "expected": 0.7496428489685059
+            }
+          }
+        },
+        "attention": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 0,
+              "channel": 5,
+              "actual": 0.3310481309890747,
+              "expected": 0.3310481905937195
+            }
+          }
+        },
+        "output": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 448,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 0,
+              "channel": 9,
+              "actual": -0.6069133281707764,
+              "expected": -0.6069132089614868
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "scaled",
+              "kind": "output",
+              "channels": 7
+            },
+            {
+              "name": "attention",
+              "kind": "output",
+              "channels": 7
+            },
+            {
+              "name": "output",
+              "kind": "output",
+              "channels": 32
+            },
+            {
+              "name": "input_q",
+              "kind": "input",
+              "channels": 32
+            }
+          ],
+          "bands": 82,
+          "values": 1148,
+          "payload_bytes": 4592,
+          "request_bytes": 24083,
+          "graph_sha256": "c87ffc02e7342b6da1225b27cdd2abb678d32af2990e572f23bfdd01d047e05b",
+          "graph_bytes": 23856,
+          "embedded_constants": 0,
+          "inline_values": 896,
+          "status": "ok",
+          "wall_seconds": 0.376
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_k",
+              "kind": "input",
+              "channels": 32
+            },
+            {
+              "name": "input_v",
+              "kind": "input",
+              "channels": 32
+            }
+          ],
+          "bands": 66,
+          "values": 462,
+          "payload_bytes": 1848,
+          "request_bytes": 11641,
+          "graph_sha256": "075f438db83b0fc0a626058623c871906aea560efa61baccf47ceb2db9fe62f6",
+          "graph_bytes": 11415,
+          "embedded_constants": 0,
+          "inline_values": 896,
+          "status": "ok",
+          "wall_seconds": 1.159
+        }
+      ],
+      "outputs": {
+        "scaled": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 1.7881393432617188e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 0,
+              "channel": 5,
+              "actual": 0.7496426701545715,
+              "expected": 0.7496428489685059
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "attention": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            7
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 98,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 0,
+              "channel": 5,
+              "actual": 0.3310481309890747,
+              "expected": 0.3310481905937195
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "output": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 448,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 0,
+              "channel": 9,
+              "actual": -0.6069133281707764,
+              "expected": -0.6069132089614868
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 448,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_q": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            1,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 448,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_k": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            1,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 224,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_v": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            1,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 224,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/linear/segformer-overlap-k7-s4",
+        "lane": "window",
+        "block": "linear",
+        "parts": [
+          "layer_norm"
+        ],
+        "settings": {
+          "window": 7,
+          "kernel": 7,
+          "stride": 4
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 2,
+          "output": 4
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "F.conv2d(k,stride,padding=k//2), F.layer_norm(eps=1e-5)",
+        "mirror": {
+          "source": "reference.segformer_b0.model.overlap",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "a36db7d1f7401399a2bcef8e2badc0ea9e89c1ac87e1d34f64b794aee5d3d1bc",
+      "weights_sha256": "98455d2cf1b49dd35e70fb4f2877d2a2a314f7ced6dae2f6f211f0f38f96fd11",
+      "status": "passed",
+      "wall_seconds": 1.438,
+      "failures": [],
+      "offline": {
+        "projection": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 7.450580596923828e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 5,
+              "channel": 0,
+              "actual": 0.07600343227386475,
+              "expected": 0.07600350677967072
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 7.450580596923828e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 5,
+              "channel": 0,
+              "actual": 0.40992841124534607,
+              "expected": 0.4099276661872864
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "projection",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 490,
+          "payload_bytes": 1960,
+          "request_bytes": 156178,
+          "graph_sha256": "3cd8d02648e106aabf43b0cc1df97fc7447193159a434cdd82f907bde17f2c8d",
+          "graph_bytes": 155952,
+          "embedded_constants": 980,
+          "inline_values": 1568,
+          "status": "ok",
+          "wall_seconds": 1.08
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "input_x",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 2352,
+          "payload_bytes": 9408,
+          "request_bytes": 23086,
+          "graph_sha256": "f60d189e8f69343dfc2390c1e6bd515676433036d091c5e7a5a04522b540e881",
+          "graph_bytes": 22860,
+          "embedded_constants": 0,
+          "inline_values": 1568,
+          "status": "ok",
+          "wall_seconds": 0.357
+        }
+      ],
+      "outputs": {
+        "projection": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 7.450580596923828e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 5,
+              "channel": 0,
+              "actual": 0.07600343227386475,
+              "expected": 0.07600350677967072
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 196,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 7.450580596923828e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 5,
+              "channel": 0,
+              "actual": 0.40992841124534607,
+              "expected": 0.4099276661872864
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 196,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_x": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            28,
+            28,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 1568,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/conv3x3_window/segformer-overlap-k3-s2",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [
+          "layer_norm"
+        ],
+        "settings": {
+          "window": 7,
+          "kernel": 3,
+          "stride": 2
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 2,
+          "output": 4
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "F.conv2d(k,stride,padding=k//2), F.layer_norm(eps=1e-5)",
+        "mirror": {
+          "source": "reference.segformer_b0.model.overlap",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "59140c48f6bd3b01bd403da2b1d725e96aa9448ebbe1181dad14eb6e508dc133",
+      "weights_sha256": "9b8b35b256102566e0be860ae80bce4ae68fb4c95bb4c212a7e33c2f8365d593",
+      "status": "passed",
+      "wall_seconds": 1.971,
+      "failures": [],
+      "offline": {
+        "projection": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 0,
+              "actual": -0.1410345882177353,
+              "expected": -0.14103460311889648
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 0,
+              "channel": 0,
+              "actual": -1.731863021850586,
+              "expected": -1.7318633794784546
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "projection",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 490,
+          "payload_bytes": 1960,
+          "request_bytes": 114916,
+          "graph_sha256": "851f6d1c9a975702db60e744b1126b0c07de0266cf1547a999b2c2c9cea35d42",
+          "graph_bytes": 114692,
+          "embedded_constants": 660,
+          "inline_values": 392,
+          "status": "ok",
+          "wall_seconds": 1.662
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input_x",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 588,
+          "payload_bytes": 2352,
+          "request_bytes": 8777,
+          "graph_sha256": "9202a3b53fb73d284b3133cb2720453efaac513676e4aa216942c324ce1a27c2",
+          "graph_bytes": 8551,
+          "embedded_constants": 0,
+          "inline_values": 392,
+          "status": "ok",
+          "wall_seconds": 0.308
+        }
+      ],
+      "outputs": {
+        "projection": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 0,
+              "actual": -0.1410345882177353,
+              "expected": -0.14103460311889648
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 196,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 0,
+              "channel": 0,
+              "actual": -1.731863021850586,
+              "expected": -1.7318633794784546
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 196,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_x": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/linear/segformer-sr-r8-c32-ids",
+        "lane": "window",
+        "block": "linear",
+        "parts": [
+          "stride_columns",
+          "layer_norm"
+        ],
+        "settings": {
+          "window": 7,
+          "dim": 32,
+          "ratio": 8
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 32,
+          "source": 56
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "F.conv2d(unpadded,stride=r), F.layer_norm(eps=1e-5); unique channel/tap IDs",
+        "mirror": {
+          "source": "reference.segformer_b0.model.reduction",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "d85a9277073c6e1f6e772d24a66a216503bcc5fd59fe0e399a8b69106eccdf28",
+      "weights_sha256": "ef48fcd7bb8b05a937b7204ced96456f0d5c14112370c27eeacc0190fea6fa5c",
+      "status": "passed",
+      "wall_seconds": 19.846,
+      "failures": [],
+      "offline": {
+        "projection": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 1.0,
+              "expected": 1.0
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 4,
+              "channel": 0,
+              "actual": -1.5432729721069336,
+              "expected": -1.5432723760604858
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 80.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -80.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "projection",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 32
+            }
+          ],
+          "bands": 42,
+          "values": 2058,
+          "payload_bytes": 8232,
+          "request_bytes": 1930710,
+          "graph_sha256": "f311446937bab7b075d006a549f0602122126b0b00bc5f0cad4bdea05792e3e6",
+          "graph_bytes": 1930484,
+          "embedded_constants": 70240,
+          "inline_values": 100352,
+          "status": "ok",
+          "wall_seconds": 13.156
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input_x",
+              "kind": "input",
+              "channels": 32
+            }
+          ],
+          "bands": 33,
+          "values": 103488,
+          "payload_bytes": 413952,
+          "request_bytes": 924555,
+          "graph_sha256": "b501b138c06c089de0fbfa9758af2225b67b451cd632e53ca5efef44ae6669db",
+          "graph_bytes": 924327,
+          "embedded_constants": 0,
+          "inline_values": 100352,
+          "status": "ok",
+          "wall_seconds": 6.687
+        }
+      ],
+      "outputs": {
+        "projection": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            8
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 1.0,
+              "expected": 1.0
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 4,
+              "channel": 0,
+              "actual": -1.5432729721069336,
+              "expected": -1.5432723760604858
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 1568,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_x": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            56,
+            56,
+            32
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 100352,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/linear/segformer-sr-r4-c64-ids",
+        "lane": "window",
+        "block": "linear",
+        "parts": [
+          "stride_columns",
+          "layer_norm"
+        ],
+        "settings": {
+          "window": 7,
+          "dim": 64,
+          "ratio": 4
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 64,
+          "source": 28
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "F.conv2d(unpadded,stride=r), F.layer_norm(eps=1e-5); unique channel/tap IDs",
+        "mirror": {
+          "source": "reference.segformer_b0.model.reduction",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "9c1b60cc748ad10f3a0b27027375829cce0b8609e28cc54d542659f3c8523acf",
+      "weights_sha256": "bee05a2e7f03dd803573bcff17289e0b61ccae1af88d3f6de9e8ea178f45de22",
+      "status": "passed",
+      "wall_seconds": 16.228,
+      "failures": [],
+      "offline": {
+        "projection": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 1.0,
+              "expected": 1.0
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 1,
+              "channel": 23,
+              "actual": 1.3102874755859375,
+              "expected": 1.3102878332138062
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 40.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -40.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "projection",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 64
+            }
+          ],
+          "bands": 74,
+          "values": 3626,
+          "payload_bytes": 14504,
+          "request_bytes": 1057799,
+          "graph_sha256": "15c25a5b8d839c9eeef44d1cea34819449c875210e9cdb0ff0b423739ff71300",
+          "graph_bytes": 1057573,
+          "embedded_constants": 74944,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 10.509
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "input_x",
+              "kind": "input",
+              "channels": 64
+            }
+          ],
+          "bands": 65,
+          "values": 50960,
+          "payload_bytes": 203840,
+          "request_bytes": 492969,
+          "graph_sha256": "a38071a141984392c26dd6913c8b0d9c377d779601e1b05a225a4acb81c45db1",
+          "graph_bytes": 492741,
+          "embedded_constants": 0,
+          "inline_values": 50176,
+          "status": "ok",
+          "wall_seconds": 5.717
+        }
+      ],
+      "outputs": {
+        "projection": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            8
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 1.0,
+              "expected": 1.0
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            64
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 1,
+              "channel": 23,
+              "actual": 1.3102874755859375,
+              "expected": 1.3102878332138062
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 3136,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_x": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            28,
+            28,
+            64
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 50176,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/linear/segformer-sr-r2-c160-ids",
+        "lane": "window",
+        "block": "linear",
+        "parts": [
+          "stride_columns",
+          "layer_norm"
+        ],
+        "settings": {
+          "window": 7,
+          "dim": 160,
+          "ratio": 2
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "channels": 160,
+          "source": 14
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "F.conv2d(unpadded,stride=r), F.layer_norm(eps=1e-5); unique channel/tap IDs",
+        "mirror": {
+          "source": "reference.segformer_b0.model.reduction",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "793cec37f5951cf80c8b380ce627d41ad48d2871e82a4f85b8e9f098eaf42726",
+      "weights_sha256": "b6f35810faf025af81d96aed7984010b53d40c7b9ca7a2ace9c455f179ca882a",
+      "status": "passed",
+      "wall_seconds": 17.853,
+      "failures": [],
+      "offline": {
+        "projection": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 1.0,
+              "expected": 1.0
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 7840,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 2,
+              "channel": 4,
+              "actual": -1.1438369750976562,
+              "expected": -1.1438363790512085
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "projection",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 160
+            }
+          ],
+          "bands": 170,
+          "values": 8330,
+          "payload_bytes": 33320,
+          "request_bytes": 904402,
+          "graph_sha256": "dc66fe2b2c812ce1db241bea2364650723267f50d3dc7718d0466d90c8050392",
+          "graph_bytes": 904176,
+          "embedded_constants": 125920,
+          "inline_values": 31360,
+          "status": "ok",
+          "wall_seconds": 10.233
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input_x",
+              "kind": "input",
+              "channels": 160
+            }
+          ],
+          "bands": 161,
+          "values": 31556,
+          "payload_bytes": 126224,
+          "request_bytes": 387076,
+          "graph_sha256": "8f616d46cea9d674931f1060b9c2504cd07823a9bf5324082142ed122ec25db4",
+          "graph_bytes": 386848,
+          "embedded_constants": 0,
+          "inline_values": 31360,
+          "status": "ok",
+          "wall_seconds": 7.616
+        }
+      ],
+      "outputs": {
+        "projection": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            8
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 1.0,
+              "expected": 1.0
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            7,
+            7,
+            160
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 7840,
+            "max_abs": 5.960464477539062e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 2,
+              "channel": 4,
+              "actual": -1.1438369750976562,
+              "expected": -1.1438363790512085
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 7840,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_x": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            160
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 31360,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/naive_attention/segformer-global-kv-4-query-windows",
+        "lane": "window",
+        "block": "naive_attention",
+        "parts": [
+          "gather"
+        ],
+        "settings": {
+          "window": 7,
+          "heads": 2
+        },
+        "policy": "round_each_op",
+        "shapes": {
+          "query": [
+            14,
+            14,
+            64
+          ],
+          "kv": [
+            7,
+            7,
+            128
+          ]
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch Q196 @ global K49, scale32**-0.5, softmax, V49",
+        "mirror": {
+          "source": "reference.segformer_b0.model.shared_keys",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "fddaa7e00d96b1af524977aae1e723602f802ca9a92472b6f303356b054a6b47",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 7.672,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 1.862645149230957e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 8,
+              "channel": 42,
+              "actual": 0.05394257232546806,
+              "expected": 0.053942590951919556
+            }
+          }
+        },
+        "scaled_h0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 9604,
+            "max_abs": 2.2351741790771484e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 13,
+              "channel": 21,
+              "actual": 0.04800059646368027,
+              "expected": 0.04800061881542206
+            }
+          }
+        },
+        "attention_h0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 9604,
+            "max_abs": 3.725290298461914e-09,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 3,
+              "channel": 18,
+              "actual": 0.020388755947351456,
+              "expected": 0.020388752222061157
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 64
+            },
+            {
+              "name": "scaled_h0",
+              "kind": "output",
+              "channels": 49
+            },
+            {
+              "name": "attention_h0",
+              "kind": "output",
+              "channels": 49
+            },
+            {
+              "name": "input_q",
+              "kind": "input",
+              "channels": 64
+            }
+          ],
+          "bands": 230,
+          "values": 45080,
+          "payload_bytes": 180320,
+          "request_bytes": 470650,
+          "graph_sha256": "689a530494bb99a8cc7e10ac3ccbc5f7a163decfa57e9d936feda495f37a3575",
+          "graph_bytes": 470422,
+          "embedded_constants": 0,
+          "inline_values": 18816,
+          "status": "ok",
+          "wall_seconds": 6.084
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_kv",
+              "kind": "input",
+              "channels": 128
+            }
+          ],
+          "bands": 129,
+          "values": 6321,
+          "payload_bytes": 25284,
+          "request_bytes": 168040,
+          "graph_sha256": "167b9c1be1102ff3208bf67e6ebdf1a1440d6a36b5bd6de2fb1bee7c79cbb87e",
+          "graph_bytes": 167814,
+          "embedded_constants": 0,
+          "inline_values": 18816,
+          "status": "ok",
+          "wall_seconds": 1.584
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            64
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 1.862645149230957e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 8,
+              "channel": 42,
+              "actual": 0.05394257232546806,
+              "expected": 0.053942590951919556
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 12544,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "scaled_h0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            49
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 9604,
+            "max_abs": 2.2351741790771484e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 13,
+              "channel": 21,
+              "actual": 0.04800059646368027,
+              "expected": 0.04800061881542206
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 9604,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "attention_h0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            49
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 9604,
+            "max_abs": 3.725290298461914e-09,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 3,
+              "channel": 18,
+              "actual": 0.020388755947351456,
+              "expected": 0.020388752222061157
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 9604,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_q": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            64
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 12544,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_kv": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            7,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/layer_norm/segformer-two-norm-eps",
+        "lane": "window",
+        "block": "layer_norm",
+        "parts": [
+          "layer_norm2d"
+        ],
+        "settings": {
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            14,
+            14,
+            4
+          ],
+          "eps": [
+            1e-05,
+            1e-06
+          ]
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "F.layer_norm eps1e-5/1e-6 on low-variance input",
+        "mirror": {
+          "source": "reference.segformer_b0.model.layer_norm",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "653be58e24fd5e1459dae696f2a07f4c8a7517947c6eb5802230334b5d010930",
+      "weights_sha256": "1362bfbd10312d73cd15fa0c104eba0da7a275ba3f3b65b3c492c4dc53e04720",
+      "status": "passed",
+      "wall_seconds": 0.569,
+      "failures": [],
+      "offline": {
+        "eps5": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 13,
+              "channel": 1,
+              "actual": -0.3213863968849182,
+              "expected": -0.321386456489563
+            }
+          }
+        },
+        "eps6": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 8,
+              "channel": 3,
+              "actual": -0.7041463851928711,
+              "expected": -0.7041465044021606
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "eps5",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "eps6",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input_x",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 15,
+          "values": 2940,
+          "payload_bytes": 11760,
+          "request_bytes": 65759,
+          "graph_sha256": "5b8a05f6aaff4bacea3a30b2155acaaa5940190a1aaebb5f8ca0e2828eb5b20b",
+          "graph_bytes": 65531,
+          "embedded_constants": 784,
+          "inline_values": 784,
+          "status": "ok",
+          "wall_seconds": 0.569
+        }
+      ],
+      "outputs": {
+        "eps5": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 13,
+              "channel": 1,
+              "actual": -0.3213863968849182,
+              "expected": -0.321386456489563
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "eps6": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 8,
+              "channel": 3,
+              "actual": -0.7041463851928711,
+              "expected": -0.7041465044021606
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_x": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/linear/segformer-mix-ffn",
+        "lane": "window",
+        "block": "linear",
+        "parts": [
+          "depthwise_conv3x3_window",
+          "gelu"
+        ],
+        "settings": {
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            14,
+            14,
+            4
+          ],
+          "hidden": 16
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "F.linear -> F.conv2d(groups=16,padding=1) -> exact F.gelu -> F.linear",
+        "mirror": {
+          "source": "reference.segformer_b0.model.mix_ffn",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "5bd1e42c293aae9f1549668d3805334984efe701826d13fc6f34bd34663538f1",
+      "weights_sha256": "0961c63386db280f8ddf6b7c1a695754c987afb7aeceaa527009f42505dc07b9",
+      "status": "passed",
+      "wall_seconds": 0.826,
+      "failures": [],
+      "offline": {
+        "fc1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 12,
+              "actual": -0.29505452513694763,
+              "expected": -0.29505449533462524
+            }
+          }
+        },
+        "depthwise": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 3,
+              "actual": 0.1339266151189804,
+              "expected": 0.1339266002178192
+            }
+          }
+        },
+        "gelu": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 2.60770320892334e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 11,
+              "col": 8,
+              "channel": 4,
+              "actual": -0.05654788017272949,
+              "expected": -0.0565478540956974
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 7.450580596923828e-09,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 2,
+              "actual": -0.10904976725578308,
+              "expected": -0.10904977470636368
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "fc1",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "depthwise",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "gelu",
+              "kind": "output",
+              "channels": 16
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input_x",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 61,
+          "values": 11956,
+          "payload_bytes": 47824,
+          "request_bytes": 90266,
+          "graph_sha256": "53faf44c9d04a1487494c871560259a82efb3429e38c40012f088b17a635a6c8",
+          "graph_bytes": 90038,
+          "embedded_constants": 8948,
+          "inline_values": 784,
+          "status": "ok",
+          "wall_seconds": 0.824
+        }
+      ],
+      "outputs": {
+        "fc1": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            16
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 12,
+              "actual": -0.29505452513694763,
+              "expected": -0.29505449533462524
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 3136,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "depthwise": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            16
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 3,
+              "actual": 0.1339266151189804,
+              "expected": 0.1339266002178192
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 3136,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "gelu": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            16
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 2.60770320892334e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 11,
+              "col": 8,
+              "channel": 4,
+              "actual": -0.05654788017272949,
+              "expected": -0.0565478540956974
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 3136,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 7.450580596923828e-09,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 2,
+              "actual": -0.10904976725578308,
+              "expected": -0.10904977470636368
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_x": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 784,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/concat/segformer-deepest-first",
+        "lane": "window",
+        "block": "concat",
+        "parts": [
+          "linear",
+          "window_resize"
+        ],
+        "settings": {
+          "window": 7
+        },
+        "policy": "none",
+        "shapes": {
+          "levels": [
+            56,
+            28,
+            14,
+            7
+          ],
+          "channels": 2
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 4,
+        "reference": "F.linear, F.interpolate(56,align_corners=False), C4/C3/C2/C1 cat",
+        "mirror": {
+          "source": "reference.segformer_b0.model.pyramid",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim. Projection/resize components use double_round_once; concat only moves values."
+      },
+      "inputs_sha256": "d3e08d095c5a950431370f4ffdb4e84d1db8eae24daf78d5d74fa23a633bc2d2",
+      "weights_sha256": "4e88c7dc14dc115077e0e903b105de99b21eae2f28ed4a74695d4fdba12542aa",
+      "status": "passed",
+      "wall_seconds": 4.528,
+      "failures": [],
+      "offline": {
+        "C4_to_C1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 32768.0,
+              "expected": 32768.0
+            }
+          }
+        },
+        "C3_to_C1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 24576.25,
+              "expected": 24576.25
+            }
+          }
+        },
+        "C2_to_C1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 16384.5,
+              "expected": 16384.5
+            }
+          }
+        },
+        "C1_to_C1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 8192.75,
+              "expected": 8192.75
+            }
+          }
+        },
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 32768.0,
+              "expected": 32768.0
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "C4_to_C1",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "C3_to_C1",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "C2_to_C1",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "C1_to_C1",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "input_C1",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 24,
+          "values": 75264,
+          "payload_bytes": 301056,
+          "request_bytes": 302425,
+          "graph_sha256": "c6a32bfca3654a43213861a7a9b36240bd075b006462ddc3569e53881054660d",
+          "graph_bytes": 302197,
+          "embedded_constants": 2724,
+          "inline_values": 8330,
+          "status": "ok",
+          "wall_seconds": 3.563
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "input_C2",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 2352,
+          "payload_bytes": 9408,
+          "request_bytes": 18240,
+          "graph_sha256": "c1bf33fabd994d77a872747e7b279ae899035465fdc8569129ed720bee0effc0",
+          "graph_bytes": 18012,
+          "embedded_constants": 0,
+          "inline_values": 8330,
+          "status": "ok",
+          "wall_seconds": 0.399
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 40.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -40.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input_C3",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 588,
+          "payload_bytes": 2352,
+          "request_bytes": 7600,
+          "graph_sha256": "46f2e556676a2b2c9dd55cdf437905e282c8cc3b0d3dd0f6603deb6f47419055",
+          "graph_bytes": 7372,
+          "embedded_constants": 0,
+          "inline_values": 8330,
+          "status": "ok",
+          "wall_seconds": 0.224
+        },
+        {
+          "index": 3,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 80.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -80.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_C4",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 147,
+          "payload_bytes": 588,
+          "request_bytes": 4922,
+          "graph_sha256": "0e9c4fcb8326a7e193f3192c015a35cdc453d8e30e4eab1196d646ce6b0a8daa",
+          "graph_bytes": 4696,
+          "embedded_constants": 0,
+          "inline_values": 8330,
+          "status": "ok",
+          "wall_seconds": 0.336
+        }
+      ],
+      "outputs": {
+        "C4_to_C1": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 32768.0,
+              "expected": 32768.0
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "C3_to_C1": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 24576.25,
+              "expected": 24576.25
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "C2_to_C1": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 16384.5,
+              "expected": 16384.5
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "C1_to_C1": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 8192.75,
+              "expected": 8192.75
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            8
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 32768.0,
+              "expected": 32768.0
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 25088,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_C1": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_C2": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            28,
+            28,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 1568,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_C3": {
+          "kind": "input",
+          "request": 2,
+          "shape": [
+            14,
+            14,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_C4": {
+          "kind": "input",
+          "request": 3,
+          "shape": [
+            7,
+            7,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/window_resize/segformer-head-56-to-224-corners",
+        "lane": "window",
+        "block": "window_resize",
+        "parts": [
+          "conv1x1"
+        ],
+        "settings": {
+          "window": 7,
+          "factor": 4,
+          "align_corners": true
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            56,
+            56,
+            4
+          ],
+          "output": [
+            224,
+            224,
+            2
+          ]
+        },
+        "seed": 20261015,
+        "tolerance": 0.0001,
+        "requests": 5,
+        "reference": "F.conv2d(1x1,bias), F.interpolate(scale4,align_corners=True)",
+        "mirror": {
+          "source": "reference.segformer_b0.model.resize",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/tasks/codex-segformer_b0.md",
+        "calibration": false,
+        "notes": "Small standalone composition, no complete-model forward or live claim."
+      },
+      "inputs_sha256": "126c95c340424a3aa2d5ce4fe526cf2c122aa0d920adce4e707f1c1d0c6a41b0",
+      "weights_sha256": "c485cfd783a869c4576bf06a18bdaf7414ae4122c25e572bd9103aa747d3a6fd",
+      "status": "passed",
+      "wall_seconds": 10.045,
+      "failures": [],
+      "offline": {
+        "head": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 14,
+              "channel": 0,
+              "actual": -0.3343236744403839,
+              "expected": -0.3343236446380615
+            }
+          }
+        },
+        "corner0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 12,
+              "channel": 1,
+              "actual": 0.26082634925842285,
+              "expected": 0.26082631945610046
+            }
+          }
+        },
+        "corner1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 4.470348358154297e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 11,
+              "col": 38,
+              "channel": 0,
+              "actual": -0.20044438540935516,
+              "expected": -0.20044443011283875
+            }
+          }
+        },
+        "corner2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 19,
+              "col": 12,
+              "channel": 1,
+              "actual": 0.2714081108570099,
+              "expected": 0.2714080512523651
+            }
+          }
+        },
+        "corner3": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 3,
+              "channel": 0,
+              "actual": -0.18696154654026031,
+              "expected": -0.1869615763425827
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "head",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "input_x",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 8,
+          "values": 25088,
+          "payload_bytes": 100352,
+          "request_bytes": 201139,
+          "graph_sha256": "d78852da300196084a03b43ce09aef453e53d92e81456a8b9c229fc9deed0459",
+          "graph_bytes": 200911,
+          "embedded_constants": 4202,
+          "inline_values": 12544,
+          "status": "ok",
+          "wall_seconds": 1.841
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "corner0",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 229789,
+          "graph_sha256": "e620d718dde1a6e254254823bb712e50e57c9fc200e43118c9feef56cf1db815",
+          "graph_bytes": 229559,
+          "embedded_constants": 4202,
+          "inline_values": 12544,
+          "status": "ok",
+          "wall_seconds": 2.47
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 420.0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "corner1",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 229791,
+          "graph_sha256": "cd71db3b15c829f2596420deeec4a74b0f5ff48853ff29ba5cc2fcf747932a12",
+          "graph_bytes": 229559,
+          "embedded_constants": 4202,
+          "inline_values": 12544,
+          "status": "ok",
+          "wall_seconds": 2.5
+        },
+        {
+          "index": 3,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": -420.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "corner2",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 229792,
+          "graph_sha256": "6d110a282bfeba45c5910c24adc4ab206751078eaef07ab653ae6a94463e1113",
+          "graph_bytes": 229559,
+          "embedded_constants": 4202,
+          "inline_values": 12544,
+          "status": "ok",
+          "wall_seconds": 1.534
+        },
+        {
+          "index": 4,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 420.0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": -420.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "corner3",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 229794,
+          "graph_sha256": "1f8c31324d23a1847a97bdfa8153be99da56cf8cbfbc56ceb63c0ba2b2ee27b4",
+          "graph_bytes": 229559,
+          "embedded_constants": 4202,
+          "inline_values": 12544,
+          "status": "ok",
+          "wall_seconds": 1.697
+        }
+      ],
+      "outputs": {
+        "head": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 14,
+              "channel": 0,
+              "actual": -0.3343236744403839,
+              "expected": -0.3343236446380615
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_x": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 12544,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "corner0": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 12,
+              "channel": 1,
+              "actual": 0.26082634925842285,
+              "expected": 0.26082631945610046
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "corner1": {
+          "kind": "output",
+          "request": 2,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 4.470348358154297e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 11,
+              "col": 38,
+              "channel": 0,
+              "actual": -0.20044438540935516,
+              "expected": -0.20044443011283875
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "corner2": {
+          "kind": "output",
+          "request": 3,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 19,
+              "col": 12,
+              "channel": 1,
+              "actual": 0.2714081108570099,
+              "expected": 0.2714080512523651
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "corner3": {
+          "kind": "output",
+          "request": 4,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 3,
+              "channel": 0,
+              "actual": -0.18696154654026031,
+              "expected": -0.1869615763425827
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    }
+  ],
+  "cloud_calls": {
+    "requests": 40,
+    "computePixels": 40,
+    "algorithms_list": 1,
+    "refused": []
+  },
+  "finished_utc": "2026-10-14T00:49:54+00:00",
+  "wall_seconds": 313.357,
+  "record_variant": "explicitly project-redacted derivative; untouched raw harness record retained privately",
+  "redactions": {
+    "replacement": "YOUR_EE_PROJECT",
+    "json_pointers": [
+      "/command",
+      "/project"
+    ],
+    "raw_sha256": "6c8d652d8a7ada5c632f85164ae79de1bbdb7665ec454cd24279ef3808db6bc5",
+    "raw_retained": "git-ignored release_runs/segformer_b0-g3live/",
+    "preserved": "all numerical fields, statuses, grids, revisions, versions and fingerprints"
+  }
+}

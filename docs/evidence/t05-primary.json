@@ -1,0 +1,318 @@
+{
+  "task": "T05 primary public comparison/nonwater/inline transport",
+  "accepted_base": "ca9827dbd2d1b5116eca45b1d030a8525696d156",
+  "source_revision": "b12ad29f768c322255e629eba8081d32e46be196",
+  "source_root": "<checkout>",
+  "live": {
+    "status": "pass",
+    "project": "ORIGINAL_PROJECT",
+    "queries": [
+      "computePixels NUMPY_NDARRAY",
+      "Dictionary.getInfo metadata"
+    ],
+    "completed_compute_queries": 2,
+    "grid": {
+      "crs": "EPSG:3857",
+      "transform": [
+        30,
+        0,
+        1200,
+        0,
+        -30,
+        2400
+      ],
+      "width": 16,
+      "height": 12
+    },
+    "query_grid": {
+      "dimensions": {
+        "width": 18,
+        "height": 14
+      },
+      "crsCode": "EPSG:3857",
+      "affineTransform": {
+        "scaleX": 30,
+        "shearX": 0,
+        "translateX": 1170,
+        "shearY": 0,
+        "scaleY": -30,
+        "translateY": 2430
+      }
+    },
+    "bands": 118,
+    "scalar_fields": 29736,
+    "graph_bytes": 78947,
+    "graph_sha256": "49b2c01b9a3c022248232e978b1321d799a2d2e460d72791f237f6120082fada",
+    "compatibility_output_shape": [
+      1,
+      3,
+      12,
+      16
+    ],
+    "coefficient_count": 573,
+    "comparison": {
+      "status": "pass",
+      "prepared_bit_mismatches": 0,
+      "mask_mismatches": {
+        "logits": 0,
+        "probabilities": 0,
+        "classes": 0
+      },
+      "valid_output_pixels": 190,
+      "logit_errors": {
+        "valid_count": 576,
+        "max_absolute_error": 7.450580596923828e-09,
+        "mae": 5.303364661004808e-10,
+        "rmse": 1.816808542658827e-09,
+        "max_relative_error_floor_1e_3": 1.0934348857338676e-07,
+        "tolerance_pass": true
+      },
+      "probability_errors": {
+        "valid_count": 570,
+        "max_absolute_error": 2.9802322387695312e-08,
+        "mae": 1.0247816119277687e-08,
+        "rmse": 1.7475946891557386e-08,
+        "max_relative_error_floor_1e_3": 9.473996154315481e-08,
+        "tolerance_pass": true
+      },
+      "max_probability_sum_error": 2.9802322387695312e-08,
+      "class_disagreements": 0,
+      "near_margin_pixels": [],
+      "recipe": {
+        "means": [
+          1.0,
+          -2.0,
+          0.0,
+          4.0
+        ],
+        "stds": [
+          2.0,
+          4.0,
+          1.0,
+          0.5
+        ],
+        "source_missing": [
+          "all channels at row0,column0",
+          "d at row5,column7"
+        ],
+        "raw_values_sha256": "472a670a5b3f06a7074839f29eb5d7aca57ddcd900f989ad23c3ca7ffced6834",
+        "source_mask_sha256": "da0c7d4d4cb4842284a312ed6ba0ff080835695156ae38864c450fc88359a3f4",
+        "prepared_sha256": "c9212e609fea77822e2331a7d68938140a04584cfab03785cc089d0417dace84",
+        "source_valid_values": 763,
+        "expected_valid_output_pixels": 190
+      },
+      "failures": [],
+      "runner_failures": []
+    },
+    "inline_transport": {
+      "status": "pass",
+      "failures": [],
+      "coefficient_values": [
+        9.223371487098962e+18,
+        9.223372036854776e+18,
+        9.223373136366404e+18,
+        -9.223373136366404e+18,
+        -9.223372036854776e+18,
+        -9.223371487098962e+18,
+        1.0000000200408773e+20,
+        -1.0000000150474662e+30,
+        3.4028234663852886e+38
+      ],
+      "coefficient_reference_bits": [
+        1593835519,
+        1593835520,
+        1593835521,
+        3741319169,
+        3741319168,
+        3741319167,
+        1621981420,
+        4048155338,
+        2139095039
+      ],
+      "decoded_weight_bits": [
+        1593835519,
+        1593835520,
+        1593835521,
+        3741319169,
+        3741319168,
+        3741319167,
+        1621981420,
+        4048155338,
+        2139095039
+      ],
+      "decoded_bias_bits": [
+        1593835519,
+        1593835520,
+        1593835521,
+        3741319169,
+        3741319168,
+        3741319167,
+        1621981420,
+        4048155338,
+        2139095039
+      ],
+      "probe_input": 7.888609052210118e-31,
+      "probe_input_bits": 226492416,
+      "arithmetic": {
+        "weighted": {
+          "reference_bits": [
+            754974719,
+            754974720,
+            754974721,
+            2902458369,
+            2902458368,
+            2902458367,
+            783120620,
+            3209294538,
+            1300234239
+          ],
+          "observed_bits": [
+            754974719,
+            754974720,
+            754974721,
+            2902458369,
+            2902458368,
+            2902458367,
+            783120620,
+            3209294538,
+            1300234239
+          ],
+          "bit_mismatches": 0,
+          "max_absolute_error": 0.0,
+          "absolute_tolerance": 0.0001,
+          "tolerance_pass": true
+        },
+        "biased": {
+          "reference_bits": [
+            1593835519,
+            1593835520,
+            1593835521,
+            3741319169,
+            3741319168,
+            3741319167,
+            1621981420,
+            4048155338,
+            2139095039
+          ],
+          "observed_bits": [
+            1593835519,
+            1593835520,
+            1593835521,
+            3741319169,
+            3741319168,
+            3741319167,
+            1621981420,
+            4048155338,
+            2139095039
+          ],
+          "bit_mismatches": 0,
+          "max_absolute_error": 0.0,
+          "absolute_tolerance": 0.0001,
+          "tolerance_pass": true
+        }
+      },
+      "mask_expected": "Only query row1,column1 is valid for every probe; all other pixels excluded",
+      "arithmetic_bit_equality": "diagnostic only; acceptance uses absolute tolerance, decoded coefficient transport uses exact bits"
+    },
+    "persistent_ee_resources": [],
+    "versions": {
+      "earthengine-api": "1.7.45",
+      "torch": "2.14.0",
+      "numpy": "2.5.3"
+    },
+    "command": "PYTHONDONTWRITEBYTECODE=1 <checkout>/.venv/bin/python docs/evidence/t05-nonwater-live.py --run --project ORIGINAL_PROJECT --expected-revision b12ad29f768c322255e629eba8081d32e46be196 --output /tmp/t05-nonwater-b12ad29-live.json",
+    "credentials": "Explicit application-default credentials with Earth Engine and cloud-platform scopes; initialization outside library",
+    "approval": "Lead-approved exact two-query budget recorded on main 6f5aa16",
+    "numerical_scope": "Exact T00 nonwater input/weights, source/prepared/application validity and one-pixel signed-boundary transport probes; no accuracy claim",
+    "original_raw_response": "/private/tmp/t05-nonwater-b12ad29-live.pixels.npy",
+    "preparation_command": "PYTHONDONTWRITEBYTECODE=1 <checkout>/.venv/bin/python docs/evidence/t05-nonwater-live.py --project ORIGINAL_PROJECT --output /tmp/t05-nonwater-b12ad29-plan.json"
+  },
+  "offline": {
+    "passed": 220,
+    "subtests_passed": 181,
+    "skipped": 9,
+    "failed": 0,
+    "skip_reason": "All nine skips require absent user-supplied trained ONNX checkpoint",
+    "python": "<checkout>/.venv/bin/python",
+    "source_guard": "native_ee.__file__.parent.parent == cwd",
+    "bytecode": "PYTHONDONTWRITEBYTECODE=1",
+    "pytest_cache": "disabled",
+    "files": [
+      "tests/test_comparison.py",
+      "tests/test_inline_coefficients.py",
+      "tests/test_nonwater_example.py",
+      "tests/test_compatibility.py",
+      "tests/test_compiler.py",
+      "tests/test_pointwise_operators.py",
+      "tests/test_segmentation_outputs.py",
+      "tests/test_receptive_field.py",
+      "tests/test_weight_assets.py",
+      "tests/test_weight_mapping.py",
+      "tests/test_models.py",
+      "tests/test_resnet_models.py",
+      "tests/test_onnx_import.py",
+      "tests/test_public_examples.py",
+      "tests/test_segwater_preprocessing.py",
+      "tests/test_segwater_inference.py"
+    ],
+    "command": "PYTHONDONTWRITEBYTECODE=1 <checkout>/.venv/bin/python - <<'PY'\nfrom pathlib import Path\nimport native_ee\nassert Path(native_ee.__file__).resolve().parent.parent == Path.cwd()\nimport pytest\nraise SystemExit(pytest.main(['-q', '-p', 'no:cacheprovider', 'tests/test_comparison.py', 'tests/test_inline_coefficients.py', 'tests/test_nonwater_example.py', 'tests/test_compatibility.py', 'tests/test_compiler.py', 'tests/test_pointwise_operators.py', 'tests/test_segmentation_outputs.py', 'tests/test_receptive_field.py', 'tests/test_weight_assets.py', 'tests/test_weight_mapping.py', 'tests/test_models.py', 'tests/test_resnet_models.py', 'tests/test_onnx_import.py', 'tests/test_public_examples.py', 'tests/test_segwater_preprocessing.py', 'tests/test_segwater_inference.py', '--junitxml=/tmp/t05-primary-offline.xml']))\nPY",
+    "focused_checkpoint": {
+      "passed": 35,
+      "subtests_passed": 7,
+      "files": [
+        "tests/test_comparison.py",
+        "tests/test_inline_coefficients.py",
+        "tests/test_nonwater_example.py",
+        "tests/test_compiler.py",
+        "tests/test_public_examples.py"
+      ]
+    }
+  },
+  "artifacts": [
+    {
+      "path": "<checkout>/downloads/t05_primary/t05-nonwater-b12ad29-live.json",
+      "bytes": 23551,
+      "sha256": "a0837aea6fb869f90bfe9d2d3e2c0238e4ace13885033185cab705b059648672"
+    },
+    {
+      "path": "<checkout>/downloads/t05_primary/t05-nonwater-b12ad29-live.pixels.npy",
+      "bytes": 122080,
+      "sha256": "41c0520103ae8466423288396d581439bbdca2c0379d3591b1db6899e099d3bd"
+    },
+    {
+      "path": "<checkout>/downloads/t05_primary/t05-nonwater-b12ad29-live.stderr.log",
+      "bytes": 164,
+      "sha256": "cc6b8c9598fbadcc82222ce13ac639c66018708f784e340399b49fc403a2937a"
+    },
+    {
+      "path": "<checkout>/downloads/t05_primary/t05-nonwater-b12ad29-live.stdout.log",
+      "bytes": 23551,
+      "sha256": "a0837aea6fb869f90bfe9d2d3e2c0238e4ace13885033185cab705b059648672"
+    },
+    {
+      "path": "<checkout>/downloads/t05_primary/t05-nonwater-b12ad29-plan.json",
+      "bytes": 6621,
+      "sha256": "030d3fd73cc87fd45b60bdcf4f20236db4234f5e887b659291c426b67b12b3cb"
+    },
+    {
+      "path": "<checkout>/downloads/t05_primary/t05-nonwater-b12ad29-plan.log",
+      "bytes": 6621,
+      "sha256": "030d3fd73cc87fd45b60bdcf4f20236db4234f5e887b659291c426b67b12b3cb"
+    },
+    {
+      "path": "<checkout>/downloads/t05_primary/t05-primary-offline.xml",
+      "bytes": 34063,
+      "sha256": "d41d57e219b9c6f07fd46d5ee5c21d00c27b890ceb1c52d8590de0086f0b82c3"
+    }
+  ],
+  "package_lane": "Owned separately by T05 packaging/Swin agent; installed-wheel evidence combined by lead",
+  "trained_preservation": "Lead compares accepted/final U-Net recipe, Swin stage graphs and effective identities with docs/evidence/t05-trained-preservation.py; no recipe source changed here",
+  "ordinary_graph_preservation": "Focused normal inline coefficient graph test passes; lead independently compared all six prior T04 fixtures/diagnostics and identities unchanged",
+  "limits": [
+    "No new trained-model live run, broad numerical guarantee or accuracy claim.",
+    "Large-value correction applies only to core local Conv weight/bias inline constructor. Asset providers and unrelated external constructors retain caller precision assertions.",
+    "Decoded coefficient bits are exact transport evidence; arithmetic bit matches are observed diagnostics and not a universal matrix-rounding promise.",
+    "Package isolation/public checkpoint access/terms/resource cleanup are separate release gates.",
+    "Raw source/output mask channels retained allow independent validity/exclusion reconstruction."
+  ]
+}

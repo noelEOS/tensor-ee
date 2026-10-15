@@ -1,0 +1,738 @@
+{
+ "task": "L06c",
+ "claim": "the rebuilt browser demo (demos/browser) submits, polls and displays end to end in Earth Engine, one run per model, as approved in docs/evidence/l06c-live-run-plan.md",
+ "approved_by_user": "2026-10-13, local time (plan approved for project ORIGINAL_PROJECT); run 2026-10-12 16:56\u201317:08 UTC",
+ "code": {
+  "branch": "lib/phase1",
+  "head": "ff1c7379a4badbc11098849d16d33a92ab55a133",
+  "demos_browser_identical_to_l06c_handoff": true,
+  "l06c_handoff_revision": "7bb4846",
+  "note": "the plan names the lane branch; the run used lib/phase1 after integration, whose demos/browser tree equals the L06c fix-round revision 7bb4846"
+ },
+ "project": "ORIGINAL_PROJECT",
+ "credentials": "Application Default Credentials (demos/browser/exports.py::initialize); the user's account",
+ "network": "IPv4-first resolver shim and a 900 s socket timeout in a session-local sitecustomize (outside the repository)",
+ "checkpoints_sha256": {
+  "unet": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+  "swin-t": "5c7a7c44d29b3c75bd69f59809fb1b63a039313bec021d897ff3876d2cea42a5"
+ },
+ "manifests_sha256": {
+  "unet": "87c2f53f842f555fd58518924f2ab72bce3deceac0c62409a28297ef9af4b65a",
+  "swin-t": "dbd3cdaf450e4e2d128ec557843dc1c761cd9ab66d7d3581bb5cd255532fc9a3"
+ },
+ "runs": {
+  "unet": {
+   "job_id": "cc63cf67b9144cc79f2cd8109378528b",
+   "state": "COMPLETED",
+   "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240105T215301_20240105T215326_051977_0647E8_D7EE",
+   "aoi": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       120.902,
+       23.849
+      ],
+      [
+       120.918,
+       23.849
+      ],
+      [
+       120.918,
+       23.863
+      ],
+      [
+       120.902,
+       23.863
+      ],
+      [
+       120.902,
+       23.849
+      ]
+     ]
+    ]
+   },
+   "grid": {
+    "crs": "EPSG:32651",
+    "transform": [
+     10,
+     0,
+     284480,
+     0,
+     -10,
+     2640960
+    ],
+    "width": 448,
+    "height": 224,
+    "tile_count": 2,
+    "area_km2": 10.0352
+   },
+   "asset_id": "projects/ORIGINAL_PROJECT/assets/segwater_demo_cc63cf67b9144cc79f2cd8109378528b",
+   "ee_runtime_seconds": 131.267,
+   "batch_eecu_seconds": 94.48780059814453,
+   "elapsed_seconds_created_to_finished": 148.6,
+   "native_operation_count": 63,
+   "exports": [
+    {
+     "task_id": "DDNWLSE727ZBKYRNXPRWIGBS",
+     "request_id": "df77393e-b161-4601-bb1c-0f0dd688e2b4",
+     "asset_id": "projects/ORIGINAL_PROJECT/assets/segwater_demo_cc63cf67b9144cc79f2cd8109378528b",
+     "description": "segwater_demo_cc63cf67b9144cc79f2cd8109378528b",
+     "state": "COMPLETED",
+     "attempt": 1,
+     "request_bytes": 1213421,
+     "request_sha256": "49d1de7c47a13329671bed74e881557aafad650718284f61e28a4108a71bf56d",
+     "request_file_matches_recorded_sha256": true,
+     "created_ms": 1791824177000,
+     "started_ms": 1791824180844,
+     "updated_ms": 1791824312111,
+     "batch_eecu_usage_seconds": 94.48780059814453
+    }
+   ],
+   "record_transitions": [
+    {
+     "t": 1791824167.5,
+     "job": "cc63cf67b9144cc79f2cd8109378528b",
+     "state": "BUILDING",
+     "message": "Preparing native Earth Engine inference\u2026",
+     "exports": [
+      null
+     ]
+    },
+    {
+     "t": 1791824169.5,
+     "job": "cc63cf67b9144cc79f2cd8109378528b",
+     "state": "BUILDING",
+     "message": "Preparing native Earth Engine inference\u2026",
+     "exports": [
+      "SUBMITTING"
+     ]
+    },
+    {
+     "t": 1791824177.5,
+     "job": "cc63cf67b9144cc79f2cd8109378528b",
+     "state": "BUILDING",
+     "message": "Preparing native Earth Engine inference\u2026",
+     "exports": [
+      "SUBMITTED"
+     ]
+    },
+    {
+     "t": 1791824178.5,
+     "job": "cc63cf67b9144cc79f2cd8109378528b",
+     "state": "READY",
+     "message": "Queued in Earth Engine\u2026",
+     "exports": [
+      "READY"
+     ]
+    },
+    {
+     "t": 1791824184.6,
+     "job": "cc63cf67b9144cc79f2cd8109378528b",
+     "state": "RUNNING",
+     "message": "Earth Engine is computing the water map\u2026",
+     "exports": [
+      "RUNNING"
+     ]
+    },
+    {
+     "t": 1791824316.2,
+     "job": "cc63cf67b9144cc79f2cd8109378528b",
+     "state": "COMPLETED",
+     "message": "Water map ready.",
+     "exports": [
+      "COMPLETED"
+     ]
+    }
+   ]
+  },
+  "swin-t": {
+   "job_id": "05c4b608aa6a482ab4ae05988f4798e2",
+   "state": "COMPLETED",
+   "scene_id": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+   "aoi": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       120.91600567714023,
+       23.845652638755276
+      ],
+      [
+       120.93632012718388,
+       23.845652638755276
+      ],
+      [
+       120.93632012718388,
+       23.864336397213982
+      ],
+      [
+       120.91600567714023,
+       23.864336397213982
+      ],
+      [
+       120.91600567714023,
+       23.845652638755276
+      ]
+     ]
+    ]
+   },
+   "grid": {
+    "crs": "EPSG:32651",
+    "transform": [
+     10,
+     0,
+     287680.95335071225,
+     0,
+     -10,
+     2640838.8405420803
+    ],
+    "width": 224,
+    "height": 224,
+    "tile_count": 1,
+    "area_km2": 5.0176
+   },
+   "asset_id": "projects/ORIGINAL_PROJECT/assets/swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2",
+   "ee_runtime_seconds": 397.386,
+   "batch_eecu_seconds": 147.50616455078125,
+   "elapsed_seconds_created_to_finished": 424.5,
+   "exports": [
+    {
+     "stage": "A",
+     "label": "Encoder stages 1\u20133",
+     "native_operation_count": 79,
+     "ee_runtime_seconds": 64.496,
+     "task_id": "SSZWAGZSJ73HPIOHZO4YQRFM",
+     "request_id": "7b6d152c-a651-4519-8d0f-1274ef5db0eb",
+     "asset_id": "projects/ORIGINAL_PROJECT/assets/swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2_A",
+     "description": "swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2_A",
+     "state": "COMPLETED",
+     "attempt": 1,
+     "request_bytes": 796266,
+     "request_sha256": "d299898dabb0d2a6c6a71f671f4f90049b36d0047018e389468ef2e865e4dd02",
+     "request_file_matches_recorded_sha256": true,
+     "created_ms": 1791824452798,
+     "started_ms": 1791824455718,
+     "updated_ms": 1791824520214,
+     "batch_eecu_usage_seconds": 37.37300491333008
+    },
+    {
+     "stage": "B",
+     "label": "Encoder stage 4",
+     "native_operation_count": 65,
+     "ee_runtime_seconds": 137.33,
+     "task_id": "HVM5UDGCSRVQTWTGRARQVO47",
+     "request_id": "a097200d-ee67-4298-b494-2fb19dec8a12",
+     "asset_id": "projects/ORIGINAL_PROJECT/assets/swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2_B",
+     "description": "swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2_B",
+     "state": "COMPLETED",
+     "attempt": 1,
+     "request_bytes": 324523,
+     "request_sha256": "82097d614a7bd11a49f06ee525fe06b65c487710c8915d0c2d0c5e81a85f00fb",
+     "request_file_matches_recorded_sha256": true,
+     "created_ms": 1791824523224,
+     "started_ms": 1791824526870,
+     "updated_ms": 1791824664200,
+     "batch_eecu_usage_seconds": 20.70438003540039
+    },
+    {
+     "stage": "C",
+     "label": "UPerNet and water map",
+     "native_operation_count": 74,
+     "ee_runtime_seconds": 195.56,
+     "task_id": "RHMLYXJME2KU6MBB4XID3NAH",
+     "request_id": "615e6358-93a9-4df6-b73e-0b5d4d1d8966",
+     "asset_id": "projects/ORIGINAL_PROJECT/assets/swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2",
+     "description": "swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2_C",
+     "state": "COMPLETED",
+     "attempt": 1,
+     "request_bytes": 558771,
+     "request_sha256": "40ee722bb51a1fbff347850bd84e8d5ef88f712ecb145ff53fc8c3b69dbba50e",
+     "request_file_matches_recorded_sha256": true,
+     "created_ms": 1791824668908,
+     "started_ms": 1791824670565,
+     "updated_ms": 1791824866125,
+     "batch_eecu_usage_seconds": 89.42877960205078
+    }
+   ],
+   "record_transitions": [
+    {
+     "t": 1791824445.8,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "BUILDING",
+     "message": "Stage 1/3 \u00b7 Preparing encoder stages 1\u20133\u2026",
+     "exports": [
+      "PREPARED"
+     ]
+    },
+    {
+     "t": 1791824447.8,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "BUILDING",
+     "message": "Stage 1/3 \u00b7 Preparing encoder stages 1\u20133\u2026",
+     "exports": [
+      "SUBMITTING"
+     ]
+    },
+    {
+     "t": 1791824453.8,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "READY",
+     "message": "Stage 1/3 \u00b7 Queued for encoder stages 1\u20133\u2026",
+     "exports": [
+      "READY"
+     ]
+    },
+    {
+     "t": 1791824459.8,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "RUNNING",
+     "message": "Stage 1/3 \u00b7 Computing encoder stages 1\u20133\u2026",
+     "exports": [
+      "RUNNING"
+     ]
+    },
+    {
+     "t": 1791824521.1,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "BUILDING",
+     "message": "Stage 2/3 \u00b7 Preparing encoder stage 4\u2026",
+     "exports": [
+      "COMPLETED",
+      "SUBMITTING"
+     ]
+    },
+    {
+     "t": 1791824524.1,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "READY",
+     "message": "Stage 2/3 \u00b7 Queued for encoder stage 4\u2026",
+     "exports": [
+      "COMPLETED",
+      "READY"
+     ]
+    },
+    {
+     "t": 1791824530.2,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "RUNNING",
+     "message": "Stage 2/3 \u00b7 Computing encoder stage 4\u2026",
+     "exports": [
+      "COMPLETED",
+      "RUNNING"
+     ]
+    },
+    {
+     "t": 1791824665.9,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "BUILDING",
+     "message": "Stage 3/3 \u00b7 Preparing upernet and water map\u2026",
+     "exports": [
+      "COMPLETED",
+      "COMPLETED",
+      "SUBMITTING"
+     ]
+    },
+    {
+     "t": 1791824670.0,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "BUILDING",
+     "message": "Stage 3/3 \u00b7 Preparing upernet and water map\u2026",
+     "exports": [
+      "COMPLETED",
+      "COMPLETED",
+      "SUBMITTED"
+     ]
+    },
+    {
+     "t": 1791824671.0,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "READY",
+     "message": "Stage 3/3 \u00b7 Queued for upernet and water map\u2026",
+     "exports": [
+      "COMPLETED",
+      "COMPLETED",
+      "READY"
+     ]
+    },
+    {
+     "t": 1791824676.0,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "RUNNING",
+     "message": "Stage 3/3 \u00b7 Computing upernet and water map\u2026",
+     "exports": [
+      "COMPLETED",
+      "COMPLETED",
+      "RUNNING"
+     ]
+    },
+    {
+     "t": 1791824870.6,
+     "job": "05c4b608aa6a482ab4ae05988f4798e2",
+     "state": "COMPLETED",
+     "message": "All 3 EE stages completed. One 224\u00d7224 water map is ready.",
+     "exports": [
+      "COMPLETED",
+      "COMPLETED",
+      "COMPLETED"
+     ]
+    }
+   ]
+  }
+ },
+ "pass_criteria": {
+  "both_jobs_completed_through_the_ui": true,
+  "unet_card_states_seen_in_the_ui": [
+   "Building the inference",
+   "Queued in Earth Engine",
+   "Inference is running (23s)",
+   "Inference completed (2m 28s) \u00b7 Water map ready."
+  ],
+  "swin_card_states_seen_in_the_ui": [
+   "Stage 1/3 \u00b7 Running",
+   "Stage 2/3 \u00b7 Running",
+   "Stage 3/3 \u00b7 Preparing",
+   "Inference completed (7m 04s) \u00b7 All 3 EE stages completed. One 224\u00d7224 water map is ready."
+  ],
+  "layers_shown": {
+   "unet": [
+    "Probability",
+    "Water mask",
+    "Radar VV"
+   ],
+   "swin-t": [
+    "Probability",
+    "Water mask",
+    "Radar VV"
+   ]
+  },
+  "opacity": {
+   "unet": {
+    "slider": 30,
+    "ee_tile_layer_opacity": "0.3",
+    "ee_tiles_loaded": 6
+   },
+   "swin-t": {
+    "slider": 30,
+    "ee_tile_layer_opacity": "0.3",
+    "ee_tiles_loaded": 9
+   }
+  },
+  "request_files_match_recorded_sha256": "see runs.*.exports[].request_file_matches_recorded_sha256 (the demo also checks it before every submission)",
+  "ui_method": "the lead drove the page in the Claude desktop app's built-in browser; card text read from the page, layer and opacity state from screenshots and the DOM"
+ },
+ "scene_search_matched_plan": {
+  "unet": "1 scene, \u202620240105T215301_20240105T215326_051977_0647E8_D7EE, DESCENDING, 100 % coverage; '2 model chips \u00b7 448 \u00d7 224 px'; grid EPSG:32651 origin (284480, 2640960)",
+  "swin-t": "1 scene, \u202620240103T100134_20240103T100159_051941_06469E_B0BD, ASCENDING, 100 % chip coverage; grid EPSG:32651 origin (287680.95335071225, 2640838.8405420803), 224 \u00d7 224 (the M12 catalogue chip)"
+ },
+ "offline_request_rebuild": {
+  "unet": {
+   "method": "docs/evidence/l06c-demo-graph-identity.py child interpreter (every cloud call refused), given the live record's project, job ID, AOI, scene and dates; mock getInfo answers as in that script",
+   "cloud_attempts": [],
+   "status": "identical",
+   "exports": [
+    {
+     "stage": null,
+     "live_request_sha256": "49d1de7c47a13329671bed74e881557aafad650718284f61e28a4108a71bf56d",
+     "live_request_bytes": 1213421,
+     "rebuilt_request_sha256": "49d1de7c47a13329671bed74e881557aafad650718284f61e28a4108a71bf56d",
+     "rebuilt_request_bytes": 1213421,
+     "identical": true
+    }
+   ]
+  },
+  "swin-t": {
+   "method": "docs/evidence/l06c-demo-graph-identity.py child interpreter (every cloud call refused), given the live record's project, job ID, AOI, scene and dates; mock getInfo answers as in that script",
+   "cloud_attempts": [],
+   "status": "identical",
+   "exports": [
+    {
+     "stage": "A",
+     "live_request_sha256": "d299898dabb0d2a6c6a71f671f4f90049b36d0047018e389468ef2e865e4dd02",
+     "live_request_bytes": 796266,
+     "rebuilt_request_sha256": "d299898dabb0d2a6c6a71f671f4f90049b36d0047018e389468ef2e865e4dd02",
+     "rebuilt_request_bytes": 796266,
+     "identical": true
+    },
+    {
+     "stage": "B",
+     "live_request_sha256": "82097d614a7bd11a49f06ee525fe06b65c487710c8915d0c2d0c5e81a85f00fb",
+     "live_request_bytes": 324523,
+     "rebuilt_request_sha256": "82097d614a7bd11a49f06ee525fe06b65c487710c8915d0c2d0c5e81a85f00fb",
+     "rebuilt_request_bytes": 324523,
+     "identical": true
+    },
+    {
+     "stage": "C",
+     "live_request_sha256": "40ee722bb51a1fbff347850bd84e8d5ef88f712ecb145ff53fc8c3b69dbba50e",
+     "live_request_bytes": 558771,
+     "rebuilt_request_sha256": "40ee722bb51a1fbff347850bd84e8d5ef88f712ecb145ff53fc8c3b69dbba50e",
+     "rebuilt_request_bytes": 558771,
+     "identical": true
+    }
+   ]
+  }
+ },
+ "request_size_notes": "The plan quotes Swin-T sizes for a 12-character project; ORIGINAL_PROJECT has 13, and a stage request names the project once per asset ID it holds (A: 1, B: 2, C: 3), so A/B/C are +1/+2/+3 bytes: 796,266 / 324,523 / 558,771. The U-Net request is the plan's 1,213,421 bytes.",
+ "output_verification": {
+  "unet": {
+   "asset": {
+    "asset_id": "projects/ORIGINAL_PROJECT/assets/segwater_demo_cc63cf67b9144cc79f2cd8109378528b",
+    "type": "IMAGE",
+    "band_count": 5,
+    "bands_first_last": [
+     "logit_0",
+     "coverage"
+    ],
+    "band_names": [
+     "logit_0",
+     "logit_1",
+     "water_probability",
+     "water_mask",
+     "coverage"
+    ],
+    "precisions": [
+     "FLOAT"
+    ],
+    "one_grid_for_all_bands": true,
+    "crs": "EPSG:32651",
+    "affine": {
+     "scaleX": 10,
+     "scaleY": -10,
+     "translateX": 286320,
+     "translateY": 2640650
+    },
+    "dimensions": {
+     "height": 159,
+     "width": 167
+    },
+    "size_bytes": "219965"
+   },
+   "stats": {
+    "coverage_count": 25577,
+    "coverage_max": 1,
+    "coverage_mean": 1,
+    "coverage_min": 1,
+    "logit_0_count": 25577,
+    "logit_0_max": 2.5878679752349854,
+    "logit_0_mean": -1.4393560002273666,
+    "logit_0_min": -2.6190192699432373,
+    "logit_1_count": 25577,
+    "logit_1_max": 2.4473466873168945,
+    "logit_1_mean": 0.9180884835903996,
+    "logit_1_min": -2.658940315246582,
+    "water_mask_count": 25577,
+    "water_mask_max": 1,
+    "water_mask_mean": 0.7888028250839129,
+    "water_mask_min": 0,
+    "water_probability_count": 25577,
+    "water_probability_max": 0.9883888959884644,
+    "water_probability_mean": 0.7793654600602183,
+    "water_probability_min": 0.011990036815404892
+   },
+   "nan_counts": {
+    "coverage_nan": 0,
+    "logit_0_nan": 0,
+    "logit_1_nan": 0,
+    "water_mask_nan": 0,
+    "water_probability_nan": 0
+   },
+   "compared_with": "projects/ORIGINAL_PROJECT/assets/segwater_demo_b4acb70cbbeb47eab5ae8ee3cbb387cc",
+   "compared_with_note": "the archived demo's verified live run of the same request inputs (docs/history/cnn/results/demo_live_results.json, entrypoint demo_api_preset_scene)",
+   "comparison": {
+    "coverage_absdiff_count": 25577,
+    "coverage_absdiff_max": 0,
+    "coverage_absdiff_sum": 0,
+    "logit_0_absdiff_count": 25577,
+    "logit_0_absdiff_max": 0,
+    "logit_0_absdiff_sum": 0,
+    "logit_1_absdiff_count": 25577,
+    "logit_1_absdiff_max": 0,
+    "logit_1_absdiff_sum": 0,
+    "water_mask_absdiff_count": 25577,
+    "water_mask_absdiff_max": 0,
+    "water_mask_absdiff_sum": 0,
+    "water_mask_differs_count": 25577,
+    "water_mask_differs_max": 0,
+    "water_mask_differs_sum": 0,
+    "water_probability_absdiff_count": 25577,
+    "water_probability_absdiff_max": 0,
+    "water_probability_absdiff_sum": 0
+   },
+   "result": "pixel-identical: max |new - archived| = 0 in all five bands over 25,577 pixels; the stats equal the archived output_stats",
+   "footprint_note": "the stored asset is 167 \u00d7 159 px: the export grid is 448 \u00d7 224, and the image is clipped to the preset rectangle, so Earth Engine stores the unmasked footprint"
+  },
+  "swin-t": {
+   "final": {
+    "asset_id": "projects/ORIGINAL_PROJECT/assets/swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2",
+    "type": "IMAGE",
+    "band_count": 5,
+    "bands_first_last": [
+     "logit_0",
+     "coverage"
+    ],
+    "band_names": [
+     "logit_0",
+     "logit_1",
+     "water_probability",
+     "water_mask",
+     "coverage"
+    ],
+    "precisions": [
+     "FLOAT"
+    ],
+    "one_grid_for_all_bands": true,
+    "crs": "EPSG:32651",
+    "affine": {
+     "scaleX": 10,
+     "scaleY": -10,
+     "translateX": 287680.95335071225,
+     "translateY": 2640838.8405420803
+    },
+    "dimensions": {
+     "height": 224,
+     "width": 224
+    },
+    "size_bytes": "354910"
+   },
+   "intermediate": [
+    {
+     "asset_id": "projects/ORIGINAL_PROJECT/assets/swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2_A",
+     "type": "IMAGE",
+     "band_count": 673,
+     "bands_first_last": [
+      "c1_0",
+      "valid_fraction"
+     ],
+     "precisions": [
+      "FLOAT"
+     ],
+     "one_grid_for_all_bands": true,
+     "crs": "EPSG:32651",
+     "affine": {
+      "scaleX": 40,
+      "scaleY": -40,
+      "translateX": 287680.95335071225,
+      "translateY": 2640838.8405420803
+     },
+     "dimensions": {
+      "height": 56,
+      "width": 56
+     },
+     "size_bytes": "2213072"
+    },
+    {
+     "asset_id": "projects/ORIGINAL_PROJECT/assets/swint_upernet_demo_05c4b608aa6a482ab4ae05988f4798e2_B",
+     "type": "IMAGE",
+     "band_count": 768,
+     "bands_first_last": [
+      "c0",
+      "c767"
+     ],
+     "precisions": [
+      "FLOAT"
+     ],
+     "one_grid_for_all_bands": true,
+     "crs": "EPSG:32651",
+     "affine": {
+      "scaleX": 320,
+      "scaleY": -320,
+      "translateX": 287680.95335071225,
+      "translateY": 2640838.8405420803
+     },
+     "dimensions": {
+      "height": 7,
+      "width": 7
+     },
+     "size_bytes": "161623"
+    }
+   ],
+   "stats": {
+    "coverage_count": 50176,
+    "coverage_max": 1,
+    "coverage_mean": 1,
+    "coverage_min": 1,
+    "logit_0_count": 50176,
+    "logit_0_max": 2.8651037216186523,
+    "logit_0_mean": -0.4201841900145079,
+    "logit_0_min": -2.3575055599212646,
+    "logit_1_count": 50176,
+    "logit_1_max": 3.258427143096924,
+    "logit_1_mean": 1.0222989111744902,
+    "logit_1_min": -3.481872797012329,
+    "water_mask_count": 50176,
+    "water_mask_max": 1,
+    "water_mask_mean": 0.6827766262755102,
+    "water_mask_min": 0,
+    "water_probability_count": 50176,
+    "water_probability_max": 0.9920015335083008,
+    "water_probability_mean": 0.674903998903105,
+    "water_probability_min": 0.0037510187830775976
+   },
+   "nan_counts": {
+    "coverage_nan": 0,
+    "logit_0_nan": 0,
+    "logit_1_nan": 0,
+    "water_mask_nan": 0,
+    "water_probability_nan": 0
+   },
+   "compared_with": "projects/ORIGINAL_PROJECT/assets/upernet/m12/logits/m12_C_m12_catalogue_224_grou_e05771",
+   "compared_with_note": "the Milestone 12 trained-parity stage-C asset of the same chip, shown by the archived Swin-T demo as its example (docs/history/cnn/results/swin_demo_example_checks.json); it holds logit_0 and logit_1 only",
+   "comparison": {
+    "argmax_differs_count": 50176,
+    "argmax_differs_max": 0,
+    "argmax_differs_sum": 0,
+    "logit_0_absdiff_count": 50176,
+    "logit_0_absdiff_max": 0,
+    "logit_0_absdiff_sum": 0,
+    "logit_1_absdiff_count": 50176,
+    "logit_1_absdiff_max": 0,
+    "logit_1_absdiff_sum": 0
+   },
+   "result": "bit-identical logits: max |new - M12| = 0 for logit_0 and logit_1 over 50,176 pixels, 0 argmax disagreements; probability range and water-pixel count (34,259) equal the archived example's"
+  }
+ },
+ "reads_outside_the_demo": [
+  "preflight: ADC identity via oauth2.googleapis.com/tokeninfo (POST); 1 getAsset that returned 404 because the lead's script named the manifest's asset_namespace prefix, not an asset",
+  "preflight: 104 getAsset (every weight shard table of both manifests: readable, TABLE), 1 listAssets (project root: no ID collision), 1 getTaskList (no active task)",
+  "U-Net verification: 1 getAsset, 1 getInfo (reduceRegion: stats, NaN count, comparison)",
+  "Swin-T verification: 3 getAsset (A, B, final), 1 getInfo (reduceRegion: stats, NaN count)",
+  "Swin-T comparison: 2 attempts that failed in Earth Engine before computing (the M12 asset has no water_probability band; 1 getAsset + 1 failed getInfo each), then 1 getInfo (reduceRegion on the logits)"
+ ],
+ "demo_request_counts": {
+  "method": "the demo routes each server handled, counted from the servers' access logs; the Earth Engine requests per route are the plan's table (from the code), not logged individually",
+  "unet": {
+   "routes": {
+    "GET /api/config": 1,
+    "POST /api/scenes": 1,
+    "POST /api/preview": 1,
+    "POST /api/run": 1,
+    "GET /api/jobs/<id>": 31
+   },
+   "earth_engine_by_the_plan_table": "3 getInfo (2 search, 1 run), 4 getMapId (1 preview, 3 on the completed poll), 1 exportImage (1 task in the record); the 30 active polls make no EE request",
+   "getTaskStatus": "not logged; about one per 5 s for the 139 s from submission to COMPLETED"
+  },
+  "swin-t": {
+   "routes": {
+    "GET /api/config": 1,
+    "POST /api/scenes": 1,
+    "POST /api/preview": 1,
+    "POST /api/run": 1,
+    "GET /api/jobs/<id>": 77
+   },
+   "earth_engine_by_the_plan_table": "84 getInfo (1 config, 3 search, 2 preview, 1 run, 77 polls), 4 getMapId, 3 exportImage (3 tasks in the record)",
+   "getTaskStatus": "not logged; about one per 5 s per stage for about 7 minutes"
+  }
+ },
+ "deviations_from_the_plan": [
+  "Code: lib/phase1 after integration (demos/browser identical to the L06c revision 7bb4846), not the lane branch",
+  "The state directories were in the lead's session scratch directory (outside the repository), as the plan requires",
+  "The IPv4-first network shim (session-local, outside the repository) was on PYTHONPATH for the servers and the checks",
+  "Added beyond the plan: read-only verification of the four new assets and the two comparisons above"
+ ],
+ "left_behind": [
+  "4 image assets in projects/ORIGINAL_PROJECT/assets: segwater_demo_<unet job>, swint_upernet_demo_<swin job>_A, _B and the final one; nothing was deleted",
+  "local job records and request files in the lead's scratch directory (not committed)"
+ ],
+ "record_transitions_note": "a local watcher read each job.json once per second and logged changes; transitions shorter than a second (for example SUBMITTED to READY) can be missing"
+}

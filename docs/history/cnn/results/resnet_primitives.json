@@ -1,0 +1,837 @@
+{
+  "mode": "live_earth_engine",
+  "project": "ORIGINAL_PROJECT",
+  "input": "synthetic EE pixel coordinates; no imagery egress",
+  "comparison": "PyTorch fixture reference; scalar error metrics only",
+  "torch_version": "2.14.0",
+  "earthengine_api_version": "1.7.45",
+  "started_unix": 1790563007.288064,
+  "cases": [
+    {
+      "name": "conv7_stride2_even",
+      "parameters": 297,
+      "input_shape": [
+        1,
+        2,
+        16,
+        16
+      ],
+      "negative_input": false,
+      "nodes": {
+        "input_1": {
+          "status": "pass",
+          "max_absolute_error": 0,
+          "rmse": 0.0,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 18685,
+          "evaluation_seconds": 0.5841742088086903,
+          "ee_output_min": -0.9444444179534912,
+          "ee_output_max": 1,
+          "tolerance": 0.0001
+        },
+        "_0": {
+          "status": "pass",
+          "max_absolute_error": 5.095817972033956e-07,
+          "rmse": 1.1229143008943466e-07,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 37054,
+          "evaluation_seconds": 0.4879127920139581,
+          "ee_output_min": -0.7423307785712797,
+          "ee_output_max": 0.8385220016002445,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_shape": [
+        1,
+        3,
+        8,
+        8
+      ],
+      "torch_output_min": -1.9476337432861328,
+      "torch_output_max": 1.5477079153060913,
+      "output_transform": [
+        20,
+        0,
+        500000,
+        0,
+        -20,
+        2600000
+      ],
+      "graph_bytes": 20812,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 5.095817972033956e-07,
+        "rmse": 1.1229143008943466e-07,
+        "valid_pixel_count": 64,
+        "expected_pixel_count": 64,
+        "request_bytes": 37054,
+        "evaluation_seconds": 0.7569267910439521,
+        "ee_output_min": -0.7423307785712797,
+        "ee_output_max": 0.8385220016002445,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "conv3_stride2_odd",
+      "parameters": 57,
+      "input_shape": [
+        1,
+        2,
+        17,
+        15
+      ],
+      "negative_input": false,
+      "nodes": {
+        "input_1": {
+          "status": "pass",
+          "max_absolute_error": 0,
+          "rmse": 0.0,
+          "valid_pixel_count": 255,
+          "expected_pixel_count": 255,
+          "request_bytes": 18693,
+          "evaluation_seconds": 0.5978694588411599,
+          "ee_output_min": -0.9444444179534912,
+          "ee_output_max": 1,
+          "tolerance": 0.0001
+        },
+        "_0": {
+          "status": "pass",
+          "max_absolute_error": 1.8809728707935847e-07,
+          "rmse": 5.386884663415505e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 27165,
+          "evaluation_seconds": 0.4048517921473831,
+          "ee_output_min": -0.7274423946655298,
+          "ee_output_max": 0.6141832465761661,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_shape": [
+        1,
+        3,
+        9,
+        8
+      ],
+      "torch_output_min": -1.7503656148910522,
+      "torch_output_max": 1.5467474460601807,
+      "output_transform": [
+        20,
+        0,
+        500000,
+        0,
+        -20,
+        2600000
+      ],
+      "graph_bytes": 14661,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 1.8809728707935847e-07,
+        "rmse": 5.386884663415505e-08,
+        "valid_pixel_count": 72,
+        "expected_pixel_count": 72,
+        "request_bytes": 27165,
+        "evaluation_seconds": 0.3084999159909785,
+        "ee_output_min": -0.7274423946655298,
+        "ee_output_max": 0.6141832465761661,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "conv1_stride2_odd",
+      "parameters": 9,
+      "input_shape": [
+        1,
+        2,
+        17,
+        15
+      ],
+      "negative_input": false,
+      "nodes": {
+        "input_1": {
+          "status": "pass",
+          "max_absolute_error": 0,
+          "rmse": 0.0,
+          "valid_pixel_count": 255,
+          "expected_pixel_count": 255,
+          "request_bytes": 18693,
+          "evaluation_seconds": 0.27020704094320536,
+          "ee_output_min": -0.9444444179534912,
+          "ee_output_max": 1,
+          "tolerance": 0.0001
+        },
+        "_0": {
+          "status": "pass",
+          "max_absolute_error": 1.7731796475572992e-07,
+          "rmse": 3.809468357778857e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 25032,
+          "evaluation_seconds": 0.32515020784921944,
+          "ee_output_min": -0.8717059377425661,
+          "ee_output_max": 0.8027936814832047,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_shape": [
+        1,
+        3,
+        9,
+        8
+      ],
+      "torch_output_min": -2.4462034702301025,
+      "torch_output_max": 2.016139507293701,
+      "output_transform": [
+        20,
+        0,
+        500000,
+        0,
+        -20,
+        2600000
+      ],
+      "graph_bytes": 13361,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 1.7731796475572992e-07,
+        "rmse": 3.809468357778857e-08,
+        "valid_pixel_count": 72,
+        "expected_pixel_count": 72,
+        "request_bytes": 25032,
+        "evaluation_seconds": 0.5899243750609457,
+        "ee_output_min": -0.8717059377425661,
+        "ee_output_max": 0.8027936814832047,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "max3_stride2_padded_even",
+      "parameters": 0,
+      "input_shape": [
+        1,
+        2,
+        16,
+        16
+      ],
+      "negative_input": false,
+      "nodes": {
+        "input_1": {
+          "status": "pass",
+          "max_absolute_error": 0,
+          "rmse": 0.0,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 18685,
+          "evaluation_seconds": 0.3067368750926107,
+          "ee_output_min": -0.9444444179534912,
+          "ee_output_max": 1,
+          "tolerance": 0.0001
+        },
+        "_0": {
+          "status": "pass",
+          "max_absolute_error": 0,
+          "rmse": 0.0,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 19196,
+          "evaluation_seconds": 0.36095804208889604,
+          "ee_output_min": 0.2777777910232544,
+          "ee_output_max": 1,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_shape": [
+        1,
+        2,
+        8,
+        8
+      ],
+      "torch_output_min": 0.0,
+      "torch_output_max": 1.0,
+      "output_transform": [
+        20,
+        0,
+        500000,
+        0,
+        -20,
+        2600000
+      ],
+      "graph_bytes": 11391,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 0,
+        "rmse": 0.0,
+        "valid_pixel_count": 64,
+        "expected_pixel_count": 64,
+        "request_bytes": 19196,
+        "evaluation_seconds": 0.2523207499179989,
+        "ee_output_min": 0.2777777910232544,
+        "ee_output_max": 1,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "max3_stride2_padded_negative_odd",
+      "parameters": 0,
+      "input_shape": [
+        1,
+        2,
+        17,
+        15
+      ],
+      "negative_input": true,
+      "nodes": {
+        "input_1": {
+          "status": "pass",
+          "max_absolute_error": 5.960464477539063e-08,
+          "rmse": 2.4871034907046508e-08,
+          "valid_pixel_count": 255,
+          "expected_pixel_count": 255,
+          "request_bytes": 19502,
+          "evaluation_seconds": 0.3134829169139266,
+          "ee_output_min": -2,
+          "ee_output_max": -1.125,
+          "tolerance": 0.0001
+        },
+        "_0": {
+          "status": "pass",
+          "max_absolute_error": 5.21540641784668e-08,
+          "rmse": 2.618766912440849e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 20045,
+          "evaluation_seconds": 0.8227647920139134,
+          "ee_output_min": -1.3611111119389534,
+          "ee_output_max": -1,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_shape": [
+        1,
+        2,
+        9,
+        8
+      ],
+      "torch_output_min": -1.5,
+      "torch_output_max": -1.0,
+      "output_transform": [
+        20,
+        0,
+        500000,
+        0,
+        -20,
+        2600000
+      ],
+      "graph_bytes": 11866,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 5.21540641784668e-08,
+        "rmse": 2.618766912440849e-08,
+        "valid_pixel_count": 72,
+        "expected_pixel_count": 72,
+        "request_bytes": 20045,
+        "evaluation_seconds": 2.0599645420443267,
+        "ee_output_min": -1.3611111119389534,
+        "ee_output_max": -1,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "residual_stride2_even",
+      "parameters": 159,
+      "input_shape": [
+        1,
+        2,
+        16,
+        16
+      ],
+      "negative_input": false,
+      "nodes": {
+        "x": {
+          "status": "pass",
+          "max_absolute_error": 0,
+          "rmse": 0.0,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 18685,
+          "evaluation_seconds": 2.0735672081355006,
+          "ee_output_min": -0.9444444179534912,
+          "ee_output_max": 1,
+          "tolerance": 0.0001
+        },
+        "conv1": {
+          "status": "pass",
+          "max_absolute_error": 1.5805271358360073e-07,
+          "rmse": 4.418833880503309e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 25320,
+          "evaluation_seconds": 0.28641508403234184,
+          "ee_output_min": -0.6358734208192728,
+          "ee_output_max": 0.6819633571236224,
+          "tolerance": 0.0001
+        },
+        "bn1": {
+          "status": "pass",
+          "max_absolute_error": 1.978409231995215e-07,
+          "rmse": 5.144826372715028e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 26693,
+          "evaluation_seconds": 1.1395179589744657,
+          "ee_output_min": -0.6358702422325369,
+          "ee_output_max": 0.6819599463529965,
+          "tolerance": 0.0001
+        },
+        "relu1": {
+          "status": "pass",
+          "max_absolute_error": 1.5156073440714124e-07,
+          "rmse": 3.35228107162066e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 24765,
+          "evaluation_seconds": 1.117032082984224,
+          "ee_output_min": 0,
+          "ee_output_max": 0.7034189390687443,
+          "tolerance": 0.0001
+        },
+        "conv2": {
+          "status": "pass",
+          "max_absolute_error": 2.4782175178650334e-07,
+          "rmse": 5.4651265453182015e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 31581,
+          "evaluation_seconds": 0.3295904169790447,
+          "ee_output_min": -0.14770813398755703,
+          "ee_output_max": 0.6381355753178526,
+          "tolerance": 0.0001
+        },
+        "bn2": {
+          "status": "pass",
+          "max_absolute_error": 2.7807442792848747e-07,
+          "rmse": 5.7102530882351846e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 31923,
+          "evaluation_seconds": 0.8622477499302477,
+          "ee_output_min": -0.14770740715109135,
+          "ee_output_max": 0.6381323770931465,
+          "tolerance": 0.0001
+        },
+        "shortcut": {
+          "status": "pass",
+          "max_absolute_error": 1.0880301193338937e-07,
+          "rmse": 3.072959740300666e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 23990,
+          "evaluation_seconds": 0.5156224588863552,
+          "ee_output_min": -0.9023319007986589,
+          "ee_output_max": 0.6145820838246547,
+          "tolerance": 0.0001
+        },
+        "shortcut_bn": {
+          "status": "pass",
+          "max_absolute_error": 2.7493255760902e-07,
+          "rmse": 5.867624929116063e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 24547,
+          "evaluation_seconds": 0.40625704103149474,
+          "ee_output_min": -0.9023274124792079,
+          "ee_output_max": 0.6145790237271771,
+          "tolerance": 0.0001
+        },
+        "add": {
+          "status": "pass",
+          "max_absolute_error": 4.316174198049083e-07,
+          "rmse": 9.353790151234126e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 35286,
+          "evaluation_seconds": 0.5709959999658167,
+          "ee_output_min": -0.6701768273588208,
+          "ee_output_max": 1.1299890542496263,
+          "tolerance": 0.0001
+        },
+        "relu2": {
+          "status": "pass",
+          "max_absolute_error": 4.316174198049083e-07,
+          "rmse": 7.258749605868193e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 34346,
+          "evaluation_seconds": 0.3860785001888871,
+          "ee_output_min": 0,
+          "ee_output_max": 1.183269129916354,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_shape": [
+        1,
+        3,
+        8,
+        8
+      ],
+      "torch_output_min": 0.0,
+      "torch_output_max": 2.483475923538208,
+      "output_transform": [
+        20,
+        0,
+        500000,
+        0,
+        -20,
+        2600000
+      ],
+      "graph_bytes": 24526,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 4.316174198049083e-07,
+        "rmse": 7.258749605868193e-08,
+        "valid_pixel_count": 64,
+        "expected_pixel_count": 64,
+        "request_bytes": 34346,
+        "evaluation_seconds": 0.2831730409525335,
+        "ee_output_min": 0,
+        "ee_output_max": 1.183269129916354,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "residual_stride2_odd",
+      "parameters": 159,
+      "input_shape": [
+        1,
+        2,
+        17,
+        15
+      ],
+      "negative_input": false,
+      "nodes": {
+        "x": {
+          "status": "pass",
+          "max_absolute_error": 0,
+          "rmse": 0.0,
+          "valid_pixel_count": 255,
+          "expected_pixel_count": 255,
+          "request_bytes": 18693,
+          "evaluation_seconds": 0.9939867090433836,
+          "ee_output_min": -0.9444444179534912,
+          "ee_output_max": 1,
+          "tolerance": 0.0001
+        },
+        "conv1": {
+          "status": "pass",
+          "max_absolute_error": 1.7414209629862398e-07,
+          "rmse": 4.756348150196332e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 25891,
+          "evaluation_seconds": 0.5771035000216216,
+          "ee_output_min": -0.5334187156645124,
+          "ee_output_max": 0.5996580301316629,
+          "tolerance": 0.0001
+        },
+        "bn1": {
+          "status": "pass",
+          "max_absolute_error": 1.700524219216959e-07,
+          "rmse": 5.475329194007679e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 27248,
+          "evaluation_seconds": 0.38968699984252453,
+          "ee_output_min": -0.5334160329769102,
+          "ee_output_max": 0.5996550244777302,
+          "tolerance": 0.0001
+        },
+        "relu1": {
+          "status": "pass",
+          "max_absolute_error": 1.700524219216959e-07,
+          "rmse": 3.951103891770836e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 25027,
+          "evaluation_seconds": 0.3416238750796765,
+          "ee_output_min": 0,
+          "ee_output_max": 0.690785378206724,
+          "tolerance": 0.0001
+        },
+        "conv2": {
+          "status": "pass",
+          "max_absolute_error": 2.455622214736497e-07,
+          "rmse": 5.88003060829554e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 32208,
+          "evaluation_seconds": 1.1401103329844773,
+          "ee_output_min": -0.9684356223386571,
+          "ee_output_max": 0.35866711977110627,
+          "tolerance": 0.0001
+        },
+        "bn2": {
+          "status": "pass",
+          "max_absolute_error": 3.109342284549066e-07,
+          "rmse": 6.348200174901972e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 32564,
+          "evaluation_seconds": 0.877152208937332,
+          "ee_output_min": -0.9684307887750815,
+          "ee_output_max": 0.3586653225869571,
+          "tolerance": 0.0001
+        },
+        "shortcut": {
+          "status": "pass",
+          "max_absolute_error": 1.1920928955078125e-07,
+          "rmse": 2.442770735652055e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 24519,
+          "evaluation_seconds": 0.40474491682834923,
+          "ee_output_min": -0.5081167419751486,
+          "ee_output_max": 0.4248090700955463,
+          "tolerance": 0.0001
+        },
+        "shortcut_bn": {
+          "status": "pass",
+          "max_absolute_error": 2.384185791015625e-07,
+          "rmse": 4.830211147910962e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 25074,
+          "evaluation_seconds": 0.3593082500156015,
+          "ee_output_min": -0.5081141789754232,
+          "ee_output_max": 0.4248069243283095,
+          "tolerance": 0.0001
+        },
+        "add": {
+          "status": "pass",
+          "max_absolute_error": 3.098025794512349e-07,
+          "rmse": 8.086397642366277e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 35900,
+          "evaluation_seconds": 0.29556175018660724,
+          "ee_output_min": -1.0293687544032701,
+          "ee_output_max": 0.5207748816428565,
+          "tolerance": 0.0001
+        },
+        "relu2": {
+          "status": "pass",
+          "max_absolute_error": 3.098025794512349e-07,
+          "rmse": 5.735090222069551e-08,
+          "valid_pixel_count": 72,
+          "expected_pixel_count": 72,
+          "request_bytes": 34196,
+          "evaluation_seconds": 1.2830406250432134,
+          "ee_output_min": 0,
+          "ee_output_max": 1.0171158860472438,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_shape": [
+        1,
+        3,
+        9,
+        8
+      ],
+      "torch_output_min": 0.0,
+      "torch_output_max": 2.282923460006714,
+      "output_transform": [
+        20,
+        0,
+        500000,
+        0,
+        -20,
+        2600000
+      ],
+      "graph_bytes": 24589,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 3.098025794512349e-07,
+        "rmse": 5.735090222069551e-08,
+        "valid_pixel_count": 72,
+        "expected_pixel_count": 72,
+        "request_bytes": 34196,
+        "evaluation_seconds": 0.6768970838747919,
+        "ee_output_min": 0,
+        "ee_output_max": 1.0171158860472438,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    },
+    {
+      "name": "stem_decoder_grid_roundtrip",
+      "parameters": 605,
+      "input_shape": [
+        1,
+        2,
+        16,
+        16
+      ],
+      "negative_input": false,
+      "nodes": {
+        "x": {
+          "status": "pass",
+          "max_absolute_error": 0,
+          "rmse": 0.0,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 18685,
+          "evaluation_seconds": 0.3000070829875767,
+          "ee_output_min": -0.9444444179534912,
+          "ee_output_max": 1,
+          "tolerance": 0.0001
+        },
+        "stem": {
+          "status": "pass",
+          "max_absolute_error": 4.7331669961181433e-07,
+          "rmse": 1.152954759347761e-07,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 37048,
+          "evaluation_seconds": 0.3738465839996934,
+          "ee_output_min": -0.669806934570595,
+          "ee_output_max": 1.1930795824773175,
+          "tolerance": 0.0001
+        },
+        "relu": {
+          "status": "pass",
+          "max_absolute_error": 3.8134141489010176e-07,
+          "rmse": 7.985706747592747e-08,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 30862,
+          "evaluation_seconds": 0.3756302499677986,
+          "ee_output_min": 0,
+          "ee_output_max": 1.1930795824773175,
+          "tolerance": 0.0001
+        },
+        "pool": {
+          "status": "pass",
+          "max_absolute_error": 3.8134141489010176e-07,
+          "rmse": 1.6485942161348818e-07,
+          "valid_pixel_count": 16,
+          "expected_pixel_count": 16,
+          "request_bytes": 33801,
+          "evaluation_seconds": 1.238469583913684,
+          "ee_output_min": 0.3767017446194271,
+          "ee_output_max": 1.4452296051787599,
+          "tolerance": 0.0001
+        },
+        "low": {
+          "status": "pass",
+          "max_absolute_error": 9.103930009857208e-07,
+          "rmse": 2.2570116396526665e-07,
+          "valid_pixel_count": 16,
+          "expected_pixel_count": 16,
+          "request_bytes": 42953,
+          "evaluation_seconds": 0.3531928330194205,
+          "ee_output_min": 0.04842136364726113,
+          "ee_output_max": 1.1408482919636243,
+          "tolerance": 0.0001
+        },
+        "up1": {
+          "status": "pass",
+          "max_absolute_error": 9.103930009857208e-07,
+          "rmse": 2.257011639652667e-07,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 47840,
+          "evaluation_seconds": 0.788629415910691,
+          "ee_output_min": 0.04842136364726113,
+          "ee_output_max": 1.1408482919636243,
+          "tolerance": 0.0001
+        },
+        "cat": {
+          "status": "pass",
+          "max_absolute_error": 9.103930009857208e-07,
+          "rmse": 1.7844387486532775e-07,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 52513,
+          "evaluation_seconds": 0.43292779102921486,
+          "ee_output_min": 0.04554084771246325,
+          "ee_output_max": 0.868095224707762,
+          "tolerance": 0.0001
+        },
+        "merge": {
+          "status": "pass",
+          "max_absolute_error": 7.048148975563606e-07,
+          "rmse": 1.9654182043492494e-07,
+          "valid_pixel_count": 64,
+          "expected_pixel_count": 64,
+          "request_bytes": 57034,
+          "evaluation_seconds": 0.4734037921298295,
+          "ee_output_min": -0.6359341685682535,
+          "ee_output_max": 1.1202791039554965,
+          "tolerance": 0.0001
+        },
+        "up2": {
+          "status": "pass",
+          "max_absolute_error": 7.048148975563606e-07,
+          "rmse": 1.96541820434925e-07,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 66048,
+          "evaluation_seconds": 0.5638944159727544,
+          "ee_output_min": -0.6359341685682535,
+          "ee_output_max": 1.1202791039554965,
+          "tolerance": 0.0001
+        },
+        "head": {
+          "status": "pass",
+          "max_absolute_error": 7.659976395402168e-07,
+          "rmse": 2.5154634157766505e-07,
+          "valid_pixel_count": 256,
+          "expected_pixel_count": 256,
+          "request_bytes": 59985,
+          "evaluation_seconds": 0.49703179206699133,
+          "ee_output_min": -2.4693436201321095,
+          "ee_output_max": 0.8825035274940006,
+          "tolerance": 0.0001
+        }
+      },
+      "torch_output_shape": [
+        1,
+        1,
+        16,
+        16
+      ],
+      "torch_output_min": -2.469343900680542,
+      "torch_output_max": 0.8825034499168396,
+      "output_transform": [
+        10.0,
+        0.0,
+        500000,
+        0.0,
+        -10.0,
+        2600000
+      ],
+      "graph_bytes": 50657,
+      "output": {
+        "status": "pass",
+        "max_absolute_error": 7.659976395402168e-07,
+        "rmse": 2.5154634157766505e-07,
+        "valid_pixel_count": 256,
+        "expected_pixel_count": 256,
+        "request_bytes": 59985,
+        "evaluation_seconds": 0.4307011249475181,
+        "ee_output_min": -2.4693436201321095,
+        "ee_output_max": 0.8825035274940006,
+        "tolerance": 0.0001
+      },
+      "status": "pass"
+    }
+  ],
+  "status": "pass",
+  "finished_unix": 1790563040.1650171
+}

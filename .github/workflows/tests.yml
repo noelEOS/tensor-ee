@@ -1,0 +1,47 @@
+name: Offline tests
+on: [push, pull_request]
+permissions:
+  contents: read
+env:
+  EE_LIVE: '0'
+  EE_LIVE_BATCH: '0'
+  EE_LIVE_LARGE: '0'
+  HF_HUB_OFFLINE: '1'
+  OMP_NUM_THREADS: '2'
+  MKL_NUM_THREADS: '2'
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install CPU-only PyTorch
+        run: python -m pip install 'torch>=2.10' --index-url https://download.pytorch.org/whl/cpu
+      - run: python -m pip install -e '.[test]'
+      - run: python -m pytest -q -ra
+      - run: python -m pip wheel . --no-deps --wheel-dir dist
+      - run: python -m pip uninstall -y tensor-ee && python -m pip install --no-deps dist/*.whl
+      - name: Import installed wheel outside checkout
+        working-directory: /tmp
+        run: python -c "from tensor_ee import compile_model, conv2d, from_image"
+  optional-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install CPU-only PyTorch and torchvision
+        run: python -m pip install 'torch>=2.10' 'torchvision>=0.20' --index-url https://download.pytorch.org/whl/cpu
+      - run: python -m pip install -e '.[test,resnet,onnx,segwater,swin]'
+      - run: python -m pytest -q -ra

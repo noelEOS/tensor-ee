@@ -1,0 +1,208 @@
+{
+  "status": "passed",
+  "comparison": {
+    "max_abs": 9.775161743164062e-06,
+    "tolerance": 0.0001,
+    "over_tolerance": 0,
+    "worst": {
+      "row": 174,
+      "col": 105,
+      "class": 0,
+      "earth_engine": 2.5896098613739014,
+      "reference": 2.5896196365356445
+    },
+    "mae": 1.5915534705450082e-06,
+    "mean": -4.7221137580884254e-08,
+    "rmse": 2.0078637535142193e-06,
+    "bit_exact_values": 6823,
+    "values": 196608,
+    "argmax_agreement": 65536,
+    "pixels": 65536,
+    "pass": true
+  },
+  "checks": {
+    "input_float32": true,
+    "input_valid": true,
+    "input_finite": true,
+    "output_float32": true,
+    "output_unmasked": true,
+    "valid_band_all_one": true,
+    "logits_finite": true,
+    "shape": true,
+    "reference_expanded": true,
+    "band_order_ok": true,
+    "grid_ok": true,
+    "float32_ok": true
+  },
+  "asset": {
+    "band_order": [
+      "logit_0",
+      "logit_1",
+      "logit_2",
+      "valid"
+    ],
+    "band_order_ok": true,
+    "grid_ok": true,
+    "grids": [
+      {
+        "crs": "EPSG:32651",
+        "dimensions": {
+          "width": 256,
+          "height": 256
+        },
+        "transform": [
+          10,
+          0,
+          287520,
+          0,
+          -10,
+          2641000
+        ]
+      },
+      {
+        "crs": "EPSG:32651",
+        "dimensions": {
+          "width": 256,
+          "height": 256
+        },
+        "transform": [
+          10,
+          0,
+          287520,
+          0,
+          -10,
+          2641000
+        ]
+      },
+      {
+        "crs": "EPSG:32651",
+        "dimensions": {
+          "width": 256,
+          "height": 256
+        },
+        "transform": [
+          10,
+          0,
+          287520,
+          0,
+          -10,
+          2641000
+        ]
+      },
+      {
+        "crs": "EPSG:32651",
+        "dimensions": {
+          "width": 256,
+          "height": 256
+        },
+        "transform": [
+          10,
+          0,
+          287520,
+          0,
+          -10,
+          2641000
+        ]
+      }
+    ],
+    "precisions": [
+      "FLOAT",
+      "FLOAT",
+      "FLOAT",
+      "FLOAT"
+    ],
+    "float32_ok": true
+  },
+  "reference": {
+    "logit_min": -4.778697490692139,
+    "logit_max": 4.004401683807373,
+    "logit_mean_abs": 2.05598089276346,
+    "float32_vs_float64_max_abs": 9.55504843691557e-06,
+    "float32_vs_float64_rmse": 2.021387315781509e-06,
+    "argmax_counts": [
+      52837,
+      12688,
+      11
+    ],
+    "expanded_equals_forward": true,
+    "tensors_checked": 21,
+    "logits_shape": [
+      1,
+      3,
+      256,
+      256
+    ]
+  },
+  "input": {
+    "sha256": "bbfac3eadcc7dfd4cb3e2c7f07be445e27781f0f895421d51469d53b046e11f3",
+    "min": [
+      -4.7300124168396,
+      -5.412015438079834,
+      -1.9721581935882568
+    ],
+    "max": [
+      2.2414464950561523,
+      0.4215535521507263,
+      3.877129554748535
+    ]
+  },
+  "schema_version": 1,
+  "kind": "capstone_verification",
+  "project": "ORIGINAL_PROJECT",
+  "seed": 2610,
+  "state_dict_sha256": "2caabc42d86dc172dd1a46adc70d9836a85801c0c7d25db5415850429d60cd69",
+  "destination": "projects/ORIGINAL_PROJECT/assets/native_ee_capstone_c1_ead153be2306_logits",
+  "task": {
+    "state": "COMPLETED",
+    "description": "native_ee_capstone_c1_ead153be2306_logits",
+    "priority": 100,
+    "creation_timestamp_ms": 1791913878647,
+    "update_timestamp_ms": 1791913993697,
+    "start_timestamp_ms": 1791913882072,
+    "task_type": "EXPORT_IMAGE",
+    "destination_uris": [
+      "https://code.earthengine.google.com/?asset=projects/ORIGINAL_PROJECT/assets/native_ee_capstone_c1_ead153be2306_logits"
+    ],
+    "attempt": 1,
+    "batch_eecu_usage_seconds": 49.0645866394043,
+    "id": "UGT4OSVOQHPOJ764HM474TMD",
+    "name": "projects/ORIGINAL_PROJECT/operations/UGT4OSVOQHPOJ764HM474TMD"
+  },
+  "request_sha256": "0f584e83e1c5c1a07cec2501029a8bfba0b42e64b3265fe98a00bfb0a2afda70",
+  "grid": {
+    "crs": "EPSG:32651",
+    "transform": [
+      10,
+      0,
+      287520,
+      0,
+      -10,
+      2641000
+    ],
+    "width": 256,
+    "height": 256
+  },
+  "scene": "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD",
+  "check_input": {
+    "pixels": 65536,
+    "valid": 65536,
+    "expected": 65536,
+    "passed": true,
+    "unix": 1791913023.1429691
+  },
+  "revision": "a1bf50ae9910818dc7266d79a4c3ad04daf634e7",
+  "dirty": false,
+  "native_ee": "native_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  }
+}
