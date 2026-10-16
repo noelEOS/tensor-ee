@@ -7,8 +7,9 @@ composing the blocks by hand:
 PyTorch model ──convert──▶ block graph ──plan──▶ stages ──build_stage──▶ Earth Engine graphs ──run──▶ assets
 ```
 
-- `convert` traces the model with `torch.export` (fake tensors, no forward pass; tracing still runs
-  the model's Python code, so convert only models whose source you trust), recognizes its
+- `convert` traces the model with `torch.export`: it runs the model's Python `forward` code
+  locally with fake tensors, without numerical inference on image data. Tracing is not a
+  sandbox; convert only models whose source you trust. It recognizes the model's
   modules and writes a **block graph**: library operations, their settings, their parameters by
   `state_dict` name, and the tensors between them. It also writes a **conversion report**: for
   every node, whether its settings are inside its block's validated record.
@@ -59,7 +60,9 @@ Four kinds of evidence apply, and they are kept apart:
 Install the `swin` extra (SMP 0.5.0 and timm 1.0.30; [Getting started, Install](getting-started.md#1-install)).
 The blocks below are one Python session: run them in order, from the checkout root with
 `PYTHONPATH=.`, for example saved in order to one file. They make no cloud call and download
-nothing (`encoder_weights=None`); nothing runs a model's forward pass.
+nothing (`encoder_weights=None`). Conversion allocates a zero example at the input shape,
+then runs the model's Python `forward` code locally with fake tensors during export; it does
+not compute numerical model outputs on image data.
 
 Building an Earth Engine graph needs the API's function signatures. Offline, the checkout's
 `tools.live_fixtures.offline_earth_engine()` installs them and refuses every cloud call, as the

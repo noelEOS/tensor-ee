@@ -4,9 +4,12 @@ the development archive's phase3-design.md, section 3.3 (decisions E1 and E2). T
 reads it module by module, never operation by operation:
 
 - ``trace(model, input_shape)`` refuses a model in training mode (dropout and DropPath are
-  identities only in evaluation) and weights other than float32, then runs
-  ``torch.export.export(model, (example,), strict=False)`` at the one input shape. Export
-  traces with fake tensors: nothing is computed, and no shape-dependent branch is left.
+  identities only in evaluation) and weights other than float32, allocates a zero example at
+  the input shape, then runs ``torch.export.export(model, (example,), strict=False)``. Export
+  executes the model's Python ``forward`` code locally with fake tensors, without numerical
+  inference on image data. Tracing is not a
+  sandbox: only models whose Python source is trusted may be converted. Shape-dependent
+  branches are specialized to the input shape.
 - ``Unit``: what a recognizer reads from a module: one block-graph node (its id, registry
   operation, settings and parameters by ``state_dict`` name), the module paths whose ATen calls
   are the node's, and which of its modules read each input edge.
@@ -70,7 +73,8 @@ what the library's block computes. With ``forward_mismatch="report"`` it convert
 difference is returned (``Grouped.differences``) for the report to mark the node outside its
 validated record, as for an IR renamed by another torch version, without vouching for it.
 
-Graph description only: nothing here touches Earth Engine, and no forward pass runs.
+Graph description only: nothing here touches Earth Engine. Export executes Python model code
+locally with fake tensors; it does not compute numerical model outputs on image data.
 """
 
 from __future__ import annotations
@@ -232,8 +236,12 @@ def _shape(node) -> tuple[int, ...]:
 
 
 def trace(model, input_shape) -> Traced:
-    """``model`` exported at ``input_shape`` (``(1, channels, height, width)``), with fake
-    tensors: no forward pass computes anything. Refuses training mode and non-float32 weights."""
+    """Export ``model`` at ``input_shape`` (``(1, channels, height, width)``).
+
+    Allocates a zero example, then runs Python ``forward`` code locally with fake tensors,
+    without numerical inference on image data. This is not a sandbox: trust the model's
+    source. Refuses training mode and non-float32 weights.
+    """
     check_evaluation(model)
     _float32(model)
     shape = _input_shape(input_shape)

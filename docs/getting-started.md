@@ -225,10 +225,11 @@ Expect:
 segformer_b0: 20 nodes; 18 with a validated record, 18 inside, 0 outside; 2 layout operations
 ```
 
-`convert` traces the model with `torch.export` (fake tensors, no forward pass, and nothing
-downloaded with `encoder_weights=None`) and writes a block graph: the library operations
-with their settings and parameter names, and no weight values. Tracing runs the model's
-Python code, so convert only models whose source you trust. The report checks every node's
+`convert` traces the model with `torch.export`, which runs its Python `forward` code locally
+with fake tensors, without numerical inference on image data. Nothing is downloaded with
+`encoder_weights=None`. The result is a block graph: library operations with their settings
+and parameter names, and no weight values. Tracing is not a sandbox, so convert only models
+whose source you trust. The report checks every node's
 settings against its block's validated record: here all 18 nodes with a record are inside
 it, and the two layout operations (the relabels onto the model's token grid and back) have
 none. A setting outside a record is reported, not refused, and carries no evidence.
