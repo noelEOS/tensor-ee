@@ -1,5 +1,6 @@
 """Exact checkpoint tensors, supported ONNX semantics, and fixed-grid contract."""
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -16,7 +17,8 @@ from tensor_ee.receptive_field import analyze_receptive_field
 from tensor_ee.weight_assets import effective_convolutions
 
 
-CHECKPOINT = Path(__file__).resolve().parents[1] / "checkpoints" / "segwater_r18_s42_fp32_b32.onnx"
+RESOURCES = Path(os.environ.get("TENSOR_EE_RESOURCES", Path(__file__).resolve().parents[1]))
+CHECKPOINT = RESOURCES / "checkpoints" / "segwater_r18_s42_fp32_b32.onnx"
 
 
 def _fixture():
@@ -60,8 +62,8 @@ def _set_attribute(node, name, value):
 
 @pytest.fixture(scope="module")
 def checkpoint_model():
-    if not CHECKPOINT.exists():
-        pytest.skip("The user-supplied trained checkpoint is not distributed with source")
+    if not CHECKPOINT.is_file():
+        pytest.skip("set TENSOR_EE_RESOURCES to a checkout holding checkpoints/segwater_r18_s42_fp32_b32.onnx")
     return load_onnx_model(CHECKPOINT)
 
 
