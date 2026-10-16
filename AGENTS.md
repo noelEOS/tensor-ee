@@ -3,7 +3,7 @@
 `tensor_ee` is a library of Earth Engine building blocks, with two reference models built
 only from it: the SegWater ResNet18 U-Net and a fixed 224 × 224 Swin-T/UPerNet. Work here
 extends the library, composes new models from it, and converts supported attention models
-to it. The rules below apply to every task; a task's own brief adds to them.
+to it. The rules below apply to every change.
 
 ## Read first
 
@@ -21,24 +21,15 @@ These are binding. Where a task prompt and one of them disagree, stop and ask.
   [normalization.py](tensor_ee/blocks/window/normalization.py), and the model composite in
   [tensor_ee/models/swin_t224/](tensor_ee/models/swin_t224/).
 
-The project's plans, task briefs and the evidence of its development live in the private
-development archive; the public repository holds the records its tests and guides cite. A
-task brief given to you says where its own board is.
-
-## Your role
-
-You are an implementer. The lead reviews and integrates, a separate reviewer checks your diff,
-and only the lead runs anything against Earth Engine. Only the lead edits the task board of
-the plan your brief names. Ask the lead before touching files outside your task.
-
 ## Environment
 
-- **Python.** Use the main checkout's `.venv/bin/python` and run from the repository root with
-  `PYTHONPATH=.`; `tensor_ee` is not installed in that environment. A worktree has no `.venv`
-  and no git-ignored files: `git worktree list` prints the main checkout first.
-- **Branch.** Work on the branch your brief names, cut from `origin/main`. Do not push.
-- **Checkpoints.** The G1 gate reads `checkpoints/` and `downloads/` from the main checkout,
-  read-only. Never copy them into a worktree or commit them.
+- **Python.** Set up as [CONTRIBUTING](CONTRIBUTING.md#set-up-and-run-the-tests) describes, and
+  run from the repository root with `PYTHONPATH=.`.
+- **Branch.** Work on a branch cut from the latest `main`; changes reach `main` through a pull
+  request.
+- **Checkpoints.** The trained G1 graphs and a few tests read the git-ignored `checkpoints/`
+  and `downloads/` from the checkout given as `--resources`; without them they skip by name.
+  Never commit them.
 
 ## Checks
 
@@ -46,7 +37,7 @@ Run these on your final revision, and report each with its result:
 
 ```sh
 PYTHONPATH=. python tools/graph_identity.py --check docs/evidence/l00-golden-graphs.json \
-    --resources <main checkout>        # G1: must report 45 of 45 graphs equal
+    --resources <checkout>             # G1: must report 45 of 45 graphs equal
 PYTHONPATH=. python tools/graph_identity.py --check-ext docs/evidence/x00-g1ext-golden-graphs.json
                                        # G1-ext: must report 19 of 19 graphs equal
 PYTHONPATH=. python -m pytest -q       # the offline suite
@@ -66,7 +57,7 @@ output.
 - **G1 is standing.** The 45 golden graphs stay byte-identical at today's defaults, and the 19
   G1-ext graphs (the hand-built SegFormer-B0 and Swin-T/UPerNet graphs the converter rebuilds)
   with them. Run both gates before and after your change. Anything other than 45/45 and 19/19
-  means stop and report. Never regenerate a golden file; that is a lead decision.
+  means stop and report. Never regenerate a golden file; that is the maintainer's decision.
 - **Reuse before adding.** Check the catalogue first. A new value of an existing setting is a
   parameter whose default is today's value, plus a fixture: never a copy of the block. Two
   implementations of one operation are a defect. An operation the library does not have is a
@@ -78,9 +69,8 @@ output.
   exactly, which G1 shows. There are three precision policies (contract §7); never add a fourth.
 - **Layers.** Each layer imports only the layers before it
   ([`tests/test_library_boundaries.py`](tests/test_library_boundaries.py)). R and W blocks never
-  import each other. Nothing in `tensor_ee/` imports from `tests/`, from timm, or from the
-  research code of the development archive. PyTorch references live in `tests/` and
-  `tools/fixtures/` only.
+  import each other. Nothing in `tensor_ee/` imports from `tests/` or from timm. PyTorch
+  references live in `tests/` and `tools/fixtures/` only.
 - **Historical identifiers stay** (CONTRIBUTING, "Historical identifiers"): the format and wire
   identifiers spelled `native_ee_*` and `native_ee.*`, and the module paths the evidence
   records cite, are never renamed.
@@ -98,9 +88,9 @@ output.
   - unsupported forms refused with `reject` or `UnsupportedOperation`, never approximated;
   - a NumPy mirror in `tests/reference/`, a fixture in `tools/fixtures/`, its entry in the lane
     test's `EXPECTED` or `EXPECTED_METADATA`, and the catalogue regenerated.
-- **Status.** Never write "Ready"; the lead promotes a block after G3-live. A new block's status
-  is `Fixed — offline only: <the settings your offline evidence covers>`, and its docstring says
-  it has not been validated live.
+- **Status.** Never write "Ready"; the maintainer promotes a block after G3-live. A new block's
+  status is `Fixed — offline only: <the settings your offline evidence covers>`, and its
+  docstring says it has not been validated live.
 - **Locality.** A block whose output depends on the whole chip (global attention, global
   pooling) is `EXTENT`. Set `chip_edge_dependent` only when tiling with halos cannot reproduce
   the result, as with the shifted-window mask or a periodic wrap. A kernel's zero padding at
@@ -132,8 +122,6 @@ output.
   A new block is needed instead when the module computes something no block computes, or a
   block refuses its setting or size (SegFormer's keys and values beyond one 7 × 7 window): add
   the block first ("A new block" above), never arithmetic in the converter.
-- **Other tasks' files.** Do not edit a block or file that another in-progress task owns (your
-  brief and the lead say which). If you need one, record the dependency and ask.
 
 ## Numerical claims
 
@@ -145,16 +133,16 @@ output.
 ## Never
 
 - Call Earth Engine: no `ee.Initialize` or `ee.Authenticate`, no `live_fixtures.py --run`, no
-  exports, assets or tasks. Write a live plan instead; the lead runs it.
+  exports, assets or tasks. Write a live plan instead; the maintainer runs it.
 - Download anything: build references with random weights (`pretrained=False`,
   `encoder_weights=None`).
 - Add a dependency.
 - Commit credentials, project IDs, personal paths or asset IDs.
 
-## Handoff
+## In the pull request
 
-End every task with a handoff, written into the task's brief:
-- branch, base and final revision;
+Report:
+- the base revision;
 - changed files, grouped by layer;
 - every command above with its result: the G1 and G1-ext counts, the pytest summary, the
   catalogue check, and the largest absolute mirror-vs-PyTorch error for each fixture;

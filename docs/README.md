@@ -32,6 +32,5 @@ documentation; the records after them hold the evidence the guides cite.
   cites, with the milestone results.
 - [`validation/`](validation/water_chip.json): the walkthrough's comparison report.
 
-The project's plans, task briefs and the rest of its development record stay in a private
-development archive. Revisions, the archive tag and the name `native_ee` cited in documents
-and records are those of that archive; they do not exist in this repository.
+Revisions, the archive tag and the name `native_ee` cited in documents and records are those
+of the project's private development archive; they do not exist in this repository.

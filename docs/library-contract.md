@@ -12,7 +12,7 @@ Three artifacts go with it:
   which gives every one of the 239 inventory entries a destination, an owner and a gate.
 
 Section 14 lists every place where this contract departs from, or has to
-interpret, the plan, with the lead's decision on each.
+interpret, the plan, with the maintainer's decision on each.
 
 ## 1. The graph-identity gate
 
@@ -157,7 +157,7 @@ earthengine-api 1.7.47, torch 2.14.1+cpu, NumPy 2.4.6/2.5.4 and Python 3.11 and
      from the golden environment. If they do, it says the change cannot be
      attributed to a refactor and must be investigated separately (plan,
      validation rules).
-   - If the lead decides to accept CI drift while that investigation runs,
+   - If the maintainer decides to accept CI drift while that investigation runs,
      `TENSOR_EE_GRAPH_IDENTITY_ALLOW_ENV_DRIFT=1` turns *only this case* (with a
      version difference) into a named skip. It is not set in CI.
 
@@ -460,7 +460,7 @@ stays "Fixed" at today's setting, and the docstring says so.
 | Stage widths, depths, heads | (96, 192, 384, 768), (2, 2, 6, 2), (3, 6, 12, 24) | `configuration.py`, `feature_interface.py:41`, `_decoder_contract.py:4` | model configuration | L05 |
 | Classes, head factor | 2, 4 | `segmentation_head.py:55,57` | head | L05 |
 | Chip, input spacing | 224, 2.5 m abstract | `swin.py` | adapter (fixed) | L05 |
-| CNN stride, nearest factor | stride {1, 2}; nearest: any positive equal integer factor, only 2 validated live | `semantics.py`, `blocks/raster/resample.py::nearest_factor` | unchanged. Strides other than 1 and 2 are rejected. Nearest accepts any positive equal integer factor (as at the release), but its status stays "Fixed — factor 2" until Phase 2 validates or restricts other factors. Corrected by the lead at L03 acceptance | L03 |
+| CNN stride, nearest factor | stride {1, 2}; nearest: any positive equal integer factor, only 2 validated live | `semantics.py`, `blocks/raster/resample.py::nearest_factor` | unchanged. Strides other than 1 and 2 are rejected. Nearest accepts any positive equal integer factor (as at the release), but its status stays "Fixed — factor 2" until Phase 2 validates or restricts other factors. Corrected by the maintainer at L03 acceptance | L03 |
 
 ## 9. Locality and cost metadata
 
@@ -612,7 +612,7 @@ existing copies on the same inputs, offline, and compares their serialization
 serialized expression is deferred, and every mapped action keeps the production
 expression byte-identical. This follows from the Phase 1 exit criterion: every
 harness graph must equal its L00 golden hash. A G2 item would therefore also
-require a lead-approved regeneration of the golden file. If the lead wants any
+require a maintainer-approved regeneration of the golden file. If the maintainer wants any
 deferred merge in Phase 1, it becomes an explicit G2 item, with the reason
 recorded here and in the module map.
 
@@ -929,10 +929,10 @@ module. `convert`, `build`, `plan` and the runner's `run` are public at their mo
 re-exported: a package attribute is either the submodule or the function, and binding the
 function would change what `from tensor_ee.converter import build, plan` returns.
 
-**Lead decisions recorded in the Phase 3 briefs.**
+**Maintainer decisions during Phase 3.**
 - **X00.** The G1-ext golden file holds 19 graphs (7 SegFormer-B0, 12 Swin composite-level),
   including the two extra Swin targets `patch_embed` and `head_dense`; an SMP version other than
-  0.5.0 is a named skip; writing the file (`--write-ext`) is the lead's.
+  0.5.0 is a named skip; writing the file (`--write-ext`) is the maintainer's.
 - **X01a.** `spatial_reduction` is `EXTENT`, `decimate` `KERNEL` radius 2, `shared_key_attention`
   and `fuse_head` chip-edge dependent; the library's MiT block is `mit_block`; the composites rest
   on the whole-model live evidence, with no fixtures of their own.

@@ -129,9 +129,8 @@ The library refactor that followed changed no computation. Its graph-identity ga
 [CONTRIBUTING](../CONTRIBUTING.md#which-gate-applies)) builds 45 production graphs (9 trained,
 36 fixtures) offline and requires each to serialize byte-identically to the hash recorded
 before the refactor ([golden hashes](evidence/l00-golden-graphs.json)); every step of the
-refactor passed it (development archive: the task board in `docs/library-plan.md`). The trained
-graphs include the eight that the independent rehearsal validated live, so that validation
-holds without a rerun.
+refactor passed it. The trained graphs include the eight that the independent rehearsal
+validated live, so that validation holds without a rerun.
 
 **The rebuilt demo reproduced both models' outputs exactly** in a live run after the
 refactor ([record of the run](evidence/l06c-live-run.json)): the U-Net result equals the

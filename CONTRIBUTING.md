@@ -2,9 +2,8 @@
 
 `tensor_ee` is a library of Earth Engine building blocks, plus two reference models
 built only from it (see the [README](README.md)). Small, reproducible improvements
-are welcome. New settings and new operations need live evidence; the development plan, in
-the private development archive (`docs/library-plan.md`), records what each stage of the work
-added, and the [converter guide](docs/converter.md) shows the path for attention models.
+are welcome. New settings and new operations need live evidence; the
+[converter guide](docs/converter.md) shows the path for attention models.
 Contributions to the code use the repository's MIT licence.
 
 ## Set up and run the tests
@@ -21,6 +20,12 @@ The suite is offline. Graphs are built against the offline signatures of
 `ee.apitestcase.ApiTestCase`; no test authenticates, initializes Earth Engine,
 exports or downloads weights. Tests that need an optional package, Node.js or a
 local checkpoint skip with a reason.
+
+## Pull requests
+
+Changes reach `main` through a pull request, and CI ([below](#continuous-integration)) must pass
+before one is merged. Keep a pull request to one change, and report in it what
+[AGENTS.md](AGENTS.md#in-the-pull-request) lists: the gate that applies and the checks you ran.
 
 ## Layers and import rules
 
@@ -155,13 +160,11 @@ the recognizer.
 | **G1**, identical graphs | Moves, renames, wrappers, parameters with unchanged defaults | Every graph in the harness serializes to its golden SHA-256, with zero cloud calls; the offline suite passes |
 | **G1-ext**, the converter's targets | Any change to the blocks, composites, builder or converter | The 19 hand-built SegFormer-B0 and Swin-T/UPerNet graphs serialize to [their golden hashes](docs/evidence/x00-g1ext-golden-graphs.json) (`tools/graph_identity.py --check-ext`) |
 | **Converter gate** | A recognizer for a model with live-validated graphs | The converted graph, built, is byte-identical to those graphs' G1-ext targets, and so inherits their evidence at their settings |
-| **G2**, graphs change, results do not | Consolidating copies whose expressions differ | A stated reason for each changed graph, and an exact NumPy-mirror check or a bounded live check; the other graphs stay identical. Regenerating the golden file is the lead's decision |
-| **G3**, new behaviour | New settings or operations | Live validation against a PyTorch reference under the unchanged 1e-4 target, under an export plan the user approves |
+| **G2**, graphs change, results do not | Consolidating copies whose expressions differ | A stated reason for each changed graph, and an exact NumPy-mirror check or a bounded live check; the other graphs stay identical. Regenerating the golden file is the maintainer's decision |
+| **G3**, new behaviour | New settings or operations | Live validation against a PyTorch reference under the unchanged 1e-4 target, under an export plan the maintainer approves |
 
-A live run needs a written plan that the user approves before any submission: the
-fixtures, project, destinations, number of tasks and polling limits. The
-plan's acceptance gates (development archive: `docs/library-plan.md`) and
-validation rules (development archive: `docs/library-plan.md`) are the reference.
+A live run needs a written plan that the maintainer approves before any submission: the
+fixtures, project, destinations, number of tasks and polling limits.
 
 The G1 harness builds every production graph with zero cloud calls and compares it
 with [`docs/evidence/l00-golden-graphs.json`](docs/evidence/l00-golden-graphs.json).
@@ -226,6 +229,8 @@ with no Earth Engine credentials:
   then a wheel built, installed and imported outside the checkout;
 - **optional-models**, on Python 3.11: CPU-only PyTorch and torchvision,
   `.[test,resnet,onnx,segwater,swin]`, the offline suite.
+
+A pull request is merged only when all three jobs pass.
 
 The checkout is shallow: no test needs the history. Private checkpoints and cached
 research inputs are not uploaded to CI.
