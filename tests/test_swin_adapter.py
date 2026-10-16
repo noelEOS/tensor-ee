@@ -85,6 +85,28 @@ def test_checkpoint_hash_is_checked_before_deserialization(tmp_path):
         load_swin_t224_parameters(tmp_path / 'missing.pth', expected_checkpoint_sha256=SHA)
 
 
+def test_checkpoint_hash_binds_loaded_state_when_the_open_file_changes(tmp_path, monkeypatch):
+    checkpoint = tmp_path / 'mutable.pth'
+    replacement = tmp_path / 'replacement.pth'
+    torch.save({'model_state_dict': {'weight': torch.ones(1)}}, checkpoint)
+    torch.save({'model_state_dict': {'weight': torch.full((1,), 9.)}}, replacement)
+    source_sha256 = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
+    replacement_data = replacement.read_bytes()
+    actual_load = torch.load
+
+    def change_file_then_load(*args, **kwargs):
+        checkpoint.write_bytes(replacement_data)
+        return actual_load(*args, **kwargs)
+
+    # Exercise the real state validation with a small schema; only the file
+    # snapshot and digest binding are under test here.
+    monkeypatch.setattr(P, 'checkpoint_shapes', lambda config: {'weight': (1,)})
+    monkeypatch.setattr(torch, 'load', change_file_then_load)
+    state = P.read_state(checkpoint, source_sha256)
+    assert torch.equal(state['weight'], torch.ones(1))
+    assert checkpoint.read_bytes() == replacement_data
+
+
 def test_incomplete_checkpoint_is_rejected(tmp_path):
     path = tmp_path / 'incomplete.pth'
     torch.save({'model_state_dict': {'segmentation_head.0.bias': torch.zeros(2)}}, path)

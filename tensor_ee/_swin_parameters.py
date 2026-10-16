@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import io
 import json
 from pathlib import Path
 import re
@@ -87,15 +88,12 @@ def validate_state(state, config: SwinUPerNetConfig = SWIN_T224):
 
 def read_state(checkpoint: Path, expected_checkpoint_sha256: str):
     _sha(expected_checkpoint_sha256, "expected_checkpoint_sha256")
-    digest = hashlib.sha256()
-    # Hash and deserialize the same open file; do not cache a path whose contents can change.
-    with Path(checkpoint).open("rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            digest.update(chunk)
-        if digest.hexdigest() != expected_checkpoint_sha256:
-            raise UnsupportedOperation("checkpoint SHA-256 differs from expected_checkpoint_sha256")
-        f.seek(0)
-        checkpoint_data = torch.load(f, map_location="cpu", weights_only=True)
+    # An open file can still be changed in place. Hash and deserialize one
+    # immutable snapshot so the verified digest binds the returned coefficients.
+    source_data = Path(checkpoint).read_bytes()
+    if hashlib.sha256(source_data).hexdigest() != expected_checkpoint_sha256:
+        raise UnsupportedOperation("checkpoint SHA-256 differs from expected_checkpoint_sha256")
+    checkpoint_data = torch.load(io.BytesIO(source_data), map_location="cpu", weights_only=True)
     if not isinstance(checkpoint_data, Mapping) or "model_state_dict" not in checkpoint_data:
         raise UnsupportedOperation("expected checkpoint with model_state_dict")
     state = checkpoint_data["model_state_dict"]
