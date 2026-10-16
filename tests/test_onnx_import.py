@@ -1,7 +1,9 @@
 """Exact checkpoint tensors, supported ONNX semantics, and fixed-grid contract."""
 
+import hashlib
 import os
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -281,6 +283,39 @@ def test_rejects_a_file_above_the_size_limit(tmp_path, monkeypatch):
     monkeypatch.setattr(onnx_import, "MAX_ONNX_BYTES", path.stat().st_size - 1)
     with pytest.raises(UnsupportedOnnx, match="exceeds"):
         load_onnx_model(path)
+
+
+def test_size_limit_applies_to_bytes_read_even_with_a_stale_stat(tmp_path, monkeypatch):
+    from tensor_ee import onnx_import
+    path = _save(tmp_path, _fixture())
+    monkeypatch.setattr(onnx_import, "MAX_ONNX_BYTES", path.stat().st_size - 1)
+    monkeypatch.setattr(Path, "stat", lambda *args, **kwargs: SimpleNamespace(st_size=0))
+    with pytest.raises(UnsupportedOnnx, match="exceeds"):
+        load_onnx_model(path)
+
+
+def test_provenance_fingerprints_the_imported_bytes_when_the_path_changes(tmp_path, monkeypatch):
+    path = _save(tmp_path, _fixture())
+    source = path.read_bytes()
+    expected_weight = numpy_helper.to_array(_fixture().graph.initializer[0])
+    replacement = _fixture()
+    replacement.doc_string = "Different bytes and weights after the imported graph was parsed."
+    replacement.graph.initializer[0].CopyFrom(
+        numpy_helper.from_array(np.zeros_like(expected_weight), "weights"))
+    replacement_bytes = replacement.SerializeToString()
+    check_model = onnx.checker.check_model
+
+    def check_then_replace(*args, **kwargs):
+        check_model(*args, **kwargs)
+        path.write_bytes(replacement_bytes)
+
+    monkeypatch.setattr(onnx.checker, "check_model", check_then_replace)
+    model = load_onnx_model(path)
+    np.testing.assert_array_equal(model.conv_000.weight.detach().numpy(), expected_weight)
+    assert path.read_bytes() == replacement_bytes
+    metadata = onnx_metadata(model)
+    assert metadata["source_sha256"] == hashlib.sha256(source).hexdigest()
+    assert metadata["source_bytes"] == len(source)
 
 
 def test_rejects_nonfinite_or_nonfloat32_initializers(tmp_path):
