@@ -172,7 +172,7 @@ evidence, as in [the L06c run](evidence/l06c-live-run.json).
    `tests/reference` by the lane, offline, first.
 3. `--offline <id> --output docs/evidence/<lane>-<name>-offline.json`: the G3-offline
    evidence (mirror against PyTorch within 1e-4, zero cloud calls).
-4. `--plan <id>` shows the requests; the lead runs `--run <id>` within the standing budget
+4. `--plan <id>` shows the requests; the maintainer runs `--run <id>` within the standing budget
    for the G3-live evidence.
 
 `tests/test_live_fixtures.py` checks every registered fixture: its block and parts are in
