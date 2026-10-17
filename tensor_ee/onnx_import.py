@@ -162,9 +162,13 @@ def load_onnx_model(path: str | Path) -> GraphModule:
         source_data = stream.read(MAX_ONNX_BYTES + 1)
     if len(source_data) > MAX_ONNX_BYTES:
         raise UnsupportedOnnx(f"ONNX file exceeds the {MAX_ONNX_BYTES} byte limit")
+    # Match ONNX's extension inference without reopening the source path.
+    source_format = (
+        onnx.serialization.registry.get_format_from_file_extension(path.suffix) or "protobuf"
+    )
     # Parsing bytes leaves external tensors unmaterialized. Inspect their storage
     # before the checker or to_array can access any external references.
-    original = onnx.load_model_from_string(source_data)
+    original = onnx.load_model_from_string(source_data, format=source_format)
     _refuse_external_data(original)         # every tensor, before the checker and before any to_array
     if original.functions or original.training_info:
         raise UnsupportedOnnx("Local functions and training graphs are unsupported")
