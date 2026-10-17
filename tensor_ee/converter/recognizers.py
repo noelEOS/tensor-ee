@@ -58,6 +58,10 @@ concatenation takes the ``mlp_stage`` projections 0 .. 3 in that order. Every co
 stride, padding, dilation and groups are checked against its ``Conv2d`` (``export.structure``, X04
 fix round): they vary with the stage (the embeddings' k7/s4 and k3/s2, the reductions' ratio, the
 depthwise groups' width), so the fingerprints do not record them.
+Both attention families also check their query, key and value branches: the projection and
+head layouts, split indices, the ordered score and value products, and the concatenated heads
+read by the output projection. A common packed-projection ancestor alone cannot distinguish
+keys from values.
 
 **Swin and UPerNet (X04).** SMP's ``UPerNet`` with a ``tu-`` timm Swin encoder, one node per
 timm block and SMP decoder module (the finer of the two grains the composites allow: a Swin
@@ -327,6 +331,126 @@ def _concatenation_order(stages: tuple[str, ...]):
     return check
 
 
+class _AttentionDataflowDifference(Exception):
+    """An expected attention edge or layout is absent from the trace."""
+
+
+def _attention_dataflow(path: str, dim: int, heads: int, *, packed: bool = False,
+                        window: int = WINDOW, shifted: bool = False):
+    """Pin attention's Q/K/V roles, including the layouts that split and join its heads.
+
+    MiT projects Q separately and splits KV at indices 0/1; Swin splits packed QKV at
+    indices 0/1/2. Check the actual edges, not their shared ancestors or the order the
+    calls appear in. Shapes come from the traced input and the module's width/heads,
+    so another supported setting still reaches its normal validated-settings report.
+    """
+    attention = f"{path}.attn"
+
+    def check(traced: Traced, calls) -> str | None:
+        owned = [node for node in calls if _under(traced.path(node), attention)]
+
+        def require(condition, what):
+            if not condition:
+                raise _AttentionDataflowDifference(f"its attention {what}")
+
+        def shape(node):
+            return tuple(int(d) for d in node.meta["val"].shape)
+
+        def one(operation, what, *, source=None, module=None):
+            found = [node for node in owned if operation_name(node.target) == operation
+                     and (source is None or node.args and node.args[0] is source)
+                     and (module is None or traced.path(node) == module)]
+            require(len(found) == 1, f"{what} needs one {operation}; found {len(found)}")
+            return found[0]
+
+        def step(operation, source, what, *, output_shape=None, **arguments):
+            node = one(operation, what, source=source)
+            held = _arguments(node)
+            for name, expected in arguments.items():
+                require(held.get(name) == expected, f"{what} takes {name} {held.get(name)!r}, "
+                        f"where the library requires {expected!r}")
+            if output_shape is not None:
+                require(shape(node) == output_shape, f"{what} writes {shape(node)}, "
+                        f"where the library requires {output_shape}")
+            return node
+
+        def projection(name):
+            node = one("aten.linear.default", f"{name} projection", module=f"{attention}.{name}")
+            arguments = _arguments(node)
+            for role in ("weight", "bias"):
+                require(traced.parameters.get(getattr(arguments.get(role), "name", None)) ==
+                        f"{attention}.{name}.{role}",
+                        f"{name} projection does not read its own {role}")
+            return node
+
+        try:
+            first = projection("qkv" if packed else "q")
+            require(len(shape(first)) == 3, "projection must write (batch, tokens, channels)")
+            batch, tokens, width = shape(first)
+            require(width == dim * (3 if packed else 1), "projection width differs from its module")
+            head_width = dim // heads
+            if packed:
+                require(tokens == window * window, "packed projection must read one window of tokens")
+                split_shape = (batch, tokens, 3, heads, head_width)
+            else:
+                split_shape = (batch, tokens, heads, head_width)
+            split = step("aten.reshape.default", first, "query head reshape", output_shape=split_shape)
+            split = step("aten.permute.default", split, "query head permutation",
+                         dims=[2, 0, 3, 1, 4] if packed else [0, 2, 1, 3])
+            if packed:
+                unbound = step("aten.unbind.int", split, "QKV split", dim=0)
+                branches = []
+                for index, role in enumerate(("query", "key", "value")):
+                    found = [node for node in owned if operation_name(node.target) == "operator.getitem"
+                             and node.args == (unbound, index)]
+                    require(len(found) == 1, f"{role} must read QKV split index {index}")
+                    branches.append(found[0])
+                query, key, value = branches
+                query = step("aten.mul.Tensor", query, "query scaling")
+            else:
+                query = split
+                kv = projection("kv")
+                split = step("aten.reshape.default", kv, "KV head reshape",
+                             output_shape=(batch, window * window, 2, heads, head_width))
+                split = step("aten.permute.default", split, "KV head permutation", dims=[2, 0, 3, 1, 4])
+                branches = []
+                for index, role in enumerate(("key", "value")):
+                    found = [node for node in owned if operation_name(node.target) == "aten.select.int"
+                             and node.args[0] is split and _arguments(node)["dim"] == 0
+                             and _arguments(node)["index"] == index]
+                    require(len(found) == 1, f"{role} must read KV split index {index}")
+                    branches.append(found[0])
+                key, value = branches
+            key_t = step("aten.transpose.int", key, "key transpose", dim0=-2, dim1=-1)
+            products = [node for node in owned if operation_name(node.target) == "aten.matmul.default"]
+            require(len(products) == 2, f"needs two matrix products; found {len(products)}")
+            scores, context = products
+            require(scores.args == (query, key_t), "score product must read (query, transposed key)")
+            if packed:
+                logits = step("aten.add.Tensor", scores, "relative-position addition")
+                if shifted:
+                    logits = step("aten.view.default", logits, "mask grouping",
+                                  output_shape=(1, batch, heads, tokens, tokens))
+                    logits = step("aten.add.Tensor", logits, "mask addition")
+                    logits = step("aten.view.default", logits, "mask ungrouping",
+                                  output_shape=(batch, heads, tokens, tokens))
+            else:
+                logits = step("aten.mul.Tensor", scores, "score scaling")
+            probabilities = step("aten.softmax.int", logits, "score softmax", dim=-1)
+            probabilities = step("aten.dropout.default", probabilities, "attention dropout")
+            require(context.args == (probabilities, value), "value product must read (probabilities, value)")
+            joined = step("aten.transpose.int", context, "head concatenation transpose", dim0=1, dim1=2)
+            joined = step("aten.reshape.default", joined, "head concatenation reshape",
+                          output_shape=(batch, tokens, dim))
+            output = projection("proj")
+            require(output.args[0] is joined, "output projection must read the concatenated value product")
+        except _AttentionDataflowDifference as difference:
+            return str(difference)
+        return None
+
+    return check
+
+
 # ---------------------------------------------------------------------------
 # Attribute checks: what the library's composites fix
 # ---------------------------------------------------------------------------
@@ -448,7 +572,8 @@ def block(module, path: str, traced: Traced) -> tuple[Unit, ...]:
     _inference_identity(mlp, mlp_where, "drop")
     _reduced_keys(module, path, traced, ratio)
     return (_unit(path, "mit_block", {"dim": dim, "heads": heads, "ratio": ratio},
-                  _forward("mit_block" if ratio > 1 else "mit_block_without_reduction")),)
+                  _forward("mit_block" if ratio > 1 else "mit_block_without_reduction",
+                           _attention_dataflow(path, dim, heads))),)
 
 
 def stage_norm(module, path: str, traced: Traced) -> tuple[Unit, ...]:
@@ -1008,9 +1133,13 @@ def swin_transformer_block(module, path: str, traced: Traced) -> tuple[Unit, ...
         _refuse(path, module, f"window {window}, where the model's other blocks run {_encoder_window(traced)}")
     if shift:
         return (_swin_unit(path, "shifted_swin_block", {"dim": dim, "heads": heads, "shift": shift},
-                           _swin_forward("shifted_swin_block", _cyclic_shift(shift)), window, axes=NHWC,
+                           _swin_forward("shifted_swin_block", _all(_cyclic_shift(shift),
+                                         _attention_dataflow(path, dim, heads, packed=True, window=window,
+                                                             shifted=True))), window, axes=NHWC,
                            derived=derived),)
-    return (_swin_unit(path, "swin_block", {"dim": dim, "heads": heads}, _swin_forward("swin_block"), window,
+    return (_swin_unit(path, "swin_block", {"dim": dim, "heads": heads},
+                       _swin_forward("swin_block", _attention_dataflow(path, dim, heads, packed=True,
+                                                                     window=window)), window,
                        axes=NHWC, derived=derived),)
 
 

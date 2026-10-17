@@ -166,8 +166,10 @@ names) what the library cannot express, rather than approximating it:
   to more than one 7 × 7 window, which needs a new attention block;
 - **forward code** that differs from the validated trace (`forward_code`). Each recognizer kind
   carries a fingerprint of its unit's traced calls, recorded from SMP 0.5.0, timm 1.0.30 and torch
-  2.14.0, with dataflow checks where argument order matters (concatenation order, the cyclic shift's
-  direction). The traced attention scale and normalization epsilon are checked against the module's
+  2.14.0, with dataflow checks where argument order matters: concatenation order, cyclic-shift
+  direction, and attention's query/key/value roles. Attention checks bind the projections, head
+  layouts, split indices, ordered matrix products and output projection to the actual trace.
+  The traced attention scale and normalization epsilon are checked against the module's
   attributes; residual additions require unit weight and padding requires the supported zero value.
   Every convolution's and adaptive pool's integers are checked against the module running it.
   A unit whose code differs (a residual subtracted, a softmax over another axis) is refused,
@@ -404,7 +406,8 @@ new block is needed instead.
   (calibrating costs is deferred).
 - Fingerprints are as exact as the trace: another torch version that renames or decomposes an ATen
   call is refused until they are retraced, or reported outside under `forward_mismatch="report"`.
-  Integer reshape and pad sizes inside a unit are not fingerprinted.
+  Attention head layouts are checked explicitly; other integer reshape and pad sizes inside a
+  unit are not fingerprinted.
 - No public function yet binds weights to tables for a plan before an upload (this guide uses the
   checkout helpers), and no relabel of a source raster onto a token grid exists for Swin's input.
 - The runner runs one chip, and only SegFormer-B0 has run through it live.

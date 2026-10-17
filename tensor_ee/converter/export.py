@@ -66,10 +66,10 @@ normalization's shape and epsilon, and attention's scalar multiplier. Tensor add
 have unit alpha and padding must use zero. These settings vary
 between stages and widths (an embedding's stride, a reduction's ratio, a depthwise convolution's
 groups, the PSP's bins), so no fingerprint records them; the module's attributes are what the
-recognizers check against what the library computes. Not checked: the sizes of a ``view``,
-``reshape`` or ``pad``, which vary with the map, so a reshape that regroups values with the same
-axes (a patch merging that gathers its 2 x 2 neighbourhoods by other sizes) is not seen here; it
-is a declared limitation. A unit whose calls differ is refused by
+recognizers check against what the library computes. Attention dataflow checks also pin the
+head reshapes, split indices and ordered query/key/value products. Other ``view``, ``reshape``
+and ``pad`` sizes are not checked, so a reshape that regroups values with the same axes (a patch
+merging that gathers its 2 x 2 neighbourhoods by other sizes) is a declared limitation. A unit whose calls differ is refused by
 default, naming the unit, its modules and the first differing call: a changed formula is not
 what the library's block computes. With ``forward_mismatch="report"`` it converts, and the
 difference is returned (``Grouped.differences``) for the report to mark the node outside its
