@@ -59,9 +59,11 @@ call's ATen name with its bool and str arguments, and a softmax's ``dim``; integ
 float constants are left out, so widths and variants share one; with ``axes``, also the axes
 a call names, which do not vary with widths: a permutation's order, a transposition's or a
 concatenation's dimensions, X04) and, where the order of a dataflow matters beyond that, a
-``dataflow`` check. The integers that decide a call's arithmetic but vary with a model's
-settings are checked against the module that runs the call (``STRUCTURE``, X04 fix round): a
-convolution's stride, padding, dilation and groups, an adaptive pooling's output size. They vary
+``dataflow`` check. The settings that decide a call's arithmetic but vary with a model's
+settings are checked against the module that runs the call (``structure``): a
+convolution's stride, padding, dilation and groups, an adaptive pooling's output size, a
+normalization's shape and epsilon, and attention's scalar multiplier. Tensor additions must
+have unit alpha and padding must use zero. These settings vary
 between stages and widths (an embedding's stride, a reduction's ratio, a depthwise convolution's
 groups, the PSP's bins), so no fingerprint records them; the module's attributes are what the
 recognizers check against what the library computes. Not checked: the sizes of a ``view``,
@@ -83,6 +85,7 @@ from dataclasses import dataclass, field
 import heapq
 import math
 import operator
+from numbers import Real
 from types import MappingProxyType
 from typing import Callable, Mapping
 
@@ -273,7 +276,8 @@ def _axis_value(value):
 def call_fingerprint(node, *, axes: bool = False) -> str:
     """One call as a fingerprint records it: its ATen name, with its bool and str arguments and a
     softmax's ``dim`` by name (``aten.softmax.int(dim=-1, half_to_float=False)``). Integer sizes
-    and float constants are left out: widths, heads and epsilons are the recognizers' to read.
+    and float constants are left out: widths, heads and epsilons are the recognizers' to read,
+    with arithmetic scalars checked against the actual calls by ``structure``.
     With ``axes``, the axes it names (``AXIS_ARGUMENTS``) are kept too
     (``aten.permute.default(dims=[0, 1, 3, 2, 4, 5])``)."""
     name = operation_name(node.target)
@@ -303,30 +307,64 @@ def fingerprint(calls, *, axes: bool = False) -> tuple[str, ...]:
 
 
 STRUCTURE = {"aten.conv2d.default": ("stride", "padding", "dilation", "groups"),
-             "aten.adaptive_avg_pool2d.default": ("output_size",)}
+             "aten.adaptive_avg_pool2d.default": ("output_size",),
+             "aten.layer_norm.default": ("normalized_shape",)}
 """ATen call -> its integer arguments that decide the arithmetic and are attributes of the module
-running the call (``torch.nn.Conv2d``'s, ``AdaptiveAvgPool2d``'s), checked by ``structure``."""
+running the call (``Conv2d``, ``AdaptiveAvgPool2d``, ``LayerNorm``), checked by ``structure``."""
+
+SCALARS = {"aten.layer_norm.default": ("eps",), "aten.batch_norm.default": ("eps",)}
+"""Arithmetic scalars that must equal the module's attributes, checked separately from the
+fingerprint so a supported setting can vary without changing the recorded calls."""
 
 
 def _pairs(value) -> tuple:
     return tuple(value) if isinstance(value, (list, tuple)) else (value, value)
 
 
+def _scalar(value) -> bool:
+    return isinstance(value, Real) and not isinstance(value, bool)
+
+
 def structure(traced: "Traced", calls) -> str | None:
-    """Where one of ``calls`` takes a ``STRUCTURE`` argument other than its module's attribute of
-    that name (a convolution padded or dilated in code, a pooling to other bins), or None."""
+    """Where a call's arithmetic arguments disagree with its module or the library's formula.
+
+    Sizes and scalars are checked here rather than fingerprinted as literals: they can vary
+    between supported models, but a forward-only patch must not silently replace what the
+    recognizer read. The supported scalar multiply is attention's tensor times ``scale``;
+    additions are tensor sums with unit alpha and constant padding is zero. BatchNorm's
+    momentum and dropout's probability do not affect evaluation and are not constrained.
+    """
     for node in calls:
         name = operation_name(node.target)
-        if name not in STRUCTURE:
+        if name not in {*STRUCTURE, *SCALARS, "aten.mul.Tensor", "aten.add.Tensor", "aten.pad.default"}:
             continue
         path = traced.path(node)
         module, arguments = traced.modules.get(path), _arguments(node)
-        for argument in STRUCTURE[name]:
+        where = f"its {name} in {_where(path, traced.stack(node)[-1][1])}"
+        for argument in STRUCTURE.get(name, ()):
             held = getattr(module, argument, None)
             if held is None or _pairs(arguments[argument]) != _pairs(held):
-                return (f"its {name} in {_where(path, traced.stack(node)[-1][1])} takes {argument} "
+                return (f"{where} takes {argument} "
                         f"{_pairs(arguments[argument])}, where the module holds "
                         f"{'none' if held is None else _pairs(held)}")
+        for argument in SCALARS.get(name, ()):
+            held, value = getattr(module, argument, None), arguments[argument]
+            if not _scalar(value) or not _scalar(held) or value != held:
+                return f"{where} takes {argument} {value!r}, where the module holds {held!r}"
+        if name == "aten.mul.Tensor":
+            held, value = getattr(module, "scale", None), arguments["other"]
+            if (not isinstance(arguments["self"], torch.fx.Node) or not _scalar(value)
+                    or not _scalar(held) or value != held):
+                return f"{where} multiplies by {value!r}, where the module holds scale {held!r}"
+        elif name == "aten.add.Tensor":
+            if (not isinstance(arguments["self"], torch.fx.Node)
+                    or not isinstance(arguments["other"], torch.fx.Node)
+                    or not _scalar(arguments["alpha"]) or arguments["alpha"] != 1):
+                return f"{where} must add two tensors with alpha 1; it takes alpha {arguments['alpha']!r}"
+        elif name == "aten.pad.default":
+            value = arguments["value"]
+            if value is not None and (not _scalar(value) or value != 0):
+                return f"{where} pads with value {value!r}, where the library uses zero"
     return None
 
 

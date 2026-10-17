@@ -167,8 +167,10 @@ names) what the library cannot express, rather than approximating it:
 - **forward code** that differs from the validated trace (`forward_code`). Each recognizer kind
   carries a fingerprint of its unit's traced calls, recorded from SMP 0.5.0, timm 1.0.30 and torch
   2.14.0, with dataflow checks where argument order matters (concatenation order, the cyclic shift's
-  direction) and every convolution's and adaptive pool's integers checked against the module running
-  it. A unit whose code differs (a residual subtracted, a softmax over another axis) is refused,
+  direction). The traced attention scale and normalization epsilon are checked against the module's
+  attributes; residual additions require unit weight and padding requires the supported zero value.
+  Every convolution's and adaptive pool's integers are checked against the module running it.
+  A unit whose code differs (a residual subtracted, a softmax over another axis) is refused,
   naming the unit and the first differing call. `convert(..., forward_mismatch="report")` converts it
   instead and marks that node outside its record: the opt-in for a harmless renaming after a torch
   upgrade, which you then judge.
