@@ -29,7 +29,7 @@
 
 The SMP tests need SMP 0.5.0 and timm, and skip by name without them, as G1-ext does. Offline
 only: models are constructed with random weights (``encoder_weights=None``) and traced with fake
-tensors; no forward pass runs, nothing is evaluated, and no cloud call is made.
+tensors, which runs the models' forward code without computing on data; no cloud call is made.
 """
 from __future__ import annotations
 
