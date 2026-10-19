@@ -73,7 +73,7 @@ def _tensors_of(graph) -> Iterator[tuple[str, Any]]:
 def _refuse_external_data(model) -> None:
     """Refuse a tensor stored outside the file, wherever it sits, before anything reads it.
 
-    ``onnx.load(..., load_external_data=False)`` leaves such tensors as references, but
+    Parsing from bytes leaves such tensors as references, but
     ``numpy_helper.to_array`` would then open the file they name, relative to the working
     directory. S02 finding E-01: a ``Constant`` node could name a local file; the initializer
     check alone did not cover node attributes or subgraphs.
@@ -156,12 +156,19 @@ def load_onnx_model(path: str | Path) -> GraphModule:
     from onnx import numpy_helper
 
     path = Path(path).resolve()
-    size = path.stat().st_size
-    if size > MAX_ONNX_BYTES:
-        raise UnsupportedOnnx(f"ONNX file of {size} bytes exceeds the {MAX_ONNX_BYTES} byte limit")
-    # Inspect storage before loading: materializing external tensors can clear
-    # their external-data markers and would invalidate single-file provenance.
-    original = onnx.load(path, load_external_data=False)
+    # Bound the actual read, then parse and fingerprint that same immutable
+    # snapshot. A path can be replaced or changed between stat/load/hash calls.
+    with path.open("rb") as stream:
+        source_data = stream.read(MAX_ONNX_BYTES + 1)
+    if len(source_data) > MAX_ONNX_BYTES:
+        raise UnsupportedOnnx(f"ONNX file exceeds the {MAX_ONNX_BYTES} byte limit")
+    # Match ONNX's extension inference without reopening the source path.
+    source_format = (
+        onnx.serialization.registry.get_format_from_file_extension(path.suffix) or "protobuf"
+    )
+    # Parsing bytes leaves external tensors unmaterialized. Inspect their storage
+    # before the checker or to_array can access any external references.
+    original = onnx.load_model_from_string(source_data, format=source_format)
     _refuse_external_data(original)         # every tensor, before the checker and before any to_array
     if original.functions or original.training_info:
         raise UnsupportedOnnx("Local functions and training graphs are unsupported")
@@ -404,8 +411,8 @@ def load_onnx_model(path: str | Path) -> GraphModule:
     model = GraphModule(root, graph, "FrozenOnnxCNN").eval()
     model.tensor_ee_input_shape = (2, 224, 224)
     model.onnx_metadata = {
-        "source": str(path), "source_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "source_bytes": path.stat().st_size, "ir_version": original.ir_version, "opset": 17,
+        "source": str(path), "source_sha256": hashlib.sha256(source_data).hexdigest(),
+        "source_bytes": len(source_data), "ir_version": original.ir_version, "opset": 17,
         "input_name": input_value.name, "input_shape": list(input_shape),
         "output_name": output, "output_shape": list(output_shape),
         "dtype": "float32", "output_kind": "logits", "fixed_spatial_shape": [224, 224],
