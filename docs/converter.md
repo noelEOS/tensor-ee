@@ -7,8 +7,9 @@ composing the blocks by hand:
 PyTorch model ──convert──▶ block graph ──plan──▶ stages ──build_stage──▶ Earth Engine graphs ──run──▶ assets
 ```
 
-- `convert` traces the model with `torch.export` (fake tensors, no forward pass; tracing still runs
-  the model's Python code, so convert only models whose source you trust), recognizes its
+- `convert` traces the model with `torch.export`: it runs the model's Python `forward` code
+  locally with fake tensors, without numerical inference on image data. Tracing is not a
+  sandbox; convert only models whose source you trust. It recognizes the model's
   modules and writes a **block graph**: library operations, their settings, their parameters by
   `state_dict` name, and the tensors between them. It also writes a **conversion report**: for
   every node, whether its settings are inside its block's validated record.
@@ -59,7 +60,9 @@ Four kinds of evidence apply, and they are kept apart:
 Install the `swin` extra (SMP 0.5.0 and timm 1.0.30; [Getting started, Install](getting-started.md#1-install)).
 The blocks below are one Python session: run them in order, from the checkout root with
 `PYTHONPATH=.`, for example saved in order to one file. They make no cloud call and download
-nothing (`encoder_weights=None`); nothing runs a model's forward pass.
+nothing (`encoder_weights=None`). Conversion allocates a zero example at the input shape,
+then runs the model's Python `forward` code locally with fake tensors during export; it does
+not compute numerical model outputs on image data.
 
 Building an Earth Engine graph needs the API's function signatures. Offline, the checkout's
 `tools.live_fixtures.offline_earth_engine()` installs them and refuses every cloud call, as the
@@ -163,9 +166,13 @@ names) what the library cannot express, rather than approximating it:
   to more than one 7 × 7 window, which needs a new attention block;
 - **forward code** that differs from the validated trace (`forward_code`). Each recognizer kind
   carries a fingerprint of its unit's traced calls, recorded from SMP 0.5.0, timm 1.0.30 and torch
-  2.14.0, with dataflow checks where argument order matters (concatenation order, the cyclic shift's
-  direction) and every convolution's and adaptive pool's integers checked against the module running
-  it. A unit whose code differs (a residual subtracted, a softmax over another axis) is refused,
+  2.14.0, with dataflow checks where argument order matters: concatenation order, cyclic-shift
+  direction, and attention's query/key/value roles. Attention checks bind the projections, head
+  layouts, split indices, ordered matrix products and output projection to the actual trace.
+  The traced attention scale and normalization epsilon are checked against the module's
+  attributes; residual additions require unit weight and padding requires the supported zero value.
+  Every convolution's and adaptive pool's integers are checked against the module running it.
+  A unit whose code differs (a residual subtracted, a softmax over another axis) is refused,
   naming the unit and the first differing call. `convert(..., forward_mismatch="report")` converts it
   instead and marks that node outside its record: the opt-in for a harmless renaming after a torch
   upgrade, which you then judge.
@@ -399,7 +406,8 @@ new block is needed instead.
   (calibrating costs is deferred).
 - Fingerprints are as exact as the trace: another torch version that renames or decomposes an ATen
   call is refused until they are retraced, or reported outside under `forward_mismatch="report"`.
-  Integer reshape and pad sizes inside a unit are not fingerprinted.
+  Attention head layouts are checked explicitly; other integer reshape and pad sizes inside a
+  unit are not fingerprinted.
 - No public function yet binds weights to tables for a plan before an upload (this guide uses the
   checkout helpers), and no relabel of a source raster onto a token grid exists for Swin's input.
 - The runner runs one chip, and only SegFormer-B0 has run through it live.
