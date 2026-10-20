@@ -157,7 +157,7 @@ def softmax(raster: Raster, *, clip_footprints: bool = False, policy: str = FLOA
 _SWEEPS = ("docs/evidence/t02-operators.json", "docs/evidence/t05-primary.json")
 
 _UNCLIPPED = Validated(({"clip_footprints": (False,)},))
-"""The blocks only the T02, T03 and T05 sweeps cover: their slopes, probabilities and inputs
+"""The blocks only the CNN operator validation, segmentation output validation and trained-model preservation sweeps cover: their slopes, probabilities and inputs
 varied, but ``clip_footprints`` never left False. The ResNet18 runs, which the other R blocks
 cite, used True (resnet18_full64_float32_policy.json)."""
 

@@ -4,9 +4,9 @@ Scores/probabilities are float32. Classes are the ordered raw-logit argmax;
 thresholds compare widened probabilities against a retained binary64 scalar.
 These functions build deferred graphs without cloud inspection or initialization.
 
-The definitions moved to the library (L03), ``tensor_ee.blocks.raster.outputs``;
+The definitions moved to the library, ``tensor_ee.blocks.raster.outputs``;
 every name here is a re-export of the same object. (The private helper re-exports that
-nothing calls any more were removed at L06b.)
+nothing calls any more were removed at research-code archival.)
 """
 from __future__ import annotations
 

@@ -11,7 +11,7 @@ class GridMismatch(ValueError):
     """Operands on different grids or layouts (EE would resample one implicitly)."""
 
 
-# Moved from tensor_ee.semantics (L03, lead decision): the block option checks and
+# Moved from tensor_ee.semantics: the block option checks and
 # the converter's support analysis raise these. ``reject`` raises an
 # UnsupportedOperation carrying a report ``code``. The old names
 # (semantics.SemanticUnknown, semantics._reject, ...) are re-exports.

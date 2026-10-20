@@ -1,4 +1,4 @@
-"""The fixture record and the helpers every lane's fixtures share (task P00).
+"""The fixture record and the helpers every layout's fixtures share.
 
 A fixture is a small declarative record (``Fixture``): which block it exercises, at which
 settings and precision policy, on which shapes, with which seed, and three callables:
@@ -84,11 +84,11 @@ def dyadic(seed: int, stream: str, shape, *, scale: float = 1.0, offset: float =
 
 
 def check_inline_values(values: np.ndarray) -> np.ndarray:
-    """Refuse values Earth Engine would not compute with exactly (R2).
+    """Refuse values Earth Engine would not compute with exactly.
 
     Each value must be finite float32, not -0.0 (a ``-0.0`` literal becomes +0 in Earth
-    Engine, T02), and of magnitude below 2**53 (integral literals beyond int64 saturate,
-    T02). The real float32 guarantee is ``encode_float32``'s own assertion, which
+    Engine), and of magnitude below 2**53 (integral literals beyond int64 saturate,
+    as the CNN operator probes found). The real float32 guarantee is ``encode_float32``'s own assertion, which
     ``inline_raster`` runs: its shortest decimals round back to the float32 values, which
     ``.float()`` restores in the graph. The decimal round trip checked last
     (``float(str(v))``, what ``ee.Number.parse(str(value))`` parses) is a formality: the
@@ -200,7 +200,7 @@ class MirrorSpec:
 
 @dataclass(frozen=True)
 class Fixture:
-    """A live fixture: one block, at its settings, on a small inline input (R1)."""
+    """A live fixture: one block, at its settings, on a small inline input."""
 
     id: str
     lane: str

@@ -2,7 +2,7 @@
 embedding, efficient attention with global keys and values, the Mix-FFN, the MiT block, and
 the all-MLP decoder's pyramid projection and fused head.
 
-Moved (X01a) from ``tensor_ee/models/segformer_b0/encoder.py`` (``NormConstants``,
+Moved from ``tensor_ee/models/segformer_b0/encoder.py`` (``NormConstants``,
 ``norm_constants``, ``channel_norm``, ``OverlapConstants``, ``overlap_constants``,
 ``decimate``, ``overlap_embedding``, ``AttentionConstants``, ``attention_constants``,
 ``spatial_reduction``, ``shared_key_attention``, ``global_attention``, ``MixFFNConstants``,
@@ -12,7 +12,7 @@ with their helpers) and ``decoder.py`` (``project_pyramid``, and the fuse, Batch
 head sequence of ``decoder()``, now ``fuse_head``). The fixed SegFormer-B0 model keeps its
 configuration and checks there and re-exports these objects under their former names; there
 is one implementation. The decoder composites' constants builders, ``project_pyramid_constants``
-and ``fuse_head_constants``, came from ``decoder_constants`` at X02a, so that the model and the
+and ``fuse_head_constants``, are shared with ``decoder_constants``, so that the model and the
 block-graph builder (``tensor_ee/converter/``) share them.
 
 Parameters keep SMP 0.5.0 state_dict names under a ``prefix``: NumPy float32 arrays of the
@@ -633,7 +633,7 @@ _STATUS = "Fixed — SegFormer-B0 (mit_b0) at 224 × 224: "
 _MODEL = "widths 32, 64, 160, 256; heads 1, 2, 5, 8; reduction ratios 8, 4, 2, 1; window 7"
 _EVIDENCE = ("docs/evidence/segformer_b0-fullmodel-live.json", "docs/evidence/segformer_b0-live.json")
 
-# Validated settings (X02b): SegFormer-B0's, named by the constants builders' parameters (the
+# Validated settings: SegFormer-B0's, named by the constants builders' parameters (the
 # block graph's settings, tensor_ee/converter/operations.py) and joined per stage.
 _WIDTHS = (32, 64, 160, 256)
 _STAGES = tuple({"dim": (dim,), "heads": (heads,), "ratio": (ratio,), "window": (7,)}

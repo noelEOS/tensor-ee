@@ -1,8 +1,8 @@
 """Stage boundaries: how saved images enter a stage's graph and how its outputs leave it.
 
 A staged model runs as stages whose inputs and outputs are saved boundaries, images that one
-stage exports and the next reads (the development archive's phase3-design.md, sections 3.2 and 3.4). These are the
-conventions of the fixed SegFormer-B0 and of its sizing tool, moved here (X02a) so that the
+stage exports and the next reads . These are the
+conventions of the fixed SegFormer-B0 and of its sizing tool, moved here so that the
 block-graph builder (``tensor_ee/converter/build.py``) emits the same boundary expressions. They
 are layout transforms, below the blocks: the model imports them without loading the converter.
 

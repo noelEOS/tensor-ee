@@ -5,7 +5,7 @@ Moved whole from ``tensor_ee.compiler`` (``nearest_upsample``) and
 these objects.
 
 Supported settings (contract section 8): one equal positive integer factor on
-both axes. Factors 2, 3 and 4 are the validated settings: task P02's fixtures
+both axes. Factors 2, 3 and 4 are the validated settings: raster-setting validation's fixtures
 ``raster/nearest_upsample/f2``, ``f3`` and ``f4`` (``tools/fixtures/raster.py``)
 compare them with PyTorch bit for bit. Other factors are accepted, as at the
 release, but not validated.

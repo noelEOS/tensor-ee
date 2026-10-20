@@ -5,7 +5,7 @@ Moved from ``swin_block/earth_engine/layer_norm.py`` (``layer_norm``, ``LN_EPS``
 ``batch_norm``, ``FEATURE_EPS``, ``BN_EPS``), research code archived at the tag
 ``research-archive-2026-10-12`` (docs/history/README.md). The decoder's feature norms
 (``fpn_layer_norm`` and ``psp_layer_norm``, whose constants ``FPNConstants``/``PSPConstants``
-build ahead) call ``layer_norm2d``: the single LayerNorm2d entry point (the L00
+build ahead) call ``layer_norm2d``: the single LayerNorm2d entry point (the graph-identity baseline
 ``layer_norm2d`` and ``layer_norm2d_psp`` probes serialize identically).
 
 **LayerNorm** (torch.nn.LayerNorm(C), as in Swin), on the channel axis of [N, C]:
@@ -28,8 +28,7 @@ layout.
 
     y = (x - running_mean_c) / sqrt(running_var_c + eps) * gamma_c + beta_c
 
-computed in double and rounded once. Kept explicit, not folded: Milestone 7 kept the
-decoder's BatchNorm explicit to stay bit-exact with its mirror.
+computed in double and rounded once. Kept explicit, not folded, to stay bit-exact with the decoder's mirror.
 
 Per-channel constants are repeated to the rows of the layout they serve; see
 ``tensor_ee.blocks.window.linear``. The epsilons are parameters with today's values
@@ -96,7 +95,7 @@ def _norm_constant(ops, value, rows):
 
 def layer_norm2d(ops, x, gamma, beta, *, dim: int, rows=ONE_ROW, eps: float = FEATURE_EPS,
                  policy: str = DOUBLE_ROUND_ONCE):
-    """LayerNorm2d(dim, eps 1e-6) of float32 [rows, dim] arrays: Milestone 2's
+    """LayerNorm2d(dim, eps 1e-6) of float32 [rows, dim] arrays: the Swin block's
     ``layer_norm`` with eps 1e-6.
 
     gamma, beta: float32 [dim] vectors (NumPy or ServerArray), repeated to the rows of
@@ -106,7 +105,7 @@ def layer_norm2d(ops, x, gamma, beta, *, dim: int, rows=ONE_ROW, eps: float = FE
     count, or the EE value a builder returned, as the decoder's ``FPNConstants`` and
     ``PSPConstants`` hold them), used as is. Constants built ahead or here serialize
     identically. Eps 1e-6 is validated with rows 1 and with windows 5, 7, 8 and 12 (rows
-    25, 49, 64 and 144; P01); other epsilons are not.
+    25, 49, 64 and 144); other epsilons are not.
     """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     return layer_norm(ops, x, _norm_constant(ops, gamma, rows), _norm_constant(ops, beta, rows),

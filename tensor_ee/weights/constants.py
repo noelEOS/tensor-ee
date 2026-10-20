@@ -19,12 +19,12 @@
   ``reshape([1, C]).repeat(0, rows)``, so window 7 serializes exactly as
   ``repeat_rows=49`` does today, and the check is client-side only.
 
-L02 provides the mechanism. Since L04 and L05 the constant builders
+The constant builders
 (``LinearConstants``, ``Conv3x3Constants``, ``BatchNormConstants``, the
 reference model's ``block_constants`` and decoder ``*_constants``) take a
-layout and record its rows; the L05 composites pass layouts. A row count is
+layout and record its rows; the reference-model composites pass layouts. A row count is
 still accepted (the builders' original call form). Windows 1 (dense rows), 5, 7,
-8 and 12 are validated (5, 8 and 12 by task P01); other row counts are not.
+8 and 12 are validated live; other row counts are not validated.
 """
 
 from __future__ import annotations
@@ -66,7 +66,7 @@ def _positive(value, name: str) -> int:
 @dataclass(frozen=True)
 class WindowLayout:
     """W layout with window ``w``: one ``[w**2, C]`` array per pixel. ``WindowLayout(1)``
-    is the one-row dense layout. Windows 1, 5, 7, 8 and 12 are validated (P01)."""
+    is the one-row dense layout. Windows 1, 5, 7, 8 and 12 are validated."""
 
     window: int = WINDOW
 

@@ -35,12 +35,11 @@ neighbours: the one-token ring of the window halo (asserted per output row by
   float32 1-D weights (exact in double).
 
 **Policy** ``double_round_once``: products and sums in double, each output rounded to
-float32 once. (The research ``rounded=False`` probe of the double result was removed at
-L06b.)
+float32 once. (The research ``rounded=False`` probe of the double result was removed with the research code.)
 
 Window 7 is the default. Validated at windows 7 and 8: ``window_resize`` at factors 2, 4
 and 8 with align_corners=False and factor 4 with align_corners=True (window 7: the Swin-T224
-decoder's FPN, fusion and head; window 8: the capstone's, on its token extents, C0b),
+decoder's FPN, fusion and head; window 8: the window-8 Swin-UPerNet validation model's, on its token extents),
 ``window_matrix_resize`` from 1 x 1, 2 x 2, 3 x 3 and 6 x 6 sources (the PSP's bins) onto one
 window with align_corners=False. Other windows, factors and sources are not validated.
 """
@@ -151,7 +150,7 @@ def window_matrix_weights(in_size, out_size, height: int | None = None, width: i
     output pixels at (row0, col0) of the out_size grid (default: all of it), in window
     layout order: window I n_w + J, token w a + b = output pixel (row0 + w I + a,
     col0 + w J + b).  Rows are indexed by the *absolute* output position, so a tile of a
-    larger output grid gets the large grid's interpolation (Milestone 8, Option C)."""
+    larger output grid gets the large grid's interpolation (resizing onto the output grid)."""
     height = out_size[0] if height is None else height
     width = out_size[1] if width is None else width
     full = output_weights(in_size, out_size, align_corners).reshape(out_size[0], out_size[1], -1)
@@ -177,7 +176,7 @@ def window_resize(ee, x, tokens: TokenGrid, channels: int, factor: int, align_co
     [w, w + 2] x [w + 2, (w + 2) C] product), then x ([w, w + 2] x [w + 2, w C]), one
     float32 rounding.
     Returns (image, fine token grid). Validated at windows 7 and 8, factors 2, 4 and 8 with
-    align_corners=False and factor 4 with align_corners=True (C0b at window 8)."""
+    align_corners=False and factor 4 with align_corners=True (validated at window 8)."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     coarse = tokens.coarse(window)
     fine_tokens = TokenGrid(tokens.height * factor, tokens.width * factor,
@@ -207,12 +206,12 @@ def window_resize(ee, x, tokens: TokenGrid, channels: int, factor: int, align_co
 def window_matrix_resize(ee, source_array, in_size, tokens: TokenGrid, out_size=None,
                          row0: int = 0, col0: int = 0, align_corners: bool = False, *,
                          window: int = WINDOW, policy: str = DOUBLE_ROUND_ONCE):
-    """Milestone 7's matrix resize in window layout (PSP branches): source_array an
+    """The decoder's matrix resize in window layout (PSP branches): source_array an
     ee.Array [H_in W_in, C] (row-major pixels) -> [w^2, C] per window of `tokens` (the
     output token grid, or a tile of out_size at (row0, col0)).  Each output token is one
     sequential double dot over the source pixels with the products of PyTorch's float32
     1-D weights (exact in double), rounded to float32 once. Validated at windows 7 and 8 from
-    1 x 1, 2 x 2, 3 x 3 and 6 x 6 sources onto one window, align_corners=False (C0b at window
+    1 x 1, 2 x 2, 3 x 3 and 6 x 6 sources onto one window, align_corners=False (validated at window
     8)."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     tokens_per_window = window * window
@@ -252,7 +251,7 @@ def window_matrix_resize_values(in_size, height: int, width: int) -> int:
 def window_resize_edge(*, align_corners: bool = False) -> dict:
     """Chip-edge dependence of ``window_resize`` at a setting (``BlockMetadata.per_setting``):
     with align_corners=True the weights depend on the map's size (223 distinct row patterns at
-    56 -> 224; X01a's review), so tiling with halos cannot reproduce them. With False they
+    56 -> 224), so tiling with halos cannot reproduce them. With False they
     repeat with the factor (5 patterns at either size), and the ring of one token covers a
     tile's edge."""
     return {"chip_edge_dependent": bool(align_corners)}

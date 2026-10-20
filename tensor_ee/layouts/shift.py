@@ -20,13 +20,13 @@ neighbour (the periodic wrap), which is exact when the image is periodic with
 the grid's window counts; ``periodic_extension`` supplies that periodicity by
 mosaicking translated copies. The measured research alternatives (the
 ``"mosaic"`` and ``"where"`` wraps, the ``"where"`` extension and the other
-materialization choices) were removed at L06b; they are in the research code
+materialization choices) were removed when the research code was archived; they are in the research code
 archived at the tag ``research-archive-2026-10-12``.
 
 Defaults equal today's values: window 7, ``periodic_extension`` halo ``HIERARCHY_HALO``,
 and a shift of ``window // 2`` (timm's SW-MSA shift; 3 at window 7). ``timm_shift``
 gives timm's rule for a grid of windows. The cyclic shift is validated at windows 5, 7, 8
-and 12 with shift window // 2 (task P01); other windows and shifts are not.
+and 12 with shift window // 2; other windows and shifts are not.
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ from ..core.grid import TokenGrid
 from ..core.tensor import WINDOW
 
 SHIFT = 3
-"""Swin-T's shift: ``WINDOW // 2``, the default at window 7. P01 validated window // 2 at
+"""Swin-T's shift: ``WINDOW // 2``, the default at window 7. The cyclic shift is validated at window // 2 for
 windows 5, 7, 8 and 12."""
 
 
@@ -117,7 +117,7 @@ def roll_axis(ee, x, coarse: TokenGrid, channels: int, offset: int, axis: str,
     """Window layout of new(Y) = old(Y + offset) along one token axis, 0 < |offset| < w.
 
     pin=True materializes x on the coarse grid first (see ``materialize``).
-    Windows 5, 7, 8 and 12 with offset window // 2 are validated (P01).
+    Windows 5, 7, 8 and 12 with offset window // 2 are validated.
     """
     if not 0 < abs(offset) < window:
         raise ValueError("offset must be within one window")
@@ -152,7 +152,7 @@ def shift_windows(ee, x, coarse: TokenGrid, channels: int, shift: int | None = N
     """timm: window_partition(roll(x, (-shift, -shift))) from x in window layout.
 
     ``shift`` defaults to ``window // 2`` (3 at window 7) and must satisfy
-    0 < shift < window. Validated at windows 5, 7, 8 and 12 with shift window // 2 (P01)."""
+    0 < shift < window. Validated at windows 5, 7, 8 and 12 with shift window // 2."""
     return roll_windows(ee, x, coarse, channels, _resolve_shift(shift, window), window)
 
 
@@ -160,7 +160,7 @@ def unshift_windows(ee, y, coarse: TokenGrid, channels: int, shift: int | None =
     """timm: roll(window_reverse(y), (+shift, +shift)) in window layout.
 
     ``shift`` defaults to ``window // 2`` (3 at window 7) and must satisfy
-    0 < shift < window. Validated at windows 5, 7, 8 and 12 with shift window // 2 (P01)."""
+    0 < shift < window. Validated at windows 5, 7, 8 and 12 with shift window // 2."""
     return roll_windows(ee, y, coarse, channels, -_resolve_shift(shift, window), window)
 
 

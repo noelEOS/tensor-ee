@@ -114,7 +114,7 @@ def measure_model_graph() -> dict:
         raster = Raster(ee.Image.constant([0., 0.]).toFloat().rename(["b0", "b1"]),
                         ("b0", "b1"), SEGFORMER_B0.input_grid)
         result = segformer_b0(ee, raster, constants)
-        # Only serialization uses this existing capstone convention; graph
+        # Only serialization uses this existing window-8 Swin-UPerNet validation model convention; graph
         # construction above and all fixture planning keep the ordinary limit.
         try:
             sys.setrecursionlimit(max(previous, 20_000))

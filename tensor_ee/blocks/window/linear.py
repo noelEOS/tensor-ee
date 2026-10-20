@@ -11,17 +11,17 @@ product, [N, in] x [in, out] per pixel, against a constant W^T; on a value (V) i
 is the same product on an ee.Array.
 
 **Policy** ``double_round_once``: matrixMultiply accumulates the float32 operands
-in double (Milestone 1: its results rounded to float32 equal the correctly rounded
+in double (window-attention validation: its results rounded to float32 equal the correctly rounded
 float64 dot products); the bias is added in double and the sum is rounded to
 float32 once.
 
 **Rows.** The bias is pre-repeated to the rows of the layout it serves (EE arrays
 do not broadcast): ``WindowLayout(7)`` -> 49, ``WindowLayout(1)`` -> 1, a V value
--> its row count. Builders take that layout (or tensor), as the L05 composites pass
+-> its row count. Builders take that layout (or tensor), as the reference-model composites pass
 it, or a row count, the builders' original call form (still accepted), and record
 ``rows``. A block given ``layout=`` refuses constants built for another one
 (client-side only).
-Windows 5, 7, 8 and 12 (and one-row dense constants) are validated live (Phase 2, P01).
+Windows 5, 7, 8 and 12 (and one-row dense constants) are validated live (including the window-size checks).
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ WINDOW_LAYOUT = WindowLayout()
 def as_layout(layout):
     """``layout`` itself (a ``WindowLayout``, ``ValueLayout``, ``WindowTensor`` or 2-D V
     value), or a positive ``int`` row count, the builders' original call form (still
-    accepted; the L05 composites pass layouts), as the ``ValueLayout`` with that many rows:
+    accepted; the reference-model composites pass layouts), as the ``ValueLayout`` with that many rows:
     only the count matters to a per-channel constant."""
     if isinstance(layout, (int, np.integer)) and not isinstance(layout, bool):
         return ValueLayout(int(layout))
@@ -88,7 +88,7 @@ def linear(ops, x, layer: LinearConstants, *, policy: str = DOUBLE_ROUND_ONCE, l
 
 
 def conv1x1_constants(ops, weight, bias, rows) -> LinearConstants:
-    """Conv2d 1 x 1 weight [Cout, Cin, 1, 1] (or [Cout, Cin]) -> Milestone 2's linear.
+    """Conv2d 1 x 1 weight [Cout, Cin, 1, 1] (or [Cout, Cin]) -> the Swin block's linear.
     ``rows``: the layout the bias serves, or its row count."""
     if not isinstance(weight, ServerArray):
         weight = np.asarray(weight, dtype=np.float32).reshape(np.shape(weight)[0], -1)

@@ -2,7 +2,7 @@
 the stage, the patch embedding at a configuration, the encoder grids and the encoder, with
 their constants builders.
 
-Moved (X01b) from ``tensor_ee/models/swin_t224/encoder.py``, renamed here where the model's
+Moved from ``tensor_ee/models/swin_t224/encoder.py``, renamed here where the model's
 name does not say Swin: ``BlockConstants`` -> ``SwinBlockConstants``, ``block_constants`` ->
 ``swin_block_constants``, ``mlp_branch`` -> ``swin_mlp_branch``, ``stage_blocks`` ->
 ``swin_stage_blocks``, ``merge_constants`` -> ``swin_merge_constants``,
@@ -21,7 +21,7 @@ on that raster with no layout conversion; an SW-MSA block re-partitions with the
 library's ``patch_merge``. Parameters are timm state_dict names (NumPy arrays embedded
 inline, or asset-backed ``ServerArray``s).
 
-**Configuration (C0).** The composites take a ``SwinUPerNetConfig`` (``swin_upernet_config``;
+**Configuration.** The composites take a ``SwinUPerNetConfig`` (``swin_upernet_config``;
 default ``SWIN_T224``): ``swin_stage_blocks``, ``swin_merge_constants``,
 ``swin_patch_embedding_constants``, ``swin_patch_embedding``, ``swin_encoder_grids`` and
 ``SwinEncoderConstants`` take it as ``config``, and ``swin_encoder`` reads it from its constants
@@ -47,7 +47,7 @@ one float32 rounding.
 each SW-MSA block's input by one window (``periodic_extension``) before the block. The research
 variants (the ``per_stage`` and ``propagated`` modes with their halo registry
 ``EXTENSION_HALOS``, the fine-grid merge gather, the shifted block's ablations and the extra
-materialization points) were removed at L06b; they are in the research code archived at the
+materialization points) were removed when the research code was archived; they are in the research code archived at the
 tag ``research-archive-2026-10-12``.
 
 **Locality.** The MLP branch is per token and the W-MSA block reads its own window. The
@@ -61,11 +61,11 @@ embedding reads each token's patch (radius patch // 2).
 ``window_attention``, ``shifted_window_mask``, ``patch_merge``, ``patch_embed``).
 
 **Validated.** Live only inside two whole models: Swin-T224 (window 7, shift 3, Swin-T
-depths, heads and widths; 224 x 224, two bands) in the T06 rehearsal against PyTorch
-(docs/evidence/t06-rehearsal.json) and in Milestone 12's trained parity
-(docs/history/upernet/notes/milestone12_findings.md), and the capstone (window 8, shift 4,
+depths, heads and widths; 224 x 224, two bands) in the trained-model rehearsal against PyTorch
+(docs/evidence/t06-rehearsal.json) and in the trained model's parity check
+(docs/history/upernet/notes/milestone12_findings.md), and the window-8 Swin-UPerNet validation model (window 8, shift 4,
 widths 48 to 384, heads 2 to 16, depths 2; 256 x 256, three bands;
-docs/evidence/c1-capstone.json). Neither model runs the encoder's final norm; Milestone 5
+docs/evidence/c1-capstone.json). Neither model runs the encoder's final norm; full Swin-encoder validation
 validated the research encoder these came from, final norm included, at Swin-T's settings
 (docs/history/swin_encoder/notes/milestone5_findings.md). Other configurations are validated
 only where the blocks' statuses cover them (docs/building-blocks.md); the builders accept
@@ -197,7 +197,7 @@ def shifted_swin_block(ops, x, c: SwinBlockConstants, coarse, *, mask=None, shif
     """Every named intermediate of the SW-MSA block for x: float32 [w^2, dim] per window
     (window layout of the full raster's coarse grid `coarse`; w = c.window, dim = c.dim).
 
-    Keys: Milestone 2's per-head names (q_h0, logits_h0, ...) in shifted
+    Keys: the Swin block's per-head names (q_h0, logits_h0, ...) in shifted
     layout, plus "logits_biased_h{h}", "mask", "shifted", "reverse" and
     "unshifted".  x is materialized on the coarse grid first, and the shift
     materializes its input (``shift.roll_windows``).  mask: Swin's shifted-window
@@ -507,16 +507,16 @@ def swin_encoder_arrays(*, config: SwinUPerNetConfig = SWIN_T224, start: int = 1
 # ---------------------------------------------------------------------------
 # Metadata
 # ---------------------------------------------------------------------------
-# Validated live only inside two whole models: Swin-T224 (T06 against PyTorch, Milestone 12
-# against ONNX Runtime) and the C1 capstone.
+# Validated live only inside two whole models: Swin-T224 (trained-model rehearsal against PyTorch, trained Swin-UPerNet validation
+# against ONNX Runtime) and the window-8 Swin-UPerNet validation model.
 _STATUS = "Fixed — Swin-T224 and the capstone: "
 _WIDTHS = ("widths 96, 192, 384, 768, heads 3, 6, 12, 24 at window 7; "
            "widths 48, 96, 192, 384, heads 2, 4, 8, 16 at window 8")
 _EVIDENCE = ("docs/evidence/t06-rehearsal.json", "docs/history/upernet/notes/milestone12_findings.md",
              "docs/evidence/c1-capstone.json")
 
-# Validated settings (X02b): the two models' settings, named by the cost functions' parameters
-# (dim, heads, depth, window) and SwinUPerNetConfig's fields, and joined per stage. The capstone
+# Validated settings: the two models' settings, named by the cost functions' parameters
+# (dim, heads, depth, window) and SwinUPerNetConfig's fields, and joined per stage. The window-8 Swin-UPerNet validation model
 # is tools/capstone.py's CONFIG (docs/evidence/c1-capstone.json).
 _MODELS = ({"window": 7, "stage_dims": (96, 192, 384, 768), "num_heads": (3, 6, 12, 24), "depths": (2, 2, 6, 2),
             "embed_dim": 96, "channels": 2},
@@ -554,7 +554,7 @@ METADATA = validate_metadata({
         # The shifted windows straddle their neighbours: after the roll by w // 2 and the
         # unroll, an output window reads w - w // 2 tokens into them (4 at windows 7 and 8).
         # Validated at stages 1-3 only: stage 4 is one window in both models (224 / 32 = 7 and
-        # 256 / 32 = 8 tokens), so timm never shifts it (lead decision, X02b fix round).
+        # 256 / 32 = 8 tokens), so timm never shifts it.
         name="shifted_swin_block", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=4,
         policy=COMPOSITE, embedded_constants=shifted_swin_block_values, asset_arrays=shifted_swin_block_arrays,
         chip_edge_dependent=True,
@@ -572,7 +572,7 @@ METADATA = validate_metadata({
                               "parts: swin_block, periodic_extension (none), shifted_swin_block"),
         validated=Validated(_pick("dim", "heads", "depth", "window", "shift", "shifted"))),
     "swin_patch_embedding": BlockMetadata(
-        # patch // 2 at the validated patch 4 (patch_embed's own radius 4 rests on P03's patch 8)
+        # patch // 2 at the validated patch 4 (patch_embed's own radius 4 covers the validated patch size 8)
         name="swin_patch_embedding", layout_in="R", layout_out="W", locality=Locality.KERNEL, radius=2,
         policy=COMPOSITE, embedded_constants=swin_patch_embedding_values, asset_arrays=swin_patch_embedding_arrays,
         status=_STATUS + "patch 4; 2 bands → width 96 at window 7, 3 bands → width 48 at window 8",

@@ -1,4 +1,4 @@
-"""Capstone C1: a Swin-UPerNet at non-default settings, end to end, by one batch export.
+"""Window-8 Swin-UPerNet validation: a non-default model in one batch export.
 
     PYTHONPATH=. python tools/capstone.py --plan --project PROJECT [--json]
     PYTHONPATH=. python tools/capstone.py --check-input --project PROJECT --state DIR
@@ -8,42 +8,41 @@
     PYTHONPATH=. python tools/capstone.py --status --project PROJECT --state DIR
     PYTHONPATH=. python tools/capstone.py --verify --project PROJECT --state DIR [--output PATH]
 
-The model (docs/tasks/C0-capstone.md, "The capstone model") is ``CONFIG``: 3 bands on a
+The model is ``CONFIG``: 3 bands on a
 256 x 256 grid, patch 4, embedding width 48, window 8 (shift 4; stage 4 one window, unshifted),
 depths (2, 2, 2, 2), heads (2, 4, 8, 16), decoder width 64, PSP bins (1, 2, 3, 6), 4 fusion
 groups, 3 classes and the x4 head. It runs as one Earth Engine graph, built only from the
 library's composites (``tensor_ee.models.swin_t224`` with a ``SwinUPerNetConfig``).
 
-- **R1, the reference.** SMP 0.5.0's own ``UPerNet`` with a ``tu-`` timm 1.0.30 Swin encoder at
+- **The reference.** SMP 0.5.0's own ``UPerNet`` with a ``tu-`` timm 1.0.30 Swin encoder at
   ``CONFIG`` (timm's features, the feature LayerNorm2d norms, ``UPerNetDecoder`` and
-  ``SegmentationHead``), as Milestone 12 built its reference, in eval mode with every dropout
+  ``SegmentationHead``), as in the trained Swin-UPerNet reference, in eval mode with every dropout
   and drop path at 0 and timm's explicit attention path. The weights have the scales of
   PyTorch's default initialization (timm's and SMP's, fan-in scaled where they are), drawn by
   ``initial_state`` from the harness's platform-independent integer generator with ``SEED``;
   the parameters that initialization sets to constants (biases, norm scales and shifts,
   BatchNorm statistics) then get small seeded perturbations, so that every parameter takes
-  part. ``reference_check`` runs Milestone 12's ``expanded`` check (the forward rebuilt from
+  part. ``reference_check`` runs the trained-model reference's ``expanded`` check (the forward rebuilt from
   the installed submodules equals the model's own, bit for bit).
-- **R2, the input.** The Milestone 12 scene, three prepared bands (VV, VH in dB, as the
+- **The input.** The trained Swin-UPerNet validation scene, three prepared bands (VV, VH in dB, as the
   collection stores them, and VV - VH, each x ``INPUT_SCALE``), on ``GRID``: EPSG:32651,
-  10 m, 256 x 256 at the whole-metre origin (287520, 2641000), which contains the Milestone
-  12 chip with about 160 m to spare on every side.
-- **R3, the weights.** ``parameter_records`` turns the state dict into the v2 records;
+  10 m, 256 x 256 at the whole-metre origin (287520, 2641000), which contains the trained Swin-UPerNet validation chip with about 160 m to spare on every side.
+- **The weights.** ``parameter_records`` turns the state dict into the v2 records;
   ``--upload`` exports them with ``export_weights`` (at most 2 tasks at once) under one
   immutable namespace named after their listing hash. ``--plan`` builds the same graph from
   a stand-in manifest with the planned shard asset IDs, through the same loader
   (``with_manifest``).
-- **R4, the export.** ``--prepare`` builds the graph from the uploaded manifest, requires it
+- **The export.** ``--prepare`` builds the graph from the uploaded manifest, requires it
   to equal the planned one and saves the exact request; ``--submit`` sends it once with a
   persisted request ID; ``--status`` polls it.
-- **R5, the checks.** ``--check-input`` (before any upload) counts the valid prepared-input
+- **The checks.** ``--check-input`` (before any upload) counts the valid prepared-input
   pixels: 65,536 or nothing is uploaded. ``--verify`` reads the prepared input and the
   exported logits back (one ``computePixels`` each), runs the reference on that input and
   writes the evidence.
 
 ``--plan`` makes no cloud call (``tools/live_fixtures.offline_earth_engine``). The live
 modes initialize Earth Engine with Application Default Credentials for ``--project``; only
-the lead runs them, with the user's approval of ``docs/evidence/c1-capstone-plan.md``.
+the maintainer runs them, with the user's approval of ``docs/evidence/c1-capstone-plan.md``.
 """
 from __future__ import annotations
 
@@ -83,7 +82,7 @@ from tensor_ee.weights.constants import ValueLayout  # noqa: E402
 from tools import live_fixtures as LF  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# The capstone
+# The window-8 Swin-UPerNet validation model
 # ---------------------------------------------------------------------------
 CONFIG = SwinUPerNetConfig(window=8, patch=4, bands=("VV", "VH", "VVminusVH"), embed_dim=48,
                            depths=(2, 2, 2, 2), num_heads=(2, 4, 8, 16), stage_dims=(48, 96, 192, 384),
@@ -96,7 +95,7 @@ each tensor's name, so the same weights on every platform)."""
 SCENE = "COPERNICUS/S1_GRD/S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD"
 GRID = Grid("EPSG:32651", (10, 0, 287520, 0, -10, 2641000), SIDE, SIDE)
 M12_CHIP = Grid("EPSG:32651", (10, 0, 287680.95335071225, 0, -10, 2640838.8405420803), 224, 224)
-"""The Milestone 12 catalogue chip (docs/history/upernet/notes/milestone12_findings.md, question
+"""The trained Swin-UPerNet validation catalogue chip (docs/history/upernet/notes/milestone12_findings.md, question
 18): ``GRID`` contains it."""
 MODEL_GRID = CONFIG.model_grid(SIDE, SIDE)
 INPUT_SCALE = 0.1
@@ -105,12 +104,12 @@ OUTPUT_BANDS = ("logit_0", "logit_1", "logit_2", "valid")
 NAME = "native_ee_capstone_c1"
 TOLERANCE = 1e-4
 CAP = 24_000_000
-"""The batch cap on evaluated constants in one image graph (24 M pass, 26 M fail; Milestone 5)."""
+"""The batch cap on evaluated constants in one image graph (24 M pass, 26 M fail; full Swin-encoder validation)."""
 REQUEST_LIMIT = 10_485_760
-"""Earth Engine's request payload limit (Milestone 1)."""
+"""Earth Engine's request payload limit (window-attention validation)."""
 POLL_SECONDS = 30
 POLL_CAP_SECONDS = 1800
-"""30 minutes per task, as in L06c: past it the tool stops polling (the task is not cancelled)."""
+"""30 minutes per task, as in browser-demo validation: past it the tool stops polling (the task is not cancelled)."""
 MAX_ACTIVE = 2
 REFERENCE_PERTURBATION = {"norm_scale": Fraction(1, 10), "norm_shift": Fraction(1, 20), "bn_mean": Fraction(1, 10),
                           "bn_var": Fraction(1, 5), "bias": Fraction(1, 50)}
@@ -133,7 +132,7 @@ def deep_graphs() -> Iterator[None]:
 
 
 # ---------------------------------------------------------------------------
-# R1: the reference
+# the reference
 # ---------------------------------------------------------------------------
 REFERENCE_ARGUMENTS = dict(
     encoder_name="tu-swin_tiny_patch4_window7_224", encoder_depth=5, encoder_weights=None,
@@ -141,12 +140,11 @@ REFERENCE_ARGUMENTS = dict(
     classes=CONFIG.classes, upsampling=CONFIG.head_factor, img_size=(SIDE, SIDE), embed_dim=CONFIG.embed_dim,
     depths=CONFIG.depths, num_heads=CONFIG.num_heads, window_size=CONFIG.window, drop_rate=0.0,
     proj_drop_rate=0.0, attn_drop_rate=0.0, drop_path_rate=0.0)
-"""``smp.UPerNet`` at the capstone: its encoder arguments go through SMP to timm, as Milestone
-12's ``img_size`` did."""
+"""``smp.UPerNet`` at the window-8 Swin-UPerNet validation model: its encoder arguments go through SMP to timm, as the trained-model reference's ``img_size`` did."""
 
 
 def _check_reference(model) -> None:
-    """Every block at timm's window and shift for the capstone, with the explicit attention
+    """Every block at timm's window and shift for the window-8 Swin-UPerNet validation model, with the explicit attention
     path, exact GELU, LayerNorm eps 1e-5 and no dropout or drop path (raises otherwise)."""
     shifts = CONFIG.block_shifts(*CONFIG.input_windows(SIDE, SIDE))
     features = model.encoder.model
@@ -290,7 +288,7 @@ def reference_model(dtype=torch.float32, seed: int = SEED):
     features = model.encoder.model
     for s in range(CONFIG.stages):
         for block in getattr(features, f"layers_{s}").blocks:
-            block.attn.fused_attn = False          # the explicit (original Swin) path, as Milestone 12
+            block.attn.fused_attn = False          # the explicit (original Swin) path, as in the trained-model check
     model = model.to(dtype).eval()
     for s in range(CONFIG.stages):
         for block in getattr(features, f"layers_{s}").blocks:
@@ -319,7 +317,7 @@ def forward(model, x: np.ndarray) -> np.ndarray:
 
 
 def reference_check(model, x: np.ndarray) -> dict:
-    """Milestone 12's check (``full_model_reference.expanded``): the forward rebuilt from the
+    """The trained-model reference's check (``full_model_reference.expanded``): the forward rebuilt from the
     installed submodules (the encoder, the PSP, FPN and fusion one operation at a time, then
     the head's Conv2d and ``F.interpolate(scale_factor=4, align_corners=True)``) equals the
     model's own forward at every captured tensor, bit for bit (raises otherwise)."""
@@ -354,7 +352,7 @@ def stand_in_input() -> np.ndarray:
 
 
 # ---------------------------------------------------------------------------
-# R3: records, names, shards and the manifest
+# records, names, shards and the manifest
 # ---------------------------------------------------------------------------
 def local_parameters(model) -> tuple[dict, dict, dict]:
     """The state dict in the composites' three maps (``parameters_from_state``): timm and SMP
@@ -415,7 +413,7 @@ def layer_assets(manifest: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# R2 and R4: the input, the graph and the export request
+# the input, the graph and the export request
 # ---------------------------------------------------------------------------
 def prepared_input(ee_module=ee):
     """The three prepared bands on ``GRID`` (nearest neighbour from the scene's own grid)."""
@@ -521,7 +519,7 @@ def result_readback(ee_module, asset_id: str):
 
 
 # ---------------------------------------------------------------------------
-# R4: evaluated constants, from the blocks' METADATA cost functions at the configuration
+# evaluated constants, from the blocks' METADATA cost functions at the configuration
 # ---------------------------------------------------------------------------
 def _cost(module, block: str, *args, **kwargs) -> int:
     return int(module.METADATA[block].embedded_constants(*args, **kwargs))
@@ -531,7 +529,7 @@ def evaluated_constants(built: dict) -> dict:
     """Every block's evaluated constants from its ``METADATA`` cost function, called with the
     configuration's window, rows and bins, and cross-checked against the configured
     constants' own ``embedded_values`` (PSP, FPN, fusion). Also the values the cost functions
-    do not count but Milestone 5's count included: the per-head relative-position biases
+    do not count but the complete encoder's count included: the per-head relative-position biases
     ([w², w²] each) and the shifted-window masks' two [w², w²] boundary arrays."""
     w, L = CONFIG.window, CONFIG.layout
     d, c4 = CONFIG.decoder, CONFIG.norm_dim
@@ -590,7 +588,7 @@ def evaluated_constants(built: dict) -> dict:
 
 
 def formula_constants() -> dict:
-    """The brief's estimate: the weights plus rows x the per-row parameters (rows w² in window
+    """Estimated embedded constants: the weights plus rows x the per-row parameters (rows w² in window
     layout, s² for the PSP's pooled branches), from the parameter schema."""
     enc, pe, dec, _ = P.parameter_shapes(CONFIG)
     rows = CONFIG.window ** 2
@@ -681,7 +679,7 @@ def _contains(outer: Grid, inner: Grid) -> bool:
 
 def plan_text(plan: dict) -> str:
     c = plan["evaluated_constants"]
-    lines = [f"Capstone plan for project {plan['project']} (zero cloud calls: {plan['cloud_calls']} attempted)",
+    lines = [f"Window-8 Swin-UPerNet validation plan for project {plan['project']} (zero cloud calls: {plan['cloud_calls']} attempted)",
              f"  model: {plan['parameters']:,} parameters in {plan['records']} records; seed {plan['seed']}; "
              f"state dict SHA-256 {plan['state_dict_sha256']}",
              f"  reference on the stand-in input: logits {plan['reference']['logit_min']:.4f} to "
@@ -733,7 +731,7 @@ class PollingCap(RuntimeError):
 
 
 def check_input(project: str, directory: Path) -> dict:
-    """R5: one read before any upload. Passes only with 65,536 valid pixels of 65,536."""
+    """One read before any upload. Passes only with 65,536 valid pixels of 65,536."""
     state = load_state(directory, project)
     with LF.live_session(project):
         counts = input_counts(ee).getInfo()
@@ -754,7 +752,7 @@ def _local(project: str):
 
 
 def upload(project: str, directory: Path, *, clock=time.time) -> dict:
-    """R3: the table exports (``export_weights``, at most 2 active, polled every 30 s, 30
+    """the table exports (``export_weights``, at most 2 active, polled every 30 s, 30
     minutes per task at most), after a passed ``--check-input``. Writes the manifest into the
     state directory, with the listing hash and the state dict's SHA-256.
 
@@ -814,7 +812,7 @@ def offline_request(maps, records, digest: str, destinations: dict) -> dict:
 
 
 def prepare(project: str, directory: Path) -> dict:
-    """R4: the export request from the uploaded manifest, required equal to the request built,
+    """the export request from the uploaded manifest, required equal to the request built,
     in the same live session, from the planned stand-in manifest (the pass criterion); saved
     with its SHA-256, its size and a request ID (``ee.data.newTaskId``: a local UUID, no
     request) that every ``--submit`` re-sends. The offline plan's SHA-256 (the document's) is
@@ -853,7 +851,7 @@ def prepare(project: str, directory: Path) -> dict:
 
 
 def submit(project: str, directory: Path) -> dict:
-    """R4: send the saved request with the request ID ``--prepare`` persisted. A lost response
+    """send the saved request with the request ID ``--prepare`` persisted. A lost response
     (UNKNOWN) or an interrupted call (SUBMITTING) is recovered by running ``--submit`` again:
     it re-sends the same ID, which Earth Engine takes as the same task. Refused once
     SUBMITTED; a new ID is never made."""
@@ -885,7 +883,7 @@ def submit(project: str, directory: Path) -> dict:
 
 
 def status(project: str, directory: Path, *, sleep=time.sleep, clock=time.time) -> dict:
-    """R4: poll the export every 30 s until it is terminal, for at most 30 minutes after its
+    """poll the export every 30 s until it is terminal, for at most 30 minutes after its
     submission."""
     state = load_state(directory, project)
     submitted = state["steps"].get("submit", {})
@@ -904,7 +902,7 @@ def status(project: str, directory: Path, *, sleep=time.sleep, clock=time.time) 
 
 
 # ---------------------------------------------------------------------------
-# R5: verification
+# verification
 # ---------------------------------------------------------------------------
 def compare_logits(reference: np.ndarray, logits: np.ndarray, tolerance: float = TOLERANCE) -> dict:
     """Earth Engine's logits against the reference's, [H, W, classes] each: the largest
@@ -967,7 +965,7 @@ def verify_arrays(input_pixels, output_pixels, metadata: dict, *, models=None) -
     x = x.astype(np.float32)
     models = models or (reference_model(torch.float32), reference_model(torch.float64))
     reference, reference_logits = reference_record(x, models)
-    try:                                                    # R1: Milestone 12's check, on the real input
+    try:                                                    # the trained-model reference's check, on the real input
         reference.update(reference_check(models[0], x))
     except AssertionError as error:
         reference.update(expanded_equals_forward=False, error=str(error))
@@ -990,7 +988,7 @@ def verify_arrays(input_pixels, output_pixels, metadata: dict, *, models=None) -
 
 
 def verify(project: str, directory: Path, output: Path, *, models=None) -> dict:
-    """R5: one ``getAsset`` (the result's metadata) and two ``computePixels`` (the prepared
+    """one ``getAsset`` (the result's metadata) and two ``computePixels`` (the prepared
     input; the exported bands), then the reference on that input. Writes the evidence."""
     state = load_state(directory, project)
     if state["steps"].get("status", {}).get("state") != "COMPLETED":

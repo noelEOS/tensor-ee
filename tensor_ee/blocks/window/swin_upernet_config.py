@@ -2,14 +2,14 @@
 that the ``swin`` and ``upernet`` composites read.
 
 ``SwinUPerNetConfig`` holds every setting of the Swin encoder and the UPerNet decoder that
-the composites read (C0): the window, patch, input bands and embedding width; the depths,
+the composites read: the window, patch, input bands and embedding width; the depths,
 heads and stage widths; the decoder width, fusion groups, PSP bins, classes and head factor.
 It derives the rest: the shift, the window-count rule, the strides, the channel contracts and
 the parameter schema. ``SWIN_T224`` is the default instance, the trained Swin-T224/UPerNet,
 and every default here and in the composites is its value. A value a composite cannot serve
 is refused when the configuration is built, with the reason; none is ignored.
 
-Moved (X01b) from ``tensor_ee/models/swin_t224/configuration.py`` (``SwinUPerNetConfig``,
+Moved from ``tensor_ee/models/swin_t224/configuration.py`` (``SwinUPerNetConfig``,
 ``SWIN_T224``, ``check_shapes``, ``stage_shifted``, the UPerNet structure ``LEVELS``,
 ``PREFIX``, ``WEIGHT``, ``PYRAMID``, ``RESIZED``, ``DOUBLE``, ``STAGE_COUNT``,
 ``TOKEN_SCALE``, ``MLP_RATIO``, and the SMP name helpers ``bn_args``, ``level_tensors``,
@@ -22,7 +22,7 @@ The UPerNet decoder structure and the SMP tensor and parameter names are fixed b
 window.
 
 **Validated settings.** Swin-T224's (timm swin_tiny_patch4_window7_224, SMP 0.5.0 UPerNet,
-decoder width 256, two classes) are validated end to end, and so is the capstone's (window
+decoder width 256, two classes) are validated end to end, and so is the window-8 Swin-UPerNet validation model's (window
 8, widths 48 to 384, decoder width 64, three classes; docs/evidence/c1-capstone.json). A
 configuration is otherwise validated only where each block's status covers it
 (docs/building-blocks.md); building one is not evidence that its graph is right.
@@ -51,7 +51,7 @@ PYRAMID = ("P1", "P2", "P3", "psp_relu")
 RESIZED = {"P1": "P1_to_C1", "P2": "P2_to_C1", "P3": "P3_to_C1", "psp_relu": "PSP_to_C1"}
 DOUBLE = ("double_sum", "double_bn", "double_relu")
 """The fusion tensors of the grouped_double formulation (the research formulations' tensor
-names, STEPS and GROUPED, were removed at L06b)."""
+names, STEPS and GROUPED, were removed when the research code was archived)."""
 
 STAGE_COUNT = 4
 """Swin stages: the UPerNet reads four feature levels, C1..C4 (``LEVELS`` and the PSP)."""

@@ -1,4 +1,4 @@
-"""Generate the block catalogue in ``docs/building-blocks.md`` from the library (task L07).
+"""Generate the block catalogue in ``docs/building-blocks.md`` from the library.
 
     python tools/block_catalogue.py           # rewrite the generated regions
     python tools/block_catalogue.py --check   # exit 1 if the file is out of date
@@ -9,7 +9,7 @@ The catalogue's tables are generated, so they cannot drift from the code:
   ``tensor_ee.blocks.raster`` and ``tensor_ee.blocks.window`` (docs/library-contract.md,
   section 9), with its layouts, locality, precision policy, chip-edge dependence, status
   and evidence, and the counts by layout and status; then every block's validated settings
-  (``BlockMetadata.validated``, X02b). The modules are imported, not parsed.
+  (``BlockMetadata.validated``). The modules are imported, not parsed.
 * ``api``: the public names of the layers that have no ``METADATA`` (core, layouts,
   weights and the converter), of the block packages' settings modules (a module there
   without ``METADATA``, such as ``swin_upernet_config``), and the top-level ``tensor_ee``
@@ -204,7 +204,7 @@ def blocks_region() -> list[str]:
                "property whose exact value at a call's settings is `per_setting`'s (`metadata_at`).")
 
     out += ["", "### Validated settings", "",
-            f"Each block's `validated` record, the status in machine-readable form (X02b): {len(rows)} "
+            f"Each block's `validated` record, the status in machine-readable form: {len(rows)} "
             "records. Each `{…}` is one configuration, whose values were validated together; a record "
             "is their union (∪). A setting no configuration names is not restricted. Names come from "
             "the block function, its cost functions and the sources listed.", ""]

@@ -28,7 +28,7 @@ stacked into one map with R = 50 rows (SMP's block order, bins row-major).
 The result is an ee.Array [R, C] *value* (V). The pool depends on the whole chip or tile
 (EXTENT), and ``sampleRectangle`` refuses a region containing a masked window instead of
 dropping it. No mask is read: the bins divide by their constant areas. Bins (1, 2, 3, 6)
-and window 7 are the defaults. Validated (P04) on token extents of 5 to 14: one window of
+and window 7 are the defaults. Validated on token extents of 5 to 14: one window of
 5, 7, 8 or 12 tokens and 2 x 2 windows of 7, with the bins (1, 2, 3, 6); and one window of
 8 or 12 tokens with the bins (1, 2, 4, 8). Uneven and overlapping bins (more bins than
 pixels, as 5 -> 6) follow PyTorch's start and end rule, checked against PyTorch's kernel on
@@ -50,7 +50,7 @@ from ...layouts.window import reshape
 from .linear import no_constants
 
 SIZES = (1, 2, 3, 6)
-"""Default PSP bins (SMP's pyramid sizes). (1, 2, 4, 8) is validated too (P04)."""
+"""Default PSP bins (SMP's pyramid sizes). (1, 2, 4, 8) is validated too."""
 
 
 # ---------------------------------------------------------------------------
@@ -225,7 +225,7 @@ def window_pool(ee, x, tokens, channels: int, plan: PoolPlan | None = None, *, s
     """AdaptiveAvgPool2d of window layout x [w^2, C] on tokens.coarse(w) to every s x s of
     ``sizes`` (or of ``plan``), as one ``Pooled`` value. Validated on the square extents 5, 7,
     8, 12 and 14 tokens with the bins (1, 2, 3, 6), and 8 and 12 with (1, 2, 4, 8), at windows
-    5, 7, 8 and 12 (P04; see the module docstring). A ``plan`` must be the plan of ``sizes``:
+    5, 7, 8 and 12 (see the module docstring). A ``plan`` must be the plan of ``sizes``:
     one for other sizes is refused (pass the plan's sizes with it), so that ``sizes`` is never
     ignored silently."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
@@ -255,7 +255,7 @@ METADATA = validate_metadata({
     "window_pool": BlockMetadata(
         name="window_pool", layout_in="W", layout_out="V", locality=Locality.EXTENT,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=window_pool_values, asset_arrays=no_constants,
-        # The status names the square extents P04 ran (lead decision, X02b fix round).
+        # The status names the square extents covered by the live decoder fixtures.
         status=("Ready — extents 5, 7, 8, 12 and 14 tokens with bins (1, 2, 3, 6); "
                 "extents 8 and 12 with bins (1, 2, 4, 8)"),
         evidence=("docs/history/building-blocks-2026-10-11.md#38-pooling", "docs/history/upernet/notes/milestone8_findings.md",

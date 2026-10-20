@@ -142,8 +142,7 @@ difference 0 over 50,176 pixels, 0 argmax disagreements).
 
 SMP 0.5.0 `Segformer("mit_b0")` is built on the library: fixed
 224 × 224, two input bands and two raw logits, composed from window blocks in
-`tensor_ee/models/segformer_b0/`; its task record, `docs/tasks/codex-segformer_b0.md`, is in the
-development archive. It added one block, the depthwise 3 × 3 convolution, and one attention setting,
+`tensor_ee/models/segformer_b0/`. It added one block, the depthwise 3 × 3 convolution, and one attention setting,
 `score_scale`. The [converter](converter.md) rebuilds the same block graph from SMP's model.
 
 It is validated end to end in Earth Engine with random weights and a synthetic chip.

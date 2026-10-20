@@ -1,6 +1,6 @@
-"""The export request: a saved boundary as the batch export Earth Engine receives (X06, R2; X08).
+"""The export request: a saved boundary as the batch export Earth Engine receives.
 
-the archive's X06-runner.md brief, R2. One library function builds the request a stage submits, so that
+One library function builds the request a stage submits, so that
 the runner submits, and a request sizer measures, the same bytes:
 
 - ``export_request(image, grid, *, asset_id, description, request_id)``: the
@@ -17,7 +17,7 @@ the runner submits, and a request sizer measures, the same bytes:
   API client's ``JsonModel.serialize`` writes a request body (the converter layer does not
   import the client; a test compares the two);
 - ``request_size(image, grid, *, asset_id, description, request_id=SIZING_REQUEST_ID)``: the
-  request sizer (X08): ``len(wire(export_request(...)))``, the bytes Earth Engine receives for
+  request sizer: ``len(wire(export_request(...)))``, the bytes Earth Engine receives for
   that export. Every canonical UUID has 36 characters, so the placeholder request ID gives the
   size a request with any fixed ID has. It is the planner's default measurement
   (``plan.plan``), and the SegFormer sizing tool (``tools/segformer_b0_request_plan.py``,

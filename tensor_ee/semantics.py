@@ -20,7 +20,7 @@ from torch.fx import GraphModule, Node
 
 from .compiler import UnsupportedOperation, _bind_options, _input_arguments, _pair, _pointwise_call
 # Block option and coefficient checks moved to the library with the blocks that
-# use them, and their errors to core (L03); these names are re-exports of the
+# use them, and their errors to core; these names are re-exports of the
 # same objects.
 from .core.errors import SemanticUnknown, reject as _reject
 from .blocks.raster.conv import _coefficient_field, conv_options, finite_coefficients

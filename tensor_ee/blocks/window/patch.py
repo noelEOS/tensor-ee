@@ -14,17 +14,17 @@ the defaults::
     input       C bands (``bands``, selected by name) float32 on the input grid [H, W]
     columns     the p x p x C patch of every stage-1 token as one [1, C p^2] row on the
                 token grid, flattened (c, ky, kx): Conv2d's weight.reshape(dim, -1)
-                order (p^2 exact stride samples of the input, Milestone 1's
+                order (p^2 exact stride samples of the input, the original attention implementation's
                 reproject + changeProj space-to-depth at factor p)
     pe_patches  window partition: [w^2, C p^2] per stage-1 window on the coarse grid
     pe_proj     ``linear``: [w^2, C p^2] x W^T [C p^2, dim] + bias, rounded once
     x           ``layer_norm(dim)``, rounded once, masked outside the crop
 
 The Conv2d is an im2col matrix product: each token reads exactly its own p x p pixels
-(Phase 1: equal bit for bit on an integer fixture; P03: timm's own one-hot extraction on
+(equal bit for bit on an integer fixture, and against timm's own one-hot extraction on
 pixel IDs at patches 2, 3, 4 and 8). The tokens are partitioned into windows before the
 projection (the research ``token`` placement, which projected each token's row first,
-was removed at L06b). The embedding width ``dim`` comes from the projection's weight
+was removed when the research code was archived). The embedding width ``dim`` comes from the projection's weight
 shape.
 
 **Patch merging** (timm's PatchMerging, from 2 x 2 stage-1 windows)::
@@ -40,13 +40,13 @@ four groups x0..x3 in timm's order (``merge_windows``). No token raster is forme
 
 The embedding gathers its columns by stride sampling and the merge gathers whole windows
 (the research ``neighborhood`` columns and ``fine``-grid merge, with their registries
-``COLUMN_GATHERS`` and ``MERGE_GATHERS``, were removed at L06b).
+``COLUMN_GATHERS`` and ``MERGE_GATHERS``, were removed when the research code was archived).
 
 **Policy** ``double_round_once`` (``linear`` and ``layer_norm``). Patch merging (with
-``gather_windows`` and ``merge_windows``) is validated at windows 5, 7, 8 and 12 (P01). The
+``gather_windows`` and ``merge_windows``) is validated at windows 5, 7, 8 and 12. The
 patch embedding (with ``stride_columns``) is validated at patches 2, 4 and 8, with 1 to 4
 input bands (distinct names without regular-expression syntax, in any raster order),
-embedding widths 48, 96 and 128, and windows 5, 7, 8 and 12 (P03, against timm's
+embedding widths 48, 96 and 128, and windows 5, 7, 8 and 12 (against timm's
 PatchEmbed); other patches and widths are not. The default bands
 ("VV", "VH") are recipe-facing: the Swin-T224 adapter's sensor names (contract section 11).
 """
@@ -131,7 +131,7 @@ def stride_columns(ee, x, grid, *, patch: int = PATCH, bands=BANDS):
     pixel (patch i + ky, patch j + kx) of token (i, j); columns in (c, ky, kx) order, with
     c following ``bands`` (selected by name, whatever the order of x's bands).
     ``_check_patch_settings`` refuses a patch or band list it cannot serve. Validated at
-    patches 2, 4 and 8 with 1 to 4 bands (P03)."""
+    patches 2, 4 and 8 with 1 to 4 bands."""
     patch, bands = _check_patch_settings(patch, bands)
     samples = stride_samples(ee, grid, x, patch, materialize=True)
     columns = [samples[ky * patch + kx].select(c).rename(f"{c}_{ky}{kx}")
@@ -143,14 +143,14 @@ def patch_embed(ops, x, grid, c: PatchEmbedConstants, *, patch: int = PATCH, ban
                 window: int = WINDOW, policy: str = DOUBLE_ROUND_ONCE) -> dict:
     """{"pe_columns", "pe_patches", "pe_proj", "x"} from the input x on the input grid.
 
-    "x" is the stage-1 input of Milestone 5's encoder: window layout on the stage-1
+    "x" is the stage-1 input of the complete encoder: window layout on the stage-1
     coarse grid, masked outside the crop (its cyclic wrap is the encoder's
-    periodic extension, as for Milestone 5's masked input).  pe_patches / pe_proj
+    periodic extension, as for the complete encoder's masked input).  pe_patches / pe_proj
     are window layout too.  Constants built for another row count than ``window ** 2``
     are refused, and so is a projection whose input width is not
     ``len(bands) * patch ** 2`` (proj.weight [dim, C patch^2], flattened (c, ky, kx)).
     Validated at patches 2, 4 and 8, 1 to 4 bands, widths 48, 96 and 128 and windows 5,
-    7, 8 and 12 (P03).
+    7, 8 and 12.
     """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     patch, bands = _check_patch_settings(patch, bands)
@@ -219,7 +219,7 @@ def gather_windows(ee, x, coarse1) -> dict:
     """{(a, b): image on the stage-2 coarse grid holding stage-1 window (2P + a, 2Q + b)}.
 
     x is materialized on the stage-1 coarse grid first, so the four samples read the
-    same computed tiles (Milestone 3's lesson for translated views).
+    same computed tiles (translated views must read the same tiles).
     """
     stage2_coarse(coarse1)
     x = materialize(ee, x, coarse1)
@@ -293,9 +293,9 @@ def patch_merge_arrays(*, bias: bool = False) -> int:
 
 
 _LARGEST_PATCH = 8
-"""The largest validated patch (P03). The metadata radius of ``patch_embed`` and
+"""The largest validated patch. The metadata radius of ``patch_embed`` and
 ``stride_columns`` is half of it, the reach of a token's patch from its centre: the largest
-validated reach, as for ``pool2d`` (P02). It was ``PATCH // 2`` = 2 while only patch 4 was
+validated reach, as for ``pool2d``. It was ``PATCH // 2`` = 2 while only patch 4 was
 validated. ``patch_locality`` gives the reach at a call's patch."""
 
 
@@ -309,10 +309,10 @@ def patch_locality(*, patch: int = PATCH) -> dict:
 
 
 _WINDOWS = (5, 7, 8, 12)
-"""The windows P01 (patch merging) and P03 (patch embedding) validated live."""
+"""The window sizes validated live for patch merging and patch embedding."""
 
 _PATCHES = {"patch": (2, 4, 8), "channels": (1, 2, 3, 4)}
-"""P03's patches and band counts (``channels``, ``patch_embed_values``'s name for the number of
+"""Validated patches and band counts (``channels``, ``patch_embed_values``'s name for the number of
 bands; the names themselves are labels)."""
 
 METADATA = validate_metadata({
@@ -334,7 +334,7 @@ METADATA = validate_metadata({
                   "docs/evidence/live-fixtures/20261013T120034Z-p03.json"),
         validated=Validated((_PATCHES,), sources=(patch_embed_values,)),
         per_setting=patch_locality),
-    # Validated: P01's windows; timm's PatchMerging has no reduction bias (never varied).
+    # Validated: the window sizes above; timm's PatchMerging has no reduction bias (never varied).
     "patch_merge": BlockMetadata(
         name="patch_merge", layout_in="W", layout_out="W", locality=Locality.KERNEL, radius=1,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=patch_merge_values, asset_arrays=patch_merge_arrays,

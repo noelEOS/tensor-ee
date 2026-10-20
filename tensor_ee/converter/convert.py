@@ -1,6 +1,6 @@
-"""The converter for attention models: a PyTorch model to a block graph, with a report (X03, X04).
+"""The converter for attention models: a PyTorch model to a block graph, with a report.
 
-the development archive's phase3-design.md, section 3.3. ``convert(model, input_shape, source_grid)`` traces the
+``convert(model, input_shape, source_grid)`` traces the
 model (``export.trace``), groups its ATen calls into the units its modules' recognizers name
 (``export.group``, ``recognizers.ALL_RECOGNIZERS``) and writes them as a ``BlockGraph``:
 
@@ -20,7 +20,7 @@ the inverse relabel's settings and in the output edge. Node ids are module paths
 ``state_dict`` names, so a converted graph compares directly with a hand-written one; the graph
 holds no weight value.
 
-**The model's interface (X04).** That is SegFormer's, whose first blocks read windows. A model
+**The model's interface.** That is SegFormer's, whose first blocks read windows. A model
 whose first block reads a raster (timm's Swin: ``patch_embed``, an R block) has no relabel in
 the library: a raster is relabeled onto a token grid only as windows. Its graph starts from the
 model's own input instead, ``input``, an R edge on the abstract token grid (the input's height
@@ -32,7 +32,7 @@ None for such a model, and required for one whose first blocks read windows.
 
 **Converts versus validated.** ``ConversionReport`` lists every node: its operation, the modules
 it came from, its settings as its block's validated record names them (the node's, the window of
-its window-layout input, and what its cost functions read from its input edges: X02b's call
+its window-layout input, and what its cost functions read from its input edges: validated-settings call
 convention), and ``check_settings``' answer. A setting outside the record is reported, never
 refused: ``outside`` is rendered for each nearest configuration (``check_settings`` unions it
 across ties). The relabels are layout operations with no record. A setting not read from the
@@ -92,7 +92,7 @@ def installed_versions(distributions) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# The settings a block's validated record names (X02b's call convention)
+# The settings a block's validated record names (validated-settings call convention)
 # ---------------------------------------------------------------------------
 def _pyramid_edges(inputs) -> dict:
     # in_channels deepest first, as project_pyramid_constants takes them; C1's height and width.
@@ -111,7 +111,7 @@ def _extent(k: int):
 
 EDGE_SETTINGS = {
     "project_pyramid": _pyramid_edges, "fuse_head": _head_edges,
-    # Swin and UPerNet (X04): the bands a patch embedding reads; C4's extent for the PSP and the
+    # Swin and UPerNet: the bands a patch embedding reads; C4's extent for the PSP and the
     # fusion (its last input), the map an FPN merge upsamples, C1's for the head.
     "patch_embed": lambda inputs: {"channels": inputs[0].channels},
     "psp_forward": _extent(0), "fusion_forward": _extent(3), "head_logits": _extent(0),

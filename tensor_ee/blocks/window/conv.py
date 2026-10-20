@@ -26,12 +26,12 @@ rounding, so ``group_product`` accepts both ``double_round_once`` and
 ``grouped_double``.
 
 The research ``window_taps`` method (nine [N, Cin] x [Cin, Cout] products summed in
-double, with per-tap constants) was removed at L06b; the im2col product is the only form.
+double, with per-tap constants) was removed when the research code was archived; the im2col product is the only form.
 Kernel 3, window 7 and 4 groups are the defaults. The 3 x 3 kernel is the window
 convolution's identity, not a setting: other kernels are refused. ``conv3x3_window`` is
-validated at windows 5, 7, 8 and 12 (P01). ``group_product`` is validated at 1, 2, 4 and 8
-contiguous input-channel groups, at windows 7 and 12 (P04), and at 4 groups at window 8 (the
-capstone's fusion, C0b), its partials summed in double in group order and rounded once by
+validated at windows 5, 7, 8 and 12. ``group_product`` is validated at 1, 2, 4 and 8
+contiguous input-channel groups, at windows 7 and 12, and at 4 groups at window 8 (the
+window-8 Swin-UPerNet validation model's fusion), its partials summed in double in group order and rounded once by
 the caller, against the unsplit convolution. Other group counts and windows are not
 validated.
 
@@ -63,7 +63,7 @@ KERNEL = 3
 
 GROUPS = 4
 """Default input-channel groups of the fusion convolution (the model's four levels). 1, 2,
-4 and 8 groups are validated (P04)."""
+4 and 8 groups are validated."""
 
 
 def _depthwise_parameter(value, name):
@@ -195,7 +195,7 @@ def conv3x3_window(ops, x, c: Conv3x3Constants, coarse, *, window: int = WINDOW,
     """Window layout [w^2, Cin] on the window grid `coarse` -> [w^2, Cout] (zero padding at
     the raster edge, exactly PyTorch's). Constants built for another row count than
     ``window ** 2`` are refused, and so are constants for another kernel than 3 x 3, the
-    block's identity. Validated at windows 5, 7, 8 and 12 (P01)."""
+    block's identity. Validated at windows 5, 7, 8 and 12."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     _check_kernel(c)
     check_rows(c, WindowLayout(window))
@@ -238,8 +238,8 @@ def group_product(ee, part, w: Conv3x3Constants, *, policy: str = DOUBLE_ROUND_O
     ``part`` is a W tensor (the decoder's ``Feature``); its window gives the halo and
     the rows the constants must have. Policy ``double_round_once`` (the default) or its
     ``grouped_double`` variant: the caller rounds once, after summing the groups. Validated
-    at 1, 2, 4 and 8 groups (``group_weight``) at windows 7 and 12 (P04), and at 4 groups at
-    window 8 (C0b), with the partials summed in double in group order and rounded once."""
+    at 1, 2, 4 and 8 groups (``group_weight``) at windows 7 and 12, and at 4 groups at
+    window 8, with the partials summed in double in group order and rounded once."""
     validate_policy(policy, allowed=(DOUBLE_ROUND_ONCE, GROUPED_DOUBLE))
     _check_kernel(w)
     check_rows(w, part)
@@ -305,7 +305,7 @@ METADATA = validate_metadata({
         evidence=("docs/history/building-blocks-2026-10-11.md#33-convolution", "docs/history/upernet/notes/milestone7_findings.md",
                   "docs/evidence/p01-offline.json",
                   "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json",
-                  "docs/evidence/live-fixtures/20261013T115558Z-p04.json"),   # P04 live record (its brief is in the archive)
+                  "docs/evidence/live-fixtures/20261013T115558Z-p04.json"),   # decoder-setting validation live record
         # The 3 x 3 kernel is the block's identity (k, refused otherwise); stride 1 is its only stride.
         validated=Validated(({"k": (KERNEL,), "window": (5, 7, 8, 12)},), sources=(Conv3x3Constants,))),
     "group_product": BlockMetadata(

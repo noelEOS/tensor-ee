@@ -1,7 +1,7 @@
 """SMP's UPerNet decoder composites in window layout: the PSP, the FPN, the fusion with its
 grouped-double formulation, and the segmentation head, with their constants builders.
 
-Moved (X01b) from ``tensor_ee/models/swin_t224/decoder.py``; ``grouped_double`` is
+Moved from ``tensor_ee/models/swin_t224/decoder.py``; ``grouped_double`` is
 renamed here ``fusion_grouped_double`` (the bare name is also the precision variant's), and
 every other name is kept. The Swin-T224 model re-exports these objects under their former
 names; there is one implementation.
@@ -18,12 +18,12 @@ decoder width, 256 for Swin-T224); and the head (1 x 1 Conv D -> classes with bi
 bilinear with align_corners=True at the head factor, x4). SMP parameter names; NumPy arrays
 (inline) or asset-backed ``ServerArray``s.
 
-**Configuration (C0).** The constants builders take a ``SwinUPerNetConfig``
+**Configuration.** The constants builders take a ``SwinUPerNetConfig``
 (``swin_upernet_config``; default ``SWIN_T224``) as ``config`` and record it in their
 constants (``PSPConstants``, ``FPNConstants``, ``FusionConstants``); the forward functions read
 it from there, and ``pyramid_features``, ``head_forward``, ``head_logits`` and ``head_dense``
 take it as ``config``. ``fpn_constants`` builds each FPN level part by part with
-``fpn_level_constants``, which the converter's registry also calls for one node's part (X04).
+``fpn_level_constants``, which the converter's registry also calls for one node's part.
 The decoder runs at its window (the tensors are ``WindowTensor``s of that window; a tensor
 of another window is refused), pools to its bins, and reads its widths, groups, classes and
 head factor. The PSP, FPN and head builders refuse parameters whose shapes break its channel
@@ -47,7 +47,7 @@ summing them; it accepts the ``grouped_double`` policy (its default) and
 formulation and the head upsamples in window layout. The research variants (the global
 pooler, the monolithic and grouped_rounded fusion formulations, the dense and native head
 resizes, with their registries ``PSP_POOLS``, ``FUSION_FORMULATIONS`` and ``HEAD_RESIZES``,
-and the partial-evaluation options) were removed at L06b; they are in the research code
+and the partial-evaluation options) were removed when the research code was archived; they are in the research code
 archived at the tag ``research-archive-2026-10-12``.
 
 **Locality.** The PSP pools C4's whole extent (``EXTENT``), and so does the FPN, which starts
@@ -64,9 +64,9 @@ PSP, FPN and fusion) or C1's (the head). The four fusion groups slice one weight
 fusion reads 5 server arrays.
 
 **Validated.** Live only inside two whole models: Swin-T224 (decoder width 256, bins (1, 2,
-3, 6), 4 fusion groups, 2 classes, x4 head; C4 7 x 7 tokens, C1 56 x 56) in the T06
-rehearsal against PyTorch (docs/evidence/t06-rehearsal.json) and in Milestone 12's trained
-parity (docs/history/upernet/notes/milestone12_findings.md), and the capstone (decoder width
+3, 6), 4 fusion groups, 2 classes, x4 head; C4 7 x 7 tokens, C1 56 x 56) in the trained-model
+rehearsal against PyTorch (docs/evidence/t06-rehearsal.json) and in the trained model's
+parity check (docs/history/upernet/notes/milestone12_findings.md), and the window-8 Swin-UPerNet validation model (decoder width
 64, 3 classes, window 8; C4 8 x 8 tokens, C1 64 x 64; docs/evidence/c1-capstone.json). Other
 configurations are validated only where the blocks' statuses cover them
 (docs/building-blocks.md).
@@ -396,7 +396,7 @@ FORMULATIONS = (GROUPED_DOUBLE,)
 def _check_formulations(formulations) -> None:
     if tuple(formulations) != FORMULATIONS:
         raise ValueError(f"formulations must be {FORMULATIONS} (the research formulations were archived "
-                         "at L06b)")
+                         "when the research code was archived)")
 
 
 @dataclass
@@ -412,7 +412,7 @@ class FusionConstants:
 
 def fusion_constants(ee, params: dict, formulations=FORMULATIONS, groups: int | None = None, *,
                      config: SwinUPerNetConfig = SWIN_T224) -> FusionConstants:
-    """Constants of the fusion block from Milestone 7's decoder assets (ServerArrays) or
+    """Constants of the fusion block from the decoder assets (ServerArrays) or
     NumPy (fixtures): the input-channel group weights of ``grouped_double`` and the
     BatchNorm, for the configuration's window layout. ``groups``: ``config.groups`` (4, one
     per pyramid level) when not given; ``grouped_double`` refuses any other count.
@@ -429,7 +429,7 @@ def fusion_constants(ee, params: dict, formulations=FORMULATIONS, groups: int | 
 
 def pyramid_features(t: dict, grids: dict, channels: int | None = None, *,
                      config: SwinUPerNetConfig = SWIN_T224) -> dict[str, WindowTensor]:
-    """Milestone 9's forward dict -> {P1, P2, P3, psp_relu: W tensor of the configuration's
+    """The FPN's forward dict -> {P1, P2, P3, psp_relu: W tensor of the configuration's
     window}, of ``channels`` (the decoder width ``config.decoder`` when not given)."""
     channels = config.decoder if channels is None else channels
     return {name: _tensor(config, t[name], grids[name], channels) for name in PYRAMID}
@@ -447,7 +447,7 @@ def fusion_resize_factor(source, target) -> int:
 def fusion_resize_to_c1(ee, pyramid: dict[str, WindowTensor]) -> dict[str, WindowTensor]:
     """F.interpolate(level, size=P1's size, bilinear, align_corners=False) for each level.
     P1 is passed through (a same-size interpolate is a bitwise copy in PyTorch); the others
-    go through Milestone 7's window resize with the factor their grids imply.  Each result
+    go through the decoder's window resize with the factor their grids imply.  Each result
     carries the token grid the resize lands on: the concatenation's guard compares it."""
     target = pyramid["P1"].grid
     return {RESIZED[name]: fusion_resize_level(ee, pyramid[name], target) for name in PYRAMID}
@@ -538,7 +538,7 @@ CLASSES = SWIN_T224.classes
 HEAD_FACTOR = SWIN_T224.head_factor
 
 def head_constants(ee, params: dict, rows=None, *, config: SwinUPerNetConfig = SWIN_T224):
-    """Milestone 2's LinearConstants of the 1 x 1 head conv (W^T [D, classes], bias rows).
+    """LinearConstants of the 1 x 1 head conv (W^T [D, classes], bias rows).
     ``rows``: the layout the bias serves (the configuration's window layout when not given;
     49 rows for Swin-T224) or its row count. A weight or bias whose shape is not the
     configuration's (classes, decoder width) is refused."""
@@ -828,8 +828,8 @@ def head_forward_arrays() -> int:
 # ---------------------------------------------------------------------------
 # Metadata
 # ---------------------------------------------------------------------------
-# Validated live only inside two whole models: Swin-T224 (T06 against PyTorch, Milestone 12
-# against ONNX Runtime) and the C1 capstone.
+# Validated live only inside two whole models: Swin-T224 (trained-model rehearsal against PyTorch, trained Swin-UPerNet validation
+# against ONNX Runtime) and the window-8 Swin-UPerNet validation model.
 _STATUS = "Fixed — Swin-T224 and the capstone: "
 _DECODER = "decoder widths 256 (window 7) and 64 (window 8)"
 _EVIDENCE = ("docs/evidence/t06-rehearsal.json", "docs/history/upernet/notes/milestone12_findings.md",
@@ -840,10 +840,10 @@ _FUSION = _EVIDENCE + ("docs/history/upernet/notes/milestone10_findings.md",)
 _HEAD = _EVIDENCE + ("docs/history/upernet/notes/milestone11_findings.md",)
 _HEAD_SETTINGS = "256 → 2 and 64 → 3 classes, × 4 from C1's 56 × 56 and 64 × 64 tokens"
 
-# Validated settings (X02b): the two models' settings, named by SwinUPerNetConfig's fields and
+# Validated settings: the two models' settings, named by SwinUPerNetConfig's fields and
 # the cost functions' parameters (height x width: C4's tokens for the PSP, the FPN and the
 # fusion, the source map for the FPN's and the fusion's resizes, C1's for the head; level;
-# factor), joined per model. The capstone is tools/capstone.py's CONFIG.
+# factor), joined per model. The window-8 Swin-UPerNet validation model is tools/capstone.py's CONFIG.
 _MODELS = ({"window": 7, "stage_dims": (96, 192, 384, 768), "decoder": 256, "groups": 4, "sizes": (1, 2, 3, 6),
             "classes": 2, "head_factor": 4, "c4": 7},
            {"window": 8, "stage_dims": (48, 96, 192, 384), "decoder": 64, "groups": 4, "sizes": (1, 2, 3, 6),
@@ -973,7 +973,7 @@ METADATA = validate_metadata({
         evidence=_FUSION + ("parts: group_product (grouped_double), fusion_bn_relu",),
         validated=_models("groups", "decoder", "window")),
     "fusion_forward": BlockMetadata(
-        # Radius 2 in source-grid tokens, the library's convention (X01b's review): the resize
+        # Radius 2 in source-grid tokens, the library's convention: the resize
         # reads a ring of one source token, and the 3 x 3 convolution a ring of one C1 token more.
         name="fusion_forward", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=2,
         policy=COMPOSITE, embedded_constants=fusion_forward_values, asset_arrays=fusion_forward_arrays,

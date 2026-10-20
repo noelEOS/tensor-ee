@@ -187,7 +187,7 @@ class SwinT224Adapter:
         _parameters(parameters)
         feats={k:_windows(ee,_feature_image(ee,skips,input_grid,k),input_grid,k) for k in (1,2,3)}
         feats[4]=_windows(ee,c4.image.select(list(_C4_BANDS)).reproject(c4.grid.projection()),input_grid,4)
-        # Same forward wiring as the historical task C: tile-local PSP, FPN,
+        # Same forward wiring as the saved stage C: tile-local PSP, FPN,
         # grouped-double fusion in P1/P2/P3/PSP order, then the distinct head resize.
         tensors,grids=D.fpn_forward(ee,feats,D.fpn_constants(ee,parameters.decoder))
         fused,fg=D.fusion_forward(ee,D.pyramid_features(tensors,grids),D.fusion_constants(ee,parameters.decoder,('grouped_double',)),('grouped_double',))

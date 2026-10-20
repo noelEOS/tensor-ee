@@ -20,10 +20,7 @@ PyTorch model ──convert──▶ block graph ──plan──▶ stages ─�
 
 This guide converts, offline, the two models the converter was built for: SegFormer-B0,
 `Segformer("mit_b0")` of segmentation-models-pytorch (SMP) 0.5.0, and SMP's `UPerNet` with
-timm's Swin-T encoder, both at 224 × 224 with two input bands and two classes. The converter's
-design document and the task records of its development are in the private development archive
-(`docs/phase3-design.md`, and `docs/tasks/X00-byte-identity-targets.md` to
-`docs/tasks/X08-documentation-and-api.md`).
+timm's Swin-T encoder, both at 224 × 224 with two input bands and two classes.
 
 Two terms recur below. The **hand-built graphs** are the 19 SegFormer-B0 and Swin-T/UPerNet
 graphs composed by hand from the blocks and run live before the converter existed; the
@@ -39,15 +36,12 @@ Four kinds of evidence apply, and they are kept apart:
   hand-written SegFormer-B0 block graph (SHA-256 `568c92c3…`), whose stages build the seven
   SegFormer hand-built graphs byte for byte; converting the Swin-T/UPerNet gives nodes that build
   all twelve Swin hand-built graphs byte for byte (their hashes are in
-  [x00-g1ext-golden-graphs.json](evidence/x00-g1ext-golden-graphs.json); the task records,
-  `docs/tasks/X03-segformer-converter.md` and `docs/tasks/X04-swin-upernet-converter.md`, are in
-  the development archive). Those graphs ran live, so a converted graph inherits their evidence, **at the settings they ran**. A
+  [x00-g1ext-golden-graphs.json](evidence/x00-g1ext-golden-graphs.json)). Those graphs ran live, so a converted graph inherits their evidence, **at the settings they ran**. A
   setting outside a block's validated record carries no evidence until it has its own: a
   conversion that succeeds says the library can express the model, not that it was validated.
 - **Offline mirror agreement**: NumPy mirrors against PyTorch, per block, in the
   [live fixture harness](live-fixtures.md). The converter adds none.
-- **Live agreement.** One run so far ([record of the run](evidence/x06-live.json); its task
-  record, `docs/tasks/X06-runner.md`, is in the development archive): the converted SegFormer-B0, under the planner's default four
+- **Live agreement.** One run so far ([record of the run](evidence/x06-live.json)): the converted SegFormer-B0, under the planner's default four
   stages, run by the library runner on one chip with random weights, agreed with PyTorch within the
   1e-4 absolute target at every saved boundary (largest absolute error 3.58e-6; logits 2.98e-6, 0
   argmax disagreements). C1–C3 and the logits are bit-identical to the hand-staged run, and the
@@ -85,7 +79,7 @@ from tensor_ee.core.grid import Grid
 from tensor_ee.converter.convert import convert
 
 torch.set_num_threads(2)
-torch.manual_seed(20261014)              # the staged and X06 runs' random weights
+torch.manual_seed(20261014)              # the hand-staged and library-runner checks use these random weights
 segformer = smp.Segformer("mit_b0", encoder_weights=None, in_channels=2, classes=2).eval()
 chip = Grid("EPSG:3857", (2.5, 0, 1000, 0, -2.5, 2000), 224, 224)   # the source chip
 

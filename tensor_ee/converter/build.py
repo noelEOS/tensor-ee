@@ -1,6 +1,6 @@
-"""The builder: a block graph, or a stage of it, to Earth Engine graphs (X02a).
+"""The builder: a block graph, or a stage of it, to Earth Engine graphs.
 
-the development archive's phase3-design.md, section 3.2. ``build(graph, parameters, inputs)`` binds each node's
+``build(graph, parameters, inputs)`` binds each node's
 parameters, by ``state_dict`` name, to NumPy float32 arrays or ``ServerArray``s; builds each
 node's constants once; calls the node's library function (``operations.py``) with the
 arguments the hand composites pass; and returns the output images. It constructs graphs only:

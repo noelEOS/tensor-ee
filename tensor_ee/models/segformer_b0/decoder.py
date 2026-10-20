@@ -4,9 +4,9 @@ Project C4,C3,C2,C1, resize each to C1 with align_corners=False, concatenate
 in that order, apply bias-free Conv1x1 -> explicit evaluation BatchNorm -> ReLU,
 then biased head Conv1x1 -> four-times bilinear (align_corners=True). The output
 is two raw logit bands; there is no sensor preprocessing or probability recipe.
-The two composites, ``project_pyramid`` and ``fuse_head``, moved to the library at
-X01a (``tensor_ee/blocks/window/segformer.py``); ``project_pyramid`` is re-exported
-here, and their constants builders followed at X02a. The generic input relabel and inverse output relabel moved at X02a
+The two composites, ``project_pyramid`` and ``fuse_head``, and their constants builders
+are defined in ``tensor_ee/blocks/window/segformer.py``; ``project_pyramid`` is re-exported
+here. The generic input relabel and inverse output relabel are defined in
 (``tensor_ee/layouts/boundaries.py``: ``relabel_to_windows``,
 ``relabel_from_windows``). This module keeps the fixed configuration and its checks.
 

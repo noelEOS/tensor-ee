@@ -1,5 +1,5 @@
 """The 224 x 224 Swin-T/UPerNet reference model, built only from library blocks, and the
-same composites at other settings (a ``SwinUPerNetConfig``; C0).
+same composites at other settings through ``SwinUPerNetConfig``.
 
 - ``configuration``: ``SwinUPerNetConfig``, the settings every composite reads (window,
   patch, bands, widths, depths, heads; decoder width, fusion groups, PSP bins, classes,
@@ -11,7 +11,7 @@ same composites at other settings (a ``SwinUPerNetConfig``; C0).
 - ``decoder``: the PSP, FPN, fusion and segmentation head, with their constants and
   wiring (SMP names).
 
-Since X01b the composites and ``SwinUPerNetConfig`` are defined in the library
+The composites and ``SwinUPerNetConfig`` are defined in the library
 (``tensor_ee.blocks.window.swin``, ``upernet`` and ``swin_upernet_config``); these modules
 re-export them under their former names, and ``configuration`` keeps Swin-T224's module
 constants and rule functions.

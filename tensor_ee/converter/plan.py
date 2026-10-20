@@ -1,6 +1,6 @@
-"""The planner: a block graph cut into stages that fit Earth Engine's limits (X05).
+"""The planner: a block graph cut into stages that fit Earth Engine's limits.
 
-the development archive's phase3-design.md, section 3.4 (decision E6: batch only, rule-based). ``plan(graph, limits,
+``plan(graph, limits,
 ...)`` cuts a ``BlockGraph`` into ``Stage``s whose inputs and outputs are saved boundaries, and
 explains every cut. A stage runs in batch, one image export per boundary it writes, on the
 whole chip: the planner never tiles.
@@ -15,9 +15,9 @@ stage input a saved image.
   and whether the arrays the server builds from them meet another limit is not established;
 - ``request_bytes``: each export request of a stage, measured with the transport's weights and
   inputs, at most 10,000,000. An inline-weight request is far larger (SegFormer-B0 whole:
-  55,364,202 bytes, the archive's codex-segformer_b0.md brief, section 12) and is not what is measured;
+  55,364,202 bytes, the recorded single-graph request) and is not what is measured;
 - ``bands``: the bands of a saved boundary, at most 1,024: the most this project has exported
-  as one boundary (Milestone 9's pyramid) and computePixels' limit for reading one back;
+  as one boundary (the FPN's pyramid) and computePixels' limit for reading one back;
 - ``extent``: the EXTENT nodes in one stage, at most 2 (``None``: no bound). The last two do
   not depend on the transport.
 
@@ -78,7 +78,7 @@ candidates measured and counts the builds, and ``Plan.seconds`` the time taken.
 ``raster`` to the boundary ``name``. The planner builds each candidate with ``build_stage``,
 the weights bound to ``parameters`` (``ServerArray``s read from table assets: NumPy weights are
 refused, so the planner builds no weight value) and each input read from
-``f"{namespace}_{names[edge]}"``. By default (``measure=None``, X08) it measures with the
+``f"{namespace}_{names[edge]}"``. By default (``measure=None``) it measures with the
 library's request sizer, ``request.request_size``: the request the runner prepares
 (``run.prepare``), to the asset ``f"{namespace}_{name}"``, described as
 ``f"{graph.name}_{name}"``, so a plan's bytes are the bytes ``prepare`` records under the same

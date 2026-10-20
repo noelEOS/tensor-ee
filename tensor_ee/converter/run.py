@@ -1,9 +1,9 @@
-"""The runner: a plan's stages executed in Earth Engine for one chip, resumably (X06).
+"""The runner: a plan's stages executed in Earth Engine for one chip, resumably.
 
-the development archive's phase3-design.md, section 3.5; the archive's X06-runner.md brief. After ``convert`` and ``plan``, the
+After ``convert`` and ``plan``, the
 runner executes a plan for one chip: its stages in order, each boundary a stage writes exported
 to an image asset that the stages after it read. It generalizes the two runners that ran live,
-``tensor_ee/swin_workflow.py`` (Swin-T's stages A, B and C) and Codex's
+``tensor_ee/swin_workflow.py`` (Swin-T's stages A, B and C) and the maintainer's
 ``tools/segformer_b0_validate.py`` (SegFormer-B0's six cuts), and keeps what they proved:
 requests prepared offline and pinned before anything is submitted, one request ID fixed per
 request, the intent written before each submission, no resubmission, bounded polling, and each

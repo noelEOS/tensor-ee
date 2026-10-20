@@ -94,7 +94,7 @@ def from_image(image: ee.Image, bands: Sequence[str], grid: Grid, *,
 def stride_sample_phase(ee, image, fine: FeatureGrid, factor: int, a: int = 0, b: int = 0):
     """Image on fine.coarse(factor) whose pixel (I, J) is fine pixel (factor I + a,
     factor J + b): sampled exactly at that fine pixel's centre, then relabelled
-    (Milestone 1's stride sample on a georeferenced grid)."""
+    (the original attention implementation's stride sample on a georeferenced grid)."""
     s, w = fine.scale, factor
     sample = ee.Projection(fine.crs, [s * w, 0, fine.x0 + s * (b + 0.5 - w / 2), 0, -s * w,
                                       fine.y0 - s * (a + 0.5 - w / 2)])
@@ -110,7 +110,7 @@ def embedded_raster(ee, grid: FeatureGrid, values: np.ndarray):
     index = ee.Image.cat([coords.select("y").clamp(0, grid.height - 1),
                           coords.select("x").clamp(0, grid.width - 1)]).toInt()
     values = np.asarray(values, dtype=np.float32)
-    # The float32 encoder lives in core (L02), which layouts may import.
+    # The float32 encoder lives in core, which layouts may import.
     from ..core.precision import encode_float32
     bands = [ee.Image(ee.Array(encode_float32(values[:, :, c])).float()).arrayGet(index).toFloat()
              for c in range(values.shape[2])]

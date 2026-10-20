@@ -263,27 +263,25 @@ batch of 32, even when EE evaluates individual nominated chips.
 
 ## Evidence and limits
 
-[T01 evidence](evidence/t01-live.json) records live three-stage regression on the
+[Swin saved-boundary validation evidence](evidence/t01-live.json) records live three-stage regression on the
 original catalogue chip, `hpo_val_00` and near-margin `hpo_val_04`: maximum
 absolute logit errors were `1.30e-5`, `4.08e-6`, and `1.46e-5`, with zero argmax
 or inclusive class-1 threshold disagreements. The target was `1e-4`; these are
 numerical execution checks, not accuracy measurements. Retained exact inputs,
-checkpoint/ORT identity and independent review are in that report and the
-T01 handoff (development archive: `docs/tasks/01-swin-boundaries.md`).
+checkpoint/ORT identity and independent review are in that report.
 
 That bounded run used six A/B exports with at most two active, then three C
 pixel evaluations. A/B request bodies were about 0.32–0.80 MB; observed export
 run times ranged from 103 to 250 seconds. Those are identified observations,
 not throughput or cost guarantees. The commands here export C as an asset
-rather than performing the validation runner's C pixel read; this packaging
-lane ran no new cloud jobs. Requests are measured and rejected at 9.5 MB.
+rather than performing the validation runner's C pixel read; packaging this workflow required no new cloud jobs. Requests are measured and rejected at 9.5 MB.
 
 [Packaging evidence](evidence/t05-packaging.json) records isolated wheel imports,
 exact real-checkpoint model loading, retained-manifest binding and all three
 offline saved-asset graphs. It also records exact graph equality between this
 water workflow and the historical demo for preprocessing, stage transport,
-probability/tie behavior and coverage. At T05 the wheel included the verified T01
-runtime closure and the public `tensor_ee` modules. Since L06 it contains only the
+probability/tie behavior and coverage. At the trained-model preservation check, the wheel included the verified Swin runtime
+closure and the public `tensor_ee` modules. It now contains only the
 `tensor_ee` package, which now holds that runtime
 ([runtime imports](evidence/l06-runtime-imports.json)). Research runners, scenes,
 registries, results and personal manifests are not installed.

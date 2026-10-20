@@ -1,10 +1,10 @@
 """Raster-lane (R) fixtures: the CNN path's Fixed blocks at today's validated settings
-(P00's calibration) and at the new settings of task P02 (the selection ``p02``).
+(calibration) and at additional pooling and nearest-resize settings (the selection ``p02``).
 
 Every fixture runs the public ``tensor_ee`` primitive (the library block in
 ``tensor_ee/blocks/raster`` plus the facade's float32 materialization, as ``compile_model``
 runs each node) on an inline input on a ``Grid`` (20 or 40 m for the calibration; 10, 30 or
-40 m for P02), and compares it with the PyTorch module or ``torch.nn.functional`` call it
+40 m for the additional raster settings), and compares it with the PyTorch module or ``torch.nn.functional`` call it
 implements, with random weights.
 
 No NumPy mirror of the R path's Earth Engine arithmetic exists in ``tests/reference``
@@ -153,10 +153,10 @@ def _nearest_reference(data: FixtureData) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# P02: pooling configurations and nearest factors 3 and 4
+# raster-setting validation: pooling configurations and nearest factors 3 and 4
 # ---------------------------------------------------------------------------
 def _rect_grid(scale: int, height: int, width: int):
-    """A ``height`` x ``width`` grid of ``scale`` metres. P02's grids are not square, so a
+    """A ``height`` x ``width`` grid of ``scale`` metres. The validation grids are not square, so a
     swapped axis changes the output shape."""
     from tensor_ee.core.grid import Grid
 
@@ -165,7 +165,7 @@ def _rect_grid(scale: int, height: int, width: int):
 
 @dataclass(frozen=True)
 class _Pool:
-    """One P02 pooling fixture: the PyTorch module's settings, and the input's shape and values."""
+    """One pooling fixture: the PyTorch module's settings, and the input's shape and values."""
 
     name: str
     seed: int
@@ -179,7 +179,7 @@ class _Pool:
     history: str = ""
 
     def module(self):
-        """The PyTorch module, with exactly the brief's settings."""
+        """The PyTorch module, with exactly the fixture's settings."""
         from torch import nn
 
         if self.padding == 0:                      # AvgPool2d(k), MaxPool2d(k): stride = kernel
@@ -284,7 +284,7 @@ def _p02_pool_notes(pool: _Pool) -> str:
 
 @dataclass(frozen=True)
 class _Nearest:
-    """One P02 nearest fixture: the factor, and the input's shape and grid."""
+    """One nearest-resize fixture: the factor, and the input's shape and grid."""
 
     name: str
     seed: int
@@ -357,7 +357,7 @@ def _p02_fixtures(cost) -> list[Fixture]:
 
 
 SELECTIONS = {
-    # P02: every new setting, plus today's pooling and nearest settings as regression checks
+    # raster-setting validation: every new setting, plus today's pooling and nearest settings as regression checks
     # (three calibration fixtures).
     "p02": ("raster/pool2d/avg-k2-s2", "raster/pool2d/max-k3-s2-p1", "raster/nearest_upsample/f2",
             *(f"raster/pool2d/{pool.name}" for pool in _P02_POOLS),

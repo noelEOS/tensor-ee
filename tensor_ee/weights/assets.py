@@ -1,6 +1,6 @@
 """The FeatureCollection weight-asset format and its provider.
 
-Moved from ``tensor_ee.weight_assets`` (L02): ``ConvolutionWeights``,
+Moved from ``tensor_ee.weight_assets``: ``ConvolutionWeights``,
 ``convolution_weights``, ``feature_records`` and
 ``FeatureCollectionWeightProvider``. The old names are re-exports of these
 objects, and ``FeatureCollectionWeightProvider`` is one class object everywhere

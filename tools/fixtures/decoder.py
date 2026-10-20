@@ -1,8 +1,8 @@
-"""Decoder fixtures: P04's pooling extents, bins and fusion group counts, and C0b's window 8.
+"""Decoder fixtures: pooling extents, bins, fusion groups, and window-8 resizes.
 
-**C0b** (docs/tasks/C0-capstone.md): the capstone runs ``group_product``, ``window_resize`` and
+**Window-8 decoder validation:** the window-8 Swin-UPerNet validation model runs ``group_product``, ``window_resize`` and
 ``window_matrix_resize`` at window 8, which had no window-8 evidence. The selection ``c0b``
-holds ``window/group_product/g4-w8``, every resize of the capstone at its own token extents
+holds ``window/group_product/g4-w8``, every resize of the window-8 Swin-UPerNet validation model at its own token extents
 (``window/window_resize/[ac-]f<factor>-e<extent>-w8``: the FPN's and fusion's x2, x4 and x8 with
 align_corners=False, and the head's x4 from 64 to 256 tokens with align_corners=True, read as
 its four diagonal 64 x 64 blocks) and the PSP's branches onto C4's 8 x 8 tokens
@@ -11,7 +11,7 @@ window-7 regression. The references are ``torch.nn.functional``; the resize mirr
 PyTorch's weights read off ``F.interpolate`` on one-hot inputs, not the library's (each
 fixture's notes give its exactness argument; ``tests/test_c0b_window8.py`` checks them).
 
-**P04.** Window-lane fixtures (lane ``window``) for two of the UPerNet decoder's blocks, at
+**Pooling and grouped fusion.** Window-lane fixtures (lane ``window``) for two of the UPerNet decoder's blocks, at
 settings the reference model does not use. The selection ``p04`` holds them, with the
 calibration's ``window_pool`` and ``group_product`` fixtures as the window-7 regression:
 
@@ -38,9 +38,9 @@ caller sums the partials and rounds once. The fixtures compose that sum themselv
 ``range(groups)``. They do not use the decoder's ``FUSION_ORDER``, which lists the model's
 four groups only (``FUSION_ORDER == (0, 1, 2, 3)``, the same order at 4 groups: tested).
 
-**References** (R1). Random weights, no library code: SMP 0.5.0 ``PSPModule(sizes=...)``'s
+**References.** Random weights, no library code: SMP 0.5.0 ``PSPModule(sizes=...)``'s
 ``AdaptiveAvgPool2d`` blocks on a channels-last input (the memory format SMP's PSP receives,
-Milestone 8 §3), and ``torch.nn.functional.conv2d(padding=1)`` of the unsplit weight.
+the PSP validation findings, section 3), and ``torch.nn.functional.conv2d(padding=1)`` of the unsplit weight.
 
 **Mirrors.** The pooling mirror is ``reference.upernet.ee_mirror_psp.pool`` in Earth Engine's
 window order, with its bin tables read off PyTorch's ``adaptive_avg_pool2d`` on one-hot index
@@ -64,13 +64,13 @@ are the library's. The group mirror is ``ee_mirror_fpn.conv3x3`` per group in do
   data the float32 result depends on the order only at the probe token (reversed, rotated
   and 200 random orders tested). So the whole probe fixture, not only the probe token, rests
   on one premise: Earth Engine adds the double partial images in the order the graph adds
-  them, as Milestone 10 found (formulation B: every EE tensor bit-identical to this mirror,
+  them, as fusion-block validation found (formulation B: every EE tensor bit-identical to this mirror,
   819.7 M elements of inexact real data). The mirror is exact because it sums in that order,
   in double. A probe that fails live while the 8 group fixtures pass points to that premise,
   not to the block.
 
 Channel counts are small (4 pooled channels; 8 input and 4 output channels for the groups):
-channel width is not one of the settings P04 validates.
+these fixtures do not validate other channel widths.
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ from .core import Fixture, FixtureData, MirrorSpec, Readout, as_float32, dyadic,
 from .window import DRO, LANE, WINDOW, _dense, _echo, _layout, _metadata, _read, _seeded, _tokens, _windows
 
 P04_SEED = 4000
-"""Seeds 4001 onwards: disjoint from the calibration's 1-18, P02's 21-31 and P01's 1050-1125."""
+"""Seeds 4001 onwards: disjoint from the calibration's 1-18, raster-setting validation's 21-31 and window-size validation's 1050-1125."""
 
 P04_NEW = "New setting (P04): no milestone ran it in the library. The regression check is "
 
@@ -108,7 +108,7 @@ POOL_CASES = (            # (extent, window, sizes)
     (8, 8, (1, 2, 4, 8)),
     (12, 12, (1, 2, 4, 8)),
 )
-"""P04's extents and bins: one window of 5, 8 and 12 tokens and 2 x 2 windows of 7 with the
+"""Validated pooling extents and bins: one window of 5, 8 and 12 tokens and 2 x 2 windows of 7 with the
 PSP's bins; the uneven bins (1, 2, 4, 8) on 8 x 8 and 12 x 12. The calibration's 7 x 7 with
 (1, 2, 3, 6) is the regression."""
 
@@ -391,12 +391,12 @@ def _probe_fixture(index: int, groups: int) -> Fixture:
 
 
 # ---------------------------------------------------------------------------
-# C0b: window 8, the capstone's window, for group_product and the two resizes
+# window-8 decoder validation: window 8, the window-8 Swin-UPerNet validation model's window, for group_product and the two resizes
 # ---------------------------------------------------------------------------
 C0B_WINDOW = 8
 C0B_SEED = 5000
-"""Seeds 5001 onwards: disjoint from the calibration's 1-18, P02's 21-31, P01's 1050-1125,
-P03's 3001-3006 and P04's 4001-4022."""
+"""Seeds 5001 onwards: disjoint from the calibration's 1-18, raster-setting validation's 21-31, window-size validation's 1050-1125,
+patch-embedding validation's 3001-3006 and decoder-setting validation's 4001-4022."""
 
 C0B_NEW = ("New setting (C0b): window 8, the capstone's (docs/tasks/C0-capstone.md, the status audit). "
            "Window 7 is the reference model's: ")
@@ -415,7 +415,7 @@ def _c0b_seed(index: int) -> int:
 
 class ResizeCase:
     """A ``window_resize`` fixture at window 8: an ``extent`` x ``extent`` token map, resized by
-    ``factor`` (bilinear, ``align_corners``), on the capstone's path ``use``."""
+    ``factor`` (bilinear, ``align_corners``), on the window-8 Swin-UPerNet validation model's path ``use``."""
 
     def __init__(self, extent: int, factor: int, align_corners: bool, use: str, seed: int):
         self.extent, self.factor, self.align_corners, self.use, self.seed = extent, factor, align_corners, use, seed
@@ -444,7 +444,7 @@ RESIZE_CASES = (
     ResizeCase(64, 4, True, "the head: C1's 64 x 64 logits onto the 256 x 256 output (UpsamplingBilinear2d)",
                _c0b_seed(7)),
 )
-"""Every resize of the capstone at window 8, at its own token extents."""
+"""Every resize of the window-8 Swin-UPerNet validation model at window 8, at its own token extents."""
 
 MATRIX_EXTENT = 8
 """The PSP's extent: C4's 8 x 8 tokens, one window of 8."""
@@ -494,7 +494,7 @@ def _resize_build(ee, data: FixtureData, *, case: ResizeCase) -> list:
 
 
 def _resize_reference(data: FixtureData, *, case: ResizeCase) -> dict:
-    """``F.interpolate`` as the capstone calls it: SMP's resizes with ``size=`` and
+    """``F.interpolate`` as the window-8 Swin-UPerNet validation model calls it: SMP's resizes with ``size=`` and
     align_corners=False; the head's ``UpsamplingBilinear2d`` with ``scale_factor=`` and
     align_corners=True."""
     import torch

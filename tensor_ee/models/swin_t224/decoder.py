@@ -1,12 +1,12 @@
 """The UPerNet decoder of the Swin-T224/UPerNet reference model, from library blocks.
 
 The composites (the PSP, the FPN, the fusion with its grouped-double formulation and the
-segmentation head, with their constants builders) moved to the library at X01b,
+segmentation head, with their constants builders) are defined in the library,
 ``tensor_ee/blocks/window/upernet.py``, and are re-exported here under their names, the same
 objects; ``grouped_double`` is the library's ``fusion_grouped_double``. Their defaults are
 Swin-T224's (``SWIN_T224``, ``configuration``).
 
-Moved here (L05) from the research decoder, archived at the tag
+Moved here from the research decoder, archived at the tag
 ``research-archive-2026-10-12`` (docs/history/README.md):
 
 - ``upernet/earth_engine/psp.py``: ``PSPConstants``, ``constants`` -> ``psp_constants``,
@@ -42,7 +42,7 @@ them (docs/building-blocks.md).
 from __future__ import annotations
 
 from ...blocks.window.conv import group_weight  # noqa: F401  (read here by tests/test_reference_models.py)
-from ...blocks.window.upernet import (  # noqa: F401  (moved to the library, X01b; re-exported)
+from ...blocks.window.upernet import (  # noqa: F401  (moved to the library; re-exported)
     C4_CHANNELS, CLASSES, FORMULATIONS, FUSION_ORDER, HEAD, HEAD_BIAS, HEAD_FACTOR, HEAD_WEIGHT, PSP_NORM,
     PSP_OUT, FPNConstants, FusionConstants, PSPConstants, batch_norm_args, fpn_bn_constants, fpn_constants,
     fpn_conv_block, fpn_forward, fpn_lateral, fpn_layer_norm, fpn_merge, fpn_upsample, fusion_bn_relu,
