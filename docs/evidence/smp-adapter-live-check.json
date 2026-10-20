@@ -1,0 +1,88 @@
+{
+  "claim": "Live agreement between Earth Engine and unmodified PyTorch for one trained SMP model prepared with tensor_ee.smp.adapt_smp_model; not model accuracy, not other chips, encoders or architectures.",
+  "date": "2026-10-21",
+  "tensor_ee_commit": "c3b6187",
+  "model": {
+    "architecture": "segmentation_models_pytorch Unet, encoder resnet18 (the SegWater recipe)",
+    "checkpoint_sha256": "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928",
+    "adapter": {
+      "architecture": "segmentation_models_pytorch.decoders.unet.model.Unet",
+      "segmentation_models_pytorch_version": "0.5.0",
+      "torch_version": "2.14.0",
+      "input_shape": [
+        1,
+        2,
+        64,
+        64
+      ],
+      "output_shape": [
+        1,
+        2,
+        64,
+        64
+      ],
+      "dtype": "float32",
+      "probe": "nonconstant dyadic arange modulo 251, divided by 128",
+      "torch_equal": true,
+      "max_abs": 0.0,
+      "parameters_frozen": true,
+      "spatial_generalization_supported": false
+    }
+  },
+  "weights": "the public SegWater weight tables in data/manifests/segwater_r18_weight_manifest.json, read through MatchedWeightProvider",
+  "input": {
+    "description": "two synthetic float32 bands computed in Earth Engine from integer pixel coordinates; the same values built locally for PyTorch",
+    "in_0": "((7x + 13y) mod 251 - 125) / 128",
+    "in_1": "((11x + 5y + 17) mod 251 - 125) / 128",
+    "impulses": {
+      "band 0 (row 0, col 0)": 8.0,
+      "band 0 (row 0, col 63)": -8.0,
+      "band 1 (row 63, col 0)": 8.0,
+      "band 1 (row 63, col 63)": -8.0
+    }
+  },
+  "grid": {
+    "crs": "EPSG:32651",
+    "transform": [
+      10,
+      0,
+      286030,
+      0,
+      -10,
+      2640860
+    ],
+    "size": 64
+  },
+  "execution": {
+    "mode": "one batch export of logits, input echoes, pixel coordinates and validity to an image asset, then one computePixels of that 64 x 64 asset",
+    "export_tasks": 1,
+    "compute_requests": 1,
+    "export_batch_eecu_seconds": 111.71,
+    "graph_bytes": 1141455,
+    "graph_sha256": "f6f92c1d80c2959f32ed38fcb90569432078288074ecd87c7a78712f73ff234a",
+    "earlier_attempt": "the same graph as one interactive computePixels was refused with 'User memory limit exceeded'; no result"
+  },
+  "results": {
+    "orientation_ok": true,
+    "all_valid": true,
+    "input_bitwise_equal": true,
+    "max_abs_logit_error": 1.195073127746582e-05,
+    "max_abs_location": {
+      "channel": 0,
+      "row": 28,
+      "col": 40
+    },
+    "mae": 1.5258924577210564e-06,
+    "rmse": 2.2885287984722936e-06,
+    "argmax_flips": 0,
+    "near_margin_pixels_lt_1e-3": 1,
+    "impulse_pixel_max_abs": {
+      "0:0,0": 7.003545761108398e-07,
+      "0:0,63": 1.3113021850585938e-06,
+      "1:63,0": 1.7881393432617188e-07,
+      "1:63,63": 5.066394805908203e-07
+    },
+    "absolute_tolerance": 0.0001,
+    "status": "pass"
+  }
+}
