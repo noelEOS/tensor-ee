@@ -1,6 +1,9 @@
 """Exact checkpoint tensors, supported ONNX semantics, and fixed-grid contract."""
 
+import hashlib
+import os
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -16,7 +19,9 @@ from tensor_ee.receptive_field import analyze_receptive_field
 from tensor_ee.weight_assets import effective_convolutions
 
 
-CHECKPOINT = Path(__file__).resolve().parents[1] / "checkpoints" / "segwater_r18_s42_fp32_b32.onnx"
+RESOURCES = Path(os.environ.get("TENSOR_EE_RESOURCES", Path(__file__).resolve().parents[1]))
+CHECKPOINT = RESOURCES / "checkpoints" / "segwater_r18_s42_fp32_b32.onnx"
+SERIALIZATION_SUFFIXES = (".onnx", ".onnxtxt", ".json", ".textproto")
 
 
 def _fixture():
@@ -45,8 +50,8 @@ def _fixture():
     return model
 
 
-def _save(tmp_path, model):
-    path = tmp_path / "model.onnx"
+def _save(tmp_path, model, *, suffix=".onnx"):
+    path = tmp_path / f"model{suffix}"
     onnx.save(model, path)
     return path
 
@@ -60,8 +65,8 @@ def _set_attribute(node, name, value):
 
 @pytest.fixture(scope="module")
 def checkpoint_model():
-    if not CHECKPOINT.exists():
-        pytest.skip("The user-supplied trained checkpoint is not distributed with source")
+    if not CHECKPOINT.is_file():
+        pytest.skip("set TENSOR_EE_RESOURCES to a checkout holding checkpoints/segwater_r18_s42_fp32_b32.onnx")
     return load_onnx_model(CHECKPOINT)
 
 
@@ -130,6 +135,23 @@ def test_import_does_not_initialize_or_advance_a_random_model(tmp_path):
     assert torch.equal(before, torch.random.get_rng_state())
 
 
+@pytest.mark.parametrize("suffix", SERIALIZATION_SUFFIXES + (".unknown",))
+def test_serialization_formats_preserve_weights_outputs_and_source_bytes(tmp_path, suffix):
+    reference = load_onnx_model(_save(tmp_path, _fixture()))
+    path = _save(tmp_path, _fixture(), suffix=suffix)
+    source = path.read_bytes()
+    model = load_onnx_model(path)
+    assert model.state_dict().keys() == reference.state_dict().keys()
+    for name, parameter in model.state_dict().items():
+        torch.testing.assert_close(parameter, reference.state_dict()[name], rtol=0, atol=0)
+    batch = torch.arange(2 * 224 * 224, dtype=torch.float32).reshape(1, 2, 224, 224) % 17 / 8
+    with torch.inference_mode():
+        torch.testing.assert_close(model(batch), reference(batch), rtol=0, atol=0)
+    metadata = onnx_metadata(model)
+    assert metadata["source_sha256"] == hashlib.sha256(source).hexdigest()
+    assert metadata["source_bytes"] == len(source)
+
+
 def test_validated_shape_resize_matches_original_onnxruntime_batch32(tmp_path):
     ort = pytest.importorskip("onnxruntime")
     path = _save(tmp_path, _fixture())
@@ -181,14 +203,16 @@ def test_rejects_convolution_semantics_outside_the_native_subset(tmp_path, attri
         load_onnx_model(_save(tmp_path, model))
 
 
-def test_rejects_external_tensor_files_before_loading_them(tmp_path):
+@pytest.mark.parametrize("suffix", SERIALIZATION_SUFFIXES)
+def test_rejects_external_tensor_files_before_loading_them(tmp_path, monkeypatch, suffix):
     model = _fixture()
-    path = tmp_path / "external.onnx"
+    path = tmp_path / f"external{suffix}"
     onnx.save_model(model, path, save_as_external_data=True, all_tensors_to_one_file=True,
                     location="external_weights.bin", size_threshold=0)
     assert any(value.data_location == TensorProto.EXTERNAL for value in onnx.load(path, load_external_data=False).graph.initializer)
     # The provenance rejection is independent of the external file's existence.
     (tmp_path / "external_weights.bin").unlink()
+    _never_stat_or_load(monkeypatch)
     with pytest.raises(UnsupportedOnnx, match="External tensor"):
         load_onnx_model(path)
 
@@ -279,6 +303,43 @@ def test_rejects_a_file_above_the_size_limit(tmp_path, monkeypatch):
     monkeypatch.setattr(onnx_import, "MAX_ONNX_BYTES", path.stat().st_size - 1)
     with pytest.raises(UnsupportedOnnx, match="exceeds"):
         load_onnx_model(path)
+
+
+@pytest.mark.parametrize("suffix", SERIALIZATION_SUFFIXES)
+def test_size_limit_applies_to_bytes_read_even_with_a_stale_stat(tmp_path, monkeypatch, suffix):
+    from tensor_ee import onnx_import
+    path = _save(tmp_path, _fixture(), suffix=suffix)
+    monkeypatch.setattr(onnx_import, "MAX_ONNX_BYTES", path.stat().st_size - 1)
+    monkeypatch.setattr(Path, "stat", lambda *args, **kwargs: SimpleNamespace(st_size=0))
+    with pytest.raises(UnsupportedOnnx, match="exceeds"):
+        load_onnx_model(path)
+
+
+@pytest.mark.parametrize("suffix", SERIALIZATION_SUFFIXES)
+def test_provenance_fingerprints_the_imported_bytes_when_the_path_changes(tmp_path, monkeypatch, suffix):
+    path = _save(tmp_path, _fixture(), suffix=suffix)
+    source = path.read_bytes()
+    expected_weight = numpy_helper.to_array(_fixture().graph.initializer[0])
+    replacement = _fixture()
+    replacement.doc_string = "Different bytes and weights after the imported graph was parsed."
+    replacement.graph.initializer[0].CopyFrom(
+        numpy_helper.from_array(np.zeros_like(expected_weight), "weights"))
+    replacement_path = tmp_path / f"replacement{suffix}"
+    onnx.save_model(replacement, replacement_path)
+    replacement_bytes = replacement_path.read_bytes()
+    check_model = onnx.checker.check_model
+
+    def check_then_replace(*args, **kwargs):
+        check_model(*args, **kwargs)
+        path.write_bytes(replacement_bytes)
+
+    monkeypatch.setattr(onnx.checker, "check_model", check_then_replace)
+    model = load_onnx_model(path)
+    np.testing.assert_array_equal(model.conv_000.weight.detach().numpy(), expected_weight)
+    assert path.read_bytes() == replacement_bytes
+    metadata = onnx_metadata(model)
+    assert metadata["source_sha256"] == hashlib.sha256(source).hexdigest()
+    assert metadata["source_bytes"] == len(source)
 
 
 def test_rejects_nonfinite_or_nonfloat32_initializers(tmp_path):

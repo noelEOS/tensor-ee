@@ -297,6 +297,25 @@ def test_explicit_defaults_serialize_identically(offline_ee, case):
     assert a == b
 
 
+@pytest.mark.parametrize("dim,heads", [(5, 2), (0, 2), (-2, 2), (6, 0), (6, -2),
+                                         (True, 1), (6, True), (6.0, 2), (6, 2.0)])
+def test_split_heads_refuses_sizes_that_drop_or_empty_channels(dim, heads):
+    # Refuse before slicing: floor division used to silently omit dim % heads channels.
+    with pytest.raises(errors.UnsupportedOperation, match="positive integers|multiple of the head count"):
+        WT.split_heads(None, None, dim=dim, heads=heads)
+
+
+@pytest.mark.parametrize("integer", [int, np.int64])
+def test_split_heads_preserves_every_qkv_channel(integer):
+    qkv = np.arange(36, dtype=np.float32).reshape(2, 18)
+    ops = types.SimpleNamespace(slice_cols=lambda value, start, end: value[:, start:end])
+    heads = WT.split_heads(ops, qkv, dim=integer(6), heads=integer(3))
+    assert len(heads) == 9
+    for index, name in enumerate(("q", "k", "v")):
+        np.testing.assert_array_equal(np.concatenate([heads[f"{name}_h{head}"] for head in range(3)], axis=1),
+                                      qkv[:, index * 6:(index + 1) * 6])
+
+
 def test_builders_record_layout_rows(offline_ee):
     c = _context()
     W = c.W

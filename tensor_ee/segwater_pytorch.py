@@ -19,6 +19,7 @@ from collections.abc import Mapping
 import copy
 from dataclasses import dataclass
 import hashlib
+import io
 import math
 from pathlib import Path
 from typing import Any
@@ -200,11 +201,12 @@ def load_segwater_checkpoint(path: str | Path) -> SegWaterCheckpoint:
     SMP 0.5.0 architecture, then parameters are frozen for inference.
     """
     path = Path(path).expanduser().resolve()
-    with path.open("rb") as stream:
-        checkpoint = torch.load(stream, map_location="cpu", weights_only=True)
-        stream.seek(0)
-        source_sha256 = hashlib.file_digest(stream, "sha256").hexdigest()
-        source_bytes = stream.tell()
+    # Bind provenance to the exact bytes deserialized even if the file changes
+    # while loading. Keeping a file open alone does not prevent in-place writes.
+    source_data = path.read_bytes()
+    checkpoint = torch.load(io.BytesIO(source_data), map_location="cpu", weights_only=True)
+    source_sha256 = hashlib.sha256(source_data).hexdigest()
+    source_bytes = len(source_data)
     if not isinstance(checkpoint, Mapping):
         raise ValueError("Checkpoint must be a tensor state dictionary or SegWater checkpoint mapping")
     wrapped = "model_state_dict" in checkpoint

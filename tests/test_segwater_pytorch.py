@@ -109,6 +109,25 @@ def test_loading_uses_safe_cpu_deserialization_and_preserves_rng(genuine_checkpo
     assert torch.equal(before, torch.random.get_rng_state())
 
 
+def test_provenance_uses_the_loaded_bytes_if_the_checkpoint_changes(tmp_path, genuine_checkpoint, monkeypatch):
+    path = tmp_path / "mutable.pth"
+    source_data = genuine_checkpoint[0].read_bytes()
+    path.write_bytes(source_data)
+    actual_load = torch.load
+
+    def load_then_change_file(*args, **kwargs):
+        checkpoint = actual_load(*args, **kwargs)
+        path.write_bytes(b"changed after deserialization")
+        return checkpoint
+
+    monkeypatch.setattr(torch, "load", load_then_change_file)
+    imported = load_segwater_checkpoint(path)
+    assert imported.metadata["source_sha256"] == hashlib.sha256(source_data).hexdigest()
+    assert imported.metadata["source_bytes"] == len(source_data)
+    assert torch.equal(imported.reference_model.encoder.conv1.weight,
+                       genuine_checkpoint[1].encoder.conv1.weight)
+
+
 @pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16, torch.float64])
 def test_rejects_checkpoint_float_dtypes_before_any_implicit_conversion(tmp_path, dtype):
     path = tmp_path / "wrong-dtype.pth"

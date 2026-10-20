@@ -183,7 +183,13 @@ def relative_position_bias(ee, table, window: int = WINDOW, *, policy: str = DOU
 # ---------------------------------------------------------------------------
 def split_heads(ops, qkv, dim: int = DIM, heads: int = HEADS) -> dict:
     """q_h, k_h, v_h [N, d] from qkv [N, 3 dim] at timm's column positions,
-    d = dim / heads: columns s*dim + d*h ... s*dim + d*h + d-1, s = 0/1/2 (q/k/v)."""
+    d = dim / heads: columns s*dim + d*h ... s*dim + d*h + d-1, s = 0/1/2 (q/k/v).
+    Both sizes must be positive integers, with dim divisible by heads."""
+    if any(isinstance(value, bool) or not isinstance(value, (int, np.integer)) or value < 1
+           for value in (dim, heads)):
+        reject("dim and heads must be positive integers")
+    if dim % heads:
+        reject("dim must be a multiple of the head count")
     head_dim = dim // heads
     tensors = {}
     for s, name in enumerate(("q", "k", "v")):
