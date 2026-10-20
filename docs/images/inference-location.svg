@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img"><title>Where inference runs</title><rect width="1280" height="800" fill="white"/>
+<text x="48" y="60" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" text-anchor="start">Where inference runs</text>
+<text x="48" y="96" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" text-anchor="start">The same starting point: imagery already in Earth Engine.</text>
+<text x="48" y="154" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" text-anchor="start">Earth Engine + Vertex AI</text>
+<text x="664" y="154" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" text-anchor="start">Earth Engine + TensorEE</text>
+<rect x="48" y="178" width="568" height="105" rx="5" fill="#f6f7f8" stroke="#e1e5e9"/>
+<rect x="48" y="581" width="568" height="105" rx="5" fill="#f6f7f8" stroke="#e1e5e9"/>
+<rect x="664" y="178" width="568" height="508" rx="5" fill="#f6f7f8" stroke="#e1e5e9"/>
+<rect x="76" y="194" width="512" height="72" rx="5" fill="white" stroke="#b9c2cc"/>
+<text x="332.0" y="226.0" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" text-anchor="middle">Input imagery</text>
+<text x="332.0" y="256.0" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="middle">Earth Engine</text>
+<rect x="692" y="194" width="512" height="72" rx="5" fill="white" stroke="#b9c2cc"/>
+<text x="948.0" y="226.0" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" text-anchor="middle">Input imagery</text>
+<text x="948.0" y="256.0" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="middle">Earth Engine</text>
+<polyline points="332,266 332,368" fill="none" stroke="#59636e" stroke-width="2"/>
+<polygon points="332,368 327.6503446588877,358.9955289764732 336.3496553411123,358.9955289764732" fill="#59636e"/>
+<text x="355" y="310" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="start">Image tiles</text>
+<text x="355" y="340" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" text-anchor="start">fromVertexAi · predictImage</text>
+<rect x="48" y="368" width="568" height="132" rx="5" fill="white" stroke="#b9c2cc"/>
+<text x="70" y="393" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="start">VERTEX AI</text>
+<rect x="76" y="407" width="512" height="72" rx="5" fill="white" stroke="#b9c2cc"/>
+<text x="332.0" y="439.0" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" text-anchor="middle">Deployed model endpoint</text>
+<text x="332.0" y="469.0" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="middle">CPU / optional GPU</text>
+<polyline points="332,500 332,597" fill="none" stroke="#59636e" stroke-width="2"/>
+<polygon points="332,597 327.6503446588877,587.9955289764732 336.3496553411123,587.9955289764732" fill="#59636e"/>
+<text x="355" y="554" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="start">Predictions</text>
+<rect x="76" y="597" width="512" height="72" rx="5" fill="white" stroke="#b9c2cc"/>
+<text x="332.0" y="629.0" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" text-anchor="middle">Prediction image</text>
+<text x="332.0" y="659.0" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="middle">Earth Engine</text>
+<polyline points="948,266 948,407" fill="none" stroke="#3265a1" stroke-width="2"/>
+<polygon points="948,407 943.6503446588877,397.9955289764732 952.3496553411123,397.9955289764732" fill="#3265a1"/>
+<text x="970" y="335" fill="#3265a1" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="start">Native EE graph</text>
+<rect x="692" y="407" width="512" height="72" rx="5" fill="#edf3fa" stroke="#3265a1"/>
+<text x="948.0" y="439.0" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" text-anchor="middle">Model forward pass</text>
+<text x="948.0" y="469.0" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="middle">EE image and array operations</text>
+<polyline points="948,479 948,597" fill="none" stroke="#3265a1" stroke-width="2"/>
+<polygon points="948,597 943.6503446588877,587.9955289764732 952.3496553411123,587.9955289764732" fill="#3265a1"/>
+<rect x="692" y="597" width="512" height="72" rx="5" fill="white" stroke="#b9c2cc"/>
+<text x="948.0" y="629.0" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" text-anchor="middle">Prediction image</text>
+<text x="948.0" y="659.0" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" text-anchor="middle">Earth Engine</text>
+<text x="332" y="735" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" text-anchor="middle">A separate model-serving deployment</text>
+<text x="948" y="735" fill="#3265a1" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" text-anchor="middle">Inference stays inside Earth Engine</text>
+<text x="48" y="782" fill="#59636e" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="400" text-anchor="start">TensorEE supports selected models; larger graphs may execute in stages.</text>
+</svg>
