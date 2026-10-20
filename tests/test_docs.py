@@ -246,6 +246,15 @@ def test_every_relative_link_resolves():
     assert broken_links() == []
 
 
+def test_own_model_guide_links_and_commands():
+    assert broken_links(["docs/own-model.md"]) == []
+    text = (ROOT / "docs/own-model.md").read_text(encoding="utf-8")
+    for module in PYTHON_M.findall(text):
+        if module.split(".")[0] in REPO_PACKAGES:
+            assert module_path(module) is not None
+    assert "[own-model guide](own-model.md)" in (ROOT / "docs/api.md").read_text(encoding="utf-8")
+
+
 # Material left in the private development archive by the public snapshot (S02 §3): its links may
 # still pin paths at the archive's refs. Everything else cites the archive in plain text (S03).
 ARCHIVE_ONLY = ("docs/tasks/", "docs/library-plan.md", "docs/release-plan.md",

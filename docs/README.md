@@ -15,6 +15,8 @@ documentation; the records after them hold the evidence the guides cite.
 | [Release validation](validation.md) | The walkthrough's verified run, which the README figure was rendered from |
 | [Swin-T/UPerNet workflow](swin.md) | The fixed trained Swin-T/UPerNet as three saved-asset stages |
 | [API guide](api.md) | The CNN API: entry points, supported forms, numerical and validity rules |
+| [SMP CNNs](smp-models.md) | Compile standard segmentation-models-pytorch CNNs with `adapt_smp_model`: contract, evidence, live check |
+| [Your own CNN over a region](own-model.md) | A trained SMP Unet/resnet34 from checkpoint to a tiled, batch-exported region, with its halo cost |
 | [Converter guide](converter.md) | Convert, report, plan, build and run SegFormer-B0 and the Swin-T/UPerNet |
 | [Block catalogue](building-blocks.md) | Every block's layout, locality, precision policy, status and evidence; the layers and the public API |
 | [Live fixtures](live-fixtures.md) | The harness that compares a block's Earth Engine result and its NumPy mirror with PyTorch |
