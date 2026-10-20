@@ -188,8 +188,22 @@ the 19 extended graphs stay byte-identical.
 
 ## Status
 
-Validated offline only, as described above. No adapted model has yet been
-compared with PyTorch live in Earth Engine, so live agreement for a whole adapted
-model is unmeasured. The operations an adapted Unet or UnetPlusPlus compiles to
+Validated offline as described above, and checked live once. On 2026-10-21 the trained
+SegWater Unet/resnet18, prepared with `adapt_smp_model` at 64 × 64 and reading the public
+weight tables, ran in Earth Engine as one batch export on a synthetic two-band input with
+boundary impulses. Compared with the unmodified PyTorch model:
+
+| Measure | Result |
+|---|---|
+| Largest absolute logit error | 1.195e-5 (target 1e-4) |
+| Mean / root-mean-square error | 1.53e-6 / 2.29e-6 |
+| Argmax disagreements | 0 of 4,096 pixels |
+| Input returned by Earth Engine | bitwise equal to the PyTorch input |
+
+The [record](evidence/smp-adapter-live-check.json) gives the input, grid, weights and
+requests. This is live agreement for one model, input and grid. It is not a measure of model
+accuracy, and other encoders and architectures have not been run live. The same graph
+submitted as one interactive request exceeded Earth Engine's user memory limit, so whole
+models are run as batch exports. The operations an adapted Unet or UnetPlusPlus compiles to
 are existing blocks with their own validated settings; see the
 [block catalogue](building-blocks.md).
