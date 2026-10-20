@@ -5,6 +5,8 @@ This module neither constructs EE objects nor executes model activations.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import builtins
+from copy import deepcopy
 from fractions import Fraction
 import math
 from numbers import Integral, Real
@@ -65,15 +67,174 @@ def _interpolate_arguments(input, size=None, scale_factor=None, mode="nearest", 
     pass
 
 
-def interpolate_options(options: dict[str, Any]) -> int:
-    if options["size"] is not None or options["mode"] != "nearest":
+def interpolate_options(options: dict[str, Any], input_metadata: TensorMetadata | None = None) -> int:
+    if options["mode"] != "nearest":
         _reject("Only nearest interpolation with scale_factor (not size) is supported")
     if options["align_corners"] is not None or options["antialias"] is not False:
         _reject("nearest interpolation does not accept align_corners or antialias")
     recompute = options["recompute_scale_factor"]
     if recompute is not None and not isinstance(recompute, bool):
         _reject("recompute_scale_factor must be None or a static bool")
+    size = options["size"]
+    if size is not None:
+        if options["scale_factor"] is not None:
+            _reject("nearest interpolation requires exactly one of size and scale_factor")
+        if recompute is True:
+            _reject("size-based nearest interpolation does not accept recompute_scale_factor=True")
+        if (not isinstance(size, (tuple, list)) or len(size) != 2
+                or any(isinstance(x, bool) or not isinstance(x, Integral) or x <= 0 for x in size)):
+            _reject("nearest interpolation size must be a static pair of positive integers")
+        if input_metadata is None:
+            raise SemanticUnknown("nearest interpolation size requires a proven input spatial shape")
+        h, w = input_metadata.shape[2:]
+        # Fraction avoids rounding a nearly integral ratio into an acceptance.
+        return nearest_factor((Fraction(int(size[0]), h), Fraction(int(size[1]), w)))
     return nearest_factor(options["scale_factor"])
+
+
+@dataclass(frozen=True)
+class _Shape:
+    dimensions: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class PlumbingResult:
+    graph: GraphModule
+    errors: dict[Node, Exception]
+
+
+def _static_value(value, values):
+    if isinstance(value, Node):
+        return values.get(value, value)
+    if isinstance(value, (tuple, list)):
+        return type(value)(_static_value(x, values) for x in value)
+    return value
+
+
+def _literal_size(value, values):
+    value = _static_value(value, values)
+    if isinstance(value, _Shape):
+        return value.dimensions
+    if isinstance(value, (tuple, list)):
+        return type(value)(_literal_size(x, values) for x in value)
+    return value
+
+
+def _plumbing_value(node, metadata, values):
+    if node.target is builtins.getattr:
+        if len(node.args) != 2 or node.kwargs or node.args[1] != "shape":
+            _reject("Only getattr(tensor, 'shape') with proven tensor metadata is supported")
+        source = node.args[0]
+        if not isinstance(source, Node) or metadata.get(source) is None:
+            raise SemanticUnknown("Tensor shape is unavailable from structural metadata")
+        return _Shape(metadata[source].shape)
+    if len(node.args) != 2 or node.kwargs:
+        _reject("Static getitem requires a container and a literal integer or slice")
+    source, index = node.args
+    integer = lambda x: isinstance(x, Integral) and not isinstance(x, bool)
+    if not (integer(index) or isinstance(index, slice) and all(
+            x is None or integer(x) for x in (index.start, index.stop, index.step))):
+        _reject("Static getitem requires a literal integer or slice; dynamic indexing is unsupported")
+    container = _static_value(source, values)
+    shape = isinstance(container, _Shape)
+    if shape:
+        container = container.dimensions
+    elif not (isinstance(container, (tuple, list)) and container
+              and all(isinstance(x, Node) for x in container)):
+        _reject("getitem requires a proven shape tuple or literal tensor list/tuple; tensor-value indexing is unsupported")
+    elif any(metadata.get(x) is None for x in container):
+        raise SemanticUnknown("Literal feature selection requires proven tensor references")
+    try:
+        selected = container[index]
+    except (IndexError, ValueError, TypeError) as error:
+        _reject(f"Invalid static getitem: {error}")
+    return _Shape(tuple(selected)) if shape and isinstance(index, slice) else selected
+
+
+def specialize_plumbing(graph: GraphModule, input_shape: tuple[int, int, int, int] | None) -> PlumbingResult:
+    """Resolve only proven shape/container bookkeeping and exact nearest sizes.
+
+    Work on an independent FX graph, without executing activations or changing
+    modules. Unsupported arithmetic and its node names remain for diagnostics.
+    No dead arithmetic is removed, and no raster operation or cast is added.
+    Compiler, compatibility analysis and model adapters use this same pass.
+    """
+    def needs_specialization(node):
+        if node.op == "call_function":
+            return (node.target in (builtins.getattr, operator.getitem)
+                    or node.target is F.interpolate and (node.kwargs.get("size") is not None
+                        or len(node.args) > 1 and node.args[1] is not None))
+        return (node.op == "call_module" and isinstance(graph.get_submodule(str(node.target)), nn.Upsample)
+                and graph.get_submodule(str(node.target)).size is not None)
+
+    if not any(needs_specialization(node) for node in graph.graph.nodes):
+        return PlumbingResult(graph, {})
+    graph_copy = deepcopy(graph.graph)
+    metadata: dict[Node, TensorMetadata] = {}
+    values: dict[Node, Any] = {}
+    errors: dict[Node, Exception] = {}
+    changed = False
+    placeholders = 0
+    for node in graph_copy.nodes:
+        if node.op == "placeholder":
+            placeholders += 1
+            if placeholders == 1 and input_shape is not None:
+                metadata[node] = TensorMetadata(input_shape)
+            continue
+        if node.op == "output":
+            continue
+        plumbing = node.op == "call_function" and node.target in (builtins.getattr, operator.getitem)
+        size_call = False
+        try:
+            if plumbing:
+                value = _plumbing_value(node, metadata, values)
+                values[node] = value
+                if isinstance(value, Node):
+                    # A tensor alias must disappear before Conv/BN adjacency is checked.
+                    node.replace_all_uses_with(value)
+                    if value in metadata:
+                        metadata[node] = metadata[value]
+                changed = True
+                continue
+            options = None
+            if node.op == "call_function" and node.target is F.interpolate:
+                options = _bind_options(_interpolate_arguments, node.args, node.kwargs)
+            elif node.op == "call_module" and isinstance(graph.get_submodule(str(node.target)), nn.Upsample):
+                module = graph.get_submodule(str(node.target))
+                source = _bind_options(_input_arguments, node.args, node.kwargs)["input"]
+                options = dict(input=source, size=module.size, scale_factor=module.scale_factor,
+                               mode=module.mode, align_corners=module.align_corners,
+                               recompute_scale_factor=module.recompute_scale_factor, antialias=False)
+            if options is not None and options["size"] is not None:
+                size_call = True
+                options["size"] = _literal_size(options["size"], values)
+                factor = interpolate_options(options, metadata.get(options["input"]))
+                options.update(size=None, scale_factor=factor)
+                node.op, node.target = "call_function", F.interpolate
+                node.args, node.kwargs = (options.pop("input"),), options
+                changed = True
+            call = semantic_call(node, graph)
+            if all(x in metadata for x in call.inputs):
+                metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))
+        except (UnsupportedOperation, SemanticUnknown, TypeError) as error:
+            if plumbing or size_call:
+                errors[node] = error if not isinstance(error, TypeError) else UnsupportedOperation(
+                    f"Invalid call arguments: {error}")
+    # Replace scalar/tuple uses only after their provenance has been checked.
+    from torch.fx.node import map_arg
+    for node in graph_copy.nodes:
+        node.args = map_arg(node.args, lambda x: _literal_size(values[x], values) if x in values else x)
+        node.kwargs = map_arg(node.kwargs, lambda x: _literal_size(values[x], values) if x in values else x)
+    for node in reversed(list(graph_copy.nodes)):
+        if node in values and not node.users:
+            graph_copy.erase_node(node)
+    if not changed:
+        # Errors refer to the copied nodes; keep that graph even without a lowering.
+        if not errors:
+            return PlumbingResult(graph, {})
+    specialized = GraphModule(graph, graph_copy)
+    specialized.training = graph.training
+    return PlumbingResult(specialized, errors)
 
 
 def _inputs(values: Any) -> tuple[Node, ...]:
