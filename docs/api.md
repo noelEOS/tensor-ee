@@ -202,8 +202,16 @@ The fixed optional [Swin-T/UPerNet interface](swin.md) is explicitly imported fr
 `tensor_ee.swin`; it is separate from the CNN compiler. Its installed orchestration
 entry point preserves three saved-asset stages and explicit resources. Other
 architectures and arbitrary transformers are not supported. ONNX import
-(`load_onnx_model`) and tiling (`plan_tiles`, `compile_tiled_model`) are in the
+(`load_onnx_model`) is in the
 converter layer (`tensor_ee.converter`), not in the top-level API; the
-[block catalogue](building-blocks.md) lists the layers' public names. The historical
+[block catalogue](building-blocks.md) lists the layers' public names.
+
+Tiling (`plan_tiles`, `compile_tiled_model`) is also in `tensor_ee.converter`.
+The [own-model guide](own-model.md) takes a trained SMP CNN through adaptation,
+folded-weight upload, aligned context windows, tiled compilation and export.
+It explains how a padded input domain keeps every context at the adapter's
+fixed shape, and includes a runnable offline graph-construction example.
+
+The historical
 research runners are archived at the tag `research-archive-2026-10-12`
 ([history](history/README.md)).
