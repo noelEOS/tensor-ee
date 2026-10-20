@@ -16,7 +16,7 @@
 
 The SegFormer-B0 checks need SMP 0.5.0 and timm, and skip by name without them, as G1-ext does.
 Offline only: graphs are built against ``ee.apitestcase`` signatures with every cloud entry point
-refusing; nothing is evaluated and no model forward runs.
+refusing; nothing is evaluated, and a model's forward code runs only under fake-tensor tracing.
 """
 from __future__ import annotations
 
