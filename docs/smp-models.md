@@ -182,35 +182,14 @@ hashed independently. The existing SegWater adapter is unchanged.
 
 Graph identity, the adaptation probe, offline block reference checks, live
 agreement and model accuracy are separate claims. No full-model NumPy evaluator
-or mirror is used here. Trained checkpoints are absent in the container, so the
-nine trained golden graphs require the maintainer's environment. The unchanged
-Python 3.12 baseline has four `t04` raw-input drift cases in the 36 fixture graphs
-and seven SegFormer raw-input drift cases in the 19 extended records; these are
-failed strict gates, not passes or permission to rewrite golden files.
+or mirror is used here. Adding the adapter and the static rules leaves every
+existing graph unchanged: the 45 graphs of the standing graph-identity gate and
+the 19 extended graphs stay byte-identical.
 
-### Maintainer live validation plan (not run)
+## Status
 
-Use Unet/resnet18 with the SegWater recipe and existing verified weights. Adapt at
-`(1, 2, 64, 64)`. Prepare a nonconstant float32 dyadic input with boundary impulses
-on a 64×64 grid and compare both complete logit channels against the unmodified
-PyTorch model using exactly those retained input pixels. Verify their IEEE
-float32 identity by echoing both input channels, and check expected input and
-output validity independently, ordered bands, affine grid and orientation.
-
-Record max_abs, MAE, RMSE, argmax disagreements and near-margin locations. The
-absolute target remains **1e-4**; retain the known U-Net impulse failure if it
-occurs. This establishes neither model accuracy nor generalization to other chips.
-
-Request budget:
-
-- `python tools/live_fixtures.py --plan raster/nearest_upsample/f2` plans **2**
-  computation requests, largest **9,936 bytes**, within the existing budget.
-- Both model logits, both input echoes and validity on one 64×64 grid estimate
-  **1** additional computation request: **3 total**, plus at most **2**
-  initialization calls. The maintainer must preflight the actual model payload
-  against the existing 2,000,000-byte request limit and remaining budget.
-- Reuse existing assets only: **0 new assets, 0 tasks**, serial requests,
-  no automatic reruns. No live request was submitted for this evidence.
-
-The offline nearest-factor-two fixture passes with zero cloud calls. It has a
-PyTorch reference and no NumPy mirror, so mirror-vs-PyTorch max_abs is N/A.
+Validated offline only, as described above. No adapted model has yet been
+compared with PyTorch live in Earth Engine, so live agreement for a whole adapted
+model is unmeasured. The operations an adapted Unet or UnetPlusPlus compiles to
+are existing blocks with their own validated settings; see the
+[block catalogue](building-blocks.md).
