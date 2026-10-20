@@ -2,8 +2,8 @@
 
 Two sets share one code path:
 
-- **calibration** (P00): today's validated settings, window 7 and shift 3;
-- **p01** (task P01): windows 5, 8 and 12 with shift w // 2, for the relative-position bias,
+- **calibration**: today's validated settings, window 7 and shift 3;
+- **p01**: windows 5, 8 and 12 with shift w // 2, for the relative-position bias,
   W-MSA and SW-MSA, the single-window case, ``layer_norm2d``, patch merging and the window
   of ``conv3x3_window``. Window 7 stays in the selection as the regression check: the
   calibration fixtures of those blocks, plus the single window at window 7 (the 224 chip's
@@ -16,7 +16,7 @@ graphs, data and readouts (``tests/test_live_fixtures.py`` pins them).
 Inputs are inline [H, W, C] float32 rasters on an abstract ``TokenGrid`` (origin (0, 0),
 EPSG:3857, 10 m tokens), converted to window layout with the library's own converters
 (``from_dense``, or ``to_windows`` of a periodic input for the cyclic shift). Outputs are
-read back as dense float32 bands on the token grid with ``to_dense`` (Milestone 4's
+read back as dense float32 bands on the token grid with ``to_dense`` (the Swin hierarchy's
 ``depth_to_space``: values moved), or, for a V value, row by row (``core.value_rows``) or,
 at the p01 windows, as a w x w grid of its rows (``_value_grid``).
 
@@ -26,7 +26,7 @@ fixture's random weights; none reads the library. Mirrors are the NumPy mirrors 
 Earth Engine rounds and sum in Earth Engine's order; each was recorded bit-identical to
 Earth Engine at window 7 in its milestone. Every exact flag rests on the same premise as at
 window 7: Earth Engine's matrixMultiply sums each dot product left to right in double
-(Milestone 5), and the mirrors' float32 outputs are unchanged under strictly sequential
+(full Swin-encoder validation), and the mirrors' float32 outputs are unchanged under strictly sequential
 summation (``tests/test_p01_window_settings.py``, on the reference environment). torch's
 float64 matmul is not itself sequential at every p01 shape (at window 5 it is not); the
 outputs are what must agree.
@@ -51,7 +51,7 @@ WINDOW = 7
 DRO = "double_round_once"
 
 P01_WINDOWS = (5, 8, 12)
-"""The windows P01 validates (small odd; SwinV2-256's 8; Swin-B-384's 12), shift w // 2."""
+"""The validated window sizes (small odd; SwinV2-256's 8; Swin-B-384's 12), shift w // 2."""
 
 
 # ---------------------------------------------------------------------------
@@ -373,11 +373,11 @@ def _attention_mirror(data: FixtureData, *, window: int = WINDOW, shift: int = S
     result = {}
     if wmsa:
         plain = Mirror(parameters, window=window)
-        plain.sequential_sums = True       # EE's arrayReduce(sum) order (Milestone 5)
+        plain.sequential_sums = True       # EE's arrayReduce(sum) order (full Swin-encoder validation)
         result["wmsa"] = as_float32(from_window_layout(_mirror_heads(plain, windows, tokens, dim), h, w, window),
                                     "wmsa")
     mirror = ShiftedMirror(parameters, ATTN_ROWS, ATTN_COLS, window=window, shift=shift)
-    mirror.sequential_sums = True          # EE's arrayReduce(sum) order (Milestone 5)
+    mirror.sequential_sums = True          # EE's arrayReduce(sum) order (full Swin-encoder validation)
     shifted = shift_windows(windows, ATTN_ROWS, ATTN_COLS, shift, window)
     concat = _mirror_heads(mirror, shifted, tokens, dim, mirror.mask)
     if unshifted:
@@ -437,7 +437,7 @@ def _single_mirror(data: FixtureData, *, window: int, shift: int) -> dict:
     dim = data.inputs["x"].shape[2]
     tokens = window * window
     mirror = Mirror(_attention_parameters(data.weights, dim), window=window)
-    mirror.sequential_sums = True          # EE's arrayReduce(sum) order (Milestone 5)
+    mirror.sequential_sums = True          # EE's arrayReduce(sum) order (full Swin-encoder validation)
     concat = _mirror_heads(mirror, to_window_layout(data.inputs["x"], window), tokens, dim)
     return {"concat": as_float32(from_window_layout(concat, window, window, window), "concat")}
 
@@ -749,7 +749,7 @@ def _pe_mirror(data: FixtureData) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# The calibration fixtures (P00)
+# The calibration fixtures
 # ---------------------------------------------------------------------------
 def _calibration() -> list[Fixture]:
     from tensor_ee.blocks.window import attention as WT
@@ -896,7 +896,7 @@ def _calibration() -> list[Fixture]:
 
 
 # ---------------------------------------------------------------------------
-# The P01 fixtures: windows 5, 8 and 12 with shift w // 2, and the single window
+# The window-size validation fixtures: windows 5, 8 and 12 with shift w // 2, and the single window
 # ---------------------------------------------------------------------------
 P01_ATTENTION = {5: (12, 3), 7: (ATTN_DIM, ATTN_HEADS), 8: (16, 2), 12: (24, 3)}
 """(dim, heads) of the attention fixtures at each window: 2 or 3 heads, head width 4 or 8."""
@@ -910,7 +910,7 @@ P01_EXACT = ("Exact: Earth Engine's matrixMultiply sums each dot product left to
 P01_ORDER_SENSITIVE = {12: " One window-12 W-MSA P V value (about -3.3e-4; the review's margin ratio 0.85) "
                            "lies within a reordering error bound of a float32 rounding boundary: a single "
                            "differing wmsa value would point to summation order, not a library error."}
-"""Values a different summation order could round otherwise, found by the P01 review."""
+"""Values a different summation order could round otherwise, found by the window-size validation review."""
 
 P01_NEW = ("New setting (P01): no milestone ran this window. The regression check is the window-7 "
            "fixture, ")
@@ -997,7 +997,7 @@ def _p01_window(window: int) -> list[Fixture]:
             mirror=MirrorSpec(partial(_bias_mirror, window=w, grid=True), True,
                               f"reference.swin_block.ee_mirror.Mirror(window={w}) (bias)"),
             # At window 12 three heads of 144 bands are over the NPY header limit together:
-            # the planner reads heads 0-1 and head 2 in two requests (P01 live run, p01b).
+            # the planner reads heads 0-1 and head 2 in two requests (window-size validation live run, p01b).
             requests=2 if w == 12 else 1,
             constants=lambda data, w=w: {"relative_position_bias": _metadata("relative_position_bias")
                                          .embedded_constants(P01_BIAS_HEADS, window=w)},
@@ -1064,7 +1064,7 @@ def _p01_single(window: int) -> Fixture:
 
 P01_REGRESSION = ("window/relative_position_bias/w7", "window/attention/w7-s3", "window/layer_norm2d/w7-eps1e-6",
                   "window/patch_merge/w7", "window/conv3x3_window/k3-w7", "window/attention/w7-single")
-"""Window 7 in the p01 selection: the calibration fixtures of the blocks P01 promotes, and the
+"""Window 7 in the p01 selection: the calibration fixtures of the blocks checked at the new window sizes, and the
 single window at window 7."""
 
 

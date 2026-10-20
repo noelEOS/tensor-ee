@@ -1,15 +1,13 @@
 """Locality, cost and validated-settings metadata for library blocks
-(docs/library-contract.md, section 9, and its "As built (Phase 3)").
+(docs/library-contract.md, section 9, and its "As built (Phase 3)" section).
 
 Each block module declares a module-level ``METADATA`` mapping, public block
-name -> ``BlockMetadata``, next to its code (L03 for R blocks, L04 for W
-blocks) and checks it with ``validate_metadata``. L02 defined the schema.
+name -> ``BlockMetadata``, next to its code, and checks it with ``validate_metadata``.
 
-Metadata is read by tests, the generated block catalogue and, in Phase 3, the
-converter and its graph planner. It is client-side description: no metadata may
+Metadata is read by tests, the generated block catalogue, the converter and its graph planner. It is client-side description: no metadata may
 change a graph.
 
-**Validated settings** (X02b). ``validated`` is the machine-readable form of the
+**Validated settings.** ``validated`` is the machine-readable form of the
 prose ``status``: a ``Validated`` record, the union of configurations, each mapping
 setting names to values validated together as the status joins them: each value of each
 setting was validated live in the combinations the evidence ran, and the library's
@@ -25,7 +23,7 @@ Labels (band and output names) are not settings, and a value the block refuses
 needs no record. ``check_settings`` answers, for a call's settings, whether they are
 inside the record and, if not, which settings are outside it.
 
-**Properties by setting** (X02b). ``radius`` and ``chip_edge_dependent`` hold over
+**Properties by setting.** ``radius`` and ``chip_edge_dependent`` hold over
 every validated setting: the largest radius, and chip-edge dependent when any
 validated setting is. Where a property depends on a setting, ``per_setting`` gives
 its exact value at a call's settings, and ``metadata_at`` returns the entry with
@@ -33,7 +31,7 @@ it; elsewhere the static fields are exact.
 
 **The ``policy`` field** names a section 7 policy (``float32_operands``,
 ``round_each_op``, ``double_round_once``) or the variant ``grouped_double``.
-Three annotation rules (lead decision, L02):
+Three annotation rules:
 
 1. ``"none"`` (``NO_ARITHMETIC``): a block with no arithmetic, which must never
    gain a cast: W ``relu``, ``concat`` and every layout transform.
@@ -72,7 +70,7 @@ class Locality(Enum):
 
 
 # ---------------------------------------------------------------------------
-# Validated settings (X02b)
+# Validated settings
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)
 class Between:
@@ -280,8 +278,8 @@ class BlockMetadata:
     chip_edge_dependent: bool = False        # e.g. shifted-window mask, periodic wrap (the bound)
     status: str = "Fixed"                    # Ready | Fixed, with the validated settings
     evidence: tuple[str, ...] = ()           # milestone or evidence references
-    validated: Validated | None = None       # the status's settings, machine-readable (X02b; required)
-    per_setting: Callable[..., Mapping] | None = None   # properties by setting (X02b)
+    validated: Validated | None = None       # the status's settings, machine-readable (required)
+    per_setting: Callable[..., Mapping] | None = None   # properties by setting
 
 
 LAYOUTS = ("R", "W", "V")
@@ -352,7 +350,7 @@ def _check(entry: BlockMetadata, key) -> None:
     if not isinstance(entry.evidence, tuple) or any(not isinstance(item, str) or not item for item in entry.evidence):
         raise TypeError(f"{where}.evidence must be a tuple of non-empty strings")
     if not isinstance(entry.validated, Validated):
-        raise TypeError(f"{where}.validated must be a Validated record of the status's settings (X02b); "
+        raise TypeError(f"{where}.validated must be a Validated record of the status's settings; "
                         f"received {entry.validated!r}")
     if entry.status.startswith(OFFLINE_ONLY) != (not entry.validated.configurations):
         raise ValueError(f"{where}.validated must be empty exactly when the status is {OFFLINE_ONLY!r}: "

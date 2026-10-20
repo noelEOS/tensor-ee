@@ -1,6 +1,6 @@
-"""The block graph: a model as library operations and the tensors between them (X02a).
+"""The block graph: a model as library operations and the tensors between them.
 
-the development archive's phase3-design.md, section 3.1. A ``BlockGraph`` names operations (``operations.py``),
+A ``BlockGraph`` names operations (``operations.py``),
 their settings and their parameters by ``state_dict`` name, and describes every tensor between
 them as an ``Edge``. It holds no weight values: parameters are bound when the builder
 (``build.py``) turns the graph, or a stage of it, into Earth Engine graphs, so a block graph
@@ -16,7 +16,7 @@ and its hash do not depend on the weights.
 - ``BlockGraph``: its ``name``, ``inputs`` and ``outputs`` (edge ids), ``edges`` by id and
   ``nodes``, kept in one deterministic topological order (ready nodes by id).
 - ``Stage``: a subgraph between saved boundaries: the edges it reads and those it writes. Its
-  ``to_json`` and ``from_json`` (X05) give it as a JSON object inside a versioned plan
+  ``to_json`` and ``from_json`` give it as a JSON object inside a versioned plan
   (``plan.py``); equality stays the dataclass's.
 
 **JSON.** ``to_json`` is versioned (``format``, ``version``) and deterministic: keys sorted,
@@ -229,7 +229,7 @@ class Stage:
         object.__setattr__(self, "outputs", tuple(self.outputs))
 
     def to_json(self) -> dict:
-        """The stage as a JSON object; versioned by the document that holds it (a plan, X05)."""
+        """The stage as a JSON object; versioned by the document that holds it (a plan)."""
         return {"name": self.name, "inputs": list(self.inputs), "outputs": list(self.outputs)}
 
     @classmethod

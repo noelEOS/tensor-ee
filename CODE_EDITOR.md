@@ -228,10 +228,9 @@ committed. A test regenerates the module and requires identical bytes.
 
 ## How this was checked
 
-The demo went through three versions, each with its own record, named by the development
-task that made it: the first module of the library (task L06d), the same module reading the
-weights from the public project `tensor-ee` (task S01), and the committed module, rebuilt
-after the rename to TensorEE (task S03). The checks below are graph identity and one live
+The demo went through three versions, each with its own record: the first library-built
+module, the same module reading weights from the public project `tensor-ee`, and the
+committed module rebuilt after the rename to TensorEE. The checks below are graph identity and one live
 numerical check; none is an accuracy claim.
 
 **Live, in the Code Editor.** The preset chip was run twice:

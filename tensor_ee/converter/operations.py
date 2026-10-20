@@ -1,6 +1,6 @@
-"""The operations a block graph may name, each mapped to one library function (X02a).
+"""The operations a block graph may name, each mapped to one library function.
 
-the development archive's phase3-design.md, section 3.1. ``OPERATIONS`` is the explicit registry: a node's ``op``
+``OPERATIONS`` is the explicit registry: a node's ``op``
 is a key here, and its ``Operation`` holds a direct reference to the one library function it
 calls, never a name looked up at run time. For a node's settings and input edges an entry
 gives:
@@ -25,7 +25,7 @@ operations with no constants and no cost. Every entry builds its constants with 
 builder, as the fixed model does. An operation the library lacks is a new block, not an entry
 here.
 
-**Swin and UPerNet (X04).** The blocks and composites the Swin-T224/UPerNet adapter calls, one
+**Swin and UPerNet.** The blocks and composites the Swin-T224/UPerNet adapter calls, one
 node per timm or SMP module:
 - the encoder (``patch.py``, ``swin.py``): ``patch_embed`` (timm's ``PatchEmbed``: a raster on
   the model's token grid to windows), ``swin_block`` and ``shifted_swin_block`` (a
@@ -36,7 +36,7 @@ node per timm or SMP module:
   opposite edge, while its metadata, ``shifted_swin_block``'s, says ``WINDOW_RING`` (radius 4)
   with chip-edge dependence: the chip-edge flag stands in for the wrap's locality, and it
   already keeps the planner from tiling the node; the planner's EXTENT count measures global
-  reductions only, which the wrap is not (lead decision, X04 fix round);
+  reductions only, which the wrap is not;
 - the decoder (``upernet.py``): ``psp_forward`` (the PSP with C4's feature norm),
   ``fpn_layer_norm``, ``fpn_lateral``, ``fpn_merge`` and ``fpn_conv_block`` (one per FPN level
   and module), ``fusion_forward`` (with its four input-channel groups, the library's one
@@ -52,8 +52,8 @@ of their inputs, and the fields a composite does not read keep Swin-T224's value
 are the SMP names the constants builders read.
 
 **Validated.** An entry accepts what its function accepts; the validated settings are the
-blocks' statuses (``Fixed — SegFormer-B0 (mit_b0) at 224 × 224``, ``Fixed — Swin-T224 and the
-capstone: …``, ``Ready — …``). An operation here is not evidence that other settings work.
+blocks' statuses and their settings for SegFormer-B0, Swin-T224 and the window-8
+Swin-UPerNet validation model. An operation here is not evidence that other settings work.
 """
 
 from __future__ import annotations
@@ -325,7 +325,7 @@ def _from_windows_infer(s, inputs) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Swin and UPerNet: shared rules (X04)
+# Swin and UPerNet: shared rules
 # ---------------------------------------------------------------------------
 def _windowed(edge, what: str, channels: int | None = None) -> None:
     """Refuse an input the Swin and UPerNet composites refuse: anything but W features on a
@@ -460,7 +460,7 @@ def _shifted_call(ops, tensors, c, s):
     wraps the chip as timm's roll does. The node therefore reads the chip's opposite edge; its
     metadata (``shifted_swin_block``'s: ``WINDOW_RING``, radius 4, chip-edge dependent) lets the
     chip-edge flag stand in for the wrap's locality, which keeps the planner from tiling it, and
-    the planner's EXTENT count measures global reductions only (lead decision, X04 fix round)."""
+    the planner's EXTENT count measures global reductions only."""
     (x,) = tensors
     coarse = x.grid.coarse(x.window)
     extended = periodic_extension(ops.ee, x.image, coarse, 1)
@@ -731,7 +731,7 @@ OPERATIONS: dict[str, Operation] = {
         function=relabel_from_windows, metadata=None, inputs=1, settings=("grid", "bands"),
         roles=_no_roles, infer=_from_windows_infer, cost=_no_cost,
         call=lambda ops, tensors, c, s: relabel_from_windows(ops.ee, tensors[0], s["grid"], s["bands"])),
-    # Swin encoder (X04)
+    # Swin encoder
     "patch_embed": Operation(
         function=patch_embed, metadata=PATCH_METADATA["patch_embed"], inputs=1, settings=("dim", "patch", "window"),
         roles=lambda s: PATCH_EMBED_ROLES, infer=_embed_infer, cost=_embed_cost, constants=_embed_constants,
@@ -748,7 +748,7 @@ OPERATIONS: dict[str, Operation] = {
     "patch_merge": Operation(
         function=patch_merge, metadata=PATCH_METADATA["patch_merge"], inputs=1, settings=("channels", "bias"),
         roles=_merge_roles, infer=_merge_infer, cost=_merge_cost, constants=_merge_constants, call=_merge_call),
-    # UPerNet decoder (X04)
+    # UPerNet decoder
     "psp_forward": Operation(
         function=psp_forward, metadata=UPERNET_METADATA["psp_forward"], inputs=1,
         settings=("stage_dims", "decoder", "sizes"), roles=_psp_roles, infer=_psp_infer, cost=_psp_cost,

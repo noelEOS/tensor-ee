@@ -1,12 +1,12 @@
-"""The live fixture registry (task P00): one module per lane.
+"""The live fixture registry.
 
 - ``raster``: the R blocks (``tensor_ee/blocks/raster``);
 - ``window``: the W and V blocks (``tensor_ee/blocks/window``);
-- ``decoder``: window-lane fixtures of the decoder blocks at P04's settings;
-- ``patch``: the patch embedding at other patches, bands and widths (P03; window lane);
+- ``decoder``: window-lane fixtures of the decoder blocks at validated extents, bins, and fusion group counts;
+- ``patch``: the patch embedding at other patches, bands and widths (window layout);
 - ``core``: the ``Fixture`` record and the helpers both lanes share.
 
-``registry()`` returns every fixture by id, in a fixed order. ``CALIBRATION`` names P00's
+``registry()`` returns every fixture by id, in a fixed order. ``CALIBRATION`` names the calibration
 fixtures at today's validated settings. ``select`` resolves a selection: fixture ids,
 ``fnmatch`` patterns such as ``window/*``, ``calibration``, ``all``, or a name a lane
 module lists in its ``SELECTIONS`` mapping (name -> fixture ids), such as ``p02``.
@@ -39,7 +39,7 @@ def registry() -> dict[str, Fixture]:
 
 
 def calibration() -> tuple[str, ...]:
-    """P00's calibration fixtures: today's validated settings, both lanes."""
+    """Calibration fixtures: today's validated settings, both lanes."""
     return tuple(fid for fid, f in registry().items() if f.calibration)
 
 

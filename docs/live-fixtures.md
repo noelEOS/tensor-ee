@@ -1,7 +1,6 @@
 # Live fixtures
 
-Phase 2 of the library plan (development archive: `docs/library-plan.md`)
-promotes Fixed blocks by checking them at new settings. The live fixture harness,
+Settings validation promotes Fixed blocks by checking them at new settings. The live fixture harness,
 [`tools/live_fixtures.py`](../tools/live_fixtures.py), is the machinery every lane uses:
 
 - it builds one block's Earth Engine graph on a small input that lives in the graph;
@@ -9,8 +8,8 @@ promotes Fixed blocks by checking them at new settings. The live fixture harness
 - it compares the result with PyTorch and with the block's NumPy mirror;
 - it records the result as evidence, inside a request budget the user approved once.
 
-The fixtures are registered in [`tools/fixtures/`](../tools/fixtures/), one module per
-lane. P00 calibrated the harness at today's validated settings
+The fixtures are registered in [`tools/fixtures/`](../tools/fixtures/).
+The harness was calibrated at the library's validated defaults
 ([calibration plan](evidence/p00-calibration-plan.md)).
 
 ## Commands
@@ -25,7 +24,7 @@ python tools/live_fixtures.py --run calibration --project YOUR_EE_PROJECT [--bud
 ```
 
 A selection is one or more fixture ids, `fnmatch` patterns such as `'window/*'`,
-`calibration` (P00's fixtures), `all`, or a lane's named selection, such as `p02`. Commas
+`calibration` (the fixtures at the library defaults), `all`, or a lane's named selection, such as `p02`. Commas
 also separate items. A lane module names its selections in a `SELECTIONS` mapping: each
 name maps to a sequence of fixture ids, or to a zero-argument callable that returns one.
 A name may not be a fixture id, `all` or `calibration`.
@@ -89,7 +88,7 @@ equal the NumPy input bit for bit.
 ## The budget
 
 The limits are enforced in code (`Budget` in the harness). The user's standing approval
-covers runs within them (plan, live approval (development archive: `docs/library-plan.md`)).
+covers runs within them.
 
 | Limit | Default |
 |---|---|
@@ -103,7 +102,7 @@ covers runs within them (plan, live approval (development archive: `docs/library
 | NPY response header per request | 9,000 bytes (numpy's `max_header_size` is 10,000); readouts on one grid are split across requests to stay within it |
 
 `--budget key=value,...` lowers a limit (`requests`, `raster_side`, `window_side`,
-`values`, `request_bytes`, `in_flight`) and refuses to raise one. Raising a limit is a lead
+`values`, `request_bytes`, `in_flight`) and refuses to raise one. Raising a limit is a maintainer
 change, recorded in the plan with the user's approval. The plan also checks
 computePixels' own limit of 1,024 bands per request.
 
@@ -158,18 +157,18 @@ One JSON per run (`schema_version` 1, `kind` `live_fixture_run`):
     `wall_seconds`.
 
 The record holds no credentials and no local paths. The project ID is inherent to live
-evidence, as in [the L06c run](evidence/l06c-live-run.json).
+evidence, as in [the browser-demo validation run](evidence/l06c-live-run.json).
 
 `--offline --output` writes the same per-fixture fields without the live ones
 (`kind` `offline_fixture_check`).
 
-## Adding a fixture at a new setting (lanes P01–P04)
+## Adding a fixture at a new setting
 
 1. Add the fixture to its lane's module (`tools/fixtures/raster.py` or `window.py`) with
    `calibration=False`, the new `settings` named as the block's parameters, and
    `accepts` listing the callables that take them.
 2. Pass the setting to the mirror. A mirror that cannot take it yet is parameterized in
-   `tests/reference` by the lane, offline, first.
+   `tests/reference`, offline, first.
 3. `--offline <id> --output docs/evidence/<lane>-<name>-offline.json`: the G3-offline
    evidence (mirror against PyTorch within 1e-4, zero cloud calls).
 4. `--plan <id>` shows the requests; the maintainer runs `--run <id>` within the standing budget
@@ -180,9 +179,9 @@ the catalogue, its policy is the block's, and each setting is a parameter of a c
 in `accepts`. For a calibration fixture, each setting must also equal that parameter's
 library default.
 
-## Calibration fixtures (P00)
+## Calibration fixtures
 
-Today's validated settings only, both lanes. Every Phase 2 Fixed block appears as a
+The library's validated defaults, in both layouts. Every original Fixed block appears as a
 fixture's block or part. The [calibration plan](evidence/p00-calibration-plan.md) lists
 the requests and the results each fixture should reproduce.
 

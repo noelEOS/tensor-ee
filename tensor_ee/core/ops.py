@@ -7,7 +7,7 @@ an ``ee.Array`` value) and the W path (one window per array-valued pixel of an
 - ``ValueOps`` (V) is ``BlockArrayOps``, which extends ``ArrayOps``;
 - ``WindowOps`` (W) is ``BlockImageOps``, which extends ``ImageOps``.
 
-``ArrayOps``/``ImageOps`` are Milestone 1's attention interface (formerly
+``ArrayOps``/``ImageOps`` provide the attention interface (formerly
 ``ee_attention.earth_engine.array_ops``); ``BlockArrayOps``/``BlockImageOps``
 add the Swin block's primitives (formerly ``swin_block.earth_engine.ops``). The
 four classes moved whole and keep their hierarchy (the research modules are
@@ -19,7 +19,7 @@ Every method keeps the exact expression and cast it emitted before the move.
 A method that rounds (``matmul`` -> ``.float()``) and one that does not
 (``matmul_double``) stay distinct names (section 7).
 
-**Float32 policy (Milestone 1).** Live probes (docs/history/ee_attention/notes/findings.md;
+**Float32 policy (window-attention validation).** Live probes (docs/history/ee_attention/notes/findings.md;
 the raw record ``ee_attention/results/raw/capability_probes.json`` is at the archive tag)
 showed that EE returns *double* from matrixMultiply and exp even for float32
 operands, and promotes ee.Array arithmetic with non-integer numbers to double.
@@ -38,7 +38,7 @@ reductions, sqrt, erf and exp, and from arithmetic with non-integer Python
 numbers (probed), so results are cast back to float32 explicitly.
 
 **In-window layout moves** (``reshape``, ``slice``, ``cat`` and axis
-``transpose``; added in L02) are additive: each emits exactly the expression
+``transpose``) are additive: each emits exactly the expression
 the V and W code writes inline today. Each expression is defined once, as a
 module-level helper here: ``image_reshape`` (also behind
 ``layouts.window.reshape``), and the slice and cat helpers that
@@ -121,7 +121,7 @@ def _image_cat(parts, axis):
 
 
 # ---------------------------------------------------------------------------
-# Milestone 1: the attention interface
+# window-attention validation: the attention interface
 # ---------------------------------------------------------------------------
 class ArrayOps:
     """Operations on server-side ee.Array values (2-D, [rows, cols])."""
@@ -254,7 +254,7 @@ class BlockArrayOps(ArrayOps):
     def repeat_rows(self, a, copies: int):
         return a.repeat(0, copies)
 
-    # In-window layout moves (L02, additive): the ee.Array expressions the V
+    # In-window layout moves (core ops and weight transport, additive): the ee.Array expressions the V
     # path writes inline today. No arithmetic, no cast.
     def transpose(self, a, axis1=None, axis2=None):
         """Matrix transpose (``ArrayOps.transpose``: ``a.transpose()``), or, with
@@ -303,7 +303,7 @@ class BlockImageOps(ImageOps):
     def repeat_rows(self, a, copies: int):
         return a.arrayRepeat(0, copies)
 
-    # In-window layout moves (L02, additive): the array-image expressions the
+    # In-window layout moves (core ops and weight transport, additive): the array-image expressions the
     # W path writes inline today. No arithmetic, no cast.
     def transpose(self, a, axis1=None, axis2=None):
         """Matrix transpose (``ImageOps.transpose``: ``a.arrayTranspose()``), or,

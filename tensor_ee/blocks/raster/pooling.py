@@ -3,7 +3,7 @@ common CNN configurations.
 
 Moved whole from ``tensor_ee.compiler`` (``pool2d``, both branches) and
 ``tensor_ee.semantics`` (``pool_options``). The old names are re-exports of
-these objects. Task P02 added the configurations beyond the two the reference
+these objects. The raster fixtures added the configurations beyond the two the reference
 models use (``pool_config``).
 
 Supported settings (contract section 8), all with ``ceil_mode=False``,
@@ -22,7 +22,7 @@ max-pool ``dilation=1`` and ``return_indices=False``, and average-pool
   ``count_include_pad=False`` takes the mean of the in-bounds pixels only.
 
 Every other configuration is rejected with the list above. Each supported
-configuration has a P02 fixture (``raster/pool2d/*`` in
+configuration has a raster-setting validation fixture (``raster/pool2d/*`` in
 ``tools/fixtures/raster.py``) that compares it with PyTorch: bit for bit for
 max pooling, within 1e-4 for averages.
 

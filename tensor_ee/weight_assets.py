@@ -25,7 +25,7 @@ from torch.fx import Node, symbolic_trace
 
 from .compiler import UnsupportedOperation, _ROOT_MODULES
 from .semantics import semantic_call, diagnostic_convolution
-# The asset format and its provider moved to the library (L02); these names are
+# The asset format and its provider moved to the library; these names are
 # re-exports of the same objects (one FeatureCollectionWeightProvider class).
 from .weights.assets import (  # noqa: F401
     ConvolutionWeights, FeatureCollectionWeightProvider, convolution_weights, feature_records)

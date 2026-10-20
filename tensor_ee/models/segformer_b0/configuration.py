@@ -23,7 +23,7 @@ from ...blocks.window.conv import METADATA as CONV_METADATA
 from ...blocks.window.linear import METADATA as LINEAR_METADATA
 from ...blocks.window.normalization import METADATA as NORM_METADATA
 from ...blocks.window.resample import METADATA as RESIZE_METADATA
-from ...blocks.window.segformer import _server_shape  # moved to the library (X01a)
+from ...blocks.window.segformer import _server_shape  # moved to the library
 from ...core.errors import reject
 from ...core.grid import TokenGrid
 from ...core.metadata import Locality

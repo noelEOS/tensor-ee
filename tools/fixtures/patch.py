@@ -1,8 +1,8 @@
-"""Patch-embedding fixtures (task P03): ``patch_embed`` and ``stride_columns`` at other patch
+"""Patch-embedding fixtures: ``patch_embed`` and ``stride_columns`` at other patch
 sizes, input bands and embedding widths.
 
 Swin-T embeds 4 x 4 patches of two bands (VV, VH) into 96 channels, on windows of 7
-(P00's calibration fixture ``window/patch_embed/p4-vvvh-d96``). Other models embed other
+(the calibration fixture ``window/patch_embed/p4-vvvh-d96``). Other models embed other
 inputs. The p03 fixtures cover each value of each setting at least once:
 
 | Setting | Values |
@@ -10,7 +10,7 @@ inputs. The p03 fixtures cover each value of each setting at least once:
 | Patch size | 2, 4, 8 |
 | Input bands | 1, 2, 3, 4, with arbitrary names |
 | Embedding width | 48, 96, 128 |
-| Window of the output layout | 5, 7, 8, 12 (validated in P01) |
+| Window of the output layout | 5, 7, 8, 12 (validated live) |
 
 The calibration fixture is the regression at today's settings. ``SELECTIONS["p03"]`` holds
 it and the six new fixtures (``CASES``).
@@ -50,9 +50,9 @@ Each mirror is exact, for these reasons:
   any order, is a multiple of 2^q below 2^(q + 53) in magnitude: a double, formed without
   rounding. The double result is the exact dot product, rounded once to float32, whatever
   order Earth Engine's matrixMultiply uses. The mirror sums left to right (EE's order,
-  Milestone 5) and gets the same value.
-- ``x``: P01's argument for ``layer_norm2d``. Per token, the sums run left to right in
-  double (EE's ``arrayReduce`` order, Milestone 5; the mirror's ``sequential_sum``), with one
+  full Swin-encoder validation) and gets the same value.
+- ``x``: the window-size fixtures' argument for ``layer_norm2d``. Per token, the sums run left to right in
+  double (EE's ``arrayReduce`` order, full Swin-encoder validation; the mirror's ``sequential_sum``), with one
   rounding, as the graph. The mean sums of the float32 ``pe_proj`` are certified exact in
   every order, as above, so the mean, the centred values and their squares are the same in
   every order. Only the variance sum depends on order. ``order_analysis`` bounds its effect
@@ -79,7 +79,7 @@ INPUT_SCALE = 2.5
 """Metres per input pixel: the Swin-T model grid's 2.5 m (tokens are 2.5 patch metres)."""
 
 REGRESSION = "window/patch_embed/p4-vvvh-d96"
-"""Today's settings (patch 4, VV/VH, 96 channels, window 7): P00's calibration fixture."""
+"""Today's settings (patch 4, VV/VH, 96 channels, window 7): the calibration fixture."""
 
 
 @dataclass(frozen=True)
@@ -145,8 +145,8 @@ CASES = (
     PatchCase(patch=8, bands=("b0",), dim=96, window=7, windows=(1, 1), seed=3005),
     PatchCase(patch=8, bands=("b0", "b1", "b2", "b3"), dim=48, window=8, windows=(1, 1), seed=3006),
 )
-"""The p03 fixtures (seeds 3001-3006, disjoint from the calibration's 1-18, P02's 21-31 and
-P01's 1050-1125):
+"""The p03 fixtures (seeds 3001-3006, disjoint from the calibration's 1-18, raster-setting validation's 21-31 and
+window-size validation's 1050-1125):
 
 - patch 2, three Sentinel-2 bands in RGB order (B4, B3, B2) from a raster stored B2, B3, B4,
   width 48, window 5, on 2 x 3 windows;
@@ -478,7 +478,7 @@ def fixtures() -> list[Fixture]:
 
 
 def _p03() -> tuple[str, ...]:
-    """The regression (P00's calibration fixture) and the six new fixtures: one live run."""
+    """The regression (the calibration fixture) and the six new fixtures: one live run."""
     return (REGRESSION,) + tuple(case.id for case in CASES)
 
 

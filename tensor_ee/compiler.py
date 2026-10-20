@@ -32,12 +32,12 @@ from torch.fx import GraphModule, Node, symbolic_trace
 from .core.errors import UnsupportedOperation
 from .core.grid import Grid
 from .core.tensor import Raster
-# R converters (L01) and float32 helpers (L02) moved to the library; the old
+# R converters (layout and grid consolidation) and float32 helpers moved to the library; the old
 # names still in use are kept here as re-exports. compile_model looks _finish up here.
 from .layouts.raster import finish as _finish
 from .core.precision import exact_scalar as _ee_scalar
 from .weights.constants import inline_float32_array as _inline_float32_array
-# R blocks moved to the library (L03); these names are re-exports of the block
+# R blocks moved to the library; these names are re-exports of the block
 # objects. The blocks look their helpers up in their own modules, so tests patch
 # tensor_ee.blocks.raster.conv._inline_float32_array.
 from .blocks.raster.conv import _names, _pair, conv2d

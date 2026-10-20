@@ -13,10 +13,10 @@
   whose window follows from its layout.
 - **V** ``ServerArray(array, shape)``: a float32 parameter already on the
   server, with its shape known to the client (formerly
-  ``swin_block.earth_engine.ops.ServerArray``; moved in L02 and re-exported
+  ``swin_block.earth_engine.ops.ServerArray``; moved in core ops and weight transport and re-exported
   from ``tensor_ee.weights.constants``). Not spatial; no grid.
 
-Windows 5, 7, 8 and 12 (and 1 for ``dense_row``) are validated live (Phase 2, P01);
+Windows 5, 7, 8 and 12 (and 1 for ``dense_row``) are validated live (including the window-size checks);
 a window field is not evidence that other windows work (contract section 8).
 """
 

@@ -2,7 +2,7 @@
 
 The composites it is built from (the channel norm, the overlapping embedding, efficient
 attention, the Mix-FFN and the MiT block, with their constants builders) moved to the
-library at X01a, ``tensor_ee/blocks/window/segformer.py``, and are re-exported here under
+library, ``tensor_ee/blocks/window/segformer.py``, and are re-exported here under
 their names; the MiT block's ``block``, ``block_constants`` and ``BlockConstants`` are the
 library's ``mit_block``, ``mit_block_constants`` and ``MiTBlockConstants``. This module keeps
 the fixed configuration: ``EncoderConstants``, ``encoder_constants`` and ``encoder``.
@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ...blocks.window.segformer import (  # noqa: F401  (moved to the library, X01a; re-exported)
+from ...blocks.window.segformer import (  # noqa: F401  (moved to the library; re-exported)
     LAYOUT, AttentionConstants, MixFFNConstants, NormConstants, OverlapConstants,
     _check_feature, _conv_columns, _linear_constants, _parameter, attention_constants,
     channel_norm, decimate, global_attention, mix_ffn, mix_ffn_constants,

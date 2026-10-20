@@ -10,7 +10,7 @@ cast.
   ``.float()`` before ``matrixMultiply``; every converter node and public
   primitive output is materialized with ``.toFloat()``; scalars are exact
   binary64 (``exact_scalar``).
-- ``round_each_op`` (Milestone 1 attention): each EE operation that returns
+- ``round_each_op`` (window attention): each EE operation that returns
   double is rounded immediately (``matmul(...).float()``, ``exp().float()``,
   ``row_sum().float()``); scalars are pre-rounded to float32.
 - ``double_round_once`` (the Swin/decoder path): one float32 rounding per

@@ -1,6 +1,6 @@
 """SMP reference contracts for the user-approved full-model validation plan.
 
-These functions execute only local CPU PyTorch when the lead invokes them. They
+These functions execute only local CPU PyTorch when the maintainer invokes them. They
 never initialize EE, evaluate native graphs, download weights or create tasks.
 ``full_reference`` captures the actual full SMP forward, then requires independent
 installed-submodule traversal to match every boundary and logit float32 bit.

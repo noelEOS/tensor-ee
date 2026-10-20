@@ -75,7 +75,7 @@ def _refuse_external_data(model) -> None:
 
     Parsing from bytes leaves such tensors as references, but
     ``numpy_helper.to_array`` would then open the file they name, relative to the working
-    directory. S02 finding E-01: a ``Constant`` node could name a local file; the initializer
+    directory. Recorded finding E-01: a ``Constant`` node could name a local file; the initializer
     check alone did not cover node attributes or subgraphs.
     """
     import onnx

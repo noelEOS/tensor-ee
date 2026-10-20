@@ -138,7 +138,7 @@ recognizers, written in `tensor_ee/converter/recognizers.py` with their tests:
 6. **Glue stays closed.** Between units only layout bookkeeping is accepted (`export.GLUE`),
    checked as moves of named axes. Add an operation there only where a trace needs it.
 7. **Test, and name the gate.** Converting the validated model must give its hand-built,
-   live-validated graphs byte for byte (the converter gate; adding G1-ext targets is a lead
+   live-validated graphs byte for byte (the converter gate; adding G1-ext targets is a maintainer
    decision). Test that every node of the validated model is inside its record, that a
    variant outside it is reported, that each fixed attribute and each forward-code patch is
    refused (and reported under the opt-in), and that a retrace equals the committed
@@ -207,7 +207,7 @@ PYTHONPATH=. python tools/graph_identity.py --check-ext docs/evidence/x00-g1ext-
 - **`TENSOR_EE_RESOURCES`** and **`TENSOR_EE_EE_JS_NODE_PATH`**: a checkout holding
   `checkpoints/`, and a `node_modules` folder with `@google/earthengine`, for the Code
   Editor demo's regeneration and Node round trip (`tests/test_code_editor_demo.py`).
-- **`TENSOR_EE_GRAPH_IDENTITY_ALLOW_ENV_DRIFT=1`**: a lead decision only. It turns a
+- **`TENSOR_EE_GRAPH_IDENTITY_ALLOW_ENV_DRIFT=1`**: a maintainer decision only. It turns a
   graph difference seen with different dependency versions into a named skip
   ([contract §1.4](docs/library-contract.md#14-version-mismatch-policy-decided-here)).
   CI does not set it.
@@ -274,7 +274,7 @@ publication. Three kinds of name keep the old spelling on purpose, and must neve
   (`native_ee_segwater_code_editor_template_v1`), the converter's document formats
   (`native_ee.block_graph`, `native_ee.plan`, `native_ee.run`), the export image properties
   (`native_ee_fixed224_float32`, `native_ee_swint_upernet_independent224`,
-  `native_ee_predict_segwater_code_editor`) and the capstone's asset names. Renaming one
+  `native_ee_predict_segwater_code_editor`) and the window-8 Swin-UPerNet validation model's asset names. Renaming one
   would change a recorded hash or a live-validated request.
 - **Recorded module paths** in the evidence records and the history notes
   (`native_ee/...`, `native_ee.*`): archive labels, left as recorded. A test that joins such a

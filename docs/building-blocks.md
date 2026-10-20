@@ -214,7 +214,7 @@ their own.
 
 ### Validated settings
 
-Each block's `validated` record, the status in machine-readable form (X02b): 78 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
+Each block's `validated` record, the status in machine-readable form: 78 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
 
 | Block | Layout | Validated settings | Names from |
 |---|---|---|---|
@@ -401,7 +401,7 @@ generated list cannot drift from the code.
 |---|---|---|---|
 | Core | [`tensor_ee.core.errors`](../tensor_ee/core/errors.py) | Errors shared by every layer of the library. | `UnsupportedOperation`, `GridMismatch`, `SemanticUnknown`, `reject` |
 | Core | [`tensor_ee.core.grid`](../tensor_ee/core/grid.py) | The three grid kinds behind one protocol, with explicit conversions. | `GridProtocol`, `Grid`, `TokenGrid`, `FeatureGrid`, `to_grid`, `to_feature_grid`, `to_token_grid`, `check_model_grid` |
-| Core | [`tensor_ee.core.metadata`](../tensor_ee/core/metadata.py) | Locality, cost and validated-settings metadata for library blocks (docs/library-contract.md, section 9, and its "As built (Phase 3)"). | `Locality`, `Between`, `Validated`, `SettingsCheck`, `check_settings`, `describe_validated`, `BlockMetadata`, `validate_metadata`, `metadata_at` |
+| Core | [`tensor_ee.core.metadata`](../tensor_ee/core/metadata.py) | Locality, cost and validated-settings metadata for library blocks (docs/library-contract.md, section 9, and its "As built (Phase 3)" section). | `Locality`, `Between`, `Validated`, `SettingsCheck`, `check_settings`, `describe_validated`, `BlockMetadata`, `validate_metadata`, `metadata_at` |
 | Core | [`tensor_ee.core.ops`](../tensor_ee/core/ops.py) | The ops interface: one set of array primitives, two implementations. | `Ops`, `image_reshape`, `ArrayOps`, `ImageOps`, `BlockArrayOps`, `BlockImageOps`, `ValueOps`, `WindowOps` |
 | Core | [`tensor_ee.core.precision`](../tensor_ee/core/precision.py) | Precision policies, and how float32 values enter an Earth Engine graph. | `validate_policy`, `exact_scalar`, `encode_float32`, `constant_value` |
 | Core | [`tensor_ee.core.tensor`](../tensor_ee/core/tensor.py) | Tensor carriers: R (`Raster`) and W (`WindowTensor`), plus `Feature`. | `band_names`, `ServerArray`, `Raster`, `WindowTensor`, `Feature`, `same_grid` |

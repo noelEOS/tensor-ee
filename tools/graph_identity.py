@@ -1,4 +1,4 @@
-"""Graph-identity harness for the building-block library refactor (task L00).
+"""Graph-identity harness for the building-block library.
 
 Builds the serialized Earth Engine graph of every production entry point with
 zero cloud calls and hashes ``image.serialize()`` (UTF-8) with SHA-256. Graphs
@@ -11,19 +11,19 @@ every Earth Engine cloud entry point is patched to raise for the whole run.
 
 * Fixture graphs need no checkpoint and also run in CI through
   ``tests/test_graph_identity.py``.
-* Trained graphs (the eight T05 graphs and L00's four-chip SegWater prediction)
+* Trained graphs (the eight preserved trained-model graphs and a four-chip SegWater prediction)
   need the git-ignored checkpoints in the ``--resources`` checkout. With
   ``--resources``, a missing or wrong checkpoint exits 1. Without it the trained
   graphs are not built, and ``--check`` says explicitly that they were not compared.
 * ``--check`` compares every graph built in this run with the golden file and
   exits non-zero on any difference, naming the environment differences.
-* The L00 consolidation probes (``--probes``) compared research copies of one
-  computation; they were retired with the research code at L06b, and their
+* The consolidation probes (``--probes``) compared research copies of one
+  computation; they were retired when the research code was archived, and their
   record stays in docs/evidence/l00-consolidation-probes.json.
 
-**G1-ext** (Phase 3, task X00) is a separate group of graphs with its own golden
+**G1-ext**, the converter graph-identity targets, is a separate group of graphs with its own golden
 file, docs/evidence/x00-g1ext-golden-graphs.json; G1's 45 graphs and their file
-are unchanged by it. It holds the hand-built graphs that Phase 3's converter must
+are unchanged by it. It holds the hand-built graphs that the attention-model converter must
 rebuild byte for byte: the seven SegFormer-B0 cuts, from a placeholder namespace,
 and the Swin-T/UPerNet composite outputs inside G1's three adapter stages. The
 SegFormer-B0 graphs need SMP 0.5.0 and timm; without them they are skipped by name.
@@ -31,18 +31,19 @@ SegFormer-B0 graphs need SMP 0.5.0 and timm; without them they are skipped by na
     PYTHONPATH=. python tools/graph_identity.py \
         --check-ext docs/evidence/x00-g1ext-golden-graphs.json
 
-``--write-ext`` writes that golden file (a lead decision, as for G1). ``--link-ext``
-is lead-run: it reads the approved SegFormer-B0 run's git-ignored records and checks
+``--write-ext`` writes that golden file (a maintainer decision, as for G1). ``--link-ext``
+is run by the maintainer: it reads the approved SegFormer-B0 run's git-ignored records and checks
 that the placeholder targets are the graphs that ran; ``--link-output`` writes the
 result as counts, booleans and SHA-256s only (docs/evidence/x00-g1ext-link.json).
 
-``--link-weights RECORD`` (S01, with ``--resources``) builds G1's graphs with the tracked weight
+``--link-weights RECORD`` (public weight-asset migration, with ``--resources``) builds G1's graphs with the tracked weight
 manifests and with their public transform (tools/public_weights.py), and writes the link record
 (docs/evidence/s01-weights-link.json): the five graphs that read the manifests' asset IDs differ
 from today's only by the asset prefix. ``build_trained``'s keyword-only ``manifests`` override
-serves it; its default is today's pins. Since S01 Part 2 the tracked manifests are the public
-ones and the pins are theirs: ``--link-weights`` refuses (it needs the pre-S01 manifests), and the
-record links the five graphs, and T05's continuity for four of them, to their pre-S01 hashes
+serves it; its default is today's pins. Since the public weight-asset copy the tracked manifests are the public
+ones and the pins are theirs: ``--link-weights`` refuses (it needs the original private manifests), and the
+record links the five graphs to their original private hashes, including the preserved
+trained-model hashes for four of them
 (``continuity_route``, ``trained_continuity``, ``resources_continue``).
 
 The harness always imports the checkout that contains it and asserts that every
@@ -68,13 +69,13 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 GOLDEN = ROOT / "docs" / "evidence" / "l00-golden-graphs.json"
-# The golden file's base: S01's integration (b204a2c), where the weight manifests became the public
-# ones. It was L00's d976819 until S01 (contract §1.3).
+# The golden file's base: the public weight-asset migration (b204a2c), where the weight manifests became the public
+# ones. Before that migration it was d976819 (contract §1.3).
 BASE_REVISION = "b204a2ca93a771eea06eeacf2a1fa847603584f0"
 SCHEMA_VERSION = 1
 # The trained graphs exceed Python's default traversal depth when serialized.
 RECURSION_LIMIT = 20000
-# The research packages left these two lists at L06b (archived at research-archive-2026-10-12).
+# The research packages left these two lists when the research code was archived (archived at research-archive-2026-10-12).
 PROJECT_PACKAGES = ("tensor_ee", "examples")
 # Paths whose content determines the graphs; recorded so a hash set names its runtime.
 RUNTIME_PATHS = ("tensor_ee", "examples",
@@ -89,9 +90,9 @@ UNET_CHECKPOINT = ("checkpoints/unet_resnet18_s42_step6000_last.pth",
                    "2afeaef8086bd85dc41741126ef7af7dbf7462ce54802a5e5ff18e9162d74928")
 SWIN_CHECKPOINT = ("downloads/m12_ckpt/upernet_tu-swin_tiny_patch4_window7_224_s42_step6000_last.pth",
                    "5c7a7c44d29b3c75bd69f59809fb1b63a039313bec021d897ff3876d2cea42a5")
-# Tracked manifests, read from this checkout and pinned. Since S01 they are the public
-# manifests (assets in tensor-ee): T05's recorded manifests with the asset prefix substituted,
-# linked to T05's bytes by docs/evidence/s01-weights-link.json (``S01_LINK``).
+# Tracked manifests, read from this checkout and pinned. Since the public weight-asset migration they are the public
+# manifests (assets in tensor-ee): the preserved trained-model manifests with the asset prefix substituted,
+# linked to their original bytes by docs/evidence/s01-weights-link.json (``S01_LINK``).
 UNET_MANIFEST = ("data/manifests/segwater_r18_weight_manifest.json",
                  "3bd0bf7bf454caa0e7b8550dad24b6a28982ca128a1a4f0ba0cd25ce797846fa")
 SWIN_MANIFEST = ("data/manifests/m12_trained_weights_manifest.json",
@@ -99,11 +100,11 @@ SWIN_MANIFEST = ("data/manifests/m12_trained_weights_manifest.json",
 S01_LINK = ROOT / "docs" / "evidence" / "s01-weights-link.json"
 T05_INTEGRATION = "downloads/t05_integration"
 
-# T05's recorded trained graphs: downloads/t05_integration/trained-baseline.json
-# (revision e537904, identical to trained-candidate.json at 328e4d6). The T06
-# rehearsal validated these graphs live; L00 requires them to be reproduced. Four of
-# them read the manifests' asset IDs and changed at S01 by the asset prefix only; their
-# continuity goes through the S01 link record (``trained_continuity``).
+# Preserved trained-model graphs: downloads/t05_integration/trained-baseline.json
+# (revision e537904, identical to trained-candidate.json at 328e4d6). The trained-model
+# rehearsal validated these graphs live; graph identity requires them to be reproduced. Four of
+# them read the manifests' asset IDs and changed during the public weight-asset migration by the asset prefix only; their
+# continuity goes through the public weight-asset migration link record (``trained_continuity``).
 T05_TRAINED = {
     "trained/unet/raw": ("251f471b9946de23523f856ac9630d4d32e4baccb398b6f79420b8e8d503857a", 848),
     "trained/unet/prepared": ("4498df18c00914c7bc64f21b37db5511205ff4c61193de5d04561101a520ebdc", 6947),
@@ -115,9 +116,10 @@ T05_TRAINED = {
     "trained/swin/C": ("aca2b06ea72894463287fcab80c3fbc8a92f1c41cbc4d31e5f6f3dcbe6d21afa", 595739),
 }
 
-# Trained graphs added at L00 (no T05 counterpart), with L00's golden hash before S01
-# (docs/evidence/l00-golden-graphs.json at 4ca4051); since S01 the golden hash continues it
-# through the S01 link record (``continuity_route``).
+# The four-chip SegWater prediction was added to the graph-identity baseline, beyond the
+# preserved trained-model graphs. Its golden hash before the public weight-asset migration
+# is in docs/evidence/l00-golden-graphs.json at 4ca4051; the current golden hash continues it
+# through the public weight-asset link record (``continuity_route``).
 L00_TRAINED = {
     "trained/unet/prediction_448": ("0f0676f37c5f989e1be7450d46591c02d60832dda2a74a6c348750d78d6a7571", 1573702),
 }
@@ -172,7 +174,7 @@ def is_local(path: str | Path) -> bool:
 
 
 def check_sources() -> None:
-    """Every project module in use must come from this checkout (as T05 asserts)."""
+    """Every project module in use must come from this checkout (as the trained-model preservation check asserts)."""
     import tensor_ee
     if Path(tensor_ee.__file__).resolve().parent != ROOT / "tensor_ee":
         raise AssertionError(f"tensor_ee imported from {tensor_ee.__file__}, not {ROOT}")
@@ -231,7 +233,7 @@ def offline_earth_engine():
 # Records
 # ---------------------------------------------------------------------------
 def graph_record(value, **extra) -> dict[str, Any]:
-    """SHA-256 and byte count of ``value.serialize()``, as the T05 script records them."""
+    """SHA-256 and byte count of ``value.serialize()``, as the trained-model preservation script records them."""
     data = value.serialize().encode()
     return {"sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data), **extra}
 
@@ -293,7 +295,7 @@ def _fixed_weights(model, scale: float = 128.0):
 # Fixture entry points (no checkpoints; run in CI)
 # ---------------------------------------------------------------------------
 def _t04_models():
-    """The three CNN fixtures of T04's graph regression (re-run by T05), verbatim."""
+    """The three CNN fixtures of the graph-regression check (re-run for trained-model preservation), verbatim."""
     import torch
     from torch import nn
     from torch.nn import functional as F
@@ -328,9 +330,9 @@ def _t04_models():
 
 
 def build_t04() -> dict[str, dict]:
-    """T04/T05 CNN variants with and without unfused diagnostic nodes.
+    """CNN regression variants with and without unfused diagnostic nodes.
 
-    These six variants are the "ordinary-inline variants" whose identity T05
+    These six variants are the "ordinary-inline variants" whose identity the trained-model preservation check
     recorded (docs/evidence/t05-preservation.json: ordinary_inline).
     """
     import ee
@@ -732,13 +734,13 @@ def trained_resources(resources: Path) -> dict[str, Path] | None:
 def build_trained(paths: dict[str, Path], *,
                   manifests: dict[str, tuple[Path, str]] | None = None) -> tuple[dict[str, dict], dict[str, Any]]:
     """The eight graphs of docs/evidence/t05-trained-preservation.py, same construction,
-    plus L00's 448 x 448 (four-chip) SegWater prediction.
+    plus the graph-identity baseline's 448 x 448 (four-chip) SegWater prediction.
 
-    Asserts the checkpoint SHA-256 values recorded at T05 and the manifests' pins (since
-    S01, the public manifests). Call inside offline_earth_engine(). Returns (records,
+    Asserts the checkpoint SHA-256 values recorded during trained-model preservation and the manifests' pins (since
+    the asset migration, the public manifests). Call inside offline_earth_engine(). Returns (records,
     resource identities).
 
-    ``manifests`` (keyword-only, S01) replaces the weight manifests: ``{"unet_manifest":
+    ``manifests`` (keyword-only) replaces the weight manifests: ``{"unet_manifest":
     (path, sha256), "swin_manifest": (path, sha256)}``, each file asserted against its SHA-256
     as the pins are. By default (None) the manifests are today's pins, ``UNET_MANIFEST`` and
     ``SWIN_MANIFEST``, read from ``paths``.
@@ -803,7 +805,7 @@ def build_trained(paths: dict[str, Path], *,
                     "trained/swin/A": graph_record(stage_a.image),
                     "trained/swin/B": graph_record(stage_b.image),
                     "trained/swin/C": graph_record(stage_c.image)})
-    # Added at L00 (not a T05 graph): the trained recipe over 2 x 2 chips, which
+    # Additional graph-identity coverage: the trained recipe over 2 x 2 chips, which
     # exercises plan_segwater_tiles and the mosaic. Fresh provider, same manifest.
     grid_448 = tensor_ee.Grid("EPSG:32651", (10, 0, 286030, 0, -10, 2640860), 448, 448)
     mosaic = predict_segwater(raw, grid_448, bundle.compilable_model,
@@ -819,7 +821,7 @@ def build_trained(paths: dict[str, Path], *,
 
 
 def s01_link() -> dict[str, Any]:
-    """The S01 link record (docs/evidence/s01-weights-link.json: hashes and counts only),
+    """The public weight-asset migration link record (docs/evidence/s01-weights-link.json: hashes and counts only),
     required to have passed."""
     record = json.loads(S01_LINK.read_text())
     if record.get("kind") != "s01_public_weights_link" or record.get("passed") is not True:
@@ -828,9 +830,9 @@ def s01_link() -> dict[str, Any]:
 
 
 def continuity_route(name: str, now: tuple[str, int] | None) -> str | None:
-    """How a trained graph's ``now`` = (sha256, bytes) continues its pre-S01 pin (T05's hash,
-    or L00's golden hash for L00's graph): ``"direct"`` when it equals the pin; ``"link"`` when
-    the graph is one of ``WEIGHT_GRAPHS``, ``now`` is the S01 link record's new hash, and the
+    """How a trained graph's ``now`` = (sha256, bytes) continues its original private pin
+    (the preserved trained-model hash, or the four-chip prediction's original golden hash): ``"direct"`` when it equals the pin; ``"link"`` when
+    the graph is one of ``WEIGHT_GRAPHS``, ``now`` is the public weight-asset migration link record's new hash, and the
     record's old hash is the pin, with the prefix substitution exact; None otherwise."""
     pin = {**T05_TRAINED, **L00_TRAINED}[name]
     if now is None:
@@ -845,13 +847,13 @@ def continuity_route(name: str, now: tuple[str, int] | None) -> str | None:
 
 
 def trained_continuity(records: dict[str, dict], *, through_link: bool = True) -> dict[str, Any]:
-    """Compare the trained records with T05's recorded hashes (required by L00).
+    """Compare the trained records with the hashes recorded by the trained-model preservation check.
 
-    Since S01 the four T05 graphs that read the weight manifests' asset IDs (``WEIGHT_GRAPHS``)
+    Since the public weight-asset migration the four preserved trained-model graphs that read the weight manifests' asset IDs (``WEIGHT_GRAPHS``)
     are built from the public manifests, and their continuity goes through the link record
-    (``continuity_route`` "link": the new hash, the record, then the old hash, which is T05's);
-    the other four equal T05's directly. ``through_link=False`` requires all eight to equal
-    T05's directly, as for graphs built from the pre-S01 manifests (``weights_link``)."""
+    (``continuity_route`` "link": the new hash, the record, then the old hash, which is the preserved hash);
+    the other four equal the preserved hashes directly. ``through_link=False`` requires all eight to equal
+    the preserved hashes directly, as for graphs built from the original private manifests (``weights_link``)."""
     linked = [name for name in T05_TRAINED if through_link and name in WEIGHT_GRAPHS]
     mismatches = {}
     for name, expected in T05_TRAINED.items():
@@ -866,9 +868,8 @@ def trained_continuity(records: dict[str, dict], *, through_link: bool = True) -
 
 
 def resources_continue(t05: dict[str, dict], now: dict[str, dict]) -> bool:
-    """The trained resource identities continue T05's: the checkpoints equal T05's, and each
-    manifest is the S01 link record's public manifest, whose tracked (pre-S01) manifest is
-    T05's."""
+    """The checkpoints retain their recorded identities. Each public manifest is linked to its
+    recorded private predecessor through the public weight-asset migration link record."""
     if set(t05) != set(now) or any(now[name] != t05[name] for name in ("unet_checkpoint", "swin_checkpoint")):
         return False
     manifests = s01_link()["manifests"]
@@ -879,9 +880,9 @@ def resources_continue(t05: dict[str, dict], now: dict[str, dict]) -> bool:
 
 
 def t05_file_continuity(resources: Path, fixtures: dict[str, dict], trained_identity: dict | None) -> dict[str, Any]:
-    """Optional cross-checks against T05's archived JSON in the resource checkout:
-    every field T04/T05 recorded for the six ordinary-inline variants, and the
-    trained coefficient/asset-key/resource identities (the manifests through the S01 link
+    """Optional cross-checks against the archived trained-model preservation JSON in the resource checkout:
+    every field recorded by CNN regression and trained-model preservation checks for the six ordinary-inline variants, and the
+    trained coefficient/asset-key/resource identities (the manifests through the public weight-asset migration link
     record, ``resources_continue``)."""
     out: dict[str, Any] = {}
     inline_path = resources / T05_INTEGRATION / "t05-inline-baseline.json"
@@ -949,7 +950,7 @@ def compare(golden: dict[str, dict], actual: dict[str, dict], *, kinds=("fixture
 
 def judge(name: str, expected: dict[str, Any], actual: dict[str, Any] | None, golden_environment: dict[str, Any],
           allow_env_drift: bool = False) -> tuple[str, str]:
-    """The L00 version policy for one fixture graph: ("pass" | "fail" | "skip", message).
+    """The graph-identity baseline version policy for one fixture graph: ("pass" | "fail" | "skip", message).
 
     * Equal record (graph, bands, grid, nodes, folded keys, effective coefficients)
       and equal raw inputs: pass, in any environment.
@@ -989,7 +990,7 @@ def judge(name: str, expected: dict[str, Any], actual: dict[str, Any] | None, go
         message += (" This cannot be attributed to a refactor; investigate the dependency separately "
                     "(docs/library-plan.md, validation rules).")
         return ("skip" if allow_env_drift else "fail"), message
-    return "fail", message + " G1 violation unless the lead approved a G2 change and regenerated the golden file."
+    return "fail", message + " G1 violation unless the maintainer approved a G2 change and regenerated the golden file."
 
 
 def explain(result: dict[str, Any], golden_environment: dict[str, Any]) -> str:
@@ -1019,12 +1020,12 @@ def explain(result: dict[str, Any], golden_environment: dict[str, Any]) -> str:
                      "the golden environment with tools/graph_identity.py --check.")
     else:
         lines.append("  Environment equals the golden environment: this is a graph or fixture change (G1 "
-                     "violation unless the lead approved a G2 change and regenerated the golden file).")
+                     "violation unless the maintainer approved a G2 change and regenerated the golden file).")
     return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
-# G1-ext: Phase 3's byte-identity targets (task X00; docs/phase3-design.md, section 6)
+# G1-ext: byte-identity targets for the attention-model converter
 # ---------------------------------------------------------------------------
 GOLDEN_EXT = ROOT / "docs" / "evidence" / "x00-g1ext-golden-graphs.json"
 LINK_EXT = ROOT / "docs" / "evidence" / "x00-g1ext-link.json"
@@ -1075,7 +1076,7 @@ def _segformer_outputs(namespace: str):
 
 
 def build_segformer_targets(namespace: str | None = None) -> dict[str, dict]:
-    """R1: the seven SegFormer-B0 graphs from the sizing tool's placeholder namespace (or
+    """the seven SegFormer-B0 graphs from the sizing tool's placeholder namespace (or
     ``namespace``), each hashed as ``image.serialize()``, not as a request body. The seeded
     state's identity is each record's raw inputs, so a torch RNG change shows as an input
     change, not as a graph change."""
@@ -1110,7 +1111,7 @@ def _swin_hooks(swin):
     """(module, function, its targets from (output, keyword arguments)) for every composite the
     adapter calls, patched where the adapter, and fpn_forward for the PSP, look them up: the
     adapter's PE, E and D, and the library's upernet module, where fpn_forward has called
-    psp_forward since X01b moved the decoder composites there."""
+    psp_forward after the decoder composites moved to library blocks."""
     from tensor_ee.blocks.window import upernet
     return ((swin.PE, "patch_embed", lambda out, kw: {"patch_embed": out["x"]}),
             (swin.E, "encoder", lambda out, kw: {f"encoder_stage{s}": out[f"s{s}_out"]
@@ -1123,7 +1124,7 @@ def _swin_hooks(swin):
 
 
 def build_swin_targets() -> dict[str, dict]:
-    """R3: G1's swin_adapter/A, B and C build (build_swin_adapter's), with every composite the
+    """G1's swin_adapter/A, B and C build (build_swin_adapter's), with every composite the
     adapter calls wrapped to capture its output from the inputs the adapter passes; tensor_ee
     is not edited. Each target is hashed with graph_record and must be found, by identity, in
     the graph of the stage that built it. A record names that stage and its graph's hash,
@@ -1251,7 +1252,7 @@ def check_ext(golden: dict[str, Any], records: dict[str, dict], skipped: dict[st
 
 
 def segformer_link(runs: Path, golden: dict[str, Any]) -> dict[str, Any]:
-    """R2, lead-run: the placeholder SegFormer-B0 targets are the graphs of the approved live run.
+    """For the maintainer: the placeholder SegFormer-B0 targets are the graphs of the approved live run.
 
     Reads two git-ignored records under ``runs`` (release_runs/), read only: the run's
     preparation (its private asset namespace, the SHA-256 of the sizing record it approved, its
@@ -1395,16 +1396,16 @@ def main_ext(args) -> int:
 
 
 # ---------------------------------------------------------------------------
-# S01: the public weight manifests' link (docs/tasks/S01-public-weight-assets.md, R3)
+# Public weight-asset migration: the manifest link proof
 # ---------------------------------------------------------------------------
 LINK_WEIGHTS_SCHEMA_VERSION = 1
-# The trained graphs that read the weight manifests' asset IDs: four of T05's eight and L00's.
+# The trained graphs that read the weight manifests' asset IDs: four preserved trained-model graphs and the four-chip prediction.
 WEIGHT_GRAPHS = ("trained/swin/A", "trained/swin/B", "trained/swin/C",
                  "trained/unet/prediction", "trained/unet/prediction_448")
 
 
 def weights_link(resources: Path, golden: dict[str, Any]) -> dict[str, Any]:
-    """S01 R3: G1's graphs with the tracked weight manifests and with the public ones.
+    """Public weight-asset migration: G1's graphs with the tracked weight manifests and with the public ones.
 
     The public manifests are tools/public_weights.py's transform of the tracked ones, written to
     a temporary directory. The nine trained graphs are built twice, once per manifest set
@@ -1508,13 +1509,13 @@ def weights_link(resources: Path, golden: dict[str, Any]) -> dict[str, Any]:
 
 
 def main_weights_link(args) -> int:
-    """--link-weights (S01 R3). Offline: zero cloud calls. Refused once the tracked manifests
-    are the public ones (S01 Part 2): the link needs the pre-S01 manifests."""
+    """--link-weights (the public weight-asset link proof). Offline: zero cloud calls. Refused once the tracked manifests
+    are the public ones: the link needs the original private manifests."""
     _import_path()
     from tools import public_weights
     public = public_weights.already_public()
     if public:
-        print(f"S01 weights link refused: {public_weights.COPY_DONE} (already public: {', '.join(public)})",
+        print(f"Public weight-asset link refused: {public_weights.COPY_DONE} (already public: {', '.join(public)})",
               file=sys.stderr)
         return 3
     with offline_earth_engine() as attempts:
@@ -1532,7 +1533,7 @@ def main_weights_link(args) -> int:
                              "golden": _public(GOLDEN), "date": datetime.date.today().isoformat(), "cloud_calls": 0}}
     args.link_weights.parent.mkdir(parents=True, exist_ok=True)
     args.link_weights.write_text(json.dumps(record, indent=1) + "\n")
-    print(f"S01 weights link: {'passed' if link['passed'] else 'FAILED'}", file=sys.stderr)
+    print(f"Public weight-asset link: {'passed' if link['passed'] else 'FAILED'}", file=sys.stderr)
     print(json.dumps({"passed": link["passed"], **link["summary"], "public_manifests":
                       {name: value["sha256"] for name, value in link["manifests"]["public"].items()}}, indent=1))
     return 0 if link["passed"] else 1
@@ -1547,7 +1548,7 @@ def git(*args: str) -> str:
 
 def has_commit(revision: str) -> bool:
     """Whether the checkout's history holds ``revision``: the public repository starts from a
-    snapshot, so the archive's base revision is absent there (S02 C-01)."""
+    snapshot, so the archive's base revision is absent there (recorded finding C-01)."""
     try:
         subprocess.run(["git", "-C", str(ROOT), "cat-file", "-e", f"{revision}^{{commit}}"], check=True,
                        capture_output=True)
@@ -1580,16 +1581,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, help="write the hash set as JSON")
     parser.add_argument("--check", type=Path, help="compare with a golden file; exit 1 on any difference")
     parser.add_argument("--write-ext", type=Path,
-                        help="G1-ext: build Phase 3's targets and write their golden file (a lead decision)")
+                        help="G1-ext: build the attention-model converter's targets and write their golden file (a maintainer decision)")
     parser.add_argument("--check-ext", type=Path,
-                        help="G1-ext: compare Phase 3's targets with a golden file; exit 1 on any difference")
+                        help="G1-ext: compare the attention-model converter's targets with a golden file; exit 1 on any difference")
     parser.add_argument("--link-ext", type=Path, metavar="RELEASE_RUNS",
-                        help="G1-ext, lead-run: the git-ignored release_runs/ holding the approved SegFormer-B0 "
+                        help="G1-ext, for the maintainer: the git-ignored release_runs/ holding the approved SegFormer-B0 "
                              "run's records (read only); check that the targets are the graphs that ran")
     parser.add_argument("--link-output", type=Path,
                         help="with --link-ext: write the link as counts, booleans and SHA-256s")
     parser.add_argument("--link-weights", type=Path, metavar="RECORD",
-                        help="S01, with --resources: build G1's graphs with the tracked and the public weight "
+                        help="With --resources: build G1's graphs with the tracked and the public weight "
                              "manifests and write the link record (docs/evidence/s01-weights-link.json)")
     args = parser.parse_args(argv)
     if args.link_weights is not None:
@@ -1647,7 +1648,7 @@ def main(argv: list[str] | None = None) -> int:
               "built and compared.", file=sys.stderr)
         status = 1
     if any(item.get("equal") is False for item in continuity.values()):
-        print("ERROR: a continuity check against T05 failed: "
+        print("ERROR: a continuity check against trained-model preservation failed: "
               + ", ".join(k for k, v in continuity.items() if v.get("equal") is False), file=sys.stderr)
         status = 1
     if args.output:

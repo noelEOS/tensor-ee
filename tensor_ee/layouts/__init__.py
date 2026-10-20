@@ -4,7 +4,7 @@
 - ``window``: R <-> W converters, halos and im2col;
 - ``shift``: integer translation, cyclic shift, periodic extension, domain masks;
 - ``boundaries``: stage boundaries, a staged model's saved images in and dense images
-  out, and a model's input relabel and inverse relabel (X02a).
+  out, and a model's input relabel and inverse relabel.
 
 These modules move values without arithmetic. They import only ``ee``, NumPy
 and ``tensor_ee.core`` (docs/library-contract.md, section 2.1);

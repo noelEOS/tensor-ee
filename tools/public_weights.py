@@ -1,4 +1,4 @@
-"""S01: public copies of the trained weight assets in ``tensor-ee`` (docs/tasks/S01-public-weight-assets.md).
+"""Public copies of the trained weight assets in ``tensor-ee``.
 
 The trained SegWater U-Net's and Swin-T/UPerNet's weights are table assets in their original
 Earth Engine project. This tool copies them, server side and unchanged, into the public project
@@ -9,9 +9,9 @@ written by this tool: it is read from the tracked manifests' asset paths.
     PYTHONPATH=. python tools/public_weights.py --plan [--markdown] [--output PLAN.json]
     PYTHONPATH=. python tools/public_weights.py --access-check docs/evidence/s01-public-access-check.js
     PYTHONPATH=. python tools/public_weights.py --status --state-dir DIR
-    PYTHONPATH=. python tools/public_weights.py --run --state-dir DIR --resources MAIN_CHECKOUT  # lead only
+    PYTHONPATH=. python tools/public_weights.py --run --state-dir DIR --resources MAIN_CHECKOUT  # maintainer only
 
-**R1, the manifest transform** (``public_manifest``, offline). In every asset ID, in
+**The manifest transform** (``public_manifest``, offline). In every asset ID, in
 ``asset_namespace`` and in ``namespace_folder``, the prefix ``projects/<original>/assets/`` becomes
 ``projects/tensor-ee/assets/``; the rest of each path is unchanged. The U-Net manifest's ``project``
 key becomes ``tensor-ee``. Each shard's upload-task fields (``TASK_FIELDS``), which name operations
@@ -21,7 +21,7 @@ link record. Nothing else changes. The output is written as ``export_weights`` w
 (two-space JSON and a newline), contains no occurrence of the original project, and is the same
 bytes for the same input.
 
-**R2, the copy** (``plan`` offline; ``run`` for the lead only). ``plan`` lists every Earth Engine
+**The copy** (``plan`` offline; ``run`` for the maintainer only). ``plan`` lists every Earth Engine
 call with its count. ``run`` makes them in order, in a run directory outside the checkout (or under
 the git-ignored ``release_runs/``):
 
@@ -32,7 +32,7 @@ the git-ignored ``release_runs/``):
    manifest copied (``copyAsset``, never overwriting), each copy's ``getAsset`` and feature count
    compared with its source's, then its ACL read (``getAssetAcl``), set to the same ACL readable by
    all users (``setAssetAcl``) and read back. The run then stops (``AWAITING_PILOT_CHECK``) until
-   the lead resumes it with ``pilot_passed`` after the user's second-account check (R4);
+   the maintainer resumes it with ``pilot_passed`` after the user's second-account check (the access check below);
 3. the rest: the remaining folders and shards, each copied and checked as in the pilot, then the
    ACL of every remaining asset, each read back;
 4. the row check: ``tensor_ee.weight_assets.verify_asset_rows`` over both public manifests, three
@@ -44,23 +44,23 @@ count, and after it with its result. The run stops at the first failure with the
 not read back, a row error is not 0), which no resume continues; ``STOPPED`` when a call raised,
 a cap was reached or the time ran out. Nothing is retried automatically: the client's own retries
 are switched off (``ee.data.setMaxRetries(0)``, before ``ee.Initialize``), and a resume is the
-lead's explicit decision. A resume reconciles an interrupted call before acting: a folder or copy
+maintainer's explicit decision. A resume reconciles an interrupted call before acting: a folder or copy
 whose call has no recorded outcome is read (``getAsset``) and created or copied only if absent; an
 interrupted ACL is read and set only if it still equals the recorded ACL before the change. The
 caps (``Caps``) are recorded in the state file when a run starts, and hold across resumes unless a
 resume is given new ones. ``allowOverwrite`` stays false; the tool never deletes, and never grants
 a role on a project: it sets only each copied asset's ACL.
 
-**R4, the access check** (``access_check_script``): a Code Editor script, generated from the public
+**The access check** (``access_check_script``): a Code Editor script, generated from the public
 manifests, that compares ``ee.FeatureCollection(id).size()`` with each asset's manifest rows, one
 asset at a time with an error callback, printing one PASS or FAIL line per asset.
 
 Imports load no Earth Engine client, PyTorch or ``tensor_ee`` code; only ``--run`` initializes
 Earth Engine (Application Default Credentials, project ``tensor-ee``).
 
-**After the copy** (S01 Part 2) the tracked manifests are the public ones. ``--transform``,
+**After the copy** the tracked manifests are the public ones. ``--transform``,
 ``--plan`` and ``--run`` then refuse, before any resource check or Earth Engine call, with a
-message naming the run record (docs/evidence/s01-live-run.json): they need the pre-S01
+message naming the run record (docs/evidence/s01-live-run.json): they need the original private
 manifests. ``--access-check`` regenerates the script from the tracked manifests as they are, and
 ``--status`` reads a run directory.
 """
@@ -103,7 +103,7 @@ ROWS_PER_LAYER = 3
 
 
 # ---------------------------------------------------------------------------
-# R1: the manifest transform
+# the manifest transform
 # ---------------------------------------------------------------------------
 def _asset_paths(manifest: Mapping[str, Any]) -> list[str]:
     """Every asset path the manifest holds: its namespace, its folder, its shards and its layers'
@@ -133,7 +133,7 @@ def manifest_text(manifest: Mapping[str, Any]) -> str:
 
 
 def public_manifest(manifest: Mapping[str, Any]) -> dict[str, Any]:
-    """R1: the public manifest of a tracked one (see the module docstring)."""
+    """The public manifest of a tracked one (see the module docstring)."""
     old = original_prefix(manifest)
     project = ASSET_PREFIX.match(old).group(1)
     if project == PUBLIC_PROJECT:
@@ -174,7 +174,7 @@ def tracked_manifests(root: Path = ROOT) -> dict[str, dict[str, Any]]:
 
 
 def already_public(tracked: Mapping[str, Mapping[str, Any]] | None = None) -> list[str]:
-    """The tracked manifests whose assets are already in tensor-ee: since S01 Part 2, both."""
+    """The tracked manifests whose assets are already in tensor-ee: both tracked manifests are public."""
     tracked = tracked_manifests() if tracked is None else tracked
     return [name for name, _ in MANIFESTS if original_prefix(tracked[name]) == PUBLIC_PREFIX]
 
@@ -209,7 +209,7 @@ def write_public_manifests(directory: Path, tracked: Mapping[str, Mapping[str, A
 
 
 # ---------------------------------------------------------------------------
-# R2: the plan (offline)
+# the plan (offline)
 # ---------------------------------------------------------------------------
 def _folders(destination: str) -> list[str]:
     """The folders between the destination root and ``destination``, outermost first."""
@@ -222,7 +222,7 @@ def _unique(values) -> list:
 
 
 def pilot_assets(public: Mapping[str, Mapping[str, Any]]) -> list[str]:
-    """The pilot: the first shard of each manifest (R2 step 2, R4's first check)."""
+    """The pilot: the first shard of each manifest (the copy pilot and its first access check)."""
     return [public[name]["shards"][0]["asset_id"] for name, _ in MANIFESTS]
 
 
@@ -296,7 +296,7 @@ def plan_markdown(plan: Mapping[str, Any]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# R2: the run (lead only)
+# The copy run (maintainer only)
 # ---------------------------------------------------------------------------
 FORMAT = "tensor_ee.s01_public_weights_run"
 VERSION = 1
@@ -310,12 +310,12 @@ DESTINATION_HINT = (f"Prerequisites: {PUBLIC_PROJECT} is registered for Earth En
                     f"Engine is initialized with project {PUBLIC_PROJECT}")
 CREATE_HINT = f"Prerequisite: the {PUBLIC_PROJECT} owner's credentials can create assets in {PUBLIC_PROJECT}"
 ACL_HINT = ("The per-asset ACL was refused or could not be read; the tool never grants a role on the project "
-            "instead. Report it to the lead and the user")
+            "instead. Report it to the maintainer and the user")
 
 
 class RunStopped(RuntimeError):
     """The run stopped, with ``reason`` in its state file. ``status`` is ``AWAITING_PILOT_CHECK``,
-    ``STOPPED`` (the lead may resume) or ``FAILED`` (no resume continues it)."""
+    ``STOPPED`` (the maintainer may resume) or ``FAILED`` (no resume continues it)."""
 
     def __init__(self, message: str, *, status: str):
         super().__init__(message)
@@ -687,7 +687,7 @@ class _Run:
             state["phase"] = "pilot_check"
             self.stop("AWAITING_PILOT_CHECK",
                       f"the pilot copies are public: the user runs the access check ({ACCESS_CHECK}, PILOT_ONLY = "
-                      "true) under the second account, and the lead resumes with --pilot-passed once it reports "
+                      "true) under the second account, and the maintainer resumes with --pilot-passed once it reports "
                       f"{len(pilot)} of {len(pilot)} passed")
         if state["phase"] == "pilot_check":
             if state["pilot_check"] is None:
@@ -731,7 +731,7 @@ DEFAULT_SECONDS = 3600
 def run(directory, *, max_calls: int | None = None, max_seconds: float | None = None, pilot_passed: bool = False,
         parameters=None, feature_counts: bool = True, tracked: Mapping[str, Mapping[str, Any]] | None = None,
         clock: Callable[[], float] = time.time) -> dict:
-    """R2: the copy, in ``directory`` (prepared on the first call, resumed after). Calls ``ee.data``,
+    """the copy, in ``directory`` (prepared on the first call, resumed after). Calls ``ee.data``,
     which the caller has initialized with project ``tensor-ee``. ``parameters`` gives the row
     check's ``ConvolutionWeights`` keyed as the manifests' layers, ``{"unet": [...], "swin": [...]}``,
     or a function returning them, called when the row check starts. ``pilot_passed`` records the
@@ -845,7 +845,7 @@ def trained_parameters(resources: Path, tracked: Mapping[str, Mapping[str, Any]]
 
 
 # ---------------------------------------------------------------------------
-# R4: the access check
+# the access check
 # ---------------------------------------------------------------------------
 def access_check_script(public: Mapping[str, Mapping[str, Any]] | None = None) -> str:
     """The Code Editor script of R4, generated from the public manifests. By default these are
@@ -924,11 +924,11 @@ def initialize() -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     modes = parser.add_mutually_exclusive_group(required=True)
-    modes.add_argument("--transform", type=Path, metavar="OUT_DIR", help="R1: write the public manifests")
-    modes.add_argument("--plan", action="store_true", help="R2: every call with its count (offline)")
-    modes.add_argument("--access-check", type=Path, metavar="PATH", help="R4: write the Code Editor access check")
+    modes.add_argument("--transform", type=Path, metavar="OUT_DIR", help="write the public manifests")
+    modes.add_argument("--plan", action="store_true", help="every call with its count (offline)")
+    modes.add_argument("--access-check", type=Path, metavar="PATH", help="write the Code Editor access check")
     modes.add_argument("--status", action="store_true", help="a run's progress, from its state file")
-    modes.add_argument("--run", action="store_true", help="R2, lead only: make the calls (Earth Engine)")
+    modes.add_argument("--run", action="store_true", help="For the maintainer: make the calls (Earth Engine)")
     parser.add_argument("--markdown", action="store_true", help="with --plan: the live plan's tables")
     parser.add_argument("--output", type=Path, help="with --plan: write the full plan (with the source asset IDs), "
                                                    "outside the checkout or under release_runs/")

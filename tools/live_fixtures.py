@@ -1,4 +1,4 @@
-"""Live fixture harness (task P00): build, plan, check and run small inline block fixtures.
+"""Live fixture harness: build, plan, check and run small inline block fixtures.
 
     PYTHONPATH=. python tools/live_fixtures.py --list
     PYTHONPATH=. python tools/live_fixtures.py --plan calibration
@@ -28,7 +28,7 @@ outputs back as float32 bands on small computePixels grids. A selection is fixtu
   asset, task or other non-compute call fails before it is sent, and the transport lets
   only ``algorithms.list`` (initialization, at most 2) and ``image.computePixels`` through.
 
-The budget (R4) is enforced in code: at most 40 requests per invocation; per request a grid
+The budget is enforced in code: at most 40 requests per invocation; per request a grid
 of at most 64 x 64 pixels (raster lane) or 8 x 8 windows (window lane), at most 1,000,000
 output values and at most 2,000,000 bytes of request; zero assets and zero tasks; requests
 are sent one at a time (the limit is 4 in flight). ``--budget key=value,...`` may lower a
@@ -82,18 +82,18 @@ SCHEMA_VERSION = 1
 EVIDENCE_DIR = ROOT / "docs" / "evidence" / "live-fixtures"
 VERSION_PACKAGES = ("earthengine-api", "torch", "timm", "segmentation-models-pytorch", "numpy")
 MAX_BANDS = 1024
-"""computePixels refuses more than 1,024 bands (Milestone 9, section 14)."""
+"""computePixels refuses more than 1,024 bands (the FPN validation findings, section 14)."""
 FIRST_MISMATCHES = 10
 NUMPY_MAX_HEADER = inspect.signature(np.load).parameters["max_header_size"].default
 """NumPy's default ``max_header_size`` (10,000): the client loads a ``NUMPY_NDARRAY`` response
-with ``numpy.load`` and these defaults, and refuses a longer NPY header (P01's live run)."""
+with ``numpy.load`` and these defaults, and refuses a longer NPY header (window-size validation's live run)."""
 NPY_HEADER_LIMIT = 9_000
 """The longest NPY header a request may have: NumPy's limit with a 10% margin. A request's
 header grows with its band names (one structured float32 field per band)."""
 
 
 # ---------------------------------------------------------------------------
-# Budget (R4)
+# Budget
 # ---------------------------------------------------------------------------
 @dataclasses.dataclass(frozen=True)
 class Budget:
@@ -118,7 +118,7 @@ LOWERABLE = ("requests", "raster_side", "window_side", "values", "request_bytes"
 
 def parse_budget(text: str | None, base: Budget = DEFAULT_BUDGET) -> Budget:
     """``key=value[,key=value...]``: each value a positive integer no larger than the default.
-    Raising a limit is a lead change recorded in the plan, not a command-line option."""
+    Raising a limit is a maintainer change recorded in the plan, not a command-line option."""
     if not text:
         return base
     changes = {}
@@ -338,7 +338,7 @@ def build_requests(fixture: Fixture, data: FixtureData) -> list[Request]:
 
 
 # ---------------------------------------------------------------------------
-# Plan (R3, R4)
+# Plan
 # ---------------------------------------------------------------------------
 @dataclasses.dataclass
 class Plan:
@@ -577,7 +577,7 @@ def offline(fixtures: list[Fixture], budget: Budget = DEFAULT_BUDGET) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# The live guard (R3): exports, assets and tasks fail before they are sent
+# The live guard: exports, assets and tasks fail before they are sent
 # ---------------------------------------------------------------------------
 COMPUTE_METHOD = "earthengine.projects.image.computePixels"
 ALLOWED_METHODS = {"earthengine.projects.algorithms.list": "initialization", COMPUTE_METHOD: "compute"}

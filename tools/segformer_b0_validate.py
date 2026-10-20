@@ -1,6 +1,6 @@
 """Prepare and execute only the approved, bounded SegFormer-B0 full-model plan.
 
-The lead invokes prepare (graph serialization), preflight (local references), and
+The maintainer invokes prepare (graph serialization), preflight (local references), and
 run (ADC/live). Imports perform none of those actions. All raw arrays, immutable
 request envelopes and the write-ahead ledger live below ignored release_runs/.
 A stopped run is never automatically resumed, retried, cancelled or repacked.
@@ -282,7 +282,7 @@ def _cache_proof(state, references, report):
 
 
 def prepare(directory, approved_plan_path, *, reference_cache=None):
-    """Lead-only offline construction. No forwards, ADC, API call or Task object."""
+    """Maintainer-only offline construction. No forwards, ADC, API call or Task object."""
     from tools import segformer_b0_request_plan as P
     from tools.fixtures.segformer_b0_fullmodel import (seeded_state, representative_boundaries,
         state_sha256, reject_negative_zero, array_provenance)
@@ -512,7 +512,7 @@ def validate_prepared(directory, prepared):
 
 
 def preflight(directory):
-    """Lead-only numerical preflight; reuse a source/state-pinned reference cache."""
+    """Maintainer-only numerical preflight; reuse a source/state-pinned reference cache."""
     directory = private_directory(directory)
     prepared = read_json(directory / "prepared.json")
     validate_prepared(directory, prepared)
@@ -572,7 +572,7 @@ def _gates(directory, gates_path):
             preflight_report.get("input_sha256") != prepared["input_sha256"] or
             preflight_report.get("versions") != prepared["versions"] or
             preflight_report.get("source_files_sha256") != prepared["source_files_sha256"]):
-        raise ValueError("lead release gates/source-pinned preflight are not complete for these exact envelopes")
+        raise ValueError("maintainer release gates/source-pinned preflight are not complete for these exact envelopes")
     _cache_proof(load_npz(directory / "state.npz"), load_npz(directory / "references.npz"), preflight_report["reference_checks"])
 
 
@@ -886,7 +886,7 @@ class Execution:
 
 
 def run(directory, gates_path):
-    """Lead-only ADC execution after complete offline gates and independent review."""
+    """Maintainer-only ADC execution after complete offline gates and independent review."""
     directory = private_directory(directory)
     prepared = read_json(directory / "prepared.json")
     validate_prepared(directory, prepared)
@@ -923,8 +923,8 @@ def main():
     parser.add_argument("--mode", choices=("plan", "prepare", "preflight", "run", "status", "verify"), required=True)
     parser.add_argument("--state", required=True, type=Path)
     parser.add_argument("--plan", type=Path, help="untouched private actual-namespace sizing JSON")
-    parser.add_argument("--reference-cache", type=Path, help="lead-produced state/references/numerical-preflight-raw cache")
-    parser.add_argument("--gates", type=Path, help="lead gate attestation pinned to prepared/preflight SHA")
+    parser.add_argument("--reference-cache", type=Path, help="maintainer-produced state/references/numerical-preflight-raw cache")
+    parser.add_argument("--gates", type=Path, help="maintainer gate attestation pinned to prepared/preflight SHA")
     args = parser.parse_args()
     if args.mode == "plan":
         directory = private_directory(args.state)

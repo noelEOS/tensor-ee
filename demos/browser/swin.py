@@ -3,7 +3,7 @@
 The three exports have independent persisted request IDs. Local code loads and
 checks checkpoint coefficients, constructs graphs, and polls EE; it never runs
 the model locally. The sampling lattice is anchored to the verified catalogue
-chip of the Sun Moon Lake scene (Milestone 12, ``docs/history/upernet/``).
+chip of the Sun Moon Lake scene (trained Swin-UPerNet validation, ``docs/history/upernet/``).
 
 Each stage graph comes from ``tensor_ee.swin_workflow.build_stage``, given a
 per-job resource declaration (``resources.json``, validated by
@@ -30,7 +30,7 @@ from demos.browser.geometry import grid_from_projected_bounds, utm_crs, validate
 from demos.browser.server import REQUEST_BUDGET_BYTES, Demo, EXAMPLE_MESSAGE, PROBABILITY_PALETTE, grid_metadata, rectangle
 
 # The verified Sentinel-1 scene's native grid (EE band metadata of VV and VH) and the
-# Milestone 12 catalogue chip on it (archived swin_image_encoder/scene.py).
+# trained Swin-UPerNet validation catalogue chip on it (archived swin_image_encoder/scene.py).
 SCENE_ID = ("COPERNICUS/S1_GRD/"
             "S1A_IW_GRDH_1SDV_20240103T100134_20240103T100159_051941_06469E_B0BD")
 CRS = "EPSG:32651"

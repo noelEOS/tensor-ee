@@ -194,14 +194,14 @@ def binary_threshold(probabilities: Raster, *, positive_class: int = 1,
 # ---------------------------------------------------------------------------
 METADATA = validate_metadata({
     # Logits, float32 probabilities and an int32 class band, all on the input grid.
-    # Validated: any accepted call (T03 varied the validity input; band names are labels).
+    # Validated: any accepted call (segmentation output validation varied the validity input; band names are labels).
     "segmentation_outputs": BlockMetadata(
         name="segmentation_outputs", layout_in="R", layout_out="R", locality=Locality.POINTWISE,
         policy=FLOAT32_OPERANDS, embedded_constants=_no_coefficients,
         asset_arrays=_no_coefficients, status="Ready",
         evidence=("docs/evidence/t03-outputs.json", "docs/evidence/t05-primary.json"),
         validated=ANY_SETTINGS),
-    # Validated: any accepted call (T03: thresholds 0, 0.5, 1 and 0.50000001, both classes).
+    # Validated: any accepted call (segmentation output validation: thresholds 0, 0.5, 1 and 0.50000001, both classes).
     "binary_threshold": BlockMetadata(
         name="binary_threshold", layout_in="R", layout_out="R", locality=Locality.POINTWISE,
         policy=FLOAT32_OPERANDS, embedded_constants=_no_coefficients,

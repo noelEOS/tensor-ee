@@ -1,7 +1,6 @@
-"""Recognizers: PyTorch module classes to block-graph operations (X03: SMP's SegFormer; X04:
-timm's Swin and SMP's UPerNet).
+"""Recognizers: SMP SegFormer, timm Swin and SMP UPerNet classes to block-graph operations.
 
-the development archive's phase3-design.md, section 3.3 (decision E2). ``RECOGNIZERS`` (SegFormer's) and
+``RECOGNIZERS`` (SegFormer's) and
 ``SWIN_RECOGNIZERS`` (Swin's and UPerNet's) map module classes, by the qualified names
 ``nn_module_stack`` records, to the functions that read them (``export.group``);
 ``ALL_RECOGNIZERS`` holds both, for ``convert``. The converter layer does not import ``segmentation_models_pytorch`` or
@@ -55,15 +54,14 @@ softmax over another axis, GELU before the depthwise convolution, an activation 
 head), unless the caller converts with ``forward_mismatch="report"``, which marks the node
 outside its validated record. The pyramid also checks a dataflow the fingerprint cannot see: its
 concatenation takes the ``mlp_stage`` projections 0 .. 3 in that order. Every convolution's
-stride, padding, dilation and groups are checked against its ``Conv2d`` (``export.structure``, X04
-fix round): they vary with the stage (the embeddings' k7/s4 and k3/s2, the reductions' ratio, the
+stride, padding, dilation and groups are checked against its ``Conv2d`` (``export.structure``): they vary with the stage (the embeddings' k7/s4 and k3/s2, the reductions' ratio, the
 depthwise groups' width), so the fingerprints do not record them.
 Both attention families also check their query, key and value branches: the projection and
 head layouts, split indices, the ordered score and value products, and the concatenated heads
 read by the output projection. A common packed-projection ancestor alone cannot distinguish
 keys from values.
 
-**Swin and UPerNet (X04).** SMP's ``UPerNet`` with a ``tu-`` timm Swin encoder, one node per
+**Swin and UPerNet.** SMP's ``UPerNet`` with a ``tu-`` timm Swin encoder, one node per
 timm block and SMP decoder module (the finer of the two grains the composites allow: a Swin
 stage is its blocks and its patch merging, not one ``swin_stage``):
 - ``PatchEmbed`` -> ``patch_embed``: ``dim``, ``patch`` (its convolution's kernel and stride)
@@ -85,7 +83,7 @@ stage is its blocks and its patch merging, not one ``swin_stage``):
   The fusion's ``groups`` is not read from the module: PyTorch's fusion is one 3 x 3
   convolution, and the library computes it as four input-channel groups summed in double
   (``fusion_grouped_double``, formulation B, its one formulation). The split is the
-  library's, at its validated value 4, and the report says so (``Unit.choices``); Milestone 10
+  library's, at its validated value 4, and the report says so (``Unit.choices``); fusion-block validation
   chose formulation B for its numerics, not for capacity.
 - ``TimmUniversalEncoder``, ``FeatureListNet`` and ``SwinTransformerStage`` are containers.
 Refused: what the library's blocks fix (LayerNorm eps 1e-5 in the encoder and 1e-6 in the
@@ -638,7 +636,7 @@ def segformer(module, path: str, traced: Traced) -> tuple[Unit, ...]:
 
 
 # ---------------------------------------------------------------------------
-# Swin and UPerNet (X04): classes, the validated forward code
+# Swin and UPerNet: classes, the validated forward code
 # ---------------------------------------------------------------------------
 TIMM_SWIN = "timm.models.swin_transformer"
 SWIN_BLOCK, PATCH_MERGING = f"{TIMM_SWIN}.SwinTransformerBlock", f"{TIMM_SWIN}.PatchMerging"
@@ -1268,7 +1266,7 @@ SWIN_RECOGNIZERS = {
     SWIN_BLOCK: swin_transformer_block,
     PATCH_MERGING: patch_merging,
 }
-"""timm Swin's and SMP UPerNet's module classes -> recognizers (X04)."""
+"""timm Swin's and SMP UPerNet's module classes -> recognizers."""
 
 ALL_RECOGNIZERS = {**RECOGNIZERS, **SWIN_RECOGNIZERS}
 """Every family's recognizers, the table ``convert`` groups with: the families share only

@@ -18,8 +18,7 @@ Every name is the same object as at its module path. The converter imports
 the blocks (``tensor_ee.blocks.raster`` and ``tensor_ee.blocks.window``); the blocks
 never import it.
 
-**Phase 3** (the development archive's phase3-design.md; the guide is docs/converter.md) adds the path for
-attention models, in modules defined here:
+**Attention-model conversion** (docs/converter.md) uses these modules:
 
 - ``convert``: ``convert(model, input_shape, source_grid)``, a PyTorch model to a block
   graph with its ``ConversionReport`` (``Conversion``, ``NodeCheck``); ``export`` traces
@@ -68,6 +67,6 @@ from .request import request_size
 __all__ = ["compile_model", "batchnorm_predecessor", "PixelWindow", "plan_tiles", "compile_tiled_model",
            "analyze_receptive_field", "effective_convolutions", "MatchedWeightProvider", "load_onnx_model",
            "check_compatibility",
-           # Phase 3: the attention-model path (docs/converter.md)
+           # The attention-model path (docs/converter.md)
            "Conversion", "ConversionReport", "NodeCheck", "BlockGraph", "Edge", "Node", "Stage", "build_stage",
            "Limits", "Plan", "PlannedStage", "request_size"]

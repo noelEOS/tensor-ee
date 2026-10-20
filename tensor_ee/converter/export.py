@@ -1,6 +1,6 @@
-"""Tracing and grouping: a PyTorch model's ATen calls, grouped by the modules recognizers name (X03).
+"""Tracing and grouping: a PyTorch model's ATen calls, grouped by the modules recognizers name.
 
-the development archive's phase3-design.md, section 3.3 (decisions E1 and E2). The converter traces a model once and
+The converter traces a model once and
 reads it module by module, never operation by operation:
 
 - ``trace(model, input_shape)`` refuses a model in training mode (dropout and DropPath are
@@ -41,11 +41,11 @@ each input with the axes its module reads; any other arrangement is refused. Axe
 its node binds (``graph_signature``; a buffer no call reads, such as BatchNorm's
 ``num_batches_tracked``, is not bound), and no other constant, apart from the non-persistent
 buffers its recognizer checked and the library derives itself (``Unit.derived``: timm's
-relative-position index and shifted-window mask, X04); each unit writes exactly one tensor
+relative-position index and shifted-window mask); each unit writes exactly one tensor
 that leaves it; each declared input is exactly one tensor. Only one model input and one
 output are accepted.
 
-**Inputs and axes (X04).** An input is named by the module path whose calls read it, or,
+**Inputs and axes.** An input is named by the module path whose calls read it, or,
 where one module's own calls read several inputs (an FPN merge's state and lateral, the
 fusion's four levels), by a ``Through`` that finds it through those calls. A unit may write
 other axes than it reads (``Unit.output_axes``: timm's patch embedding reads ``NCHW`` and
@@ -58,7 +58,7 @@ softmax over the wrong axis, a norm moved after its residual). A unit may theref
 call's ATen name with its bool and str arguments, and a softmax's ``dim``; integer sizes and
 float constants are left out, so widths and variants share one; with ``axes``, also the axes
 a call names, which do not vary with widths: a permutation's order, a transposition's or a
-concatenation's dimensions, X04) and, where the order of a dataflow matters beyond that, a
+concatenation's dimensions) and, where the order of a dataflow matters beyond that, a
 ``dataflow`` check. The settings that decide a call's arithmetic but vary with a model's
 settings are checked against the module that runs the call (``structure``): a
 convolution's stride, padding, dilation and groups, an adaptive pooling's output size, a
@@ -412,7 +412,7 @@ FORWARD_MISMATCH = ("refuse", "report")
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)
 class Through:
-    """An input a unit's own calls read, found through them (X04): where one module's calls read
+    """An input a unit's own calls read, found through them: where one module's calls read
     several inputs, a module path cannot tell them apart. ``find(traced, calls)`` returns the
     tensor (a node of the trace outside the unit, or None); ``what`` names it in refusals."""
 

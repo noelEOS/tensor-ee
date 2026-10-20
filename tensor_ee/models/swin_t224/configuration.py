@@ -1,9 +1,9 @@
 """Swin-UPerNet model configuration: Swin-T224's settings, feature contract and decoder contract.
 
 ``SwinUPerNetConfig`` holds every setting of the Swin encoder and the UPerNet decoder that
-the composites read (C0), and ``SWIN_T224`` is its default instance, the trained
+the composites read, and ``SWIN_T224`` is its default instance, the trained
 Swin-T224/UPerNet: every default of the composites is its value. Both are defined in the
-library (``tensor_ee.blocks.window.swin_upernet_config``, X01b), with the rules the
+library (``tensor_ee.blocks.window.swin_upernet_config``), with the rules the
 composites need (``stage_shifted``, ``check_shapes``) and the UPerNet decoder contract (the
 traversal ``LEVELS``, the concatenation order ``PYRAMID``, the SMP tensor and parameter names
 and their helpers); this module re-exports them under the same names. There is one definition.
@@ -11,7 +11,7 @@ and their helpers); this module re-exports them under the same names. There is o
 What stays here is the fixed Swin-T224 contract: its module constants and the rule functions
 that take a ``config`` keyword whose default is ``SWIN_T224``.
 
-Moved here (L05) from three research modules, archived at the tag
+Moved here from three research modules, archived at the tag
 ``research-archive-2026-10-12`` (docs/history/README.md):
 
 - ``swin_encoder/earth_engine/configuration.py``: the fixed Swin-T geometry (``WINDOW``,
@@ -41,7 +41,7 @@ is not evidence that its graph is right.
 
 from __future__ import annotations
 
-from ...blocks.window.swin_upernet_config import (  # noqa: F401  (moved to the library, X01b; re-exported)
+from ...blocks.window.swin_upernet_config import (  # noqa: F401  (moved to the library; re-exported)
     DOUBLE, LEVELS, MLP_RATIO, PREFIX, PYRAMID, RESIZED, STAGE_COUNT, SWIN_T224, TOKEN_SCALE, WEIGHT,
     SwinUPerNetConfig, block_index, bn_args, check_shapes, conv_prefix, lateral_prefix, level_tensors,
     norm_prefix, stage_shifted)

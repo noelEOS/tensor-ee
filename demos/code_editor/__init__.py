@@ -1,4 +1,4 @@
-"""The SegWater Earth Engine Code Editor demo (task L06d).
+"""The SegWater Earth Engine Code Editor demo (Code Editor demo).
 
 ``build`` generates the Code Editor module ``segwater.js`` from the graph that the
 ``tensor_ee`` library builds; ``verify`` holds the offline comparison helpers used by the

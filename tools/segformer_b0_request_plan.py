@@ -1,6 +1,6 @@
 """Measure real SegFormer request bodies offline, never run or submit the model.
 
-Examples (the lead runs expensive probes sequentially, threads capped at two)::
+Examples (the maintainer runs expensive probes sequentially, threads capped at two)::
 
     PYTHONPATH=. python tools/segformer_b0_request_plan.py --weights inline --inputs inline
     PYTHONPATH=. python tools/segformer_b0_request_plan.py --weights asset-reference --inputs asset-reference
@@ -76,8 +76,8 @@ SOURCE_GRID = Grid("EPSG:3857", (2.5, 0, 1000, 0, -2.5, 2000), 224, 224)
 
 
 deep_serialization = deep_recursion
-"""The approved capstone-style allowance (a recursion limit of at least 20,000), restored on exit:
-the library's ``tensor_ee.converter.request.deep_recursion`` (X08), kept under this name for its
+"""The serialization allowance (a recursion limit of at least 20,000), restored on exit:
+the library's ``tensor_ee.converter.request.deep_recursion``, kept under this name for its
 callers."""
 
 
@@ -176,7 +176,7 @@ def _boundary_spec(name):
 
 def _boundary_image(name, source, arrays, namespace):
     # The boundary conventions (saved_image, pin_boundary, grid_view, boundary_windows and
-    # boundary_raster) moved to tensor_ee/layouts/boundaries.py (X02a); the asset names and
+    # boundary_raster) moved to tensor_ee/layouts/boundaries.py; the asset names and
     # literals stay here.
     grid, channels, names = _boundary_spec(name)
     if source == "asset-reference":
@@ -277,11 +277,11 @@ def measure_compute_pixels(image, grid, names):
 def measure_image_export(image, grid, namespace, destination):
     """Actual client-prepared ExportImageRequest; no Task object or data API.
 
-    Since X08 the request is the library's (``tensor_ee.converter.request``): ``export_request``
+    The request is the library's (``tensor_ee.converter.request``): ``export_request``
     builds it, to ``f"{namespace}_{destination}"`` described as ``f"segformer_b0_{destination}"``
     with ``REQUEST_ID``, and its bytes are the library's request sizer, ``request_size``, which
     this tool calls (one implementation; the planner's default measurement). A destination with
-    ``.`` (a block graph's module-path edge id, as X04's Swin plans pass) is not an asset name, and
+    ``.`` (a block graph's module-path edge id, as converted Swin plans pass) is not an asset name, and
     the library refuses it; it is measured under the planner's ``asset_name``, the same-length name
     with ``_`` for ``.``, as the planner's default measurement does, so the bytes are unchanged."""
     grid = _grid_view(grid)
@@ -411,7 +411,7 @@ def verification_plan(state, server_state, namespace, stage_producers, primary_p
 def measure(*, seed=SEED, weights="both", inputs="both", cuts=CUTS,
             namespace=PLACEHOLDER_NAMESPACE, weight_wire_limit=WEIGHT_WIRE_LIMIT, verification=True,
             primary_plan="split-stage1"):
-    """Heavy offline probe. The lead runs it; there is deliberately no live mode."""
+    """Heavy offline probe. The maintainer runs it; there is deliberately no live mode."""
     if weights not in ("inline", "asset-reference", "both") or inputs not in ("inline", "asset-reference", "both"):
         raise ValueError("sources must be inline, asset-reference or both")
     if any(cut not in CUTS for cut in cuts) or not cuts:

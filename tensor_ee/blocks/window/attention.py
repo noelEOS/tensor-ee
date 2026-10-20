@@ -9,9 +9,9 @@ Moved from ``ee_attention/earth_engine/naive_attention.py`` (``naive_attention``
 (``region_boundaries``, ``shifted_window_mask``, ``MASK_VALUE``), research code archived
 at the tag ``research-archive-2026-10-12`` (docs/history/README.md). The Swin block
 composites (``BlockConstants``,
-``mlp_branch``, ``swin_block``) stay with the model (L05).
+``mlp_branch``, ``swin_block``) stay with the model.
 
-**Attention core** (Milestone 1, policy ``round_each_op``)::
+**Attention core** (policy ``round_each_op``)::
 
     scores    = Q K^T                     matrixMultiply, transpose
     scaled    = scores / sqrt(d)          divide
@@ -53,10 +53,10 @@ It is float32, so adding it to float32 logits is one IEEE float32 addition, as i
 PyTorch.
 
 Window 7 (49 tokens), shift 3 and mask value -100.0 (timm's; production) are the
-defaults. Task P01 validated windows 5, 7, 8 and 12 with shift w // 2 (W-MSA, SW-MSA and
+defaults. Live checks validated windows 5, 7, 8 and 12 with shift w // 2 (W-MSA, SW-MSA and
 the single window, where timm disables the shift and SW-MSA is refused here), against
 timm; other windows and shifts, and other mask values, are not validated (the
-Milestone 1 attention core also ran 25 and 64 tokens).
+attention-core probes also ran 25 and 64 tokens).
 """
 
 from __future__ import annotations
@@ -73,7 +73,7 @@ from ...weights.constants import ServerArray, WindowLayout, check_rows, constant
 from .linear import linear, linear_arrays, linear_values, no_constants
 
 MASK_VALUE = -100.0
-"""timm's shifted-window mask value (production). Milestone 1's research attention
+"""timm's shifted-window mask value (production). The original research attention
 used -1e30 (``ee_attention.earth_engine.common``)."""
 
 DIM, HEADS = 96, 3
@@ -81,7 +81,7 @@ DIM, HEADS = 96, 3
 
 
 # ---------------------------------------------------------------------------
-# Attention core (Milestone 1)
+# Attention core
 # ---------------------------------------------------------------------------
 def naive_attention(ops, q, k, v, *, tokens: int, dim: int, key_bias=None,
                     query_scale: float | None = None, key_mask=None,
@@ -96,7 +96,7 @@ def naive_attention(ops, q, k, v, *, tokens: int, dim: int, key_bias=None,
     float32(query_scale) before q k^T and the scores are not divided.  "scaled"
     includes key_bias; with a bias, "unbiased" holds the logits before it, and
     with query_scale, "query" holds the scaled q.  (Without either option the
-    result has exactly the Phase 2 keys.)
+    result keeps the original attention readout keys.)
 
     key_mask, when given, is a second float32 [Nq, tokens] array added after
     key_bias as its own float32 addition, as timm adds the shifted-window mask
@@ -165,7 +165,7 @@ def relative_position_index(ee, window: int = WINDOW):
 def relative_position_bias(ee, table, window: int = WINDOW, *, policy: str = DOUBLE_ROUND_ONCE) -> list:
     """Per-head float32 [N, N] ee.Array biases from a [(2w-1)^2, heads] table
     (a NumPy array or a ServerArray). The gather is exact; one float32 rounding.
-    Windows 5, 7, 8 and 12 are validated (P01)."""
+    Windows 5, 7, 8 and 12 are validated."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     entries, heads = table.shape if isinstance(table, ServerArray) else np.asarray(table).shape
     if entries != (2 * window - 1) ** 2:
@@ -213,7 +213,7 @@ def window_attention(ops, ln1, c, mask=None, *, window: int = WINDOW) -> dict:
     "logits_biased_h{h}" then holds the logits before it.
 
     A composite: the QKV ``linear`` runs in ``double_round_once``, the attention core
-    in ``round_each_op``. Windows 5, 7, 8 and 12 are validated (P01), with and without
+    in ``round_each_op``. Windows 5, 7, 8 and 12 are validated, with and without
     the shifted-window mask.
     """
     tokens = window * window
@@ -237,7 +237,7 @@ def window_attention(ops, ln1, c, mask=None, *, window: int = WINDOW) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# The shifted-window mask (Milestone 3)
+# The shifted-window mask
 # ---------------------------------------------------------------------------
 def coarse_projection(ee, coarse):
     return ee.Projection(coarse.crs, coarse.transform)
@@ -271,7 +271,7 @@ def shifted_window_mask(ee, coarse, window: int = WINDOW, shift: int | None = No
     """float32 [N, N] array image on the coarse grid of the full raster, for at least two
     windows along each axis. ``shift`` defaults to ``window // 2`` (3 at window 7) and must
     satisfy 0 < shift < window. Windows 5, 7, 8 and 12 with shift window // 2 and value
-    -100.0 are validated (P01)."""
+    -100.0 are validated."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     if coarse.height < 2 or coarse.width < 2:
         raise ValueError("SW-MSA needs at least two windows along each axis")
@@ -317,7 +317,7 @@ def window_attention_arrays() -> int:
 
 
 _WINDOWS = (5, 7, 8, 12)
-"""The windows P01 validated live."""
+"""The window sizes validated live."""
 
 METADATA = validate_metadata({
     # Validated: any accepted call (token counts, widths, biases, masks and both scales varied).

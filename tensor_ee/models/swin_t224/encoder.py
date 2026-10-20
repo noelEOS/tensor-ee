@@ -1,8 +1,7 @@
 """The Swin-T encoder of the Swin-T224/UPerNet reference model, from library blocks.
 
 The composites (the MLP branch, the W-MSA and SW-MSA blocks, the stage, the patch embedding
-at a configuration, the encoder grids and the encoder, with their constants builders) moved
-to the library at X01b, ``tensor_ee/blocks/window/swin.py``, and are re-exported here under
+at a configuration, the encoder grids and the encoder, with their constants builders) are defined in the library, ``tensor_ee/blocks/window/swin.py``, and are re-exported here under
 their former names, the same objects: ``BlockConstants``, ``block_constants``,
 ``mlp_branch``, ``stage_blocks``, ``merge_constants``, ``patch_embedding_constants``,
 ``patch_embedding``, ``EncoderConstants``, ``EncoderGrids``, ``encoder_grids`` and
@@ -13,7 +12,7 @@ their former names, the same objects: ``BlockConstants``, ``block_constants``,
 ``shifted_swin_block``, ``swin_stage``, ``DIM``, ``HEADS`` and ``EXTENSION_MODES`` keep their
 names. Their defaults are Swin-T224's (``SWIN_T224``, ``configuration``).
 
-Moved here (L05) from research modules archived at the tag ``research-archive-2026-10-12``
+Moved here from research modules archived at the tag ``research-archive-2026-10-12``
 (docs/history/README.md):
 
 - ``swin_block/earth_engine/swin_block.py``: ``BlockConstants``, ``block_constants``,
@@ -35,7 +34,7 @@ other configurations only where the blocks' statuses cover them (docs/building-b
 
 from __future__ import annotations
 
-from ...blocks.window.swin import (  # noqa: F401  (moved to the library, X01b; re-exported)
+from ...blocks.window.swin import (  # noqa: F401  (moved to the library; re-exported)
     DIM, EXTENSION_MODES, HEADS, shifted_swin_block, swin_block, swin_stage)
 from ...blocks.window.swin import SwinBlockConstants as BlockConstants  # noqa: F401  (re-exported)
 from ...blocks.window.swin import SwinEncoderConstants as EncoderConstants  # noqa: F401
