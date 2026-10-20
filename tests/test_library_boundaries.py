@@ -96,7 +96,8 @@ CONVERTER = ("tensor_ee.converter", "tensor_ee.compiler", "tensor_ee.semantics",
              "tensor_ee.receptive_field", "tensor_ee.onnx_import", "tensor_ee.compatibility",
              "tensor_ee.weight_assets", "tensor_ee.weight_mapping")
 MODELS = ("tensor_ee.models", "tensor_ee.swin", "tensor_ee._swin_parameters", "tensor_ee.swin_workflow",
-          "tensor_ee.segwater_inference", "tensor_ee.segwater_preprocessing", "tensor_ee.segwater_pytorch")
+          "tensor_ee.segwater_inference", "tensor_ee.segwater_preprocessing", "tensor_ee.segwater_pytorch",
+          "tensor_ee.smp")
 PUBLIC = ("tensor_ee.primitives", "tensor_ee.outputs", "tensor_ee.comparison")
 FIXTURES = ("tensor_ee.resnet_models",)
 EXAMPLES = ("tensor_ee.examples",)

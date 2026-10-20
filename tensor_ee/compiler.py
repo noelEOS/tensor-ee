@@ -227,7 +227,8 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, eval Dropout/Dropout2d, channel Softmax,
     eval BatchNorm2d directly following Conv2d, torch.cat,
     residual tensor addition, torch.relu, F.relu, torch.sigmoid, and F.interpolate with a static integer
-    scale factor. Unsupported operators fail explicitly with their FX node.
+    scale factor, or a proven size with that same integer nearest mapping.
+    Unsupported operators fail explicitly with their FX node.
     ``nodes`` includes the input placeholder and each tensor operation, keyed
     by the names in ``graph_module.graph`` for layer-by-layer parity tests.
 
@@ -276,7 +277,10 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
             f"{(len(input_bands), grid.height, grid.width)}; spatial generalization needs separate validation")
     if isinstance(model, _ROOT_MODULES):
         model = nn.Sequential(model)
-    traced = symbolic_trace(model)
+    traced = model if isinstance(model, GraphModule) else symbolic_trace(model)
+    from .semantics import specialize_plumbing
+    plumbing = specialize_plumbing(traced, (1, len(input_bands), grid.height, grid.width))
+    traced = plumbing.graph
     environment: dict[Node, Any] = {}
     nodes: dict[str, Raster] = {}
     folded: list[str] = []
@@ -292,6 +296,8 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     metadata: dict[Node, TensorMetadata] = {}
     for node in traced.graph.nodes:
         try:
+            if node in plumbing.errors:
+                raise UnsupportedOperation(str(plumbing.errors[node])) from plumbing.errors[node]
             if node.op == "placeholder":
                 placeholders += 1
                 if placeholders > 1:

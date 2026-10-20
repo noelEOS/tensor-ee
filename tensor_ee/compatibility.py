@@ -12,7 +12,7 @@ from torch.fx import GraphModule, Node, symbolic_trace
 
 from .compiler import UnsupportedOperation, _ROOT_MODULES
 from .semantics import (SemanticUnknown, TensorMetadata, diagnostic_convolution,
-                        infer_metadata, semantic_call)
+                        infer_metadata, semantic_call, specialize_plumbing)
 
 
 @dataclass(frozen=True)
@@ -108,6 +108,8 @@ def check_compatibility(model: nn.Module, input_shape: tuple[int, int, int, int]
         reason("unknowns", None, "trace_failed", report["trace"]["error"])
         return finish()
     report["trace"]["status"] = "success"
+    plumbing = specialize_plumbing(graph, tuple(int(x) for x in input_shape) if valid_shape else None)
+    graph = plumbing.graph
     metadata: dict[Node, TensorMetadata | None] = {}
     placeholders = 0
     storage_complete = True
@@ -120,6 +122,8 @@ def check_compatibility(model: nn.Module, input_shape: tuple[int, int, int, int]
         report["nodes"].append(entry)
         metadata[node] = None
         try:
+            if node in plumbing.errors:
+                raise plumbing.errors[node]
             if node.op == "placeholder":
                 placeholders += 1
                 if placeholders > 1:

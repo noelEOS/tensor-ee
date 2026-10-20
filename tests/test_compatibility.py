@@ -226,7 +226,7 @@ class TestSemanticAgreement(ApiTestCase):
                      lambda x: F.softmax(x, 1, 4), lambda x: torch.cat([x, x], 1, out=x),
                      lambda x: torch.sigmoid(x, out=x) + x, lambda x: torch.add(x, x, out=x),
                      lambda x: x.relu_(), lambda x: F.interpolate(x, scale_factor=1.5),
-                     lambda x: F.interpolate(x, size=(16, 16)),
+                     lambda x: F.interpolate(x, size=(15, 16)),
                      lambda x: F.interpolate(x, scale_factor=2, mode='bilinear')]
         for function in functions:
             with self.subTest(function=function):
