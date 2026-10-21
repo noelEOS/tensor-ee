@@ -5,8 +5,8 @@
   blocks and inline code spans are not links. Heading anchors are not checked.
 - **Pinned links.** No shipped document pins a path at a git ref of the private development
   archive (its tag ``research-archive-2026-10-12`` or the pre-refactor commit ``24a6291``) or of
-  the public repository: the public history is fresh, so such links are dead. Archived material
-  (the plans and the task briefs) may still carry them.
+  the public repository, except the README's checked ``main`` URLs for PyPI. The public
+  history is fresh, so historical refs are dead. Archived material may still carry them.
 - **Documented modules.** Every ``python -m <module>`` in the reader guides whose top-level
   package belongs to this repository resolves to a file in the checkout, found by path
   without importing anything. The records are not checked: the release records
@@ -272,10 +272,26 @@ def test_no_shipped_document_pins_a_path_at_a_git_ref():
               if not name.startswith(ARCHIVE_ONLY) and not (name.startswith("docs/history/")
                                                              and not SHIPPED_HISTORY.match(name))]
     assert pinned == []
+    # The PyPI README uses main URLs; every destination is checked below.
+    readme_main = (REPOSITORY + "blob/main/", REPOSITORY + "tree/main/")
     public = [(name, number, target) for name in tracked_markdown()
               for number, target in links((ROOT / name).read_text(encoding="utf-8"))
-              if target.startswith(REPOSITORY) and "/blob/" in target or target.startswith(REPOSITORY) and "/tree/" in target]
-    assert public == [], "no document pins a path in the public repository either"
+              if target.startswith(REPOSITORY) and ("/blob/" in target or "/tree/" in target)
+              and not (name == "README.md" and target.startswith(readme_main))]
+    assert public == [], "only the README's checked main URLs may name a public git ref"
+
+
+def test_readme_links_are_absolute_and_repository_destinations_exist():
+    prefixes = (REPOSITORY + "blob/main/", REPOSITORY + "tree/main/",
+                "https://raw.githubusercontent.com/noelEOS/tensor-ee/main/")
+    targets = [target for _, target in links((ROOT / "README.md").read_text(encoding="utf-8"))]
+    assert targets
+    for target in targets:
+        assert target.startswith("https://"), target
+        for prefix in prefixes:
+            if target.startswith(prefix):
+                path = resolve(ROOT / "README.md", target.removeprefix(prefix))
+                assert path.resolve().is_relative_to(ROOT) and path.exists(), target
 
 
 def test_every_documented_python_module_exists():

@@ -5,17 +5,30 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "tensor-ee"
 version = "0.1.0"
-description = "Experimental building blocks for running pretrained PyTorch models natively in Google Earth Engine: a restricted CNN compiler (the SegWater U-Net), a converter for supported attention models (SMP SegFormer-B0; SMP UPerNet with timm's Swin-T), and a planner and runner for staged exports."
+description = "Experimental building blocks for running pretrained PyTorch models natively in Google Earth Engine: a restricted CNN compiler (the SegWater U-Net; standard SMP Unet and UnetPlusPlus on ResNet and VGG encoders), a converter for supported attention models (SMP SegFormer-B0; SMP UPerNet with timm's Swin-T), and a planner and runner for staged exports."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{name = "Noel Ivan Ulloa"}]
 requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+keywords = ["earth-engine", "pytorch", "geospatial", "remote-sensing", "neural-networks"]
 dependencies = ["earthengine-api>=1.7.0", "torch>=2.10", "numpy>=1.26"]
 
 [project.urls]
 Repository = "https://github.com/noelEOS/tensor-ee"
 Issues = "https://github.com/noelEOS/tensor-ee/issues"
+Documentation = "https://github.com/noelEOS/tensor-ee/blob/main/docs/README.md"
+Changelog = "https://github.com/noelEOS/tensor-ee/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 test = ["pytest>=9.0.3"]

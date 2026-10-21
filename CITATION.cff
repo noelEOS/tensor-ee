@@ -7,11 +7,13 @@ authors:
   - family-names: Ulloa
     given-names: Noel Ivan
 version: 0.1.0
+date-released: 2026-10-21
 license: MIT
 abstract: >-
   Experimental building blocks that run pretrained PyTorch models natively in
   Google Earth Engine, as Earth Engine raster and array operations with no
   model-serving endpoint. A restricted CNN compiler translates the SegWater
-  ResNet18 U-Net, a converter maps supported attention models (SMP SegFormer-B0,
+  ResNet18 U-Net and standard segmentation-models-pytorch Unet and UnetPlusPlus
+  models on ResNet and VGG encoders, a converter maps supported attention models (SMP SegFormer-B0,
   and SMP UPerNet with timm's Swin-T) onto the library's blocks, and a planner
   and runner split their graphs into staged exports.
