@@ -4,10 +4,10 @@ Five steps, from a fresh copy to a converted model. Each says what you should se
 
 | Step | Needs |
 |---|---|
-| [1. Install](#1-install) | Python 3.11 or newer, git |
+| [1. Install](#1-install) | Python 3.11 or newer; git for a source checkout |
 | [2. Run the offline example](#2-run-the-offline-example) | step 1; no Earth Engine account |
 | [3. Run the U-Net in the Code Editor](#3-run-the-u-net-in-the-code-editor) | an Earth Engine account; no install |
-| [4. Try the browser demo offline](#4-try-the-browser-demo-offline) | step 1; no Earth Engine account |
+| [4. Try the browser demo offline](#4-try-the-browser-demo-offline) | step 1, from source; no Earth Engine account |
 | [5. Convert an attention model](#5-convert-an-attention-model) | step 1 with the `swin` extra |
 
 Nothing here downloads a checkpoint, and only step 3 and the optional live commands contact
@@ -15,8 +15,20 @@ Earth Engine.
 
 ## 1. Install
 
-TensorEE installs from source; it is not published on PyPI. Clone the repository for the
-library with its tests, tools, demos and examples:
+Install the library from PyPI:
+
+```sh
+python -m pip install tensor-ee
+```
+
+pip ends with `Successfully installed`, followed by what it installed; the distribution
+is `tensor-ee` 0.1.0. Allow several minutes: most of the download is PyTorch, about 600 MB
+once installed on macOS. On Linux, pip's default PyTorch build also brings the CUDA
+libraries, a few gigabytes; to skip them, install the CPU-only build before installing
+TensorEE, as the continuous integration does:
+`python -m pip install 'torch>=2.10' --index-url https://download.pytorch.org/whl/cpu`.
+
+For the tests, tools, demos and checkout examples, install from source:
 
 ```sh
 git clone https://github.com/noelEOS/tensor-ee.git
@@ -26,13 +38,6 @@ source .venv/bin/activate
 python -m pip install '.[test]'
 ```
 
-pip ends with `Successfully installed`, followed by what it installed; the distribution
-is `tensor-ee` 0.1.0. Allow several minutes: most of the download is PyTorch, about 600 MB
-once installed on macOS. On Linux, pip's default PyTorch build also brings the CUDA
-libraries, a few gigabytes; to skip them, install the CPU-only build before the last
-command, as the continuous integration does:
-`python -m pip install 'torch>=2.10' --index-url https://download.pytorch.org/whl/cpu`.
-
 Or install the library alone, straight from the repository:
 
 ```sh
@@ -41,11 +46,11 @@ python -m pip install git+https://github.com/noelEOS/tensor-ee
 
 Optional extras: `resnet` (torchvision), `onnx` (ONNX import), `segwater` (the
 trained U-Net), `swin` (the trained Swin-T/UPerNet, and the attention models of
-segmentation-models-pytorch, SMP, and timm that the converter reads) and `plot`; from a
-clone, name them as in `'.[test,onnx]'`, and without one as in
-`'tensor-ee[onnx] @ git+https://github.com/noelEOS/tensor-ee'`. Importing the library
-never authenticates, initializes Earth Engine or submits work. The wheel contains
-only `tensor_ee`; the demos and `examples/` run from the checkout.
+segmentation-models-pytorch, SMP, and timm that the converter reads) and `plot`.
+From PyPI, name them as in `'tensor-ee[onnx]'`; from a clone, use `'.[test,onnx]'`.
+Importing the library never authenticates, initializes Earth Engine or submits work.
+The wheel contains only `tensor_ee`, including the offline example below; the tests,
+tools, demos and top-level `examples/` run from the checkout.
 
 ## 2. Run the offline example
 
@@ -70,7 +75,7 @@ It prints a JSON report of about 330 lines within seconds. Expect, among its fie
 `compatibility` lists every operation of the model as supported. The graph's `graph_sha256`
 depends on your Earth Engine client's version, `source_file` is the absolute path of the
 example on your machine (remove it before you share the report), and `fixture` is the
-example's internal name. Then run the example's offline tests:
+example's internal name. From a source checkout, run the example's offline tests:
 
 ```sh
 python -m pytest -q tests/test_nonwater_example.py tests/test_public_examples.py
@@ -202,7 +207,7 @@ public; the U-Net's also needs the `segwater` extra ([DEMO.md](../DEMO.md#start)
 
 ## 5. Convert an attention model
 
-Install the `swin` extra (SMP 0.5.0 and timm 1.0.30): `python -m pip install '.[swin]'`.
+Install the `swin` extra (SMP 0.5.0 and timm 1.0.30): `python -m pip install 'tensor-ee[swin]'`.
 Then, in Python:
 
 ```python

@@ -1,5 +1,12 @@
 """Experimental PyTorch-compatible building blocks for native Earth Engine."""
 
+from importlib.metadata import PackageNotFoundError as _PackageNotFoundError, version as _distribution_version
+
+try:
+    __version__ = _distribution_version("tensor-ee")
+except _PackageNotFoundError:
+    __version__ = "0.1.0"  # Source checkouts need no installed distribution metadata.
+
 from .comparison import PixelTensor, compare_segmentation
 from .compatibility import CompatibilityReport, check_compatibility
 from .compiler import CompiledModel, Grid, Raster, UnsupportedOperation, WeightProvider, compile_model
