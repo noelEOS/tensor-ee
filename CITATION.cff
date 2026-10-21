@@ -6,6 +6,8 @@ title: "TensorEE: PyTorch-compatible neural-network building blocks for Earth En
 authors:
   - family-names: Ulloa
     given-names: Noel Ivan
+# Concept DOI: resolves to the latest archived release on Zenodo.
+doi: 10.5281/zenodo.23524569
 version: 0.1.0
 date-released: 2026-10-21
 license: MIT

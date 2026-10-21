@@ -1,6 +1,8 @@
 # TensorEE
 
 [![Offline tests](https://github.com/noelEOS/tensor-ee/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/noelEOS/tensor-ee/actions/workflows/tests.yml)
+[![PyPI](https://img.shields.io/pypi/v/tensor-ee)](https://pypi.org/project/tensor-ee/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23524569.svg)](https://doi.org/10.5281/zenodo.23524569)
 
 **Run supported PyTorch models inside Google Earth Engine, without deploying a
 model-serving endpoint.** TensorEE expresses neural-network inference as Earth Engine
@@ -125,7 +127,9 @@ Expect `2 passed` from the example's tests.
 Code and documentation: [MIT](https://github.com/noelEOS/tensor-ee/blob/main/LICENSE). Trained weights: [CC BY 4.0](https://github.com/noelEOS/tensor-ee/blob/main/WEIGHTS-LICENSE.md),
 including the checkpoints when published. Satellite data and third-party libraries keep
 their own terms. The Sentinel-1 examples contain modified Copernicus Sentinel data (2024).
-To cite TensorEE, use [CITATION.cff](https://github.com/noelEOS/tensor-ee/blob/main/CITATION.cff) and record the commit used.
+To cite TensorEE, use [CITATION.cff](https://github.com/noelEOS/tensor-ee/blob/main/CITATION.cff) or the DOI
+[10.5281/zenodo.23524569](https://doi.org/10.5281/zenodo.23524569), which resolves to the latest
+release; each release also has its own DOI on Zenodo. Record the version you used.
 
 See [CONTRIBUTING](https://github.com/noelEOS/tensor-ee/blob/main/CONTRIBUTING.md) for contributions and [SECURITY.md](https://github.com/noelEOS/tensor-ee/blob/main/SECURITY.md) for
 private vulnerability reports.
