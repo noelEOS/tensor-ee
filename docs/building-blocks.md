@@ -105,14 +105,14 @@ their own.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
-| R → R | 16 | 3 | 19 |
+| R → R | 19 | 0 | 19 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
 | W → W | 20 | 33 | 53 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **42** | **39** | **81** |
+| **All** | **45** | **36** | **81** |
 
 ### Raster-layout (R) blocks
 
@@ -126,9 +126,9 @@ their own.
 | [`silu`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t02-operators.json](evidence/t02-operators.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`gelu`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t02-operators.json](evidence/t02-operators.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`tanh`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t02-operators.json](evidence/t02-operators.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
-| [`relu6`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Fixed — offline only: clip_footprints False | [evidence/raster-hard-activations-offline.json](evidence/raster-hard-activations-offline.json) |
-| [`hardsigmoid`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Fixed — offline only: clip_footprints False | [evidence/raster-hard-activations-offline.json](evidence/raster-hard-activations-offline.json) |
-| [`hardswish`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Fixed — offline only: clip_footprints False | [evidence/raster-hard-activations-offline.json](evidence/raster-hard-activations-offline.json) |
+| [`relu6`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/raster-hard-activations-offline.json](evidence/raster-hard-activations-offline.json); [evidence/live-fixtures/20261027T163041Z-hard_activations.json](evidence/live-fixtures/20261027T163041Z-hard_activations.json) |
+| [`hardsigmoid`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/raster-hard-activations-offline.json](evidence/raster-hard-activations-offline.json); [evidence/live-fixtures/20261027T163041Z-hard_activations.json](evidence/live-fixtures/20261027T163041Z-hard_activations.json) |
+| [`hardswish`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/raster-hard-activations-offline.json](evidence/raster-hard-activations-offline.json); [evidence/live-fixtures/20261027T163041Z-hard_activations.json](evidence/live-fixtures/20261027T163041Z-hard_activations.json) |
 | [`eval_dropout`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t02-operators.json](evidence/t02-operators.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`common_score_mask`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json) |
 | [`softmax`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
@@ -227,9 +227,9 @@ Each block's `validated` record, the status in machine-readable form: 81 records
 | [`silu`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
 | [`gelu`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
 | [`tanh`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
-| [`relu6`](../tensor_ee/blocks/raster/activations.py) | R → R | none live | — |
-| [`hardsigmoid`](../tensor_ee/blocks/raster/activations.py) | R → R | none live | — |
-| [`hardswish`](../tensor_ee/blocks/raster/activations.py) | R → R | none live | — |
+| [`relu6`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
+| [`hardsigmoid`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
+| [`hardswish`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
 | [`eval_dropout`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
 | [`common_score_mask`](../tensor_ee/blocks/raster/activations.py) | R → R | any accepted call | — |
 | [`softmax`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
