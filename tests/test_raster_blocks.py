@@ -95,6 +95,7 @@ BLOCKS = {"conv2d": "conv", "pool2d": "pooling", "nearest_upsample": "resample",
           "concatenate": "merge", "residual_add": "merge",
           "relu": "activations", "sigmoid": "activations", "leaky_relu": "activations",
           "silu": "activations", "gelu": "activations", "tanh": "activations",
+          "relu6": "activations", "hardsigmoid": "activations", "hardswish": "activations",
           "eval_dropout": "activations", "common_score_mask": "activations", "softmax": "activations",
           "segmentation_outputs": "outputs", "binary_threshold": "outputs"}
 
@@ -159,7 +160,9 @@ def test_every_map_entry_owned_by_l03_is_at_its_target():
         old_path = current(old_path)
         assert _attr(old_path[:-3].replace("/", "."), old_name) is target, entry["id"]
         assert BLOCKS[name] == path.split("/")[-1][:-3]
-    assert {e["target"].split("::")[1] for e in moved} == set(BLOCKS)
+    # The moved names are the L03 blocks; the bounded activations came later, are not moves,
+    # and are the only blocks the map does not list.
+    assert {e["target"].split("::")[1] for e in moved} == set(BLOCKS) - {"relu6", "hardsigmoid", "hardswish"}
     for entry in stays:
         path, name = entry["target"].split("::")
         assert entry["id"].split(":")[0] == path   # the converter stays where it is
@@ -206,6 +209,9 @@ BASE_PARAMETERS = {
     "silu": [("raster", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
     "gelu": [("raster", POSITIONAL, _EMPTY), ("approximate", KEYWORD, "none"), ("clip_footprints", KEYWORD, False)],
     "tanh": [("raster", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
+    "relu6": [("raster", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
+    "hardsigmoid": [("raster", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
+    "hardswish": [("raster", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
     "eval_dropout": [("raster", POSITIONAL, _EMPTY), ("p", KEYWORD, 0.5), ("clip_footprints", KEYWORD, False)],
     "common_score_mask": [("image", POSITIONAL, _EMPTY), ("grid", POSITIONAL, _EMPTY)],
     "softmax": [("raster", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
@@ -268,6 +274,9 @@ CALLS = {   # block name -> call(function, fixture, **policy)
     "silu": lambda f, x, **kw: f(x[1], **kw),
     "gelu": lambda f, x, **kw: f(x[1], **kw),
     "tanh": lambda f, x, **kw: f(x[1], **kw),
+    "relu6": lambda f, x, **kw: f(x[1], **kw),
+    "hardsigmoid": lambda f, x, **kw: f(x[1], **kw),
+    "hardswish": lambda f, x, **kw: f(x[1], **kw),
     "eval_dropout": lambda f, x, **kw: f(x[1], p=0.25, **kw),
     "common_score_mask": lambda f, x, **kw: f(x[1].image, x[0], **kw),
     "softmax": lambda f, x, **kw: f(x[1], **kw),
@@ -330,6 +339,9 @@ EXPECTED = {   # block -> (locality, radius, status)
     **{name: (M.Locality.POINTWISE, None, "Ready")
        for name in ("concatenate", "residual_add", "relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh",
                     "eval_dropout", "common_score_mask", "softmax", "segmentation_outputs", "binary_threshold")},
+    # The bounded activations: offline only until a live run covers them (G3).
+    **{name: (M.Locality.POINTWISE, None, "Fixed — offline only: clip_footprints False")
+       for name in ("relu6", "hardsigmoid", "hardswish")},
 }
 
 
@@ -422,7 +434,8 @@ def test_conv2d_embedded_constant_count_matches_its_inline_graph(offline_ee):
 # ---------------------------------------------------------------------------
 # Patched names: the retargeted patches reach the blocks' own lookups
 # ---------------------------------------------------------------------------
-FINISH_USERS = ("relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh", "eval_dropout", "softmax")
+FINISH_USERS = ("relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh", "relu6", "hardsigmoid",
+                "hardswish", "eval_dropout", "softmax")
 
 
 def test_blocks_look_up_their_patched_bindings_in_their_own_modules():
@@ -433,7 +446,7 @@ def test_blocks_look_up_their_patched_bindings_in_their_own_modules():
     for name in FINISH_USERS:
         function = getattr(A, name)
         assert function.__globals__ is vars(A) and "_finish" in function.__code__.co_names, name
-    for name in ("leaky_relu", "common_score_mask"):
+    for name in ("leaky_relu", "common_score_mask", "relu6", "hardsigmoid", "hardswish"):
         function = getattr(A, name)
         assert function.__globals__ is vars(A) and "_ee_scalar" in function.__code__.co_names, name
     assert CV.conv2d.__globals__ is vars(CV) and "_inline_float32_array" in CV.conv2d.__code__.co_names
@@ -467,10 +480,11 @@ def test_what_each_retargeted_patch_reaches(offline_ee, monkeypatch):
     # _finish: the activations (and segmentation_outputs, through softmax). The
     # merges, pooling and resampling bind _finish in their own modules.
     assert _reached(monkeypatch, A, "_finish") == {*FINISH_USERS, "segmentation_outputs"}
-    # _ee_scalar: leaky_relu's slope and the common score mask, so also softmax
-    # and both outputs (their masks). binary_threshold's own threshold scalar is
-    # bound in the outputs module, as it was at the base revision.
+    # _ee_scalar: leaky_relu's slope, the bounded activations' bounds and the common score
+    # mask, so also softmax and both outputs (their masks). binary_threshold's own threshold
+    # scalar is bound in the outputs module, as it was at the base revision.
     assert _reached(monkeypatch, A, "_ee_scalar") == {"leaky_relu", "common_score_mask", "softmax",
+                                                      "relu6", "hardsigmoid", "hardswish",
                                                       "segmentation_outputs", "binary_threshold"}
     assert _reached(monkeypatch, CV, "_inline_float32_array") == {"conv2d"}
 

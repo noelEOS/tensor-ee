@@ -1,5 +1,6 @@
 """Raster-lane (R) fixtures: the CNN path's Fixed blocks at today's validated settings
-(calibration) and at additional pooling and nearest-resize settings (the selection ``p02``).
+(calibration), at additional pooling and nearest-resize settings (the selection ``p02``) and
+the bounded activations (``relu6``, ``hardsigmoid``, ``hardswish``; ``hard_activations``).
 
 Every fixture runs the public ``tensor_ee`` primitive (the library block in
 ``tensor_ee/blocks/raster`` plus the facade's float32 materialization, as ``compile_model``
@@ -7,10 +8,12 @@ runs each node) on an inline input on a ``Grid`` (20 or 40 m for the calibration
 40 m for the additional raster settings), and compares it with the PyTorch module or ``torch.nn.functional`` call it
 implements, with random weights.
 
-No NumPy mirror of the R path's Earth Engine arithmetic exists in ``tests/reference``
-(``reference.cnn`` holds PyTorch-side helpers only), so these fixtures compare with PyTorch
-alone (``mirror=None``). Max pooling and nearest upsampling select or copy values, so
-there Earth Engine must equal PyTorch exactly; the recorded runs found 0.
+The calibration and ``p02`` fixtures compare with PyTorch alone (``mirror=None``):
+``tests/reference`` holds no NumPy mirror of the convolution, pooling and resize graphs
+(``reference.cnn`` holds PyTorch-side helpers only). The bounded activations do have one
+(``reference.activations``), so those three fixtures compare with both. Max pooling and
+nearest upsampling select or copy values, so there Earth Engine must equal PyTorch exactly;
+the recorded runs found 0.
 
 Policy ``float32_operands`` for every R block (contract section 7).
 """
@@ -21,7 +24,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .core import Fixture, FixtureData, Readout, dyadic, hwc, inline_raster, nchw, raster_grid
+from .core import (Fixture, FixtureData, MirrorSpec, Readout, dyadic, hwc, inline_raster, nchw,
+                   raster_grid)
 
 LANE = "raster"
 BANDS = ("b0", "b1")
@@ -47,9 +51,9 @@ def _echo(raster, source: str = "x") -> Readout:
 
 
 def _metadata(block: str):
-    from tensor_ee.blocks.raster import conv, pooling, resample
+    from tensor_ee.blocks.raster import activations, conv, pooling, resample
 
-    for module in (conv, pooling, resample):
+    for module in (conv, pooling, resample, activations):
         if block in module.METADATA:
             return module.METADATA[block]
     raise KeyError(block)
@@ -356,12 +360,99 @@ def _p02_fixtures(cost) -> list[Fixture]:
     return fixtures
 
 
+# ---------------------------------------------------------------------------
+# The bounded activations: relu6, hardsigmoid and hardswish
+# ---------------------------------------------------------------------------
+_HARD_KINKS = np.array([-8.0, np.nextafter(np.float32(-3), np.float32(-np.inf)), -3.0, -1e-7, 0.0,
+                        1e-7, np.nextafter(np.float32(3), np.float32(-np.inf)), 3.0,
+                        np.nextafter(np.float32(3), np.float32(np.inf)), 5.5,
+                        np.nextafter(np.float32(6), np.float32(-np.inf)), 6.0,
+                        np.nextafter(np.float32(6), np.float32(np.inf)), 8.0], dtype=np.float32)
+"""Values in [-8, 8] around the kinks: the bounds 0, 3 and 6 with one float32 step either
+side, and negative values below -3 where hardsigmoid saturates and hardswish is zero."""
+
+
+def _hard_data(seed: int) -> FixtureData:
+    """A dyadic [16, 16, 2] raster in [-8, 8] with the kinks written into its first column.
+
+    The range is the one the mirror is bounded on: PyTorch's float32 kernel and the
+    once-rounded double result differ by at most one ulp of a result no larger than 8."""
+    x = dyadic(seed, "x", (16, 16, 2), scale=8.0)
+    for channel in range(2):
+        x[:, 0, channel][:len(_HARD_KINKS)] = _HARD_KINKS
+    return FixtureData(inputs={"x": x}, weights={})
+
+
+def _hard_module(block: str):
+    from torch import nn
+
+    return {"relu6": nn.ReLU6, "hardsigmoid": nn.Hardsigmoid, "hardswish": nn.Hardswish}[block]()
+
+
+def _hard_build(block: str):
+    def build(ee, data: FixtureData) -> list:
+        from tensor_ee.blocks.raster import activations
+        from tensor_ee.layouts.raster import _float32
+
+        raster = _input(ee, _grid(20, 16), data.inputs["x"])
+        # The library block plus the node's float32 materialization, as compile_model runs it.
+        out = _float32(getattr(activations, block)(raster, policy=POLICY))
+        return [Readout("out", out.image, 2, raster_grid(out.grid)), _echo(raster)]
+    return build
+
+
+def _hard_reference(block: str):
+    def reference(data: FixtureData) -> dict:
+        import torch
+
+        with torch.no_grad():
+            return {"out": hwc(_hard_module(block)(nchw(data.inputs["x"])))}
+    return reference
+
+
+def _hard_mirror(block: str):
+    def mirror(data: FixtureData) -> dict:
+        from reference import activations
+
+        return {"out": getattr(activations, block)(data.inputs["x"])}
+    return mirror
+
+
+def _hard_fixtures(cost) -> list[Fixture]:
+    from tensor_ee.blocks.raster import activations
+
+    new = "none: a new block (offline fixture check only; its live run is still to be planned)"
+    notes = ("Kinks at -3, 0, 3 and 6 with one float32 step either side, |x| <= 8. The mirror "
+             "rounds once (policy float32_operands); PyTorch's float32 kernel rounds per "
+             "operation, so the two differ by at most one ulp of the result.")
+    fixtures = []
+    for seed, block, exact, tolerance in ((5, "relu6", True, 0.0), (6, "hardsigmoid", False, 1e-4),
+                                          (7, "hardswish", False, 1e-4)):
+        module = {"relu6": "torch.nn.ReLU6", "hardsigmoid": "torch.nn.Hardsigmoid",
+                  "hardswish": "torch.nn.Hardswish"}[block]
+        fixtures.append(Fixture(
+            id=f"raster/{block}/default", lane=LANE, block=block,
+            settings={"clip_footprints": False}, policy=POLICY,
+            shapes={"input": [16, 16, 2], "output": [16, 16, 2]},
+            seed=seed, data=_hard_data, build=_hard_build(block), reference=_hard_reference(block),
+            reference_source=module,
+            mirror=MirrorSpec(_hard_mirror(block), exact, f"reference.activations.{block}",
+                              bound=None if exact else 1e-6),
+            requests=1, constants=cost(block, lambda data: ()), history=new,
+            accepts=(getattr(activations, block),), tolerance=tolerance,
+            notes=("Selection between 0 and 6: Earth Engine must equal PyTorch bit for bit "
+                   "(tolerance 0). " if exact else "") + notes))
+    return fixtures
+
+
 SELECTIONS = {
     # raster-setting validation: every new setting, plus today's pooling and nearest settings as regression checks
     # (three calibration fixtures).
     "p02": ("raster/pool2d/avg-k2-s2", "raster/pool2d/max-k3-s2-p1", "raster/nearest_upsample/f2",
             *(f"raster/pool2d/{pool.name}" for pool in _P02_POOLS),
             *(f"raster/nearest_upsample/{spec.name}" for spec in _P02_NEAREST)),
+    # the three bounded activations, one fixture each.
+    "hard_activations": ("raster/relu6/default", "raster/hardsigmoid/default", "raster/hardswish/default"),
 }
 """This lane's named selections (``tools.fixtures.select``)."""
 
@@ -435,4 +526,4 @@ def fixtures() -> list[Fixture]:
             accepts=_accepts("nearest"), calibration=True, tolerance=0.0,
             notes="A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0)."),
     ]
-    return calibration + _p02_fixtures(cost)
+    return calibration + _p02_fixtures(cost) + _hard_fixtures(cost)

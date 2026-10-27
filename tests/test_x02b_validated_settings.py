@@ -1,6 +1,6 @@
 """X02b: every block's validated settings are machine-readable, and agree with its prose status.
 
-- **The record.** All 78 blocks carry ``BlockMetadata.validated``. Its setting names are real
+- **The record.** All 81 blocks carry ``BlockMetadata.validated``. Its setting names are real
   parameters (by signature) of the block function, its cost functions or the record's
   ``sources``, or ``window`` for a block with a W layout.
 - **The prose, setting by setting** (``settings_problems``). Where a status phrase names a
@@ -91,13 +91,18 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
+OFFLINE_ONLY = {"relu6", "hardsigmoid", "hardswish"}
+"""The blocks with no live validation yet: their status is "Fixed — offline only" and their
+record is ``NOT_LIVE``. Every other block holds at least one configuration."""
+
+
 def test_every_block_has_a_record():
-    assert len(BLOCKS) == 78
+    assert len(BLOCKS) == 81
     for key, entry in ENTRIES.items():
         assert isinstance(entry.validated, Validated), key
-        # No block is "Fixed — offline only" today, so every record holds a configuration.
-        assert entry.validated.configurations, key
-        assert not entry.status.startswith(M.OFFLINE_ONLY)
+        offline = key.partition("/")[2] in OFFLINE_ONLY
+        assert entry.validated.configurations or offline, key
+        assert entry.status.startswith(M.OFFLINE_ONLY) == offline, key
         hash(entry)                                   # entries stay hashable
 
 

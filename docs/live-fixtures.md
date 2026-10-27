@@ -200,8 +200,10 @@ the requests and the results each fixture should reproduce.
 | `window/window_pool/bins1236-w7` | `window_pool` | bins (1, 2, 3, 6), one window | exact |
 | `window/patch_embed/p4-vvvh-d96` | `patch_embed` with `stride_columns` | patch 4, VV/VH, 96 channels | exact |
 
-No NumPy mirror of the raster path's Earth Engine arithmetic exists in `tests/reference`,
-so the raster fixtures compare with PyTorch only. Max pooling and nearest upsampling
-select or copy values, so they must equal PyTorch bit for bit (tolerance 0); the recorded
-runs found 0 difference there. The max pool's inputs are all negative, so a padding that
+`tests/reference` holds no NumPy mirror of the convolution, pooling and resize graphs, so
+the calibration and `p02` raster fixtures compare with PyTorch only; the bounded activations
+(`raster/relu6/default`, `raster/hardsigmoid/default`, `raster/hardswish/default`) compare
+with `reference.activations` as well. Max pooling and nearest upsampling select or copy
+values, so they must equal PyTorch bit for bit (tolerance 0); the recorded runs found 0
+difference there. The max pool's inputs are all negative, so a padding that
 contributed (a zero) would change every border window.
