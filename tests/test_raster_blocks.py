@@ -338,10 +338,8 @@ EXPECTED = {   # block -> (locality, radius, status)
     "nearest_upsample": (M.Locality.POINTWISE, None, "Ready — factors 2, 3, 4"),
     **{name: (M.Locality.POINTWISE, None, "Ready")
        for name in ("concatenate", "residual_add", "relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh",
+                    "relu6", "hardsigmoid", "hardswish",
                     "eval_dropout", "common_score_mask", "softmax", "segmentation_outputs", "binary_threshold")},
-    # The bounded activations: offline only until a live run covers them (G3).
-    **{name: (M.Locality.POINTWISE, None, "Fixed — offline only: clip_footprints False")
-       for name in ("relu6", "hardsigmoid", "hardswish")},
 }
 
 

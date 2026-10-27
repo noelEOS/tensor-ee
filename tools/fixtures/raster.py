@@ -421,7 +421,7 @@ def _hard_mirror(block: str):
 def _hard_fixtures(cost) -> list[Fixture]:
     from tensor_ee.blocks.raster import activations
 
-    new = "none: a new block (offline fixture check only; its live run is still to be planned)"
+    new = "docs/evidence/live-fixtures/20261027T163041Z-hard_activations.json (passed; Earth Engine equal to the mirror)"
     notes = ("Kinks at -3, 0, 3 and 6 with one float32 step either side, |x| <= 8. The mirror "
              "rounds once (policy float32_operands); PyTorch's float32 kernel rounds per "
              "operation, so the two differ by at most one ulp of the result.")

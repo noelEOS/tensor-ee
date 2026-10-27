@@ -91,9 +91,9 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY = {"relu6", "hardsigmoid", "hardswish"}
+OFFLINE_ONLY: set[str] = set()
 """The blocks with no live validation yet: their status is "Fixed — offline only" and their
-record is ``NOT_LIVE``. Every other block holds at least one configuration."""
+record is ``NOT_LIVE``. None today; every block holds at least one configuration."""
 
 
 def test_every_block_has_a_record():
@@ -152,7 +152,7 @@ MODEL_NUMBERS = {
 NEVER_VARIED = {
     # block -> settings recorded at the one value the evidence ran, which the status does not name.
     **{f"raster/{name}": {"clip_footprints"} for name in ("leaky_relu", "silu", "gelu", "tanh", "eval_dropout",
-                                                          "softmax")},
+                                                          "softmax", "relu6", "hardsigmoid", "hardswish")},
     "raster/concatenate": {"dim"},
     "window/layer_norm": {"eps"},
     "window/batch_norm": {"eps"},
