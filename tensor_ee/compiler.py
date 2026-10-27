@@ -54,6 +54,8 @@ from .blocks.raster.activations import (common_score_mask as _common_score_mask,
                                         leaky_relu as _leaky_relu, relu as _relu,
                                         sigmoid as _sigmoid, silu as _silu,
                                         softmax as _softmax, tanh as _tanh)
+from .blocks.raster.activations import (hardsigmoid as _hardsigmoid,
+                                        hardswish as _hardswish, relu6 as _relu6)
 
 
 WeightProvider = Callable[[str, nn.Conv2d], tuple[ee.Array, ee.Array | None]]
@@ -66,7 +68,8 @@ class CompiledModel(Raster):
     folded_batchnorms: tuple[str, ...] = ()
 
 
-_POINTWISE_MODULES = (nn.LeakyReLU, nn.SiLU, nn.GELU, nn.Tanh, nn.Dropout, nn.Dropout2d, nn.Softmax)
+_POINTWISE_MODULES = (nn.LeakyReLU, nn.SiLU, nn.GELU, nn.Tanh, nn.Dropout, nn.Dropout2d, nn.Softmax,
+                      nn.ReLU6, nn.Hardsigmoid, nn.Hardswish)
 _UNSUPPORTED_DROPOUT_MODULES = (nn.Dropout1d, nn.Dropout3d, nn.AlphaDropout, nn.FeatureAlphaDropout)
 _ROOT_MODULES = (nn.Conv2d, nn.ReLU, nn.AvgPool2d, nn.MaxPool2d,
                  nn.Upsample, nn.Sigmoid, nn.Identity, *_POINTWISE_MODULES,
@@ -84,6 +87,10 @@ def _leaky_arguments(input, negative_slope=0.01, inplace=False):
 
 def _silu_arguments(input, inplace=False):
     """Signature only."""
+
+
+def _hard_activation_arguments(input, inplace=False):
+    """Signature only: F.relu6, F.hardswish and F.hardsigmoid take input and inplace."""
 
 
 def _gelu_arguments(input, *, approximate="none"):
@@ -145,6 +152,15 @@ def _pointwise_call(node: Node, graph: GraphModule) -> tuple[str, Node, dict[str
             options.update(approximate=module.approximate)
         elif isinstance(module, nn.Tanh):
             kind = "tanh"
+        elif isinstance(module, nn.ReLU6):
+            kind = "relu6"
+            options.update(inplace=module.inplace)
+        elif isinstance(module, nn.Hardsigmoid):
+            kind = "hardsigmoid"
+            options.update(inplace=module.inplace)
+        elif isinstance(module, nn.Hardswish):
+            kind = "hardswish"
+            options.update(inplace=module.inplace)
         elif isinstance(module, nn.Softmax):
             kind = "softmax"
             options.update(dim=module.dim, dtype=None)
@@ -156,6 +172,9 @@ def _pointwise_call(node: Node, graph: GraphModule) -> tuple[str, Node, dict[str
             raise UnsupportedOperation(f"Unsupported dropout family {node.target}")
         calls = {F.leaky_relu: ("leaky_relu", _leaky_arguments),
                  F.silu: ("silu", _silu_arguments), F.gelu: ("gelu", _gelu_arguments),
+                 F.relu6: ("relu6", _hard_activation_arguments),
+                 F.hardsigmoid: ("hardsigmoid", _hard_activation_arguments),
+                 F.hardswish: ("hardswish", _hard_activation_arguments),
                  torch.tanh: ("tanh", _torch_tanh_arguments), F.tanh: ("tanh", _input_arguments),
                  F.dropout: ("eval_dropout", _dropout_arguments),
                  F.dropout2d: ("eval_dropout", _dropout_arguments),
@@ -202,7 +221,8 @@ def _pointwise_call(node: Node, graph: GraphModule) -> tuple[str, Node, dict[str
 def _apply_pointwise(kind: str, raster: Raster, options: dict[str, Any],
                      *, clip_footprints: bool = False) -> Raster:
     operations = {"leaky_relu": _leaky_relu, "silu": _silu, "gelu": _gelu,
-                  "tanh": _tanh, "eval_dropout": _eval_dropout, "softmax": _softmax}
+                  "tanh": _tanh, "relu6": _relu6, "hardsigmoid": _hardsigmoid,
+                  "hardswish": _hardswish, "eval_dropout": _eval_dropout, "softmax": _softmax}
     return operations[kind](raster, **options, clip_footprints=clip_footprints)
 
 
@@ -224,7 +244,8 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     """Convert an eval-mode model into an EE graph; do not evaluate or export it.
 
     Supports Conv2d, ReLU, AvgPool2d, MaxPool2d, nearest Upsample,
-    Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, eval Dropout/Dropout2d, channel Softmax,
+    Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, ReLU6, Hardswish, Hardsigmoid,
+    eval Dropout/Dropout2d, channel Softmax,
     eval BatchNorm2d directly following Conv2d, torch.cat,
     residual tensor addition, torch.relu, F.relu, torch.sigmoid, and F.interpolate with a static integer
     scale factor, or a proven size with that same integer nearest mapping.

@@ -5,7 +5,8 @@
 - ``resample``: ``nearest_upsample``;
 - ``merge``: ``concatenate``, ``residual_add``;
 - ``activations``: ``relu``, ``sigmoid``, ``leaky_relu``, ``silu``, ``gelu``, ``tanh``,
-  ``eval_dropout``, ``common_score_mask``, ``softmax``;
+  ``relu6``, ``hardsigmoid``, ``hardswish``, ``eval_dropout``, ``common_score_mask``,
+  ``softmax``;
 - ``outputs``: ``segmentation_outputs``, ``binary_threshold``.
 
 Each module declares ``METADATA`` (locality, policy, cost and status per block,
@@ -26,11 +27,11 @@ from .conv import conv2d
 from .pooling import pool2d
 from .resample import nearest_upsample
 from .merge import concatenate, residual_add
-from .activations import (common_score_mask, eval_dropout, gelu, leaky_relu, relu, sigmoid, silu,
-                          softmax, tanh)
+from .activations import (common_score_mask, eval_dropout, gelu, hardsigmoid, hardswish, leaky_relu,
+                          relu, relu6, sigmoid, silu, softmax, tanh)
 from .outputs import SegmentationOutputs, binary_threshold, segmentation_outputs
 
 __all__ = ["conv2d", "pool2d", "nearest_upsample", "concatenate", "residual_add",
-           "relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh", "eval_dropout",
-           "common_score_mask", "softmax",
+           "relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh", "relu6", "hardsigmoid",
+           "hardswish", "eval_dropout", "common_score_mask", "softmax",
            "SegmentationOutputs", "segmentation_outputs", "binary_threshold"]

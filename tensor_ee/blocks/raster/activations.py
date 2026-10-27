@@ -8,6 +8,12 @@ Moved whole from ``tensor_ee.compiler``, where they were private:
 ``_sigmoid_image``, ``_real_option``, ``_FLOAT32_MAX``, ``_exact_gelu`` and
 ``_dropout_probability``. The old names are re-exports of these objects.
 
+The bounded activations of MobileNetV2 and MobileNetV3 are here too, beside
+them: ``relu6`` (``min(max(x, 0), 6)``), ``hardsigmoid``
+(``min(max(x + 3, 0), 6) / 6``) and ``hardswish`` (``x * min(max(x + 3, 0), 6) / 6``).
+They are pointwise, take no coefficients and add no cast; they have not been
+validated live, so ``METADATA`` gives them the "Fixed — offline only" status.
+
 Precision policy ``float32_operands`` (contract section 7): scalars are exact
 binary64 (``_ee_scalar``); softmax keeps its ``toDouble()`` score widening; the
 node output is materialized with ``.toFloat()`` by the caller
@@ -28,7 +34,8 @@ import torch
 
 from ...core.errors import UnsupportedOperation
 from ...core.grid import Grid
-from ...core.metadata import ANY_SETTINGS, BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import (ANY_SETTINGS, NOT_LIVE, BlockMetadata, Locality, Validated,
+                              validate_metadata)
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.precision import exact_scalar as _ee_scalar
 from ...core.tensor import Raster
@@ -119,6 +126,60 @@ def tanh(raster: Raster, *, clip_footprints: bool = False, policy: str = FLOAT32
     return _finish(raster.image.tanh(), raster.bands, raster.grid, clip_footprints)
 
 
+def _hard_clamp(image: ee.Image) -> ee.Image:
+    """``min(max(x + 3, 0), 6)``: the hard family's shared bounds, in exact binary64."""
+    return image.add(_ee_scalar(3)).max(_ee_scalar(0)).min(_ee_scalar(6))
+
+
+def relu6(raster: Raster, *, clip_footprints: bool = False, policy: str = FLOAT32_OPERANDS) -> Raster:
+    """``min(max(x, 0), 6)``: a selection, exact in float32, with no constant to round.
+
+    Policy ``float32_operands``: the bounds are exact binary64 (``_ee_scalar``) and the
+    output is materialized by the caller, as for ``relu``. Not validated live.
+    """
+    validate_policy(policy, allowed=FLOAT32_OPERANDS)
+    return _finish(raster.image.max(_ee_scalar(0)).min(_ee_scalar(6)), raster.bands, raster.grid,
+                   clip_footprints)
+
+
+def hardsigmoid(raster: Raster, *, clip_footprints: bool = False,
+                policy: str = FLOAT32_OPERANDS) -> Raster:
+    """``min(max(x + 3, 0), 6) / 6``, as PyTorch's ``nn.Hardsigmoid``.
+
+    Policy ``float32_operands``: exact binary64 constants, one float32 rounding at the node
+    boundary. Dividing by 6 rather than multiplying by binary64 ``1 / 6`` keeps the
+    quotient's single rounding: over the fixture's inputs (|x| <= 8) both choices give the
+    same float32 bits, and the binary64 1/6 would put an approximated constant in the
+    graph. Measured against PyTorch float32, the largest absolute difference is one float32
+    ulp of the result in [0, 1] (5.96e-8): PyTorch's kernel rounds ``x + 3`` and the product
+    in float32. Not validated live.
+    """
+    validate_policy(policy, allowed=FLOAT32_OPERANDS)
+    return _finish(_hard_clamp(raster.image).divide(_ee_scalar(6)), raster.bands, raster.grid,
+                   clip_footprints)
+
+
+def hardswish(raster: Raster, *, clip_footprints: bool = False,
+              policy: str = FLOAT32_OPERANDS) -> Raster:
+    """``x * min(max(x + 3, 0), 6) / 6``, in PyTorch's order: the product, then the sixth.
+
+    Policy ``float32_operands``: exact binary64 constants, one float32 rounding at the node
+    boundary. As for ``hardsigmoid``, dividing by 6 is the single-rounding form; multiplying
+    by binary64 ``1 / 6`` gives the same float32 bits over the fixture's inputs (|x| <= 8),
+    so the division is chosen and no approximated constant enters the graph. Measured
+    against PyTorch float32 over that range, the largest absolute difference is 4.77e-7
+    (one ulp of the result, at most 8): PyTorch's float32 kernel rounds each of its three
+    operations. Above the clamp both sides return ``x``; PyTorch gets there through two
+    float32 roundings (``x * 6``, then ``* (1 / 6)``), which can differ from it by one ulp of
+    ``x``, so the 1e-4 absolute target holds while |x| stays below about 1e6 (measured: the
+    first crossing at |x| = 1.014e6). The fixture's inputs keep |x| <= 8 for that reason.
+    Not validated live.
+    """
+    validate_policy(policy, allowed=FLOAT32_OPERANDS)
+    image = raster.image.multiply(_hard_clamp(raster.image)).divide(_ee_scalar(6))
+    return _finish(image, raster.bands, raster.grid, clip_footprints)
+
+
 def eval_dropout(raster: Raster, *, p: float = 0.5,
                  clip_footprints: bool = False, policy: str = FLOAT32_OPERANDS) -> Raster:
     validate_policy(policy, allowed=FLOAT32_OPERANDS)
@@ -162,10 +223,20 @@ varied, but ``clip_footprints`` never left False. The ResNet18 runs, which the o
 cite, used True (resnet18_full64_float32_policy.json)."""
 
 
-def _pointwise(name: str, evidence: tuple[str, ...], validated: Validated = ANY_SETTINGS) -> BlockMetadata:
+def _pointwise(name: str, evidence: tuple[str, ...], validated: Validated = ANY_SETTINGS,
+               *, status: str = "Ready") -> BlockMetadata:
     return BlockMetadata(name=name, layout_in="R", layout_out="R", locality=Locality.POINTWISE,
                          policy=FLOAT32_OPERANDS, embedded_constants=_no_coefficients,
-                         asset_arrays=_no_coefficients, status="Ready", evidence=evidence, validated=validated)
+                         asset_arrays=_no_coefficients, status=status, evidence=evidence, validated=validated)
+
+
+_HARD_EVIDENCE = "docs/evidence/raster-hard-activations-offline.json"
+"""The G3-offline fixture check of ``relu6``, ``hardsigmoid`` and ``hardswish`` (mirror
+against PyTorch, zero cloud calls); their live run is still to be planned."""
+
+_HARD = "Fixed — offline only: clip_footprints False"
+"""The bounded activations' status: the offline fixture check covers their only setting at
+its default. They have not been validated live, so their record is ``NOT_LIVE``."""
 
 
 METADATA = validate_metadata({
@@ -176,6 +247,11 @@ METADATA = validate_metadata({
     "silu": _pointwise("silu", _SWEEPS, _UNCLIPPED),
     "gelu": _pointwise("gelu", _SWEEPS, _UNCLIPPED),
     "tanh": _pointwise("tanh", _SWEEPS, _UNCLIPPED),
+    # The bounded activations: no live validation yet, so "Fixed — offline only" and an
+    # empty record (their offline fixture check, not a live run, is their evidence).
+    "relu6": _pointwise("relu6", (_HARD_EVIDENCE,), NOT_LIVE, status=_HARD),
+    "hardsigmoid": _pointwise("hardsigmoid", (_HARD_EVIDENCE,), NOT_LIVE, status=_HARD),
+    "hardswish": _pointwise("hardswish", (_HARD_EVIDENCE,), NOT_LIVE, status=_HARD),
     "eval_dropout": _pointwise("eval_dropout", _SWEEPS, _UNCLIPPED),
     # A single-band 0/1 validity mask on the raster's grid.
     "common_score_mask": _pointwise("common_score_mask", ("docs/evidence/t03-outputs.json",)),

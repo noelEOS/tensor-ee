@@ -209,6 +209,52 @@ class TestPointwise(ApiTestCase):
         with self.assertRaisesRegex(UnsupportedOperation, "FX node.*out"):
             self.compile(Functional(lambda x: torch.tanh(x, out=x)))
 
+    def test_bounded_activations_module_functional_and_block_graphs_agree(self):
+        from tensor_ee.blocks.raster import activations
+        from tensor_ee.layouts.raster import _float32
+
+        conv = nn.Conv2d(3, 2, 1).eval()
+        with torch.no_grad():
+            conv.weight.copy_(torch.arange(6, dtype=torch.float32).reshape(2, 3, 1, 1) / 8)
+            conv.bias.copy_(torch.tensor([0.25, -0.5]))
+        for module, function, name in ((nn.ReLU6(), F.relu6, "relu6"),
+                                       (nn.Hardsigmoid(), F.hardsigmoid, "hardsigmoid"),
+                                       (nn.Hardswish(), F.hardswish, "hardswish")):
+            with self.subTest(name=name):
+                compiled = self.compile(nn.Sequential(conv, module))
+                positional = self.compile(nn.Sequential(
+                    conv, Functional(lambda x, fn=function: fn(x))))
+                keyword = self.compile(nn.Sequential(
+                    conv, Functional(lambda x, fn=function: fn(input=x, inplace=False))))
+                source = self.compile(nn.Sequential(conv))
+                conv_output = list(source.nodes.values())[-1]
+                manual = _float32(getattr(activations, name)(conv_output))
+                self.assertEqual(compiled.image.serialize(), positional.image.serialize())
+                self.assertEqual(compiled.image.serialize(), keyword.image.serialize())
+                self.assertEqual(compiled.image.serialize(), manual.image.serialize())
+                self.assertEqual(manual.grid, self.grid)
+                self.assertEqual(manual.bands, ("c0", "c1"))
+                encoded = compiled.image.serialize()
+                self.assertIn('Image.max', encoded)
+                self.assertIn('Image.min', encoded)
+                self.assertIn('Image.toFloat', encoded)
+                if name != "relu6":                      # the sixth's single division
+                    self.assertIn('Image.divide', encoded)
+                # A bare module is a root module: the compiler wraps it, as for SiLU.
+                self.compile(module)
+
+    def test_bounded_activations_refuse_inplace(self):
+        for module in (nn.ReLU6(inplace=True), nn.Hardsigmoid(inplace=True),
+                       nn.Hardswish(inplace=True)):
+            with self.subTest(module=module):
+                with self.assertRaisesRegex(UnsupportedOperation, "FX node.*inplace"):
+                    self.compile(module)
+        for form in (lambda x: F.relu6(x, True), lambda x: F.hardsigmoid(x, inplace=True),
+                     lambda x: F.hardswish(x, True), lambda x: F.hardswish(input=x, inplace=True)):
+            with self.subTest(form=form):
+                with self.assertRaisesRegex(UnsupportedOperation, "FX node.*inplace"):
+                    self.compile(Functional(form))
+
     def test_unsupported_dropout_families_rejected_consistently(self):
         modules = (nn.Dropout1d, nn.Dropout3d, nn.AlphaDropout, nn.FeatureAlphaDropout)
         functions = (F.dropout1d, F.dropout3d, F.alpha_dropout, F.feature_alpha_dropout)
@@ -275,6 +321,10 @@ class NumericImage:
     def pow(self, value): return NumericImage(self.value.pow(value))
     def erf(self): return NumericImage(self.value.erf())
     def tanh(self): return NumericImage(self.value.tanh())
+    def max(self, other): return NumericImage(torch.maximum(self.value, torch.as_tensor(
+        self._value(other), dtype=torch.float64)))
+    def min(self, other): return NumericImage(torch.minimum(self.value, torch.as_tensor(
+        self._value(other), dtype=torch.float64)))
     def lt(self, other): return self.value < self._value(other)
     def where(self, condition, other): return NumericImage(torch.where(condition, self._value(other), self.value))
 
@@ -282,13 +332,21 @@ class NumericImage:
 def test_local_formulas_stay_finite_and_match_float32_boundaries(monkeypatch):
     from tensor_ee import compiler
     from tensor_ee.blocks.raster import activations
-    values = torch.tensor([-1e30, -1000, -100, -20, -10, -3, -1, -1e-6, -0., 0., 1e-6, 1, 3, 10, 20, 100, 1000, 1e30], dtype=torch.float32)
+    # The kinks of the bounded activations (-3, 0, 3 and 6) with one float32 step either
+    # side, and large magnitudes where PyTorch's float32 kernel and the double work differ.
+    three, six = torch.tensor([3.0]), torch.tensor([6.0])
+    down, up = torch.nextafter(three, torch.tensor([-torch.inf])), torch.nextafter(three, torch.tensor([torch.inf]))
+    six_down, six_up = torch.nextafter(six, torch.tensor([-torch.inf])), torch.nextafter(six, torch.tensor([torch.inf]))
+    values = torch.tensor([-1e30, -1000, -100, -20, -10, -3, -1, -1e-6, -0., 0., 1e-6, 1, 3, 6, 10, 20, 100, 1000, 1e30], dtype=torch.float32)
+    values = torch.cat([values, down, up, six_down, six_up])
     grid = Grid("EPSG:3857", (20, 0, 1000, 0, -20, 2000), 18, 2)
     raster = Raster(NumericImage(values), ("z",), grid)
     monkeypatch.setattr(activations, "_finish", lambda image, bands, grid, clip=False: Raster(image, bands, grid))
     monkeypatch.setattr(activations, "_ee_scalar", lambda value: value)
     cases = [(compiler._leaky_relu, {"negative_slope": slope}, F.leaky_relu(values, slope)) for slope in (-.25, 0, .01, .2, 1, 2)]
     cases += [(compiler._silu, {}, F.silu(values)), (compiler._gelu, {}, F.gelu(values)), (compiler._tanh, {}, torch.tanh(values))]
+    cases += [(compiler._relu6, {}, F.relu6(values)), (compiler._hardsigmoid, {}, F.hardsigmoid(values)),
+              (compiler._hardswish, {}, F.hardswish(values))]
     for helper, options, expected in cases:
         actual = helper(raster, **options).image.value.float()
         assert torch.isfinite(actual).all(), (helper, options)
@@ -296,6 +354,8 @@ def test_local_formulas_stay_finite_and_match_float32_boundaries(monkeypatch):
     for p in (0, .25, 1):
         actual = compiler._eval_dropout(raster, p=p).image.value.float()
         assert torch.equal(actual.view(torch.int32), values.view(torch.int32))
+    # relu6 selects between two representable bounds: exact against PyTorch's float32.
+    assert torch.equal(compiler._relu6(raster).image.value.float(), F.relu6(values))
 
 
 

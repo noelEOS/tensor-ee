@@ -77,8 +77,9 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
                 "pool2d", "patch_embed", "stride_columns", "window_pool", "group_product"}
 
 # New blocks stay outside Phase 2's historical calibration census. The depthwise
-# block passed its separate SegFormer G3-live gate; no offline-only block remains.
-OFFLINE_ONLY_FIXED = set()
+# block passed its separate SegFormer G3-live gate; the bounded activations have their
+# offline fixture check and still wait for a live run.
+OFFLINE_ONLY_FIXED = {"relu6", "hardsigmoid", "hardswish"}
 SEGFORMER_G3_BLOCKS = {"depthwise_conv3x3_window"}
 
 # The SegFormer composites promoted from the model (X01a): Fixed at the settings the
@@ -669,7 +670,8 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
     offline = {name for (_, name), entry in catalogue.items()
                if entry.status.startswith("Fixed — offline only:")}
     assert offline == OFFLINE_ONLY_FIXED
-    new_covered = {name for f in select(["segformer_b0"]) if f.mirror is not None and not f.calibration
+    new_covered = {name for f in select(["segformer_b0", "hard_activations"])
+                   if f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert SEGFORMER_G3_BLOCKS | OFFLINE_ONLY_FIXED <= new_covered
     covered = {name for f in plan.fixtures for name in (f.block, *f.parts)}

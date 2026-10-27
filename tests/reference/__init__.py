@@ -12,7 +12,9 @@ research folders when they were archived at the tag ``research-archive-2026-10-1
 - ``upernet``: the PyTorch decoder primitives, the installed SMP UPerNet contracts and
   references, and the NumPy mirrors of the PSP, FPN, fusion and head;
 - ``synthetic``: the deterministic hash-generated rasters those references use;
-- ``cnn``: the PyTorch-side helpers of the CNN fixture, ResNet and tiling tests.
+- ``cnn``: the PyTorch-side helpers of the CNN fixture, ResNet and tiling tests;
+- ``activations``: the NumPy mirrors of the raster lane's bounded activations (``relu6``,
+  ``hardsigmoid``, ``hardswish``).
 
 Nothing here is shipped or imported by ``tensor_ee``. A mirror is a NumPy model of the
 arithmetic the library emits, not the library itself: the library's graphs are checked by
