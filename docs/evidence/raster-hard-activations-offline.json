@@ -1,0 +1,347 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "1938078e90ef817e3ea7783a68553cf921ae3f30",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.14.10",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 3,
+      "requests": 3,
+      "values": 4608,
+      "payload_bytes": 18432,
+      "request_bytes": 43292,
+      "max_values": 1536,
+      "max_request_bytes": 14658,
+      "max_bands": 6,
+      "embedded_constants": 0,
+      "inline_values": 1536,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "raster/relu6/default",
+        "lane": "raster",
+        "block": "relu6",
+        "parts": [],
+        "settings": {
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output": [
+            16,
+            16,
+            2
+          ]
+        },
+        "seed": 5,
+        "tolerance": 0.0,
+        "requests": 1,
+        "reference": "torch.nn.ReLU6",
+        "mirror": {
+          "source": "reference.activations.relu6",
+          "exact": true,
+          "bound": null
+        },
+        "history": "none: a new block (offline fixture check only; its live run is still to be planned)",
+        "calibration": false,
+        "notes": "Selection between 0 and 6: Earth Engine must equal PyTorch bit for bit (tolerance 0). Kinks at -3, 0, 3 and 6 with one float32 step either side, |x| <= 8. The mirror rounds once (policy float32_operands); PyTorch's float32 kernel rounds per operation, so the two differ by at most one ulp of the result."
+      },
+      "inputs_sha256": "984ed06ba24ffee05bcbb8892039fe3d0c643cc8f3dff0fb4a3de4a4534d4ee0",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 6,
+          "values": 1536,
+          "payload_bytes": 6144,
+          "request_bytes": 14066,
+          "graph_sha256": "03e2778931e849d1f12b4713abdcefd45f311a634f326602959c854211d35a33",
+          "graph_bytes": 13836,
+          "embedded_constants": 0,
+          "inline_values": 512
+        }
+      ],
+      "errors": [],
+      "seconds": 0.03,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0,
+            "comparison": "bits",
+            "values": 512,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/hardsigmoid/default",
+        "lane": "raster",
+        "block": "hardsigmoid",
+        "parts": [],
+        "settings": {
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output": [
+            16,
+            16,
+            2
+          ]
+        },
+        "seed": 6,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.Hardsigmoid",
+        "mirror": {
+          "source": "reference.activations.hardsigmoid",
+          "exact": false,
+          "bound": 1e-06
+        },
+        "history": "none: a new block (offline fixture check only; its live run is still to be planned)",
+        "calibration": false,
+        "notes": "Kinks at -3, 0, 3 and 6 with one float32 step either side, |x| <= 8. The mirror rounds once (policy float32_operands); PyTorch's float32 kernel rounds per operation, so the two differ by at most one ulp of the result."
+      },
+      "inputs_sha256": "2758d847035daa8cf6cfd5211b75aba11c736ad5b234f3fb36a8f130371e8171",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 6,
+          "values": 1536,
+          "payload_bytes": 6144,
+          "request_bytes": 14568,
+          "graph_sha256": "022880018baa9825544dd455b4ea8ee77d9f84b438ddb9ec82ee3b008651b7d6",
+          "graph_bytes": 14338,
+          "embedded_constants": 0,
+          "inline_values": 512
+        }
+      ],
+      "errors": [],
+      "seconds": 0.028,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 512,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.9999999403953552,
+              "expected": 1.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/hardswish/default",
+        "lane": "raster",
+        "block": "hardswish",
+        "parts": [],
+        "settings": {
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output": [
+            16,
+            16,
+            2
+          ]
+        },
+        "seed": 7,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.Hardswish",
+        "mirror": {
+          "source": "reference.activations.hardswish",
+          "exact": false,
+          "bound": 1e-06
+        },
+        "history": "none: a new block (offline fixture check only; its live run is still to be planned)",
+        "calibration": false,
+        "notes": "Kinks at -3, 0, 3 and 6 with one float32 step either side, |x| <= 8. The mirror rounds once (policy float32_operands); PyTorch's float32 kernel rounds per operation, so the two differ by at most one ulp of the result."
+      },
+      "inputs_sha256": "d74a6b6f9748d3a736c2058c5fc983250c66738bad94bff80b37f89a72060337",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 2
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 6,
+          "values": 1536,
+          "payload_bytes": 6144,
+          "request_bytes": 14658,
+          "graph_sha256": "f72f7c8c0b5e99703015f1a8c1ea657bd216eb7e21b551979d8e07bb3a17faf9",
+          "graph_bytes": 14428,
+          "embedded_constants": 0,
+          "inline_values": 512
+        }
+      ],
+      "errors": [],
+      "seconds": 0.029,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 512,
+            "max_abs": 4.76837158203125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 4,
+              "channel": 1,
+              "actual": 6.7804670333862305,
+              "expected": 6.780466556549072
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}
