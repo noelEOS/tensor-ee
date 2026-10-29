@@ -101,18 +101,18 @@ their own.
 ## Blocks
 
 <!-- BEGIN GENERATED: blocks (tools/block_catalogue.py; edit the code, then rerun) -->
-86 blocks: 22 in `tensor_ee/blocks/raster` and 64 in `tensor_ee/blocks/window`.
+87 blocks: 22 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
 | R → R | 22 | 0 | 22 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
-| W → W | 20 | 35 | 55 |
+| W → W | 20 | 36 | 56 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **48** | **38** | **86** |
+| **All** | **48** | **39** | **87** |
 
 ### Raster-layout (R) blocks
 
@@ -151,6 +151,7 @@ their own.
 |---|---|---|---|---|---|---|
 | [`gelu`](../tensor_ee/blocks/window/activations.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#35-activations-merges-and-outputs](history/building-blocks-2026-10-11.md#35-activations-merges-and-outputs); [swin_block/notes/findings.md](history/swin_block/notes/findings.md) |
 | [`relu`](../tensor_ee/blocks/window/activations.py) | W → W | pointwise | none (no arithmetic) | no | Ready | [building-blocks-2026-10-11.md#35-activations-merges-and-outputs](history/building-blocks-2026-10-11.md#35-activations-merges-and-outputs); [upernet/notes/milestone7_findings.md](history/upernet/notes/milestone7_findings.md) |
+| [`class_token_attention`](../tensor_ee/blocks/window/attention.py) | W → W | window | composite | no | Fixed — offline only: windows 3, 14; heads 3, 12; head widths 4, 64 | [evidence/class-token-offline.json](evidence/class-token-offline.json) |
 | [`naive_attention`](../tensor_ee/blocks/window/attention.py) | W → W | window | `round_each_op` | no | Ready | [building-blocks-2026-10-11.md#36-linear-layers-and-attention](history/building-blocks-2026-10-11.md#36-linear-layers-and-attention); [ee_attention/notes/findings.md](history/ee_attention/notes/findings.md); [evidence/segformer_b0-live.json](evidence/segformer_b0-live.json) |
 | [`split_heads`](../tensor_ee/blocks/window/attention.py) | W → W | pointwise | none (no arithmetic) | no | Ready | [building-blocks-2026-10-11.md#36-linear-layers-and-attention](history/building-blocks-2026-10-11.md#36-linear-layers-and-attention); [swin_block/notes/findings.md](history/swin_block/notes/findings.md) |
 | [`relative_position_bias`](../tensor_ee/blocks/window/attention.py) | V → V | pointwise | `double_round_once` | no | Ready — windows 5, 7, 8, 12 | [building-blocks-2026-10-11.md#36-linear-layers-and-attention](history/building-blocks-2026-10-11.md#36-linear-layers-and-attention); [swin_block/notes/findings.md](history/swin_block/notes/findings.md); [evidence/p01-offline.json](evidence/p01-offline.json); [evidence/live-fixtures/20261013T074301Z-p01a.json](evidence/live-fixtures/20261013T074301Z-p01a.json); [evidence/live-fixtures/20261013T074330Z-p01b.json](evidence/live-fixtures/20261013T074330Z-p01b.json); [evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json](evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json) |
@@ -161,7 +162,7 @@ their own.
 | [`group_product`](../tensor_ee/blocks/window/conv.py) | W → W | window + ring of 1 | `double_round_once` | no | Ready — 1, 2, 4, 8 groups at windows 7, 12; 4 groups at window 8 | [building-blocks-2026-10-11.md#33-convolution](history/building-blocks-2026-10-11.md#33-convolution); *variant: grouped_double*; [upernet/notes/milestone10_findings.md](history/upernet/notes/milestone10_findings.md); [evidence/p04-offline.json](evidence/p04-offline.json); [evidence/live-fixtures/20261013T115558Z-p04.json](evidence/live-fixtures/20261013T115558Z-p04.json); [evidence/c0b-offline.json](evidence/c0b-offline.json); [evidence/live-fixtures/20261013T154410Z-c0b.json](evidence/live-fixtures/20261013T154410Z-c0b.json) |
 | [`linear`](../tensor_ee/blocks/window/linear.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#36-linear-layers-and-attention](history/building-blocks-2026-10-11.md#36-linear-layers-and-attention); [swin_block/notes/findings.md](history/swin_block/notes/findings.md) |
 | [`conv1x1`](../tensor_ee/blocks/window/linear.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#33-convolution](history/building-blocks-2026-10-11.md#33-convolution); [upernet/notes/milestone7_findings.md](history/upernet/notes/milestone7_findings.md) |
-| [`concat_rows`](../tensor_ee/blocks/window/merge.py) | W → W | pointwise | none (no arithmetic) | no | Fixed — offline only: one class row followed by spatial rows | [api.md](api.md) |
+| [`concat_rows`](../tensor_ee/blocks/window/merge.py) | W → W | pointwise | none (no arithmetic) | no | Fixed — offline only: one class row followed by spatial rows | [evidence/class-token-offline.json](evidence/class-token-offline.json) |
 | [`add`](../tensor_ee/blocks/window/merge.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#35-activations-merges-and-outputs](history/building-blocks-2026-10-11.md#35-activations-merges-and-outputs); [upernet/notes/milestone9_findings.md](history/upernet/notes/milestone9_findings.md) |
 | [`concat`](../tensor_ee/blocks/window/merge.py) | W → W | pointwise | none (no arithmetic) | no | Ready | [building-blocks-2026-10-11.md#35-activations-merges-and-outputs](history/building-blocks-2026-10-11.md#35-activations-merges-and-outputs); [upernet/notes/milestone8_findings.md](history/upernet/notes/milestone8_findings.md) |
 | [`layer_norm`](../tensor_ee/blocks/window/normalization.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#34-normalization](history/building-blocks-2026-10-11.md#34-normalization); [swin_block/notes/findings.md](history/swin_block/notes/findings.md) |
@@ -174,7 +175,7 @@ their own.
 | [`merge_windows`](../tensor_ee/blocks/window/patch.py) | W → W | window | none (no arithmetic) | no | Ready — windows 5, 7, 8, 12 | [building-blocks-2026-10-11.md#37-resampling](history/building-blocks-2026-10-11.md#37-resampling); [swin_hierarchy/notes/milestone4_findings.md](history/swin_hierarchy/notes/milestone4_findings.md); [evidence/p01-offline.json](evidence/p01-offline.json); [evidence/live-fixtures/20261013T074301Z-p01a.json](evidence/live-fixtures/20261013T074301Z-p01a.json); [evidence/live-fixtures/20261013T074330Z-p01b.json](evidence/live-fixtures/20261013T074330Z-p01b.json); [evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json](evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json) |
 | [`window_pool`](../tensor_ee/blocks/window/pooling.py) | W → V | extent | `double_round_once` | no | Ready — extents 5, 7, 8, 12 and 14 tokens with bins (1, 2, 3, 6); extents 8 and 12 with bins (1, 2, 4, 8) | [building-blocks-2026-10-11.md#38-pooling](history/building-blocks-2026-10-11.md#38-pooling); [upernet/notes/milestone8_findings.md](history/upernet/notes/milestone8_findings.md); [evidence/p04-offline.json](evidence/p04-offline.json); [evidence/live-fixtures/20261013T115558Z-p04.json](evidence/live-fixtures/20261013T115558Z-p04.json) |
 | [`gather`](../tensor_ee/blocks/window/pooling.py) | W → V | extent | none (no arithmetic) | no | Ready | [building-blocks-2026-10-11.md#38-pooling](history/building-blocks-2026-10-11.md#38-pooling); [upernet/notes/milestone8_findings.md](history/upernet/notes/milestone8_findings.md) |
-| [`window_depth_to_space`](../tensor_ee/blocks/window/resample.py) | W → W | window | none (no arithmetic) | no | Fixed — offline only: factor 2; windows 7, 14 to window 7 | [api.md#window-depth-to-space](api.md#window-depth-to-space) |
+| [`window_depth_to_space`](../tensor_ee/blocks/window/resample.py) | W → W | window | none (no arithmetic) | no | Fixed — offline only: factor 2; windows 7, 14 to window 7 | [evidence/prithvi-depth-to-space-offline.json](evidence/prithvi-depth-to-space-offline.json) |
 | [`window_resize`](../tensor_ee/blocks/window/resample.py) | W → W | window + ring of 1 | `double_round_once` | yes (by setting) | Ready — windows 7, 8; factors 2, 4, 8 (align_corners=False), 4 (align_corners=True) | [building-blocks-2026-10-11.md#37-resampling](history/building-blocks-2026-10-11.md#37-resampling); [upernet/notes/milestone7_findings.md](history/upernet/notes/milestone7_findings.md); [upernet/notes/milestone11_findings.md](history/upernet/notes/milestone11_findings.md); [evidence/c0b-offline.json](evidence/c0b-offline.json); [evidence/live-fixtures/20261013T154410Z-c0b.json](evidence/live-fixtures/20261013T154410Z-c0b.json) |
 | [`window_matrix_resize`](../tensor_ee/blocks/window/resample.py) | V → W | extent | `double_round_once` | no | Ready — windows 7, 8; sources 1, 2, 3, 6 onto one window (align_corners=False) | [building-blocks-2026-10-11.md#37-resampling](history/building-blocks-2026-10-11.md#37-resampling); [upernet/notes/milestone8_findings.md](history/upernet/notes/milestone8_findings.md); [evidence/c0b-offline.json](evidence/c0b-offline.json); [evidence/live-fixtures/20261013T154410Z-c0b.json](evidence/live-fixtures/20261013T154410Z-c0b.json) |
 | [`channel_norm`](../tensor_ee/blocks/window/segformer.py) | W → W | pointwise | composite | no | Fixed — SegFormer-B0 (mit_b0) at 224 × 224: widths 32, 64, 160, 256; eps 1e-5, 1e-6; window 7 | [evidence/segformer_b0-fullmodel-live.json](evidence/segformer_b0-fullmodel-live.json); [evidence/segformer_b0-live.json](evidence/segformer_b0-live.json); *parts: layer_norm (eps 1e-5) or layer_norm2d (eps 1e-6), double_round_once* |
@@ -222,7 +223,7 @@ their own.
 
 ### Validated settings
 
-Each block's `validated` record, the status in machine-readable form: 86 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
+Each block's `validated` record, the status in machine-readable form: 87 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
 
 | Block | Layout | Validated settings | Names from |
 |---|---|---|---|
@@ -250,6 +251,7 @@ Each block's `validated` record, the status in machine-readable form: 86 records
 | [`nearest_upsample`](../tensor_ee/blocks/raster/resample.py) | R → R | {scale_factor 2 or 3 or 4} | — |
 | [`gelu`](../tensor_ee/blocks/window/activations.py) | W → W | any accepted call | — |
 | [`relu`](../tensor_ee/blocks/window/activations.py) | W → W | any accepted call | — |
+| [`class_token_attention`](../tensor_ee/blocks/window/attention.py) | W → W | none live | — |
 | [`naive_attention`](../tensor_ee/blocks/window/attention.py) | W → W | any accepted call | — |
 | [`split_heads`](../tensor_ee/blocks/window/attention.py) | W → W | any accepted call | — |
 | [`relative_position_bias`](../tensor_ee/blocks/window/attention.py) | V → V | {window 5 or 7 or 8 or 12} | — |

@@ -41,11 +41,11 @@ shown alongside it uses a separately deployed model endpoint.
 |---|---|---|
 | SegWater ResNet18 U-Net, 224 × 224 | [Code Editor demo](https://github.com/noelEOS/tensor-ee/blob/main/CODE_EDITOR.md); `compile_model` for CNNs | Trained EE weights are public; the Code Editor demo needs no checkpoint |
 | Fixed Swin-T/UPerNet, 224 × 224 | [Three-stage workflow](https://github.com/noelEOS/tensor-ee/blob/main/docs/swin.md) | Trained EE weights are public; this workflow also needs a local checkpoint, not yet public |
-| Prithvi Sen1Floods11, one 224 × 224 crop | [Hand-composed crop API](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11) | Random-weight offline comparisons; checkpoint absent; no whole-model live validation |
+| Prithvi Sen1Floods11, one 224 × 224 crop | [Hand-composed crop API](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11) | Random-weight offline comparisons. State names follow the source model's module hierarchy; they have not been checked against a released checkpoint. |
 | SMP SegFormer-B0 or UPerNet with timm's Swin encoder | [Attention converter](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md) | Conversion examples use random weights; the report identifies settings outside the validated records |
 
 You can also compose a model from the [block catalogue](https://github.com/noelEOS/tensor-ee/blob/main/docs/building-blocks.md).
-It has 86 blocks: 22 in `tensor_ee/blocks/raster` and 64 in `tensor_ee/blocks/window`.
+It has 87 blocks: 22 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
 The [browser demo](https://github.com/noelEOS/tensor-ee/blob/main/DEMO.md) runs either trained model with a local checkpoint;
 its `--offline` mode previews the interface without one.
 

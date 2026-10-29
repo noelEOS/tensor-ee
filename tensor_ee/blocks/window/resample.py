@@ -59,6 +59,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from ...core.errors import reject
 from ...core.grid import TokenGrid
 from ...core.metadata import NO_ARITHMETIC, NOT_LIVE, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import DOUBLE_ROUND_ONCE, validate_policy
@@ -278,19 +279,19 @@ def window_depth_to_space(ee, x, grid: TokenGrid, channels: int, *, window: int 
     only reindexes values, including their signed zeros.
     """
     if not isinstance(grid, TokenGrid):
-        raise TypeError("grid must be a TokenGrid with origin (0, 0)")
+        reject("grid must be a TokenGrid with origin (0, 0)")
     for name, value in (("channels", channels), ("window", window), ("out_window", out_window)):
         if isinstance(value, bool) or not isinstance(value, numbers.Integral) or value < 1:
-            raise ValueError(f"{name} must be a positive integer; received {value!r}")
+            reject(f"{name} must be a positive integer; received {value!r}")
     if isinstance(factor, bool) or not isinstance(factor, numbers.Integral) or factor != 2:
-        raise ValueError(f"factor must be 2; received {factor!r}")
+        reject(f"factor must be 2; received {factor!r}")
     if (window, out_window) not in ((7, 7), (14, 7)):
-        raise ValueError("supported window pairs are (7, 7) and (14, 7)")
+        reject("supported window pairs are (7, 7) and (14, 7)")
     if grid.height % window or grid.width % window:
-        raise ValueError("input token dimensions must be divisible by window")
+        reject("input token dimensions must be divisible by window")
     fine = TokenGrid(grid.height * factor, grid.width * factor, grid.scale / factor, grid.crs)
     if fine.height % out_window or fine.width % out_window:
-        raise ValueError("output token dimensions must be divisible by out_window")
+        reject("output token dimensions must be divisible by out_window")
     # [y, x, dy, dx, C] -> [y, dy, x, dx, C]; no tensor-value arithmetic.
     local = reshape(ee, x, [window, window, factor, factor, channels]).arrayTranspose(1, 2)
     local = reshape(ee, local, [window * factor, window * factor, channels])
@@ -327,7 +328,7 @@ METADATA = validate_metadata({
         policy=NO_ARITHMETIC, embedded_constants=window_depth_to_space_values,
         asset_arrays=window_depth_to_space_arrays, chip_edge_dependent=False,
         status="Fixed — offline only: factor 2; windows 7, 14 to window 7",
-        evidence=("docs/api.md#window-depth-to-space",), validated=NOT_LIVE),
+        evidence=("docs/evidence/prithvi-depth-to-space-offline.json",), validated=NOT_LIVE),
 
     # Chip-edge dependent over its validated settings (align_corners=True is one), and exactly
     # by setting through window_resize_edge.

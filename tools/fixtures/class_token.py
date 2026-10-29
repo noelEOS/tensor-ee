@@ -69,24 +69,18 @@ def _expand(ops, base, heads, head_dim):
 
 
 def _attention_build(ee, data, *, window, heads, head_dim):
-    from tensor_ee.blocks.window.attention import naive_attention, split_heads
-    from tensor_ee.blocks.window.merge import concat_rows
+    from tensor_ee.blocks.window.attention import class_token_attention
     from tensor_ee.core.ops import WindowOps
 
     tokens, coarse, dense, cls_dense, patch_base, cls_base = _sources(ee, data, window)
     ops = WindowOps(ee)
     dim = heads * head_dim
-    patches = split_heads(ops, _expand(ops, patch_base, heads, head_dim), dim, heads)
-    cls = split_heads(ops, _expand(ops, cls_base, heads, head_dim), dim, heads)
-    patch_out, cls_out = [], []
-    for h in range(heads):
-        k, v = [concat_rows(ops, [cls[f"{name}_h{h}"], patches[f"{name}_h{h}"]],
-                            rows=(1, window ** 2), channels=head_dim) for name in ("k", "v")]
-        for query, outputs in ((patches[f"q_h{h}"], patch_out), (cls[f"q_h{h}"], cls_out)):
-            outputs.append(naive_attention(ops, query, k, v, tokens=window ** 2 + 1,
-                                           dim=head_dim, score_scale=head_dim ** -0.5)["output"])
+    spatial, cls = class_token_attention(
+        ops, _expand(ops, patch_base, heads, head_dim), _expand(ops, cls_base, heads, head_dim),
+        dim=dim, heads=heads, window=window,
+    )
     return _readouts(ee, data, window, tokens, coarse, dense, cls_dense,
-                     ops.cat_cols(patch_out), ops.cat_cols(cls_out), dim)
+                     spatial, cls, dim)
 
 
 def _outputs(patch, cls, window):
@@ -119,11 +113,11 @@ def _reference(data, *, window, heads, head_dim):
 
 
 def _mirror(data, *, window, heads, head_dim):
-    from reference.class_token import attention, expand_qkv
+    from reference.class_token import class_token_attention, expand_qkv
 
     patch, cls = [expand_qkv(data.inputs[name].reshape(-1, 3 * head_dim), heads, head_dim)
                   for name in ("x", "c")]
-    out = attention(patch, cls, dim=heads * head_dim, heads=heads)
+    out = class_token_attention(patch, cls, dim=heads * head_dim, heads=heads)
     return _outputs(out["patch"], out["cls"], window)
 
 
@@ -159,6 +153,7 @@ def _concat_mirror(data, *, window):
 def fixtures():
     from tensor_ee.blocks.window.merge import concat_rows
     from tensor_ee.blocks.window.merge import METADATA
+    from tensor_ee.blocks.window.attention import class_token_attention, METADATA as ATTENTION_METADATA
     from tensor_ee.weights.constants import WindowLayout
 
     result = [Fixture(
@@ -169,20 +164,22 @@ def fixtures():
         reference=partial(_concat_reference, window=14), reference_source="torch.cat(dim=0)",
         mirror=MirrorSpec(partial(_concat_mirror, window=14), True, "reference.class_token.concat_rows"),
         requests=2, constants=lambda data: {"concat_rows": METADATA["concat_rows"].embedded_constants(
-            rows=(1, 196), channels=3)}, history="docs/api.md", accepts=(concat_rows, WindowLayout),
+            rows=(1, 196), channels=3)}, history="docs/evidence/class-token-offline.json",
+        accepts=(concat_rows, WindowLayout),
         tolerance=0, window=14)]
     for window, heads, head_dim, requests in ((3, 3, 4, 2), (14, 12, 64, 6)):
         args = dict(window=window, heads=heads, head_dim=head_dim)
         result.append(Fixture(
-            id=f"window/concat_rows/attention-w{window}-h{heads}-d{head_dim}", lane="window",
-            block="concat_rows", parts=("naive_attention", "split_heads"),
-            settings={"window": window, "rows": (1, window ** 2), "channels": head_dim}, policy="none",
+            id=f"window/class_token_attention/w{window}-h{heads}-d{head_dim}", lane="window",
+            block="class_token_attention", parts=("naive_attention", "split_heads", "concat_rows"),
+            settings={"window": window, "dim": heads * head_dim, "heads": heads}, policy="composite",
             shapes={"keys": window ** 2 + 1, "heads": heads, "head_dim": head_dim}, seed=225,
             data=partial(_data, window=window, head_dim=head_dim), build=partial(_attention_build, **args),
             reference=partial(_reference, **args), reference_source="plain torch post-QK scaling and softmax",
-            mirror=MirrorSpec(partial(_mirror, **args), False, "reference.class_token.attention", bound=1e-4),
-            requests=requests, constants=lambda data: {"concat_rows": 0, "naive_attention": 0},
-            history="docs/api.md", accepts=(concat_rows, WindowLayout), window=window,
+            mirror=MirrorSpec(partial(_mirror, **args), False, "reference.class_token.class_token_attention", bound=1e-4),
+            requests=requests, constants=lambda data: {"class_token_attention":
+                ATTENTION_METADATA["class_token_attention"].embedded_constants()},
+            history="docs/evidence/class-token-offline.json", accepts=(class_token_attention,), window=window,
             notes="Both class and spatial queries update; compact random inputs rotate across all heads."))
     return result
 

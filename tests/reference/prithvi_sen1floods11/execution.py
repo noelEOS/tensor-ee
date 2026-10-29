@@ -171,7 +171,7 @@ class Columns:
         self.halo, self.channels, self.window = halo, channels, window
     def matrixMultiply(self, weight):
         # The policy is still WindowOps.matmul_double; stream coarse rows solely
-        # to avoid allocating the complete224-crop im2col in double at once.
+        # to avoid allocating the complete 224-pixel crop im2col in double at once.
         dense = unpartition(self.halo.x.values, self.window)
         h, w, _ = dense.shape
         padded = np.pad(dense, ((1, 1), (1, 1), (0, 0)))

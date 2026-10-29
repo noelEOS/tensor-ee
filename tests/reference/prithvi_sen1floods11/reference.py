@@ -2,7 +2,7 @@
 
 Position values are supplied in the state; no positional generator is included.
 The NumPy backend models double-round-once projections and round-each-operation
-attention. Its matrix sums follow this host's BLAS, with no bitwise claim for EE.
+attention. It uses float64 matrix products with float32 operation boundaries.
 """
 from __future__ import annotations
 import math
@@ -164,7 +164,7 @@ class PrimitiveBackend:
         padded=np.pad(x,((1,1),(1,1),(0,0)))
         kernel=weight.transpose(2,3,1,0).reshape(-1,cout).astype(np.float64)
         out=np.empty((h,w,cout),np.float32)
-        # Form only one W7 row of windows at a time; avoid a 2.8GB global im2col.
+        # Form only one W7 row of windows at a time; avoid a 2.8 GB global im2col.
         for y in range(0,h,7):
             yh=min(y+7,h)
             rows=np.stack([padded[y+dy:yh+dy,dx:dx+w] for dy in range(3) for dx in range(3)],axis=-2).reshape((yh-y)*w,-1)

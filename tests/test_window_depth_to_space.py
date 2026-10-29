@@ -135,5 +135,5 @@ def test_graph_constructs_without_tensor_value_arithmetic_or_dense_bands():
 
 @pytest.mark.parametrize('grid',[None,object()])
 def test_non_origin_grids_are_refused(grid):
-    with pytest.raises(TypeError,match='TokenGrid'):
+    with pytest.raises(ValueError,match='TokenGrid'):
         WR.window_depth_to_space(None,None,grid,4)

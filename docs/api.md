@@ -255,8 +255,14 @@ A class token can therefore remain a one-row array beside a spatial window.
 Concatenate class then spatial keys and values, and call the existing
 `naive_attention` twice per head: once for the spatial queries and once for the
 class query. Both calls read all keys and values. The class row must pass through
-every normalization, projection and residual update. For post-product scaling,
-use `score_scale`; this preserves the existing attention policy.
+every normalization, projection and residual update.
+
+`tensor_ee.blocks.window.attention.class_token_attention(ops, spatial_qkv,
+cls_qkv, dim=..., heads=..., window=14)` provides this composition for every
+head. Its settings are keyword-only. It takes projected QKV arrays, returns
+the spatial and class outputs separately, and applies post-product score
+scaling through the existing attention core. No coefficient constants are
+introduced by the composite.
 
 ## Window depth-to-space
 
@@ -318,8 +324,8 @@ source state names. `parameter_shapes()` declares the inventory. NumPy values
 use native tensor shapes; server arrays also accept the existing asset format's
 flattened matrices, and vector rows or columns. All constants are prepared
 before composition. Position values are supplied, never generated here.
-The unused auxiliary head and BatchNorm counter are ignored. The checkpoint
-is absent, so its actual prefixes could not be checked against a file.
+The unused auxiliary head and BatchNorm counter are ignored.
+State names follow the source model's module hierarchy; they have not been checked against a released checkpoint.
 
 The default configuration is width 768, 12 heads, 12 blocks, MLP width 3072,
 and decoder width 256. `PrithviConfig` also supplies a reduced twin for the
@@ -351,13 +357,12 @@ that fraction alone does not establish a need for grouped execution. The
 largest image array is [196,3072], or 602,112 values. The proposed 19 stages
 fit default constant and boundary limits; request sizes depend on the table
 manifest. Symbolic table sizing does not establish server memory or runtime.
-Existing `group_product` divides input channels, not output channels.
 
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with
 independently checked NumPy spatial transports. Default tests compare every
 logit of a reduced-width 224 crop. A separate opt-in checks full width. The
 `prithvi_model` harness selection probes every fourth output pixel of the
-complete reduced-width graph with structured random coefficients; it is
-intended only for offline checking. No whole-model live or accuracy claim is
-made. New blocks retain their offline-only status pending promotion.
+complete reduced-width graph with structured random coefficients. It is a
+composition check that can be planned and run independently of block validation.
+No whole-model live or accuracy claim is made. The new blocks have offline evidence only.

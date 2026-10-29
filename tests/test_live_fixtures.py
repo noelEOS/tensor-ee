@@ -79,8 +79,12 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
 # New blocks stay outside Phase 2's historical calibration census. The depthwise
 # block passed its separate SegFormer G3-live gate, and the bounded activations and the
 # standalone raster BatchNorm, raster bilinear upsampling and raster grouped convolution
-# theirs; no offline-only block remains.
-OFFLINE_ONLY_FIXED: set[str] = {"concat_rows", "window_depth_to_space"}
+# theirs. Row concatenation, window depth-to-space and class-token attention
+# have only offline evidence.
+OFFLINE_ONLY_FIXED: set[str] = {"concat_rows", "window_depth_to_space", "class_token_attention"}
+COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits"}
+"""Runnable composition checks excluded from block coverage and evidence counts."""
+
 SEGFORMER_G3_BLOCKS = {"depthwise_conv3x3_window"}
 HARD_ACTIVATION_G3_BLOCKS = {"relu6", "hardsigmoid", "hardswish"}
 BATCH_NORM_G3_BLOCKS = {"batch_norm"}
@@ -676,15 +680,22 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
                if entry.status.startswith("Fixed — offline only:")}
     assert offline == OFFLINE_ONLY_FIXED
     new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model"])
-                   if f.mirror is not None and not f.calibration
+                   if f.id not in COMPOSITION_FIXTURES and f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert (SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | BILINEAR_G3_BLOCKS
             | GROUPED_CONV_G3_BLOCKS | OFFLINE_ONLY_FIXED <= new_covered)
-    covered = {name for f in plan.fixtures for name in (f.block, *f.parts)}
+    covered = {name for f in plan.fixtures if f.id not in COMPOSITION_FIXTURES
+               for name in (f.block, *f.parts)}
     assert PHASE2_FIXED <= covered
     lanes = {f.lane for f in plan.fixtures}
     assert lanes == {"raster", "window"}
     assert all(f.tolerance <= core.TOLERANCE for f in plan.fixtures)
+
+
+def test_composition_fixture_does_not_claim_block_coverage():
+    fixtures = select(["prithvi_model"])
+    assert {fixture.id for fixture in fixtures} == COMPOSITION_FIXTURES
+    assert all(not fixture.calibration and fixture.parts == () for fixture in fixtures)
 
 
 def test_fixture_records_reject_a_larger_tolerance_and_malformed_ids():

@@ -3,6 +3,17 @@
 This hand-composed model has no converter graph. These helpers use the planner's
 Limits and the same request_size function, without claiming an optimizer-generated
 plan. Separate class/spatial exports recompute shared work. Nothing is submitted.
+
+At default dimensions, capacity estimates are 97,602,818 float state values,
+122,783,330 logical constant values with shared matrices counted once, and
+145.795 billion MACs per crop. The 3 x 3 head contributes about 60.897% of
+MACs. Proposed cuts save paired spatial/class images after each encoder block
+and features after each upsampling and before the head. Conservative separate
+branch costs fit 24 million constants per encoder block; saved boundaries have
+at most 768 bands. The largest activation has 602,112 values ([196,3072]),
+or 4,816,896 bytes in double. The largest coefficient matrix holds 2,359,296
+values. These array counts do not establish peak memory; request sizes depend
+on the chosen table manifest.
 """
 from __future__ import annotations
 

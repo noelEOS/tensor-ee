@@ -1,9 +1,8 @@
 """Full-width window-block fixtures for a 224-pixel Prithvi crop.
 
-All coefficients and inputs are structured random dyadic tiles, expanded without
-assets on the server and identically in the local references. Every output channel
-is read. This verifies channel sizes and arithmetic on these repeated coefficients;
-it does not establish accuracy or arbitrary-weight server memory feasibility.
+Full-column dyadic seeds and distinct channel and output-row codes keep every
+input and output channel distinguishable. Coefficients are expanded identically
+in the graph and references, without assets. Every output channel is read.
 """
 from __future__ import annotations
 
@@ -37,45 +36,64 @@ CASES = (Case('patch_embed', 1536, 768, 4, 14),
          Case('conv3x3_window', 768, 256, 3), Case('conv1x1', 256, 2, 1))
 
 
+def _channel_codes(channels):
+    return np.arange(channels, dtype=np.float32) * np.float32(2**-6)
+
+
+def _row_gains(rows):
+    return np.float32(1) + np.arange(rows, dtype=np.float32) * np.float32(2**-10)
+
+
+def _vector(seed, name, channels, scale, offset=0):
+    # Coarse random values occupy disjoint intervals containing each fine code.
+    values = dyadic(seed, name, (channels,), scale=scale, offset=offset, bits=5)
+    return values + np.arange(channels, dtype=np.float32) * np.float32(2**-20)
+
+
 def _data(seed, *, case):
     patch = case.kind == 'patch_embed'
     side = 32 if patch else 7
     channels = 6 if patch else 8
     weights = {}
     if case.kind in ('patch_embed', 'linear', 'conv1x1'):
-        weights['weight'] = dyadic(seed, 'weight', (8 if case.cout >= 8 else 2, 8), scale=2**-10, bits=10)
-        weights['bias'] = dyadic(seed, 'bias', (8 if case.cout >= 8 else 2,), scale=0.125, bits=10)
+        rows = min(8, case.cout)
+        weights['weight'] = dyadic(seed, 'weight', (rows, case.cin), scale=2**-8, bits=8)
+        weights['bias'] = _vector(seed, 'bias', case.cout, 0.125)
     if case.kind in ('layer_norm2d', 'conv3x3_window'):
-        for name, scale, offset in [('gamma', .25, 1), ('beta', .125, 0), ('mean', .125, 0), ('var', .25, 1)]:
-            weights[name] = dyadic(seed, name, (8,), scale=scale, offset=offset, bits=10)
+        for name, scale, offset in [('gamma', .25, 1), ('beta', .125, 0),
+                                    ('mean', .125, 0), ('var', .25, 1)]:
+            weights[name] = _vector(seed, name, case.cout, scale, offset)
     if case.kind == 'conv3x3_window':
-        weights['weight'] = dyadic(seed, 'weight', (8, 8, 3, 3), scale=2**-10, bits=10)
-    return FixtureData({'x': dyadic(seed, 'x', (side, side, channels), bits=10)}, weights)
+        weights['weight'] = dyadic(seed, 'weight', (8, case.cin, 3, 3), scale=2**-8, bits=8)
+    return FixtureData({'x': dyadic(seed, 'x', (side, side, channels), bits=8)}, weights)
 
 
 def _expanded(data, case):
     x = data.inputs['x']
-    w = data.weights
     if case.kind == 'patch_embed':
         x = np.tile(x, (7, 7, 1))
+        y, column = np.indices((224, 224), dtype=np.int32)
+        codes = (y * 224 + column).astype(np.float32) * np.float32(2**-12)
+        x = x + codes[..., None]
     else:
-        x = np.tile(x, (1, 1, case.cin // 8))
-    p = {}
-    for name, value in w.items():
-        if value.ndim == 1:
-            target = case.cout
-            p[name] = np.tile(value, target // value.size)
-        elif value.ndim == 2:
-            p[name] = np.tile(value, (case.cout // value.shape[0], case.cin // value.shape[1]))
+        x = np.tile(x, (1, 1, case.cin // 8)) + _channel_codes(case.cin)
+    parameters = {}
+    for name, value in data.weights.items():
+        if name == 'weight':
+            repeats = (case.cout // value.shape[0],) + (1,) * (value.ndim - 1)
+            expanded = np.tile(value, repeats)
+            gains = _row_gains(case.cout).reshape((-1,) + (1,) * (value.ndim - 1))
+            parameters[name] = expanded * gains
         else:
-            p[name] = np.tile(value, (case.cout // 8, case.cin // 8, 1, 1))
-    return x, p
+            parameters[name] = value.copy()
+    return x, parameters
 
 
-def _server(ee, seed, shape):
-    """Repeat a compact float32 seed tile, with no remote asset or arithmetic."""
+def _server(ee, seed, shape, *, row_gains=False):
+    """Expand full-column coefficient seeds with exact dyadic output-row codes."""
     from tensor_ee.core.precision import encode_float32
     from tensor_ee.core.tensor import ServerArray
+
     source = np.asarray(seed, np.float32)
     target = tuple(shape)
     if source.ndim == 4:
@@ -83,9 +101,16 @@ def _server(ee, seed, shape):
         target = (target[0], int(np.prod(target[1:])))
     array = ee.Array(encode_float32(source)).float()
     if source.ndim == 1:
-        array = array.repeat(0, target[0] // source.shape[0])
+        if source.shape != target:
+            raise ValueError('channel vectors must be provided at their full width')
     else:
-        array = array.repeat(0, target[0] // source.shape[0]).repeat(1, target[1] // source.shape[1])
+        if source.shape[1] != target[1]:
+            raise ValueError('coefficient seeds must cover every input column')
+        array = array.repeat(0, target[0] // source.shape[0])
+        if row_gains:
+            gains = (ee.Array(ee.List.sequence(0, target[0] - 1)).multiply(2**-10).add(1)
+                     .reshape([target[0], 1]).repeat(1, target[1]))
+            array = array.multiply(gains).float()
     return ServerArray(array, target)
 
 
@@ -128,24 +153,30 @@ def _build(ee, data, *, case):
         sys.setrecursionlimit(max(sys.getrecursionlimit(), RECURSION_LIMIT))
         # The seed raster uses the same pixel projection as the full crop.
         crop = TokenGrid(224, 224)
-        pe = {'proj.weight': _server(ee, data.weights['weight'], (768, 1536)),
+        pe = {'proj.weight': _server(ee, data.weights['weight'], (768, 1536), row_gains=True),
               'proj.bias': _server(ee, data.weights['bias'], (768,))}
         constants = patch_embed_constants(ops, pe, layout, norm=False)
-        output = patch_embed(ops, dense, crop, constants, patch=16, bands=BANDS, window=14, norm=False)['x']
+        coordinates = ee.Image.pixelCoordinates(crop.projection(ee)).floor()
+        codes = coordinates.select('y').multiply(224).add(coordinates.select('x')).multiply(2**-12)
+        source_image = dense.add(codes).toFloat()
+        output = patch_embed(ops, source_image, crop, constants, patch=16, bands=BANDS, window=14, norm=False)['x']
         # Tokens carry 16x the source scale after patch sampling.
         tokens = crop.coarse(16)
         raster = to_dense(ee, tokens, output, case.cout, window=14)
         return _outputs(ee, raster, tokens, case.cout, 'output') + [echo]
     x = from_dense(ee, tokens, dense, 8, window=7).arrayRepeat(1, case.cin // 8)
+    codes = (ee.Array(ee.List.sequence(0, case.cin - 1)).multiply(2**-6).float()
+             .reshape([1, case.cin]).repeat(0, 49))
+    x = x.add(ee.Image(codes)).toFloat()
     if case.kind in ('linear', 'conv1x1'):
-        constants = LinearConstants(ops, _server(ee, data.weights['weight'], (case.cout, case.cin)),
+        constants = LinearConstants(ops, _server(ee, data.weights['weight'], (case.cout, case.cin), row_gains=True),
                                     _server(ee, data.weights['bias'], (case.cout,)), layout)
         output = (linear if case.kind == 'linear' else conv1x1)(ops, x, constants, layout=layout)
     elif case.kind == 'layer_norm2d':
         output = layer_norm2d(ops, x, _server(ee, data.weights['gamma'], (case.cout,)),
                               _server(ee, data.weights['beta'], (case.cout,)), dim=case.cout, rows=layout, eps=1e-6)
     else:
-        weight = _server(ee, data.weights['weight'], (case.cout, case.cin, 3, 3))
+        weight = _server(ee, data.weights['weight'], (case.cout, case.cin, 3, 3), row_gains=True)
         constants = Conv3x3Constants(ops, weight, None, layout)
         conv = conv3x3_window(ops, x, constants, tokens.coarse(7), window=7)
         bn_c = BatchNormConstants(ops, *[_server(ee, data.weights[n], (case.cout,))
@@ -160,11 +191,15 @@ def _build(ee, data, *, case):
 
 
 def _reference(data, *, case):
+    x, parameters = _expanded(data, case)
+    return _reference_expanded(x, parameters, case=case)
+
+
+def _reference_expanded(x, p, *, case):
     import torch
     import torch.nn.functional as F
     torch.set_num_threads(2)
-    x, p = _expanded(data, case)
-    t = torch.from_numpy(x)
+    t = torch.from_numpy(np.ascontiguousarray(x))
     with torch.no_grad():
         if case.kind == 'patch_embed':
             output = F.conv3d(t.permute(2, 0, 1)[None, :, None], torch.from_numpy(p['weight'].reshape(768, 6, 1, 16, 16)),
@@ -258,13 +293,16 @@ def fixtures():
             settings.update(in_features=case.cin, out_features=case.cout, bias=True)
             accepts += (linear_values,)
         result.append(Fixture(id=case.id, lane='window', block=case.kind, settings=settings, policy=DRO,
-            shapes={'input_channels': case.cin, 'output_channels': case.cout, 'structured_seed_channels': 8},
+            shapes={'input_channels': 6 if case.kind == 'patch_embed' else case.cin,
+                    'projection_columns': case.cin, 'output_channels': case.cout,
+                    'seed_channels': 6 if case.kind == 'patch_embed' else 8,
+                    'distinct_input_columns': case.cin, 'distinct_output_channels': case.cout},
             seed=8100+index, data=partial(_data, case=case), build=partial(_build, case=case),
             reference=partial(_reference, case=case), reference_source='torch.nn.functional, native operators',
             mirror=MirrorSpec(partial(_mirror, case=case), True, 'tests/reference/prithvi_settings.py'),
             requests=case.requests, constants=partial(_constants, case=case),
             history='docs/api.md', parts=parts, accepts=accepts, window=case.window,
-            notes='Structured repeated random dyadic coefficient/input tiles; all output channels are read.'))
+            notes='Full-column seeds and distinct channel and row codes; all output channels are read.'))
     return result
 
 

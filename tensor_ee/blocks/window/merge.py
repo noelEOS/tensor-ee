@@ -95,7 +95,7 @@ METADATA = validate_metadata({
         name="concat_rows", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
         policy=NO_ARITHMETIC, embedded_constants=concat_rows_values, asset_arrays=concat_rows_arrays,
         status="Fixed — offline only: one class row followed by spatial rows",
-        evidence=("docs/api.md",), validated=NOT_LIVE),
+        evidence=("docs/evidence/class-token-offline.json",), validated=NOT_LIVE),
     "add": BlockMetadata(
         name="add", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=no_constants, asset_arrays=no_constants,

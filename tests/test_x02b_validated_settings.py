@@ -1,6 +1,6 @@
 """X02b: every block's validated settings are machine-readable, and agree with its prose status.
 
-- **The record.** All 86 blocks carry ``BlockMetadata.validated``. Its setting names are real
+- **The record.** All 87 blocks carry ``BlockMetadata.validated``. Its setting names are real
   parameters (by signature) of the block function, its cost functions or the record's
   ``sources``, or ``window`` for a block with a W layout.
 - **The prose, setting by setting** (``settings_problems``). Where a status phrase names a
@@ -91,14 +91,14 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = {"window/concat_rows", "window/window_depth_to_space"}
+OFFLINE_ONLY: set[str] = {"window/concat_rows", "window/window_depth_to_space", "window/class_token_attention"}
 """The blocks with no live validation yet, by lane-qualified key (two lanes may share a block
 name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``.
-Row concatenation retains this classification pending maintainer promotion."""
+Row concatenation, window depth-to-space and class-token attention have only offline evidence."""
 
 
 def test_every_block_has_a_record():
-    assert len(BLOCKS) == 86
+    assert len(BLOCKS) == 87
     for key, entry in ENTRIES.items():
         assert isinstance(entry.validated, Validated), key
         offline = key in OFFLINE_ONLY
@@ -467,17 +467,35 @@ def test_the_defaults_are_inside_the_record(name):
 # ---------------------------------------------------------------------------
 # Every live fixture is inside the records of its block and parts
 # ---------------------------------------------------------------------------
+COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits"}
+"""Whole-model checks whose compatibility block field does not identify block evidence."""
+
+
 def _live_fixtures() -> list[dict]:
     found = []
     for path in sorted((ROOT / "docs" / "evidence").rglob("*.json")):
         data = json.loads(path.read_text())
         if isinstance(data, dict) and data.get("kind") == "live_fixture_run":
             found += [dict(fixture["spec"], record=str(path.relative_to(ROOT)))
-                      for fixture in data["fixtures"] if fixture["status"] == "passed"]
+                      for fixture in data["fixtures"] if fixture["status"] == "passed"
+                      and fixture["spec"]["id"] not in COMPOSITION_FIXTURES]
     return found
 
 
 LIVE = _live_fixtures()
+
+
+def test_composition_records_do_not_enter_block_evidence(tmp_path, monkeypatch):
+    evidence = tmp_path / "docs" / "evidence"
+    evidence.mkdir(parents=True)
+    composition_id = "window/concat_rows/prithvi-crop-logits"
+    record = {"kind": "live_fixture_run", "fixtures": [
+        {"status": "passed", "spec": {"id": composition_id, "block": "concat_rows"}},
+        {"status": "passed", "spec": {"id": "window/concat_rows/control", "block": "concat_rows"}},
+    ]}
+    (evidence / "composition.json").write_text(json.dumps(record))
+    monkeypatch.setattr(sys.modules[__name__], "ROOT", tmp_path)
+    assert [spec["id"] for spec in _live_fixtures()] == ["window/concat_rows/control"]
 
 
 def _fixture_settings(spec: dict) -> dict:

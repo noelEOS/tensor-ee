@@ -13,18 +13,9 @@ Source arithmetic: HLS geospatial_fm.py at
 https://github.com/NASA-IMPACT/hls-foundation-os/blob/3b6d401f3b4527059af0e44bd640225285e1933d/geospatial_fm/geospatial_fm.py
 and timm Attention/Block at
 https://github.com/huggingface/pytorch-image-models/blob/7096b52a613eefb4f6d8107366611c8983478b19/timm/models/vision_transformer.py
-The encoder uses post-product score scaling, exact GELU, LN eps1e-5; neck LN eps1e-6.
+The encoder uses post-product score scaling, exact GELU, LayerNorm epsilon 1e-5; neck epsilon 1e-6.
 Parameter names follow those sources and the MMSegmentation FCNHead hierarchy.
 
-Capacity estimates at default width: 97,602,818 float state values, 122,783,330
-logical constant values with shared matrices counted once; 145.795G MACs/crop.
-The 3x3 head contributes 60.897% of MACs. Proposed saved cuts are paired spatial
-and class images after each encoder block, then after each upsampling and before
-the head. Conservative separate-branch costs fit 24M constants per encoder block;
-every saved boundary has at most768 bands. The largest image operand is
-[196,3072], 602,112 values or4,816,896 bytes widened to double; the largest
-parameter matrix holds2,359,296 values. These are array counts, not peak memory. Request bytes need actual sizing with
-the chosen table manifest. No whole-model live or runtime-capacity claim is made.
 Region inference is refused: each call covers one complete independent crop and
 keeps its final convolution's zero-padding separate from neighboring crops.
 """
@@ -42,10 +33,10 @@ from ...core.ops import WindowOps
 from ...core.tensor import Raster, ServerArray, WindowTensor, band_names
 from ...weights.constants import ValueLayout, WindowLayout, row_constant
 from ...blocks.window.activations import gelu, relu
-from ...blocks.window.attention import split_heads, naive_attention
+from ...blocks.window.attention import class_token_attention
 from ...blocks.window.conv import Conv3x3Constants, conv3x3_window
 from ...blocks.window.linear import LinearConstants, linear, conv1x1
-from ...blocks.window.merge import add, concat_rows
+from ...blocks.window.merge import add
 from ...blocks.window.normalization import (
     BatchNormConstants, batch_norm, layer_norm, layer_norm2d,
 )
@@ -291,7 +282,7 @@ class LibraryBackend:
     def norm(self, tensor, prefix, eps):
         gamma, beta = self.norms[prefix, tensor.rows]
         layout = WindowLayout(tensor.window)
-        if eps == 1e-6:
+        if prefix in ("neck.fpn1.1.ln", "neck.fpn2.1.ln"):
             output = layer_norm2d(
                 self.ops, tensor.image, gamma, beta, dim=tensor.channels, rows=layout, eps=eps,
             )
@@ -316,28 +307,10 @@ class LibraryBackend:
         )
         if not valid:
             raise ValueError("attention requires W14 spatial and W1 class rows on the same crop grid")
-        spatial_heads = split_heads(self.ops, spatial.image, dim, heads)
-        class_heads = split_heads(self.ops, cls.image, dim, heads)
-        outputs = [[], []]
-        for head in range(heads):
-            keys = concat_rows(
-                self.ops, [class_heads[f"k_h{head}"], spatial_heads[f"k_h{head}"]],
-                rows=(1, 196), channels=dim // heads,
-            )
-            values = concat_rows(
-                self.ops, [class_heads[f"v_h{head}"], spatial_heads[f"v_h{head}"]],
-                rows=(1, 196), channels=dim // heads,
-            )
-            for index, part in enumerate((spatial_heads, class_heads)):
-                output = naive_attention(
-                    self.ops, part[f"q_h{head}"], keys, values,
-                    tokens=197, dim=dim // heads, score_scale=(dim // heads) ** -0.5,
-                )["output"]
-                outputs[index].append(output)
-        return (
-            spatial.like(self.ops.cat_cols(outputs[0]), dim),
-            cls.like(self.ops.cat_cols(outputs[1]), dim),
+        spatial_output, class_output = class_token_attention(
+            self.ops, spatial.image, cls.image, dim=dim, heads=heads, window=14,
         )
+        return spatial.like(spatial_output, dim), cls.like(class_output, dim)
 
     def upsample(self, tensor, prefix):
         projected = self.linear(tensor, prefix)

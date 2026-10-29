@@ -476,6 +476,8 @@ def test_constants_built_for_one_layout_are_refused_by_another(offline_ee):
 # validated patch, 8.
 DRO, REO = P.DOUBLE_ROUND_ONCE, P.ROUND_EACH_OP
 EXPECTED_METADATA = {
+    "class_token_attention": (Locality.WINDOW, None, False, M.COMPOSITE,
+        "Fixed — offline only: windows 3, 14; heads 3, 12; head widths 4, 64", "window"),
     "window_depth_to_space": (Locality.WINDOW, None, False, M.NO_ARITHMETIC,
         "Fixed — offline only: factor 2; windows 7, 14 to window 7", "window"),
     "concat_rows": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC,
@@ -639,7 +641,7 @@ NOT_BLOCKS = {
     "activations": set(),
     "normalization": {"BatchNormConstants", "layer_norm_values", "layer_norm_arrays", "batch_norm_values",
                       "batch_norm_arrays"},
-    "attention": {"relative_position_index", "coarse_projection", "window_coordinates", "region_boundaries",
+    "attention": {"class_token_attention_values", "class_token_attention_arrays", "relative_position_index", "coarse_projection", "window_coordinates", "region_boundaries",
                   "relative_bias_values", "relative_bias_arrays", "window_attention_values",
                   "window_attention_arrays"},
     "conv": {"DepthwiseConv3x3Constants", "depthwise_conv3x3_values", "depthwise_conv3x3_arrays", "Conv3x3Constants", "group_weight", "conv3x3_values", "conv3x3_arrays", "group_product_values",

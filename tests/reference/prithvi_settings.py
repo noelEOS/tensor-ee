@@ -1,7 +1,7 @@
 """NumPy mirrors of the window blocks at the Prithvi channel settings.
 
-Products accumulate in double; each operation rounds once to float32. Structured
-random tiles let the live fixtures exercise all channels inside the request cap.
+Products accumulate in double; each operation rounds once to float32.
+Full-column coefficient seeds and distinct channel codes expose channel order.
 """
 from __future__ import annotations
 

@@ -35,7 +35,7 @@ def _attention(q, k, v, scale):
     return (probability.astype(np.float64) @ v.astype(np.float64)).astype(np.float32)
 
 
-def attention(patch_qkv, cls_qkv, *, dim: int, heads: int):
+def class_token_attention(patch_qkv, cls_qkv, *, dim: int, heads: int):
     """Both query partitions attend to `[class; spatial]` keys and values."""
     d = dim // heads
     patch, cls = [], []

@@ -57,6 +57,16 @@ defaults. Live checks validated windows 5, 7, 8 and 12 with shift w // 2 (W-MSA,
 the single window, where timm disables the shift and SW-MSA is refused here), against
 timm; other windows and shifts, and other mask values, are not validated (the
 attention-core probes also ran 25 and 64 tokens).
+
+**Class-token attention.** Projected QKV matrices remain separate as
+``[window**2, 3 * dim]`` spatial rows and one ``[1, 3 * dim]`` class row.
+For each head, keys and values are concatenated in class-first order and both
+query partitions attend to all ``window**2 + 1`` keys. Scores are multiplied by
+``head_dim**-0.5`` after their product. The composite reuses ``split_heads``,
+``concat_rows`` and ``naive_attention`` with its ``round_each_op`` policy;
+head concatenation only moves values. It has no coefficient constants.
+Windows 3 and 14, heads 3 and 12, and head widths 4 and 64 have offline checks
+only; the composite has not been validated live.
 """
 
 from __future__ import annotations
@@ -64,13 +74,14 @@ from __future__ import annotations
 import numpy as np
 
 from ...core.errors import reject
-from ...core.metadata import (ANY_SETTINGS, COMPOSITE, NO_ARITHMETIC, BlockMetadata, Locality, Validated,
+from ...core.metadata import (ANY_SETTINGS, COMPOSITE, NO_ARITHMETIC, NOT_LIVE, BlockMetadata, Locality, Validated,
                               validate_metadata)
 from ...core.precision import DOUBLE_ROUND_ONCE, ROUND_EACH_OP, validate_policy
 from ...core.tensor import WINDOW
 from ...layouts.shift import _resolve_shift
 from ...weights.constants import ServerArray, WindowLayout, check_rows, constant_value
 from .linear import linear, linear_arrays, linear_values, no_constants
+from .merge import concat_rows
 
 MASK_VALUE = -100.0
 """timm's shifted-window mask value (production). The original research attention
@@ -236,6 +247,46 @@ def window_attention(ops, ln1, c, mask=None, *, window: int = WINDOW) -> dict:
     return t
 
 
+def class_token_attention(ops, spatial_qkv, cls_qkv, *, dim: int, heads: int,
+                          window: int = 14) -> tuple:
+    """Attention over a spatial window and a separately updated class row.
+
+    ``spatial_qkv`` is ``[window**2, 3*dim]`` and ``cls_qkv`` is ``[1, 3*dim]``
+    on the same physical crop pixel. The caller supplies aligned raw operands;
+    no spatial resampling occurs. Return the spatial ``[window**2, dim]`` and
+    class ``[1, dim]`` outputs. Each query attends to the same class-first K/V
+    rows. Head splitting and concatenation move values; the existing attention
+    core uses ``round_each_op`` and post-product score scaling.
+
+    There are no coefficients to prepare, so no constants class or builder is
+    required. Positive integral dimensions and a width divisible by heads are
+    required. The declared settings have offline evidence only.
+    """
+    if (isinstance(window, (bool, np.bool_))
+            or not isinstance(window, (int, np.integer)) or window < 1):
+        reject("window must be a positive integer")
+    spatial = split_heads(ops, spatial_qkv, dim, heads)
+    cls = split_heads(ops, cls_qkv, dim, heads)
+    head_dim = dim // heads
+    outputs = [[], []]
+    for head in range(heads):
+        keys = concat_rows(
+            ops, [cls[f"k_h{head}"], spatial[f"k_h{head}"]],
+            rows=(1, window * window), channels=head_dim,
+        )
+        values = concat_rows(
+            ops, [cls[f"v_h{head}"], spatial[f"v_h{head}"]],
+            rows=(1, window * window), channels=head_dim,
+        )
+        for index, part in enumerate((spatial, cls)):
+            result = naive_attention(
+                ops, part[f"q_h{head}"], keys, values,
+                tokens=window * window + 1, dim=head_dim, score_scale=head_dim ** -0.5,
+            )
+            outputs[index].append(result["output"])
+    return ops.cat_cols(outputs[0]), ops.cat_cols(outputs[1])
+
+
 # ---------------------------------------------------------------------------
 # The shifted-window mask
 # ---------------------------------------------------------------------------
@@ -316,10 +367,26 @@ def window_attention_arrays() -> int:
     return linear_arrays(bias=True) + relative_bias_arrays()
 
 
+def class_token_attention_values() -> int:
+    """No embedded coefficient values; QKV is supplied by the caller."""
+    return 0
+
+
+def class_token_attention_arrays() -> int:
+    """No asset arrays; QKV is supplied by the caller."""
+    return 0
+
+
 _WINDOWS = (5, 7, 8, 12)
 """The window sizes validated live."""
 
 METADATA = validate_metadata({
+    "class_token_attention": BlockMetadata(
+        name="class_token_attention", layout_in="W", layout_out="W", locality=Locality.WINDOW,
+        policy=COMPOSITE, embedded_constants=class_token_attention_values,
+        asset_arrays=class_token_attention_arrays, chip_edge_dependent=False,
+        status="Fixed — offline only: windows 3, 14; heads 3, 12; head widths 4, 64",
+        evidence=("docs/evidence/class-token-offline.json",), validated=NOT_LIVE),
     # Validated: any accepted call (token counts, widths, biases, masks and both scales varied).
     "naive_attention": BlockMetadata(
         name="naive_attention", layout_in="W", layout_out="W", locality=Locality.WINDOW,
