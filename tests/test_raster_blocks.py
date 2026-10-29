@@ -94,6 +94,7 @@ MOVED = [
 
 # The public R blocks: the names of the moved map targets.
 BLOCKS = {"conv2d": "conv", "pool2d": "pooling", "nearest_upsample": "resample",
+          "grouped_conv2d": "conv",
           "bilinear_upsample": "resample",
           "batch_norm": "normalization",
           "concatenate": "merge", "residual_add": "merge",
@@ -166,7 +167,7 @@ def test_every_map_entry_owned_by_l03_is_at_its_target():
         assert BLOCKS[name] == path.split("/")[-1][:-3]
     # Later blocks are additions, so the historical module map does not list them.
     assert {e["target"].split("::")[1] for e in moved} == set(BLOCKS) - {
-        "relu6", "hardsigmoid", "hardswish", "batch_norm", "bilinear_upsample"}
+        "relu6", "hardsigmoid", "hardswish", "batch_norm", "bilinear_upsample", "grouped_conv2d"}
     for entry in stays:
         path, name = entry["target"].split("::")
         assert entry["id"].split(":")[0] == path   # the converter stays where it is
@@ -200,6 +201,8 @@ def test_public_api_names_resolve_to_the_same_objects():
 POSITIONAL, KEYWORD = inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY
 _EMPTY = inspect.Parameter.empty
 BASE_PARAMETERS = {
+    "grouped_conv2d": [("raster", POSITIONAL, _EMPTY), ("module", POSITIONAL, _EMPTY),
+                       ("parameters", POSITIONAL, None), ("clip_footprints", KEYWORD, False)],
     "bilinear_upsample": [("raster", POSITIONAL, _EMPTY), ("constants", POSITIONAL, _EMPTY),
                           ("align_corners", KEYWORD, False), ("clip_footprints", KEYWORD, False)],
     "batch_norm": [("raster", POSITIONAL, _EMPTY), ("constants", POSITIONAL, _EMPTY),
@@ -271,7 +274,16 @@ def _fixture():
     return grid, three, two, conv
 
 
+def _grouped_fixture():
+    module = nn.Conv2d(3, 3, 3, padding=1, groups=3).eval()
+    with torch.no_grad():
+        module.weight.fill_(0.125)
+        module.bias.fill_(-0.25)
+    return module
+
+
 CALLS = {   # block name -> call(function, fixture, **policy)
+    "grouped_conv2d": lambda f, x, **kw: f(x[1], _grouped_fixture(), **kw),
     "bilinear_upsample": lambda f, x, **kw: f(x[1], RS.BilinearConstants(
         np.repeat(np.eye(4, dtype=np.float32), 2, axis=0),
         np.repeat(np.eye(4, dtype=np.float32), 2, axis=0), 2), **kw),
@@ -346,6 +358,8 @@ def test_compile_model_keeps_the_per_node_float32_cast(offline_ee):
 # Metadata: every public R block, locality from the inventory and receptive field
 # ---------------------------------------------------------------------------
 EXPECTED = {   # block -> (locality, radius, status)
+    "grouped_conv2d": (M.Locality.KERNEL, 2,
+        "Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2"),
     "bilinear_upsample": (M.Locality.KERNEL, 1, "Ready — factors 2, 3, 4 (align_corners=False), 2, 4 (align_corners=True)"),
     "batch_norm": (M.Locality.POINTWISE, None, "Ready"),
     "conv2d": (M.Locality.KERNEL, 3, "Ready"),
@@ -433,13 +447,16 @@ def test_metadata_costs():
     unbiased = nn.Conv2d(3, 2, 1, bias=False)
     assert entry.embedded_constants(unbiased) == 6 and entry.asset_arrays(unbiased) == 1
     for name, module in BLOCKS.items():
-        if name not in ("conv2d", "batch_norm", "bilinear_upsample"):
+        if name not in ("conv2d", "grouped_conv2d", "batch_norm", "bilinear_upsample"):
             metadata = getattr(BLOCK_MODULES[module], "METADATA")[name]
             assert metadata.embedded_constants() == metadata.asset_arrays() == 0
     assert NM.METADATA["batch_norm"].embedded_constants(3) == 12
     assert NM.METADATA["batch_norm"].asset_arrays() == 0
     assert RS.METADATA["bilinear_upsample"].embedded_constants(5, 7, 2) == 72
     assert RS.METADATA["bilinear_upsample"].asset_arrays() == 0
+    grouped = nn.Conv2d(8, 8, 3, padding=1, groups=4)
+    assert CV.METADATA["grouped_conv2d"].embedded_constants(grouped) == 8 * 2 * 9 + 8
+    assert CV.METADATA["grouped_conv2d"].asset_arrays(grouped) == 2
 
 
 def test_conv2d_embedded_constant_count_matches_its_inline_graph(offline_ee):
@@ -506,7 +523,7 @@ def test_what_each_retargeted_patch_reaches(offline_ee, monkeypatch):
     assert _reached(monkeypatch, A, "_ee_scalar") == {"leaky_relu", "common_score_mask", "softmax",
                                                       "relu6", "hardsigmoid", "hardswish",
                                                       "segmentation_outputs", "binary_threshold"}
-    assert _reached(monkeypatch, CV, "_inline_float32_array") == {"conv2d"}
+    assert _reached(monkeypatch, CV, "_inline_float32_array") == {"conv2d", "grouped_conv2d"}
 
 
 def test_patching_conv_inline_array_intercepts_compile_model(offline_ee):

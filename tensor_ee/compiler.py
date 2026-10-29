@@ -40,7 +40,7 @@ from .weights.constants import inline_float32_array as _inline_float32_array
 # R blocks moved to the library; these names are re-exports of the block
 # objects. The blocks look their helpers up in their own modules, so tests patch
 # tensor_ee.blocks.raster.conv._inline_float32_array.
-from .blocks.raster.conv import _names, _pair, conv2d
+from .blocks.raster.conv import _names, _pair, conv2d, grouped_conv2d
 from .blocks.raster.pooling import pool2d
 from .blocks.raster.resample import BilinearConstants, bilinear_upsample, nearest_upsample
 from .blocks.raster.merge import concatenate, residual_add
@@ -244,7 +244,7 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                   clip_footprints: bool = False) -> CompiledModel:
     """Convert an eval-mode model into an EE graph; do not evaluate or export it.
 
-    Supports Conv2d, ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
+    Supports Conv2d (including grouped/depthwise), ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
     Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, ReLU6, Hardswish, Hardsigmoid,
     eval Dropout/Dropout2d, channel Softmax,
     eval BatchNorm2d and F.batch_norm with fixed buffer/parameter statistics, torch.cat,
@@ -312,6 +312,8 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
 
     def convolve(key: str, raster: Raster, module: nn.Conv2d) -> Raster:
         parameters = None if weight_provider is None else weight_provider(key, module)
+        if module.groups != 1:
+            return grouped_conv2d(raster, module, parameters, clip_footprints=clip_footprints)
         return conv2d(raster, module, parameters, execution_dtype=execution_dtype,
                       clip_footprints=clip_footprints)
 
@@ -339,7 +341,7 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                     continue
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))
                 kind = call.kind
-                if kind == "conv":
+                if kind in ("conv", "grouped_conv"):
                     if not include_unfused_nodes and diagnostic_convolution(node, traced):
                         environment[node] = None
                         continue

@@ -151,8 +151,8 @@ with random weights, two input channels and two classes:
 
 Both architectures also pass at `64×96`, three input channels, three classes and
 decoder channels `(16, 8, 8, 4, 4)`: supported, build, equality true, max_abs 0.
-The six negative pairs trace and pass the adapter probe (max_abs 0), then remain
-unsupported with actual arithmetic blockers:
+At that revision, the six negative pairs traced and passed the adapter probe
+(max_abs 0), then were unsupported with these arithmetic blockers:
 
 | Pair | Representative blocker |
 |---|---|
@@ -163,6 +163,13 @@ unsupported with actual arithmetic blockers:
 | Unet/densenet121 | BatchNorm placement |
 | Unet/mobilenet_v2 | ReLU6; depthwise convolution |
 
+The table records those earlier results. Grouped/depthwise convolution now lowers
+to the raster `grouped_conv2d` block, validated live on small fixtures. Unet with
+`resnext50_32x4d` and `mobilenet_v2` is checked at 64 x 64 for local compatibility,
+offline graph construction with symbolic weights, and exact PyTorch adapter
+probe equality. These checks do not establish Earth Engine numerical agreement
+for either whole model.
+
 Run the full matrix explicitly; the default suite skips it:
 
 ```sh
@@ -171,7 +178,8 @@ TENSOR_EE_SMP_MATRIX=1 PYTHONPATH=. python -m pytest -q -s \
     tests/test_smp.py::test_full_smp_matrix
 ```
 
-The default suite retains Unet/resnet18 and UnetPlusPlus/resnet18 at 64, the
+The default suite retains Unet/resnet18 and UnetPlusPlus/resnet18 at 64, adds the
+two grouped/depthwise encoder checks at 64, and retains the
 Linknet refusal, contract tests with small components, and the SegWater identity.
 For a random model with the unchanged SegWater recipe at 224, the generic adapter
 and `Fixed224SMPUnet` produce **4/4 byte-identical output graphs** across diagnostics

@@ -1,6 +1,6 @@
 """X02b: every block's validated settings are machine-readable, and agree with its prose status.
 
-- **The record.** All 83 blocks carry ``BlockMetadata.validated``. Its setting names are real
+- **The record.** All 84 blocks carry ``BlockMetadata.validated``. Its setting names are real
   parameters (by signature) of the block function, its cost functions or the record's
   ``sources``, or ``window`` for a block with a W layout.
 - **The prose, setting by setting** (``settings_problems``). Where a status phrase names a
@@ -97,7 +97,7 @@ name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``
 
 
 def test_every_block_has_a_record():
-    assert len(BLOCKS) == 83
+    assert len(BLOCKS) == 84
     for key, entry in ENTRIES.items():
         assert isinstance(entry.validated, Validated), key
         offline = key in OFFLINE_ONLY
@@ -155,6 +155,7 @@ NEVER_VARIED = {
                                                           "softmax", "relu6", "hardsigmoid", "hardswish")},
     "raster/concatenate": {"dim"},
     "raster/bilinear_upsample": {"clip_footprints"},
+    "raster/grouped_conv2d": {"clip_footprints"},
     "window/layer_norm": {"eps"},
     "window/batch_norm": {"eps"},
     "raster/batch_norm": {"eps", "clip_footprints"},
@@ -168,6 +169,8 @@ NEVER_VARIED = {
 STATUS_ONLY = {
     # block -> (status numbers that name no setting of the block, the reason).
     "window/conv3x3_window": ({1}, "stride 1, the block's only stride (no stride setting)"),
+    "raster/grouped_conv2d": ({1, 2, 3, 5}, "kernel, stride, channels per group and multiplier are settings "
+                                            "of the PyTorch module, not parameters of the block"),
     "window/decimate": ({32, 64, 160, 256}, "decimate takes no width: the widths say where the model ran each factor"),
     "window/mix_ffn": ({4}, "hidden 4 × width, the MLP ratio, read from the weights"),
     "window/swin_mlp_branch": ({4}, "hidden 4 × width, the MLP ratio, read from the weights"),

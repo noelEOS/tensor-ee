@@ -74,7 +74,6 @@ class TestCompiler(ApiTestCase):
 
     def test_unsupported_convolution_semantics_are_rejected(self):
         models = [nn.Conv2d(2, 2, 3, padding=1, stride=3),
-                  nn.Conv2d(2, 2, 3, padding=1, groups=2),
                   nn.Conv2d(2, 2, 2, padding=1),
                   nn.Conv2d(2, 2, 3, padding=0),
                   nn.Conv2d(2, 2, 3, padding=1, padding_mode="reflect")]

@@ -421,7 +421,7 @@ Each block's default policy:
 
 | Blocks | Default |
 |---|---|
-| R: `conv2d`, `pool2d`, `nearest_upsample`, `bilinear_upsample`, `concatenate`, `residual_add`, `batch_norm`, `relu`, `sigmoid`, `leaky_relu`, `silu`, `gelu`, `tanh`, `relu6`, `hardsigmoid`, `hardswish`, `eval_dropout`, `softmax`, `segmentation_outputs`, `binary_threshold` | `float32_operands` (softmax and outputs keep their `toDouble()` score widening) |
+| R: `conv2d`, `grouped_conv2d`, `pool2d`, `nearest_upsample`, `bilinear_upsample`, `concatenate`, `residual_add`, `batch_norm`, `relu`, `sigmoid`, `leaky_relu`, `silu`, `gelu`, `tanh`, `relu6`, `hardsigmoid`, `hardswish`, `eval_dropout`, `softmax`, `segmentation_outputs`, `binary_threshold` | `float32_operands` (softmax and outputs keep their `toDouble()` score widening) |
 | W/V: `naive_attention` (scores, softmax, value product) | `round_each_op` |
 | W/V: `linear`/`conv1x1`, `layer_norm`, `layer_norm2d`, `gelu`, `batch_norm`, `conv3x3_window`, `window_resize`, `window_matrix_resize`, `window_pool`, `patch_embed`, `patch_merge` | `double_round_once` |
 | W: `group_product` (unrounded partial), fusion `grouped_double` | `double_round_once` / `grouped_double` |

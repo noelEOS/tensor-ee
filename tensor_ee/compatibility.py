@@ -150,7 +150,7 @@ def check_compatibility(model: nn.Module, input_shape: tuple[int, int, int, int]
                 call = semantic_call(node, graph)
                 if call.kind == "batchnorm_constant":
                     continue
-                if call.kind == "conv":
+                if call.kind in ("conv", "grouped_conv"):
                     if not diagnostic_convolution(node, graph):
                         count += int(call.module.weight.numel()) + (0 if call.module.bias is None else int(call.module.bias.numel()))
                 elif call.kind == "batchnorm":

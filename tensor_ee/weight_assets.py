@@ -39,6 +39,7 @@ def effective_convolutions(model: nn.Module) -> list[ConvolutionWeights]:
     BN node.  Original conv diagnostics are deliberately absent from the asset.
     Standalone BatchNorm coefficients stay inline and are never served as assets.
     Bilinear interpolation coefficients also stay inline; only convolutions are collected.
+    Grouped and folded grouped weights keep [out, in_per_group * kh * kw] storage.
     """
     if any(module.training for module in model.modules()):
         raise ValueError("Set model.eval() before collecting inference weights")
@@ -53,7 +54,7 @@ def effective_convolutions(model: nn.Module) -> list[ConvolutionWeights]:
             call = semantic_call(node, traced)
         except UnsupportedOperation as error:
             raise UnsupportedOperation(f"At FX node {node.name} ({node.target}): {error}") from error
-        if call.kind == "conv" and not diagnostic_convolution(node, traced):
+        if call.kind in ("conv", "grouped_conv") and not diagnostic_convolution(node, traced):
             result.append(convolution_weights(node.name, call.module, str(node.target)))
         elif call.kind == "batchnorm":
             source = str(call.options["predecessor"].target) + "+" + str(node.target)

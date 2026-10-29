@@ -1,6 +1,6 @@
 """Raster-layout (R) blocks of the native EE library: the CNN path's compute blocks.
 
-- ``conv``: ``conv2d``;
+- ``conv``: ``conv2d``, ``grouped_conv2d``;
 - ``pooling``: ``pool2d``;
 - ``resample``: ``nearest_upsample``, ``BilinearConstants``, ``bilinear_upsample``;
 - ``normalization``: ``BatchNormConstants``, ``batch_norm``;
@@ -24,7 +24,7 @@ and ``tensor_ee.weights``. Nothing here imports a research folder, the
 converter (``compiler``, ``semantics``, ...) or the models.
 """
 
-from .conv import conv2d
+from .conv import conv2d, grouped_conv2d
 from .pooling import pool2d
 from .resample import BilinearConstants, bilinear_upsample, nearest_upsample
 from .normalization import BatchNormConstants, batch_norm
@@ -34,6 +34,7 @@ from .activations import (common_score_mask, eval_dropout, gelu, hardsigmoid, ha
 from .outputs import SegmentationOutputs, binary_threshold, segmentation_outputs
 
 __all__ = ["conv2d", "pool2d", "nearest_upsample", "concatenate", "residual_add",
+           "grouped_conv2d",
            "BilinearConstants", "bilinear_upsample",
            "BatchNormConstants", "batch_norm",
            "relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh", "relu6", "hardsigmoid",

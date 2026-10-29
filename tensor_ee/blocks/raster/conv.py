@@ -7,7 +7,7 @@ Moved whole from ``tensor_ee.compiler`` (``conv2d``, ``_pair``, ``_names``) and
 of these objects. The errors they raise, ``SemanticUnknown`` and ``reject``
 (here ``_reject``), are in ``tensor_ee.core.errors``.
 
-Supported settings (contract section 8): odd kernels with same padding, stride
+``conv2d`` supported settings (contract section 8): odd kernels with same padding, stride
 1 or 2, dilation 1, groups 1, zero padding, finite float32 coefficients. Other
 strides stay rejected.
 
@@ -15,10 +15,33 @@ Precision policy ``float32_operands`` (contract section 7): the weight and bias
 arrays are cast ``.float()`` before ``matrixMultiply``. The node output is
 materialized with ``.toFloat()`` by the caller (``compile_model`` or the
 ``tensor_ee.primitives`` facade), not here.
+
+``grouped_conv2d`` is a separate block for groups > 1, including depthwise and
+channel multipliers. It computes bias[o] + sum_{c,ky,kx} w[o,c,ky,kx] * x[c,ky,kx]
+over the input channels in o's group. It shares the spatial/coefficient checks,
+channel-major neighbourhood-band ordering, zero extension and stride sampling.
+
+Its patch is reshaped to [groups, 1, in_per_group * kh * kw], then explicitly
+repeated to [groups, out_per_group, in_per_group * kh * kw]. Weights have that
+same shape: one elementwise product and one last-axis reduction serve every
+group, with no per-group graph and no zero-filled block-diagonal matrix.
+Inline and supplied weights use [out, in_per_group * kh * kw] in PyTorch's
+flatten order; bias is [out, 1]. Float32 operands are restored through the
+existing coefficient helpers, then weights are widened for double products and
+reduction, as in the window depthwise block. Bias is added in double; the caller
+materializes the output once under ``float32_operands``.
+
+Validated live on 5 x 7 inputs with clip_footprints=False (Earth Engine equal to the
+NumPy mirror in every value): depthwise 3 x 3 at strides 1/2 with and without bias,
+depthwise 5 x 5 at stride 1 with bias, grouped 8 -> 8 with 4 groups (2 channels per
+group), and a 4 -> 8 channel multiplier with 4 groups (both 3 x 3, stride 1, with bias).
+Kernel, stride and groups are settings of the PyTorch module, so the record names only
+clip_footprints and the status names the module settings.
 """
 
 from __future__ import annotations
 
+from numbers import Integral
 from typing import Any
 
 import ee
@@ -26,7 +49,7 @@ import torch
 from torch import nn
 
 from ...core.errors import SemanticUnknown, UnsupportedOperation, reject as _reject
-from ...core.metadata import ANY_SETTINGS, BlockMetadata, Locality, validate_metadata
+from ...core.metadata import ANY_SETTINGS, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
 # Library converters and coefficient transport. These module-level bindings are
@@ -76,7 +99,7 @@ def _coefficient_field(value: Any, name: str, shape: tuple[int, ...]) -> None:
         _reject(f"Local coefficient {name} shape must be {shape}, received {actual}", "coefficient_shape")
 
 
-def conv_options(module: nn.Conv2d) -> tuple[tuple[int, int], int]:
+def _conv_options(module: nn.Conv2d, *, grouped: bool) -> tuple[tuple[int, int], int]:
     kh, kw = _pair(module.kernel_size)
     if kh % 2 != 1 or kw % 2 != 1:
         _reject("Conv2d kernels must have odd height and width")
@@ -84,14 +107,42 @@ def conv_options(module: nn.Conv2d) -> tuple[tuple[int, int], int]:
     if padding != (kh // 2, kw // 2):
         _reject("Conv2d must use same padding (kernel_size // 2)")
     stride = _pair(module.stride)
-    if (stride not in ((1, 1), (2, 2)) or _pair(module.dilation) != (1, 1)
-            or module.groups != 1 or module.padding_mode != "zeros"):
+    if grouped:
+        groups = module.groups
+        if (isinstance(groups, bool) or not isinstance(groups, Integral) or groups <= 1
+                or module.in_channels % groups or module.out_channels % groups):
+            _reject("Grouped Conv2d requires groups > 1 dividing both channel counts")
+        if module.padding == "same" and stride == (2, 2):
+            _reject("Grouped Conv2d stride-2 'same' padding is unsupported; use explicit symmetric padding")
+        if (stride not in ((1, 1), (2, 2)) or _pair(module.dilation) != (1, 1)
+                or module.padding_mode != "zeros"):
+            _reject("Grouped Conv2d requires stride=1 or 2, dilation=1, padding_mode='zeros'")
+    elif (stride not in ((1, 1), (2, 2)) or _pair(module.dilation) != (1, 1)
+          or module.groups != 1 or module.padding_mode != "zeros"):
         _reject("Conv2d requires stride=1 or 2, dilation=1, groups=1, padding_mode='zeros'")
-    _coefficient_field(module.weight, "Conv2d.weight", (module.out_channels, module.in_channels, kh, kw))
+    inputs = module.in_channels // module.groups if grouped else module.in_channels
+    _coefficient_field(module.weight, "Conv2d.weight", (module.out_channels, inputs, kh, kw))
     if module.bias is not None:
         _coefficient_field(module.bias, "Conv2d.bias", (module.out_channels,))
     finite_coefficients(module)
     return (kh, kw), stride[0]
+
+
+def conv_options(module: nn.Conv2d) -> tuple[tuple[int, int], int]:
+    """The groups=1 convolution's existing checks and refusal messages."""
+    return _conv_options(module, grouped=False)
+
+
+def grouped_conv_options(module: nn.Conv2d) -> tuple[tuple[int, int], int]:
+    """The same spatial/coefficient checks, with groups > 1 and grouped weight shape."""
+    return _conv_options(module, grouped=True)
+
+
+def _patch_bands(bands, kh, kw):
+    """PyTorch flatten order: input channels, then kernel rows and columns."""
+    return [f"{band}_{dx}_{dy}" for band in bands
+            for dy in range(-(kh // 2), kh // 2 + 1)
+            for dx in range(-(kw // 2), kw // 2 + 1)]
 
 
 def conv2d(raster: Raster, module: nn.Conv2d,
@@ -110,9 +161,7 @@ def conv2d(raster: Raster, module: nn.Conv2d,
     # Never rely on the EE-generated default band ordering. Torch's flattened
     # OIHW weights require channels, then rows, then columns. EE suffixes use
     # offsets relative to the kernel origin, with x before y.
-    patch_bands = [f"{band}_{dx}_{dy}" for band in raster.bands
-                   for dy in range(-(kh // 2), kh // 2 + 1)
-                   for dx in range(-(kw // 2), kw // 2 + 1)]
+    patch_bands = _patch_bands(raster.bands, kh, kw)
     patch = (_zero_extended(raster).neighborhoodToBands(kernel)
              .select(patch_bands).toArray().toArray(1))
     if parameters is None:
@@ -141,6 +190,46 @@ def conv2d(raster: Raster, module: nn.Conv2d,
     return _stride_sample(result, bands, raster.grid, stride[0], clip_footprints)
 
 
+def grouped_conv2d(raster: Raster, module: nn.Conv2d,
+                   parameters: tuple[ee.Array, ee.Array | None] | None = None,
+                   *, clip_footprints: bool = False, policy: str = FLOAT32_OPERANDS) -> Raster:
+    """Grouped cross-correlation: one repeated patch, double product and tap reduction.
+
+    ``parameters`` follows conv2d's asset layout, with the grouped weight's actual
+    input width: [out, in_per_group * kh * kw], bias [out, 1] or None.
+    """
+    validate_policy(policy, allowed=FLOAT32_OPERANDS)
+    (kh, kw), stride = grouped_conv_options(module)
+    if module.in_channels != len(raster.bands):
+        raise UnsupportedOperation("Conv2d input channel count does not match raster")
+    groups = module.groups
+    out_per_group = module.out_channels // groups
+    terms = module.in_channels // groups * kh * kw
+    kernel = ee.Kernel.fixed(kw, kh, [[1] * kw for _ in range(kh)], kw // 2, kh // 2, False)
+    patch = (_zero_extended(raster).neighborhoodToBands(kernel)
+             .select(_patch_bands(raster.bands, kh, kw)).toArray()
+             .arrayReshape(ee.Image(ee.Array([groups, 1, terms])), 3)
+             .arrayRepeat(1, out_per_group))
+    if parameters is None:
+        weights = _inline_float32_array(module.weight.detach().cpu().float()
+                                       .reshape(module.out_channels, -1).tolist())
+        bias = (None if module.bias is None else
+                _inline_float32_array([[value] for value in module.bias.detach().cpu().float().tolist()]))
+    else:
+        weights, bias = parameters
+    weights = weights.float().double().reshape([groups, out_per_group, terms])
+    product = patch.multiply(ee.Image(weights))
+    result = (product.arrayReduce(ee.Reducer.sum(), [2])
+              .arrayReshape(ee.Image(ee.Array([module.out_channels, 1])), 2))
+    if bias is not None:
+        result = result.add(ee.Image(bias.float()))
+    bands = _names(module.out_channels)
+    result = result.arrayProject([0]).arrayFlatten([list(bands)])
+    if stride > 1:
+        result = _project(result, raster.grid, clip_footprints)
+    return _stride_sample(result, bands, raster.grid, stride, clip_footprints)
+
+
 # ---------------------------------------------------------------------------
 # Locality and cost metadata (contract section 9)
 # ---------------------------------------------------------------------------
@@ -165,7 +254,25 @@ def _no_coefficients(*args, **kwargs) -> int:
     return 0
 
 
+def grouped_conv2d_values(module: nn.Conv2d) -> int:
+    """The grouped weight's actual elements, plus the optional bias; no zero padding."""
+    return int(module.weight.numel()) + (0 if module.bias is None else int(module.bias.numel()))
+
+
+def grouped_conv2d_arrays(module: nn.Conv2d) -> int:
+    """One asset weight array and the optional bias, as for the convolution transport."""
+    return _conv_asset_arrays(module)
+
+
 METADATA = validate_metadata({
+    "grouped_conv2d": BlockMetadata(
+        name="grouped_conv2d", layout_in="R", layout_out="R", locality=Locality.KERNEL,
+        policy=FLOAT32_OPERANDS, embedded_constants=grouped_conv2d_values,
+        asset_arrays=grouped_conv2d_arrays, radius=2,
+        status="Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2",
+        evidence=("docs/evidence/raster-grouped-conv-offline.json",
+                  "docs/evidence/live-fixtures/20261029T125301Z-grouped_conv.json"),
+        validated=Validated(({"clip_footprints": (False,)},))),
     # Radius k // 2 for a k x k kernel (receptive_field._window_axis with
     # padding k // 2). The static field records the largest validated kernel,
     # 7 (radius 3); kernels 1 and 3 have radius 0 and 1.
