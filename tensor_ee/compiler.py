@@ -44,6 +44,7 @@ from .blocks.raster.conv import _names, _pair, conv2d
 from .blocks.raster.pooling import pool2d
 from .blocks.raster.resample import nearest_upsample
 from .blocks.raster.merge import concatenate, residual_add
+from .blocks.raster.normalization import BatchNormConstants, batch_norm
 # The activations were private here; the library names them without the
 # underscore. Tests patch tensor_ee.blocks.raster.activations._finish and
 # ._ee_scalar, where these functions look the names up.
@@ -71,7 +72,7 @@ class CompiledModel(Raster):
 _POINTWISE_MODULES = (nn.LeakyReLU, nn.SiLU, nn.GELU, nn.Tanh, nn.Dropout, nn.Dropout2d, nn.Softmax,
                       nn.ReLU6, nn.Hardsigmoid, nn.Hardswish)
 _UNSUPPORTED_DROPOUT_MODULES = (nn.Dropout1d, nn.Dropout3d, nn.AlphaDropout, nn.FeatureAlphaDropout)
-_ROOT_MODULES = (nn.Conv2d, nn.ReLU, nn.AvgPool2d, nn.MaxPool2d,
+_ROOT_MODULES = (nn.Conv2d, nn.BatchNorm2d, nn.ReLU, nn.AvgPool2d, nn.MaxPool2d,
                  nn.Upsample, nn.Sigmoid, nn.Identity, *_POINTWISE_MODULES,
                  *_UNSUPPORTED_DROPOUT_MODULES)
 
@@ -246,7 +247,7 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     Supports Conv2d, ReLU, AvgPool2d, MaxPool2d, nearest Upsample,
     Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, ReLU6, Hardswish, Hardsigmoid,
     eval Dropout/Dropout2d, channel Softmax,
-    eval BatchNorm2d directly following Conv2d, torch.cat,
+    eval BatchNorm2d and F.batch_norm with fixed buffer/parameter statistics, torch.cat,
     residual tensor addition, torch.relu, F.relu, torch.sigmoid, and F.interpolate with a static integer
     scale factor, or a proven size with that same integer nearest mapping.
     Unsupported operators fail explicitly with their FX node.
@@ -333,6 +334,8 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                 continue
             else:
                 call = semantic_call(node, traced)
+                if call.kind == "batchnorm_constant":
+                    continue
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))
                 kind = call.kind
                 if kind == "conv":
@@ -345,7 +348,15 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                     folded.append(node.name)
                 else:
                     inputs = tuple(environment[x] for x in call.inputs)
-                    if kind == "pool":
+                    if kind == "batch_norm":
+                        options = call.options
+                        coefficients = {name: (None if options[name] is None else
+                                               options[name].detach().cpu().numpy())
+                                        for name in ("gamma", "beta", "mean", "var")}
+                        constants = BatchNormConstants(**coefficients, bands=inputs[0].bands,
+                                                       eps=options["eps"])
+                        raster = batch_norm(inputs[0], constants, clip_footprints=clip_footprints)
+                    elif kind == "pool":
                         raster = pool2d(inputs[0], call.module, clip_footprints=clip_footprints)
                     elif kind == "nearest":
                         raster = nearest_upsample(inputs[0], call.options["factor"], clip_footprints=clip_footprints)

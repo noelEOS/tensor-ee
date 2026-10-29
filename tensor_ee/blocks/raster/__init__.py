@@ -3,6 +3,7 @@
 - ``conv``: ``conv2d``;
 - ``pooling``: ``pool2d``;
 - ``resample``: ``nearest_upsample``;
+- ``normalization``: ``BatchNormConstants``, ``batch_norm``;
 - ``merge``: ``concatenate``, ``residual_add``;
 - ``activations``: ``relu``, ``sigmoid``, ``leaky_relu``, ``silu``, ``gelu``, ``tanh``,
   ``relu6``, ``hardsigmoid``, ``hardswish``, ``eval_dropout``, ``common_score_mask``,
@@ -26,12 +27,14 @@ converter (``compiler``, ``semantics``, ...) or the models.
 from .conv import conv2d
 from .pooling import pool2d
 from .resample import nearest_upsample
+from .normalization import BatchNormConstants, batch_norm
 from .merge import concatenate, residual_add
 from .activations import (common_score_mask, eval_dropout, gelu, hardsigmoid, hardswish, leaky_relu,
                           relu, relu6, sigmoid, silu, softmax, tanh)
 from .outputs import SegmentationOutputs, binary_threshold, segmentation_outputs
 
 __all__ = ["conv2d", "pool2d", "nearest_upsample", "concatenate", "residual_add",
+           "BatchNormConstants", "batch_norm",
            "relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh", "relu6", "hardsigmoid",
            "hardswish", "eval_dropout", "common_score_mask", "softmax",
            "SegmentationOutputs", "segmentation_outputs", "binary_threshold"]

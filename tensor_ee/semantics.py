@@ -214,6 +214,8 @@ def specialize_plumbing(graph: GraphModule, input_shape: tuple[int, int, int, in
                 node.args, node.kwargs = (options.pop("input"),), options
                 changed = True
             call = semantic_call(node, graph)
+            if call.kind == "batchnorm_constant":
+                continue
             if all(x in metadata for x in call.inputs):
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))
         except (UnsupportedOperation, SemanticUnknown, TypeError) as error:
@@ -243,43 +245,108 @@ def _inputs(values: Any) -> tuple[Node, ...]:
     return tuple(values)
 
 
-def batchnorm_predecessor(node: Node, graph: GraphModule) -> tuple[Node, Node, nn.Conv2d]:
-    module = graph.get_submodule(str(node.target))
-    if module.training or not module.track_running_stats:
-        _reject("BatchNorm must use fixed inference running statistics", "training_mode" if module.training else "unsupported_option")
-    predecessor = _bind_options(_input_arguments, node.args, node.kwargs)["input"]
-    if (not isinstance(predecessor, Node) or predecessor.op != "call_module" or len(predecessor.users) != 1):
-        _reject("BatchNorm must directly follow an unshared Conv2d")
-    conv = graph.get_submodule(str(predecessor.target))
-    if not isinstance(conv, nn.Conv2d) or not module.track_running_stats:
-        _reject("BatchNorm requires a preceding Conv2d and running statistics")
-    if conv.training or module.training:
-        _reject("Set model.eval() before compilation", "training_mode")
-    if module.num_features != conv.out_channels or module.running_mean is None or module.running_var is None:
-        _reject("BatchNorm running statistics must match convolution output channels")
-    if isinstance(module.eps, bool) or not isinstance(module.eps, Real) or not math.isfinite(module.eps):
+def _batchnorm_options(mean, var, gamma, beta, eps, channels) -> dict[str, Any]:
+    """Static checks shared by folded, standalone and functional inference BN."""
+    if isinstance(eps, bool) or not isinstance(eps, Real) or not math.isfinite(eps):
         _reject("BatchNorm eps must be a finite static real")
-    conv_options(conv)
-    for name in ("running_mean", "running_var"):
-        _coefficient_field(getattr(module, name), f"BatchNorm2d.{name}", (module.num_features,))
-    for name in ("weight", "bias"):
-        value = getattr(module, name)
-        if module.affine or value is not None:
-            _coefficient_field(value, f"BatchNorm2d.{name}", (module.num_features,))
-    finite_coefficients(module)
+    for name, value in (("running_mean", mean), ("running_var", var), ("weight", gamma), ("bias", beta)):
+        if name in ("weight", "bias") and value is None:
+            continue
+        _coefficient_field(value, f"BatchNorm2d.{name}", (channels,))
+        try:
+            if not bool(torch.isfinite(value.detach()).all().item()):
+                _reject(f"Local coefficient BatchNorm2d.{name} must contain only finite tensors", "nonfinite_coefficients")
+        except UnsupportedOperation:
+            raise
+        except Exception as error:
+            raise SemanticUnknown(f"Cannot inspect BatchNorm statistics: {error}") from error
     try:
-        if not bool(((module.running_var.detach() + module.eps) > 0).all().item()):
+        if not bool(((var.detach() + eps) > 0).all().item()):
             _reject("BatchNorm running variance plus eps must be positive", "nonfinite_coefficients")
     except UnsupportedOperation:
         raise
     except Exception as error:
         raise SemanticUnknown(f"Cannot inspect BatchNorm statistics: {error}") from error
+    return dict(mean=mean, var=var, gamma=gamma, beta=beta, eps=eps, channels=channels)
+
+
+def _module_batchnorm_options(module: nn.BatchNorm2d) -> dict[str, Any]:
+    if module.training or not module.track_running_stats:
+        _reject("BatchNorm must use fixed inference running statistics", "training_mode" if module.training else "unsupported_option")
+    if module.affine:
+        for name in ("weight", "bias"):
+            _coefficient_field(getattr(module, name), f"BatchNorm2d.{name}", (module.num_features,))
+    options = _batchnorm_options(module.running_mean, module.running_var, module.weight,
+                                 module.bias, module.eps, module.num_features)
+    finite_coefficients(module)
+    return options
+
+
+def batchnorm_predecessor(node: Node, graph: GraphModule) -> tuple[Node, Node, nn.Conv2d] | None:
+    """The unchanged convolution fold, or None for a standalone inference BatchNorm."""
+    module = graph.get_submodule(str(node.target))
+    _module_batchnorm_options(module)
+    predecessor = _bind_options(_input_arguments, node.args, node.kwargs)["input"]
+    if (not isinstance(predecessor, Node) or predecessor.op != "call_module" or len(predecessor.users) != 1):
+        return None
+    conv = graph.get_submodule(str(predecessor.target))
+    if not isinstance(conv, nn.Conv2d):
+        return None
+    if conv.training or module.training:
+        _reject("Set model.eval() before compilation", "training_mode")
+    if module.num_features != conv.out_channels:
+        _reject("BatchNorm running statistics must match convolution output channels")
+    conv_options(conv)
     # Preserve the compiler's existing folding operation and coefficient identity.
     fused = torch.nn.utils.fuse_conv_bn_eval(conv, module)
     finite_coefficients(fused)
     source = _bind_options(_input_arguments, predecessor.args, predecessor.kwargs)["input"]
     _inputs((source,))
     return predecessor, source, fused
+
+
+_BATCHNORM_CONSTANTS = ("running_mean", "running_var", "weight", "bias")
+
+
+def _batchnorm_attribute(node: Node, graph: GraphModule):
+    if not isinstance(node, Node) or node.op != "get_attr":
+        _reject("Functional BatchNorm coefficients must be get_attr buffers or parameters")
+    try:
+        return graph.get_parameter(str(node.target))
+    except AttributeError:
+        try:
+            return graph.get_buffer(str(node.target))
+        except AttributeError:
+            _reject("Functional BatchNorm coefficients must be get_attr buffers or parameters")
+
+
+def batchnorm_constant(node: Node, graph: GraphModule) -> bool:
+    """Allow get_attr only when every use is one of F.batch_norm's four coefficients."""
+    if node.op != "get_attr" or not node.users:
+        return False
+    for user in node.users:
+        if user.op != "call_function" or user.target is not F.batch_norm:
+            return False
+        try:
+            options = _bind_options(F.batch_norm, user.args, user.kwargs)
+        except TypeError:
+            return False
+        if any(node in _nodes_in(value) for key, value in options.items() if key not in _BATCHNORM_CONSTANTS):
+            return False
+        if not any(options[key] is node for key in _BATCHNORM_CONSTANTS):
+            return False
+    try:
+        _batchnorm_attribute(node, graph)
+    except UnsupportedOperation:
+        return False
+    return True
+
+
+def _nodes_in(value):
+    from torch.fx.node import map_arg
+    nodes = []
+    map_arg(value, lambda node: nodes.append(node) or node)
+    return nodes
 
 
 def diagnostic_convolution(node: Node, graph: GraphModule) -> bool:
@@ -319,11 +386,26 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
             if isinstance(module, nn.Identity):
                 return SemanticCall("identity", inputs)
             if isinstance(module, nn.BatchNorm2d):
-                predecessor, source, fused = batchnorm_predecessor(node, graph)
-                return SemanticCall("batchnorm", inputs, {"source": source, "predecessor": predecessor}, fused)
+                folded = batchnorm_predecessor(node, graph)
+                if folded is not None:
+                    predecessor, source, fused = folded
+                    return SemanticCall("batchnorm", inputs, {"source": source, "predecessor": predecessor}, fused)
+                return SemanticCall("batch_norm", inputs, _module_batchnorm_options(module))
             _reject(f"Unsupported module {type(module).__name__}", "unsupported_operator")
         if node.op == "call_function":
             target = node.target
+            if target is F.batch_norm:
+                options = _bind_options(F.batch_norm, node.args, node.kwargs)
+                if options["training"] is not False:
+                    _reject("Functional BatchNorm training must be the literal False", "training_mode")
+                values = {key: (None if options[key] is None and key in ("weight", "bias")
+                                else _batchnorm_attribute(options[key], graph))
+                          for key in _BATCHNORM_CONSTANTS}
+                mean = values["running_mean"]
+                channels = mean.numel() if isinstance(mean, torch.Tensor) else 0
+                return SemanticCall("batch_norm", _inputs((options["input"],)),
+                                    _batchnorm_options(mean, values["running_var"], values["weight"],
+                                                       values["bias"], options["eps"], channels))
             if target in (torch.cat, torch.concat, torch.concatenate):
                 options = _bind_options(_cat_arguments, node.args, node.kwargs)
                 if "out" in node.kwargs:
@@ -355,6 +437,8 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
                 _reject("Residual addition requires two tensors and alpha=1 without out")
             values = (options["input"], options["other"]) if node.target == "add" else (options["input"],)
             return SemanticCall(str(node.target), _inputs(values))
+        if batchnorm_constant(node, graph):
+            return SemanticCall("batchnorm_constant", ())
         _reject(f"Unsupported FX operation {node.op}: {node.target}", "unsupported_operator")
     except TypeError as error:
         _reject(f"Invalid call arguments: {error}")
@@ -363,6 +447,8 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
 def infer_metadata(call: SemanticCall, inputs: tuple[TensorMetadata, ...]) -> TensorMetadata:
     first = inputs[0]
     n, c, h, w = first.shape
+    if call.kind == "batch_norm" and c != call.options["channels"]:
+        _reject("BatchNorm input channel count does not match raster", "input_shape")
     if call.kind == "conv":
         if c != call.module.in_channels:
             _reject("Conv2d input channel count does not match raster", "input_shape")

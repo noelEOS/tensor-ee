@@ -37,6 +37,7 @@ def effective_convolutions(model: nn.Module) -> list[ConvolutionWeights]:
     Names follow FX node keys, as ``compile_model`` does.  A convolution with a
     sole BatchNorm consumer is replaced by its folded convolution, keyed by the
     BN node.  Original conv diagnostics are deliberately absent from the asset.
+    Standalone BatchNorm coefficients stay inline and are never served as assets.
     """
     if any(module.training for module in model.modules()):
         raise ValueError("Set model.eval() before collecting inference weights")

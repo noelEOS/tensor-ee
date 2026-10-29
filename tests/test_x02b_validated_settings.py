@@ -1,6 +1,6 @@
 """X02b: every block's validated settings are machine-readable, and agree with its prose status.
 
-- **The record.** All 81 blocks carry ``BlockMetadata.validated``. Its setting names are real
+- **The record.** All 82 blocks carry ``BlockMetadata.validated``. Its setting names are real
   parameters (by signature) of the block function, its cost functions or the record's
   ``sources``, or ``window`` for a block with a W layout.
 - **The prose, setting by setting** (``settings_problems``). Where a status phrase names a
@@ -91,16 +91,17 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = set()
+OFFLINE_ONLY: set[str] = {"raster/batch_norm"}
 """The blocks with no live validation yet: their status is "Fixed — offline only" and their
-record is ``NOT_LIVE``. None today; every block holds at least one configuration."""
+record is ``NOT_LIVE``. Raster BatchNorm has offline fixtures only; the window block
+with the same name retains its live record."""
 
 
 def test_every_block_has_a_record():
-    assert len(BLOCKS) == 81
+    assert len(BLOCKS) == 82
     for key, entry in ENTRIES.items():
         assert isinstance(entry.validated, Validated), key
-        offline = key.partition("/")[2] in OFFLINE_ONLY
+        offline = key in OFFLINE_ONLY
         assert entry.validated.configurations or offline, key
         assert entry.status.startswith(M.OFFLINE_ONLY) == offline, key
         hash(entry)                                   # entries stay hashable
@@ -234,6 +235,10 @@ def record_numbers(record: Validated) -> dict[str, set[float]]:
 def test_the_record_agrees_with_the_prose_status(name):
     entry = ENTRIES[name]
     record = entry.validated
+    if name in OFFLINE_ONLY:
+        assert record == M.NOT_LIVE
+        assert entry.status.startswith(M.OFFLINE_ONLY)
+        return  # The prose describes offline coverage, not live settings.
     prose, ranges, derived = prose_numbers(entry.status)
     _, prefix = _settings_text(entry.status)
     by_setting = record_numbers(record)
