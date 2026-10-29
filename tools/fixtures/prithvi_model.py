@@ -110,7 +110,8 @@ def _build(ee, data):
     seed_grid = TokenGrid(32, 32, scale=1.0)
     names = tuple(f"b{i}" for i in range(6))
     seed_image = inline_raster(ee, grid.projection(ee), data.inputs["x"], names, periodic=True)
-    coordinates = ee.Image.pixelCoordinates(grid.projection(ee))
+    # pixelCoordinates gives pixel centres; floor them to the integer row and column.
+    coordinates = ee.Image.pixelCoordinates(grid.projection(ee)).floor()
     code = coordinates.select("y").multiply(224).add(coordinates.select("x")).multiply(2**-16).toFloat()
     source = seed_image.add(code)
     coefficients = constants(ee, _server_state(ee, data), config=_config())
