@@ -273,3 +273,27 @@ halo, and has no chip-edge dependence. Its status remains
 `Fixed — offline only: factor 2; windows 7, 14 to window 7` pending promotion.
 This supplies the value-moving part of a kernel-two, stride-two transposed
 convolution after an ordinary linear projection.
+
+
+## Patch embeddings without normalization
+
+The window patch embedding and its constants builder take keyword-only
+`norm=True`. This default preserves the normalized embedding and its existing
+graphs. Set `norm=False` on both `patch_embed_constants` and `patch_embed` for a
+biased patch projection with no following LayerNorm. The constants builder
+then reads only projection weights and bias; the cost functions take the same
+flag. A mismatched flag or non-boolean flag is refused. Input columns retain
+Conv2d/one-frame Conv3d order `(band, ky, kx)`.
+
+The `prithvi_settings` fixture selection covers patch16 with six bands and
+768 outputs, projection widths 768/2304/3072, channel normalization at 768,
+the bias-free 768-to-256 decoder convolution with BatchNorm, and the two-class
+classifier. Compact random dyadic tiles are expanded identically on the server
+and in the references, with every output channel read. These structured inputs
+keep the unchanged request budget; they do not establish behavior with an
+arbitrary dense coefficient matrix or server runtime memory. Existing statuses
+and validated records are unchanged. The preserved historical record does not
+encode `norm`: `check_settings` alone therefore cannot distinguish its values
+at legacy shapes. Historical evidence requires `norm=True`; `norm=False` has
+only the new offline evidence. Prithvi settings are outside the historical
+record on patch size, band count, width and window.

@@ -49,6 +49,15 @@ input bands (distinct names without regular-expression syntax, in any raster ord
 embedding widths 48, 96 and 128, and windows 5, 7, 8 and 12 (against timm's
 PatchEmbed); other patches and widths are not. The default bands
 ("VV", "VH") are recipe-facing: the Swin-T224 adapter's sensor names (contract section 11).
+
+The keyword-only norm=True setting retains the normalized embedding above.
+With norm=False the masked projection is returned directly: there is no
+LayerNorm arithmetic, extra rounding or normalization coefficient read.
+The constants builder and cost functions accept the same setting.
+Its patch16, six-band, width768, W14 case has offline evidence only;
+historical statuses and validated records remain unchanged. The historical
+record does not encode norm, so check_settings alone cannot distinguish its
+True/False values at legacy shapes; historical evidence requires norm=True.
 """
 
 from __future__ import annotations
@@ -87,16 +96,19 @@ class PatchEmbedConstants:
     rows: int                      # window ** 2 (49 at window 7)
 
 
-def patch_embed_constants(ops, pe: dict, rows=WINDOW_LAYOUT) -> PatchEmbedConstants:
+def patch_embed_constants(ops, pe: dict, rows=WINDOW_LAYOUT, *, norm: bool = True) -> PatchEmbedConstants:
     """pe: {"proj.weight" [dim, C patch^2] (Conv2d's weight flattened in (c, ky, kx) order;
     [96, 32] today), "proj.bias", "norm.weight", "norm.bias"} as NumPy arrays (inline) or
     ServerArrays (asset-backed). ``rows``: the layout the constants serve
-    (``WindowLayout(7)`` by default) or its row count."""
+    (``WindowLayout(7)`` by default) or its row count. ``norm=False`` builds only
+    the projection and does not require normalization coefficients."""
+    if not isinstance(norm, bool):
+        raise ValueError("norm must be a bool")
     rows = builder_rows(rows)
     return PatchEmbedConstants(
         proj=LinearConstants(ops, pe["proj.weight"], pe["proj.bias"], rows),
-        norm_weight=ops.constant(pe["norm.weight"], repeat_rows=rows),
-        norm_bias=ops.constant(pe["norm.bias"], repeat_rows=rows), rows=rows)
+        norm_weight=ops.constant(pe["norm.weight"], repeat_rows=rows) if norm else None,
+        norm_bias=ops.constant(pe["norm.bias"], repeat_rows=rows) if norm else None, rows=rows)
 
 
 _REGEX_SPECIAL = frozenset("\\^$.|?*+()[]{}")
@@ -140,7 +152,7 @@ def stride_columns(ee, x, grid, *, patch: int = PATCH, bands=BANDS):
 
 
 def patch_embed(ops, x, grid, c: PatchEmbedConstants, *, patch: int = PATCH, bands=BANDS,
-                window: int = WINDOW, policy: str = DOUBLE_ROUND_ONCE) -> dict:
+                window: int = WINDOW, policy: str = DOUBLE_ROUND_ONCE, norm: bool = True) -> dict:
     """{"pe_columns", "pe_patches", "pe_proj", "x"} from the input x on the input grid.
 
     "x" is the stage-1 input of the complete encoder: window layout on the stage-1
@@ -150,9 +162,15 @@ def patch_embed(ops, x, grid, c: PatchEmbedConstants, *, patch: int = PATCH, ban
     are refused, and so is a projection whose input width is not
     ``len(bands) * patch ** 2`` (proj.weight [dim, C patch^2], flattened (c, ky, kx)).
     Validated at patches 2, 4 and 8, 1 to 4 bands, widths 48, 96 and 128 and windows 5,
-    7, 8 and 12.
+    7, 8 and 12. ``norm=False`` omits LayerNorm; its constants must be built
+    with the same flag. The default retains the normalized embedding graph.
     """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
+    if not isinstance(norm, bool):
+        raise ValueError("norm must be a bool")
+    if (norm and (c.norm_weight is None or c.norm_bias is None)
+            or not norm and (c.norm_weight is not None or c.norm_bias is not None)):
+        raise ValueError("norm and patch embedding constants must agree")
     patch, bands = _check_patch_settings(patch, bands)
     columns = len(bands) * patch * patch
     if c.proj.in_features != columns:
@@ -167,7 +185,7 @@ def patch_embed(ops, x, grid, c: PatchEmbedConstants, *, patch: int = PATCH, ban
     t = {"pe_columns": cols, "pe_patches": to_windows(ee, cols, tokens, window=window)}
     check_rows(c, WindowLayout(window))
     t["pe_proj"] = linear(ops, t["pe_patches"], c.proj)
-    x1 = layer_norm(ops, t["pe_proj"], c.norm_weight, c.norm_bias, dim=dim)
+    x1 = layer_norm(ops, t["pe_proj"], c.norm_weight, c.norm_bias, dim=dim) if norm else t["pe_proj"]
     t["x"] = x1.updateMask(domain_mask(ee, coarse))
     return t
 
@@ -268,16 +286,20 @@ def patch_merge(ops, x, c: PatchMergeConstants, coarse1, *, window: int = WINDOW
 # Cost functions (contract section 9)
 # ---------------------------------------------------------------------------
 def patch_embed_values(dim: int, *, patch: int = PATCH, channels: int = len(BANDS),
-                       layout=WINDOW_LAYOUT) -> int:
+                       layout=WINDOW_LAYOUT, norm: bool = True) -> int:
     """Values embedded for NumPy weights: the projection W^T [C patch^2, dim] and its bias
-    rows, and the LayerNorm's gamma and beta rows."""
+    rows, and the LayerNorm's gamma and beta rows when ``norm=True``."""
+    if not isinstance(norm, bool):
+        raise ValueError("norm must be a bool")
     return (linear_values(channels * patch * patch, dim, bias=True, layout=layout)
-            + layer_norm_values(dim, layout=layout))
+            + (layer_norm_values(dim, layout=layout) if norm else 0))
 
 
-def patch_embed_arrays() -> int:
-    """Server arrays read: proj.weight, proj.bias, norm.weight, norm.bias."""
-    return 4
+def patch_embed_arrays(*, norm: bool = True) -> int:
+    """Server arrays read: projection weight/bias, plus norm weight/bias when enabled."""
+    if not isinstance(norm, bool):
+        raise ValueError("norm must be a bool")
+    return 4 if norm else 2
 
 
 def patch_merge_values(channels: int, *, bias: bool = False, layout=WINDOW_LAYOUT) -> int:

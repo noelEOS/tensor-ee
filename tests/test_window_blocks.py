@@ -356,7 +356,7 @@ def test_the_research_gathers_and_placement_are_gone():
     unpinned gather: patch embedding gathers by stride, merging gathers whole windows."""
     assert not hasattr(WP, "COLUMN_GATHERS") and not hasattr(WP, "MERGE_GATHERS")
     assert set(inspect.signature(WP.patch_embed).parameters) == {"ops", "x", "grid", "c", "patch", "bands",
-                                                                 "window", "policy"}
+                                                                 "window", "policy", "norm"}
     assert set(inspect.signature(WP.patch_merge).parameters) == {"ops", "x", "c", "coarse1", "window", "policy"}
     assert set(inspect.signature(WP.gather_windows).parameters) == {"ee", "x", "coarse1"}
 
