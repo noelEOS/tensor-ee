@@ -42,6 +42,13 @@ and 8 with align_corners=False and factor 4 with align_corners=True (window 7: t
 decoder's FPN, fusion and head; window 8: the window-8 Swin-UPerNet validation model's, on its token extents),
 ``window_matrix_resize`` from 1 x 1, 2 x 2, 3 x 3 and 6 x 6 sources (the PSP's bins) onto one
 window with align_corners=False. Other windows, factors and sources are not validated.
+
+The no-arithmetic window_depth_to_space moves projected columns
+(dy,dx,c) at source token (y,x) to (2*y+dy,2*x+dx,c).
+Input arrays are [w*w,4*C]; output arrays are [49,C], with w=7 or14.
+Child windows are sliced directly from the expanded parent array, without
+interpolation, tensor-value casts, dense channel bands or a halo.
+These settings have offline evidence only and retain NOT_LIVE metadata.
 """
 
 from __future__ import annotations

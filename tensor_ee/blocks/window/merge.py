@@ -13,6 +13,11 @@ projection with each input resampled (nearest), which silently replicates coarse
 - ``concat``: torch.cat(dim=1) order (first operand's channels first); window layout
   ``arrayCat`` on axis 1, dense bands renamed and stacked. Values are moved, never
   rounded: no arithmetic, no cast, no policy.
+
+Row concatenation moves raw operands [R1,C], [R2,C], ... to
+[sum(R),C] in operand order, including a one-row class token beside a
+196-row spatial window. It has no arithmetic, casts or coefficient constants.
+This row form has offline evidence only; its metadata remains NOT_LIVE.
 """
 
 from __future__ import annotations
