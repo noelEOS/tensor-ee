@@ -476,6 +476,8 @@ def test_constants_built_for_one_layout_are_refused_by_another(offline_ee):
 # validated patch, 8.
 DRO, REO = P.DOUBLE_ROUND_ONCE, P.ROUND_EACH_OP
 EXPECTED_METADATA = {
+    "concat_rows": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC,
+                    "Fixed — offline only: one class row followed by spatial rows", "per crop pixel"),
     "depthwise_conv3x3_window": (Locality.WINDOW_RING, 1, False, DRO,
         "Ready — 3 × 3, stride1, padding1, dilation1, multiplier1; window7; D4 optional bias, D1024 biased; D16 biased in C4/D16 Mix-FFN", "3x3 depthwise"),
     "linear": (Locality.POINTWISE, None, False, DRO, "Ready", "per token"),
@@ -648,7 +650,7 @@ NOT_BLOCKS = {
     "patch": {"PatchEmbedConstants", "patch_embed_constants", "valid_fraction", "PatchMergeConstants",
               "patch_merge_constants", "stage2_coarse", "patch_embed_values", "patch_embed_arrays",
               "patch_merge_values", "patch_merge_arrays", "patch_locality"},
-    "merge": set(),
+    "merge": {"concat_rows_values", "concat_rows_arrays"},
     "segformer": {"NormConstants", "norm_constants", "OverlapConstants", "overlap_constants",
                   "AttentionConstants", "attention_constants", "MixFFNConstants", "mix_ffn_constants",
                   "MiTBlockConstants", "mit_block_constants",

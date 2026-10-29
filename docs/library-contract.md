@@ -427,7 +427,7 @@ Each block's default policy:
 | W: `group_product` (unrounded partial), fusion `grouped_double` | `double_round_once` / `grouped_double` |
 | W: `window_attention` | composite: Linear in `double_round_once`, attention core in `round_each_op` |
 | W: `add` | float32 + float32 rounded once (`.toFloat()`) |
-| W: `relu`, `concat`; every layout transform | no arithmetic, no cast; must not gain one |
+| W: `relu`, `concat`, `concat_rows`; every layout transform | no arithmetic, no cast; must not gain one |
 
 GELU has one formula with two policies: the R block rounds at the node boundary,
 the W block with `ops.to_float`. They are different blocks, not two

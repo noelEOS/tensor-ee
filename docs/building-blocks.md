@@ -101,18 +101,18 @@ their own.
 ## Blocks
 
 <!-- BEGIN GENERATED: blocks (tools/block_catalogue.py; edit the code, then rerun) -->
-84 blocks: 22 in `tensor_ee/blocks/raster` and 62 in `tensor_ee/blocks/window`.
+85 blocks: 22 in `tensor_ee/blocks/raster` and 63 in `tensor_ee/blocks/window`.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
 | R → R | 22 | 0 | 22 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
-| W → W | 20 | 33 | 53 |
+| W → W | 20 | 34 | 54 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **48** | **36** | **84** |
+| **All** | **48** | **37** | **85** |
 
 ### Raster-layout (R) blocks
 
@@ -161,6 +161,7 @@ their own.
 | [`group_product`](../tensor_ee/blocks/window/conv.py) | W → W | window + ring of 1 | `double_round_once` | no | Ready — 1, 2, 4, 8 groups at windows 7, 12; 4 groups at window 8 | [building-blocks-2026-10-11.md#33-convolution](history/building-blocks-2026-10-11.md#33-convolution); *variant: grouped_double*; [upernet/notes/milestone10_findings.md](history/upernet/notes/milestone10_findings.md); [evidence/p04-offline.json](evidence/p04-offline.json); [evidence/live-fixtures/20261013T115558Z-p04.json](evidence/live-fixtures/20261013T115558Z-p04.json); [evidence/c0b-offline.json](evidence/c0b-offline.json); [evidence/live-fixtures/20261013T154410Z-c0b.json](evidence/live-fixtures/20261013T154410Z-c0b.json) |
 | [`linear`](../tensor_ee/blocks/window/linear.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#36-linear-layers-and-attention](history/building-blocks-2026-10-11.md#36-linear-layers-and-attention); [swin_block/notes/findings.md](history/swin_block/notes/findings.md) |
 | [`conv1x1`](../tensor_ee/blocks/window/linear.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#33-convolution](history/building-blocks-2026-10-11.md#33-convolution); [upernet/notes/milestone7_findings.md](history/upernet/notes/milestone7_findings.md) |
+| [`concat_rows`](../tensor_ee/blocks/window/merge.py) | W → W | pointwise | none (no arithmetic) | no | Fixed — offline only: one class row followed by spatial rows | [api.md](api.md) |
 | [`add`](../tensor_ee/blocks/window/merge.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#35-activations-merges-and-outputs](history/building-blocks-2026-10-11.md#35-activations-merges-and-outputs); [upernet/notes/milestone9_findings.md](history/upernet/notes/milestone9_findings.md) |
 | [`concat`](../tensor_ee/blocks/window/merge.py) | W → W | pointwise | none (no arithmetic) | no | Ready | [building-blocks-2026-10-11.md#35-activations-merges-and-outputs](history/building-blocks-2026-10-11.md#35-activations-merges-and-outputs); [upernet/notes/milestone8_findings.md](history/upernet/notes/milestone8_findings.md) |
 | [`layer_norm`](../tensor_ee/blocks/window/normalization.py) | W → W | pointwise | `double_round_once` | no | Ready | [building-blocks-2026-10-11.md#34-normalization](history/building-blocks-2026-10-11.md#34-normalization); [swin_block/notes/findings.md](history/swin_block/notes/findings.md) |
@@ -220,7 +221,7 @@ their own.
 
 ### Validated settings
 
-Each block's `validated` record, the status in machine-readable form: 84 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
+Each block's `validated` record, the status in machine-readable form: 85 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
 
 | Block | Layout | Validated settings | Names from |
 |---|---|---|---|
@@ -258,6 +259,7 @@ Each block's `validated` record, the status in machine-readable form: 84 records
 | [`group_product`](../tensor_ee/blocks/window/conv.py) | W → W | {groups 1 or 2 or 4 or 8; k 3; window 7 or 12} ∪ {groups 4; k 3; window 8} | `group_weight`, `Conv3x3Constants` |
 | [`linear`](../tensor_ee/blocks/window/linear.py) | W → W | any accepted call | — |
 | [`conv1x1`](../tensor_ee/blocks/window/linear.py) | W → W | any accepted call | — |
+| [`concat_rows`](../tensor_ee/blocks/window/merge.py) | W → W | none live | — |
 | [`add`](../tensor_ee/blocks/window/merge.py) | W → W | any accepted call | — |
 | [`concat`](../tensor_ee/blocks/window/merge.py) | W → W | any accepted call | — |
 | [`layer_norm`](../tensor_ee/blocks/window/normalization.py) | W → W | {eps 1e-05} | — |

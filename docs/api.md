@@ -240,3 +240,20 @@ fixed shape, and includes a runnable offline graph-construction example.
 The historical
 research runners are archived at the tag `research-archive-2026-10-12`
 ([history](history/README.md)).
+
+## Class rows beside spatial windows
+
+`tensor_ee.blocks.window.merge.concat_rows(ops, parts, *, rows, channels)`
+concatenates raw array operands along the token axis without arithmetic or casts.
+The caller supplies each part's positive row count and a shared channel count;
+all parts must already represent the same crop pixel. The result is an
+intermediate matrix, so its row count need not be a square window size.
+Empty parts and invalid dimensions are refused. No coefficients are embedded or
+read from assets. Its status remains `Fixed — offline only` pending promotion.
+
+A class token can therefore remain a one-row array beside a spatial window.
+Concatenate class then spatial keys and values, and call the existing
+`naive_attention` twice per head: once for the spatial queries and once for the
+class query. Both calls read all keys and values. The class row must pass through
+every normalization, projection and residual update. For post-product scaling,
+use `score_scale`; this preserves the existing attention policy.
