@@ -3,7 +3,7 @@
   "kind": "offline_fixture_check",
   "cloud_calls": 0,
   "status": "passed",
-  "revision": "6a2bd37d7049d0ccd7e93ae649bbb884733d8b3c",
+  "revision": "4c5b896da9610a25bdad883d33fabbd5ca897b2d",
   "dirty": false,
   "tensor_ee": "tensor_ee/__init__.py",
   "versions": {
@@ -240,7 +240,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.042,
+      "seconds": 0.039,
       "outputs": {
         "output0": {
           "mirror_vs_pytorch": {
@@ -748,7 +748,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.034,
+      "seconds": 0.027,
       "outputs": {
         "output0": {
           "mirror_vs_pytorch": {
@@ -1580,7 +1580,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.038,
+      "seconds": 0.03,
       "outputs": {
         "output0": {
           "mirror_vs_pytorch": {
@@ -2154,7 +2154,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.033,
+      "seconds": 0.029,
       "outputs": {
         "output0": {
           "mirror_vs_pytorch": {
@@ -2421,7 +2421,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.02,
+      "seconds": 0.019,
       "outputs": {
         "output0": {
           "mirror_vs_pytorch": {
@@ -2879,7 +2879,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.019,
+      "seconds": 0.02,
       "outputs": {
         "output0": {
           "mirror_vs_pytorch": {
