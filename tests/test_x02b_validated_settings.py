@@ -1,6 +1,6 @@
 """X02b: every block's validated settings are machine-readable, and agree with its prose status.
 
-- **The record.** All 82 blocks carry ``BlockMetadata.validated``. Its setting names are real
+- **The record.** All 83 blocks carry ``BlockMetadata.validated``. Its setting names are real
   parameters (by signature) of the block function, its cost functions or the record's
   ``sources``, or ``window`` for a block with a W layout.
 - **The prose, setting by setting** (``settings_problems``). Where a status phrase names a
@@ -91,13 +91,14 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = set()
+OFFLINE_ONLY: set[str] = {"raster/bilinear_upsample"}
 """The blocks with no live validation yet, by lane-qualified key (two lanes may share a block
-name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. None today."""
+name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``.
+Raster bilinear resizing has offline fixtures only."""
 
 
 def test_every_block_has_a_record():
-    assert len(BLOCKS) == 82
+    assert len(BLOCKS) == 83
     for key, entry in ENTRIES.items():
         assert isinstance(entry.validated, Validated), key
         offline = key in OFFLINE_ONLY
@@ -127,7 +128,10 @@ def test_the_record_names_real_parameters(name):
     for source in entry.validated.sources:
         assert source.__module__.startswith("tensor_ee."), (name, source)
     if entry.per_setting is not None:
-        assert _parameters(entry.per_setting) <= entry.validated.names, name
+        # Offline-only metadata may describe locality before any live setting
+        # exists; its setting names must still be actual callable parameters.
+        names = _vocabulary(entry, function) if name in OFFLINE_ONLY else entry.validated.names
+        assert _parameters(entry.per_setting) <= names, name
 
 
 # ---------------------------------------------------------------------------
@@ -664,10 +668,15 @@ def test_per_setting_properties_stay_within_the_static_bounds():
     setting is chip-edge dependent; per_setting gives the exact value."""
     varying = {name for name, entry in ENTRIES.items() if entry.per_setting is not None}
     assert varying == {"window/window_resize", "window/patch_embed", "window/stride_columns",
-                       "window/swin_patch_embedding"}
+                       "window/swin_patch_embedding", "raster/bilinear_upsample"}
     for name in varying:
         entry = ENTRIES[name]
-        at = [metadata_at(entry, settings) for settings in _configurations(entry.validated)]
+        if name in OFFLINE_ONLY:
+            assert name == "raster/bilinear_upsample" and entry.validated == M.NOT_LIVE
+            settings = ({"align_corners": False}, {"align_corners": True})  # Offline fixtures cover both.
+        else:
+            settings = _configurations(entry.validated)
+        at = [metadata_at(entry, setting) for setting in settings]
         radii = [e.radius or 0 for e in at]
         assert max(radii) == (entry.radius or 0), name
         assert any(e.chip_edge_dependent for e in at) == entry.chip_edge_dependent, name

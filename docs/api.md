@@ -62,6 +62,19 @@ on sizes divisible by k; 3×3 max pooling with padding 1 and stride 1 or 2; and
 Pooling requires `ceil_mode=False`, max-pool `dilation=1` and average-pool
 `divisor_override=None`; every other configuration is rejected. Nearest factors
 are equal positive integers; factors 2, 3 and 4 are validated against PyTorch.
+Bilinear `F.interpolate` and `nn.Upsample` (including `nn.UpsamplingBilinear2d`)
+accept equal positive integer factors or a proven static size at such a factor,
+with a static `align_corners` bool and `antialias=False`. `recompute_scale_factor`
+may be None or a static bool for scale-based calls; size-based calls reject True,
+as PyTorch does. Downsampling, non-integer or unequal factors, antialias and other
+interpolation modes are refused. Coefficients come from PyTorch's existing kernel
+reader with explicit float32 model dtype under both alignment rules; the block
+guards their exact float32 representation.
+The raster bilinear block has offline evidence only, at factors 2 and 4 under both
+alignment rules and factor 3 with align_corners=False on a 5 x 7 input.
+Constants stay inline and the output rounds once
+to float32. `align_corners=True` depends on the whole source extent; its receptive
+field reports local bounds but refuses a halo guarantee for tiled execution.
 Merges require identical spatial grids, even when dimensions
 happen to match; residual addition rejects broadcasting.
 

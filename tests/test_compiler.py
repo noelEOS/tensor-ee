@@ -87,7 +87,7 @@ class TestCompiler(ApiTestCase):
         with self.assertRaisesRegex(UnsupportedOperation, "even spatial"):
             self.compile(nn.AvgPool2d(2).eval(), grid)
 
-    def test_bilinear_and_noninteger_upsampling_are_rejected(self):
+    def test_unspecified_bilinear_alignment_and_noninteger_nearest_are_rejected(self):
         for module in (nn.Upsample(scale_factor=2, mode="bilinear"),
                        nn.Upsample(scale_factor=1.5, mode="nearest")):
             with self.subTest(module=module), self.assertRaises(UnsupportedOperation):

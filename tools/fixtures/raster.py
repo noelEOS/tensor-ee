@@ -1,7 +1,7 @@
 """Raster-lane (R) fixtures: the CNN path's Fixed blocks at today's validated settings
 (calibration), at additional pooling and nearest-resize settings (the selection ``p02``) and
 the bounded activations (``relu6``, ``hardsigmoid``, ``hardswish``; ``hard_activations``),
-and standalone inference BatchNorm (``batch_norm``).
+standalone inference BatchNorm (``batch_norm``), and integer bilinear resizing (``bilinear``).
 
 Every fixture runs the library block in ``tensor_ee/blocks/raster`` plus float32
 materialization (through the public facade where available, as ``compile_model``
@@ -449,6 +449,68 @@ def _hard_fixtures(cost) -> list[Fixture]:
     return fixtures
 
 
+_BILINEAR_SETTINGS = ((2, False), (2, True), (3, False), (4, False), (4, True))
+
+
+def _bilinear_data(factor: int, align_corners: bool):
+    def data(seed: int) -> FixtureData:
+        import torch
+        from tensor_ee.blocks.window.resample import float32_exact, model_bilinear_weights
+
+        # Unique dyadic values at every pixel and channel, on odd non-square sides.
+        x = (np.arange(70, dtype=np.float32).reshape(5, 7, 2) - 32) / 64
+        return FixtureData(inputs={"x": x}, weights={
+            "weights_y": float32_exact(model_bilinear_weights(5, 5 * factor, dtype=torch.float32, align_corners=align_corners)),
+            "weights_x": float32_exact(model_bilinear_weights(7, 7 * factor, dtype=torch.float32, align_corners=align_corners))})
+    return data
+
+
+def _bilinear_build(factor: int, align_corners: bool):
+    def build(ee, data: FixtureData) -> list:
+        from tensor_ee.blocks.raster.resample import BilinearConstants, bilinear_upsample
+        from tensor_ee.layouts.raster import _float32
+
+        raster = _input(ee, _rect_grid(20, 5, 7), data.inputs["x"])
+        c = BilinearConstants(data.weights["weights_y"], data.weights["weights_x"], factor)
+        out = _float32(bilinear_upsample(raster, c, align_corners=align_corners))
+        return [Readout("out", out.image, 2, raster_grid(out.grid)), _echo(raster)]
+    return build
+
+
+def _bilinear_reference(factor: int, align_corners: bool):
+    def reference(data: FixtureData) -> dict:
+        import torch
+        from torch.nn import functional as F
+
+        with torch.no_grad():
+            return {"out": hwc(F.interpolate(nchw(data.inputs["x"]), scale_factor=factor,
+                                              mode="bilinear", align_corners=align_corners))}
+    return reference
+
+
+def _bilinear_mirror(data: FixtureData) -> dict:
+    from reference.raster_resample import bilinear_upsample
+
+    return {"out": bilinear_upsample(data.inputs["x"], data.weights["weights_y"], data.weights["weights_x"])}
+
+
+def _bilinear_fixtures(cost) -> list[Fixture]:
+    from tensor_ee.blocks.raster.resample import BilinearConstants, bilinear_upsample
+
+    return [Fixture(
+        id=f"raster/bilinear_upsample/f{factor}-align{int(align)}", lane=LANE, block="bilinear_upsample",
+        settings={"factor": factor, "align_corners": align, "clip_footprints": False}, policy=POLICY,
+        shapes={"input": [5, 7, 2], "output": [5 * factor, 7 * factor, 2]}, seed=51,
+        data=_bilinear_data(factor, align), build=_bilinear_build(factor, align),
+        reference=_bilinear_reference(factor, align), reference_source="torch.nn.functional.interpolate",
+        mirror=MirrorSpec(_bilinear_mirror, True, "reference.raster_resample.bilinear_upsample"),
+        requests=2, constants=cost("bilinear_upsample", lambda data, factor=factor: (5, 7, factor)),
+        history="none: raster bilinear interpolation, offline only",
+        accepts=(BilinearConstants, bilinear_upsample),
+        notes="Odd non-square input, distinct dyadic values per pixel and channel; y then x in double."
+    ) for factor, align in _BILINEAR_SETTINGS]
+
+
 def _batch_norm_data(seed: int) -> FixtureData:
     """Three channels: nonzero means, negative gamma, variances from 1e-4 to 100."""
     return FixtureData(inputs={"x": dyadic(seed, "x", (8, 8, 3), scale=0.25)},
@@ -540,6 +602,8 @@ SELECTIONS = {
     # the three bounded activations, one fixture each.
     "hard_activations": ("raster/relu6/default", "raster/hardsigmoid/default", "raster/hardswish/default"),
     "batch_norm": ("raster/batch_norm/affine", "raster/batch_norm/nonaffine"),
+    "bilinear": tuple(f"raster/bilinear_upsample/f{factor}-align{int(align)}"
+                      for factor, align in _BILINEAR_SETTINGS),
 }
 """This lane's named selections (``tools.fixtures.select``)."""
 
@@ -613,4 +677,4 @@ def fixtures() -> list[Fixture]:
             accepts=_accepts("nearest"), calibration=True, tolerance=0.0,
             notes="A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0)."),
     ]
-    return calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost)
+    return calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost) + _bilinear_fixtures(cost)

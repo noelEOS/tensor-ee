@@ -94,6 +94,7 @@ MOVED = [
 
 # The public R blocks: the names of the moved map targets.
 BLOCKS = {"conv2d": "conv", "pool2d": "pooling", "nearest_upsample": "resample",
+          "bilinear_upsample": "resample",
           "batch_norm": "normalization",
           "concatenate": "merge", "residual_add": "merge",
           "relu": "activations", "sigmoid": "activations", "leaky_relu": "activations",
@@ -164,7 +165,8 @@ def test_every_map_entry_owned_by_l03_is_at_its_target():
         assert _attr(old_path[:-3].replace("/", "."), old_name) is target, entry["id"]
         assert BLOCKS[name] == path.split("/")[-1][:-3]
     # Later blocks are additions, so the historical module map does not list them.
-    assert {e["target"].split("::")[1] for e in moved} == set(BLOCKS) - {"relu6", "hardsigmoid", "hardswish", "batch_norm"}
+    assert {e["target"].split("::")[1] for e in moved} == set(BLOCKS) - {
+        "relu6", "hardsigmoid", "hardswish", "batch_norm", "bilinear_upsample"}
     for entry in stays:
         path, name = entry["target"].split("::")
         assert entry["id"].split(":")[0] == path   # the converter stays where it is
@@ -175,7 +177,8 @@ def test_every_map_entry_owned_by_l03_is_at_its_target():
 def test_package_reexports_its_blocks():
     import tensor_ee.blocks.raster as R
     for name in R.__all__:
-        module = "normalization" if name == "BatchNormConstants" else BLOCKS.get(name, "outputs")
+        module = ("normalization" if name == "BatchNormConstants" else "resample" if name == "BilinearConstants"
+                  else BLOCKS.get(name, "outputs"))
         assert getattr(R, name) is getattr(BLOCK_MODULES[module], name)
     assert set(BLOCKS) <= set(R.__all__)
 
@@ -197,6 +200,8 @@ def test_public_api_names_resolve_to_the_same_objects():
 POSITIONAL, KEYWORD = inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY
 _EMPTY = inspect.Parameter.empty
 BASE_PARAMETERS = {
+    "bilinear_upsample": [("raster", POSITIONAL, _EMPTY), ("constants", POSITIONAL, _EMPTY),
+                          ("align_corners", KEYWORD, False), ("clip_footprints", KEYWORD, False)],
     "batch_norm": [("raster", POSITIONAL, _EMPTY), ("constants", POSITIONAL, _EMPTY),
                    ("clip_footprints", KEYWORD, False)],
     "conv2d": [("raster", POSITIONAL, _EMPTY), ("module", POSITIONAL, _EMPTY), ("parameters", POSITIONAL, None),
@@ -267,6 +272,9 @@ def _fixture():
 
 
 CALLS = {   # block name -> call(function, fixture, **policy)
+    "bilinear_upsample": lambda f, x, **kw: f(x[1], RS.BilinearConstants(
+        np.repeat(np.eye(4, dtype=np.float32), 2, axis=0),
+        np.repeat(np.eye(4, dtype=np.float32), 2, axis=0), 2), **kw),
     "batch_norm": lambda f, x, **kw: f(x[1], NM.BatchNormConstants(
         None, None, np.zeros(3, np.float32), np.ones(3, np.float32),
         bands=x[1].bands), **kw),
@@ -338,6 +346,8 @@ def test_compile_model_keeps_the_per_node_float32_cast(offline_ee):
 # Metadata: every public R block, locality from the inventory and receptive field
 # ---------------------------------------------------------------------------
 EXPECTED = {   # block -> (locality, radius, status)
+    "bilinear_upsample": (M.Locality.KERNEL, 1,
+        "Fixed — offline only: factors 2, 4 (align_corners False/True), 3 (align_corners=False); 5 x 7 input; 2 channels; clip_footprints=False"),
     "batch_norm": (M.Locality.POINTWISE, None, "Ready"),
     "conv2d": (M.Locality.KERNEL, 3, "Ready"),
     # P02: radius 3, the aligned 4 x 4 pool's offset k - 1 (tests/test_p02_raster_settings.py).
@@ -364,7 +374,8 @@ def test_every_public_block_has_valid_metadata_in_its_module():
         entry = getattr(BLOCK_MODULES[BLOCKS[name]], "METADATA")[name]
         assert (entry.layout_in, entry.layout_out, entry.policy) == ("R", "R", P.FLOAT32_OPERANDS)
         assert (entry.locality, entry.radius, entry.status) == (locality, radius, status), name
-        assert "Fixed," not in entry.status and not entry.chip_edge_dependent
+        assert "Fixed," not in entry.status
+        assert entry.chip_edge_dependent == (name == "bilinear_upsample")
         assert entry.evidence and all((ROOT / path).is_file() for path in entry.evidence), name
 
 
@@ -423,11 +434,13 @@ def test_metadata_costs():
     unbiased = nn.Conv2d(3, 2, 1, bias=False)
     assert entry.embedded_constants(unbiased) == 6 and entry.asset_arrays(unbiased) == 1
     for name, module in BLOCKS.items():
-        if name not in ("conv2d", "batch_norm"):
+        if name not in ("conv2d", "batch_norm", "bilinear_upsample"):
             metadata = getattr(BLOCK_MODULES[module], "METADATA")[name]
             assert metadata.embedded_constants() == metadata.asset_arrays() == 0
     assert NM.METADATA["batch_norm"].embedded_constants(3) == 12
     assert NM.METADATA["batch_norm"].asset_arrays() == 0
+    assert RS.METADATA["bilinear_upsample"].embedded_constants(5, 7, 2) == 72
+    assert RS.METADATA["bilinear_upsample"].asset_arrays() == 0
 
 
 def test_conv2d_embedded_constant_count_matches_its_inline_graph(offline_ee):
