@@ -23,7 +23,7 @@ from .compiler import UnsupportedOperation, _bind_options, _input_arguments, _pa
 # use them, and their errors to core; these names are re-exports of the
 # same objects.
 from .core.errors import SemanticUnknown, reject as _reject
-from .blocks.raster.conv import _coefficient_field, conv_options, finite_coefficients
+from .blocks.raster.conv import _coefficient_field, conv_options, finite_coefficients, grouped_conv_options
 from .blocks.raster.pooling import aligned_size_message, pool_config, pool_options
 from .blocks.raster.resample import nearest_factor
 
@@ -340,7 +340,7 @@ def batchnorm_predecessor(node: Node, graph: GraphModule) -> tuple[Node, Node, n
         _reject("Set model.eval() before compilation", "training_mode")
     if module.num_features != conv.out_channels:
         _reject("BatchNorm running statistics must match convolution output channels")
-    conv_options(conv)
+    (conv_options if conv.groups == 1 else grouped_conv_options)(conv)
     # Preserve the compiler's existing folding operation and coefficient identity.
     fused = torch.nn.utils.fuse_conv_bn_eval(conv, module)
     finite_coefficients(fused)
@@ -412,6 +412,9 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
             source = _bind_options(_input_arguments, node.args, node.kwargs)["input"]
             inputs = _inputs((source,))
             if isinstance(module, nn.Conv2d):
+                if module.groups != 1:
+                    grouped_conv_options(module)
+                    return SemanticCall("grouped_conv", inputs, module=module)
                 conv_options(module)
                 return SemanticCall("conv", inputs, module=module)
             if isinstance(module, (nn.AvgPool2d, nn.MaxPool2d)):
@@ -493,7 +496,7 @@ def infer_metadata(call: SemanticCall, inputs: tuple[TensorMetadata, ...]) -> Te
     n, c, h, w = first.shape
     if call.kind == "batch_norm" and c != call.options["channels"]:
         _reject("BatchNorm input channel count does not match raster", "input_shape")
-    if call.kind == "conv":
+    if call.kind in ("conv", "grouped_conv"):
         if c != call.module.in_channels:
             _reject("Conv2d input channel count does not match raster", "input_shape")
         stride = _pair(call.module.stride)[0]

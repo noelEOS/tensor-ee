@@ -227,6 +227,31 @@ def test_segwater_recipe_graph_identity(offline):
     print("SegWater recipe: 4/4 graph identities; 31/31 effective convolution keys, sources and hashes")
 
 
+def _grouped_encoder_build(encoder):
+    shape = (1, 2, 64, 64)
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(73)
+        model = smp.Unet(encoder, encoder_weights=None, in_channels=2, classes=2).eval()
+        adapted = adapt_smp_model(model, input_shape=shape)
+    report = check_compatibility(adapted, shape).to_dict()
+    assert report["status"] == "supported", report["blockers"]
+    compiled = build(adapted, shape, include_unfused_nodes=False)
+    assert compiled.bands == ("c0", "c1")
+    assert (compiled.grid.height, compiled.grid.width) == (64, 64)
+    assert any(module.groups > 1 for module in adapted.modules() if isinstance(module, nn.Conv2d))
+    weights = effective_convolutions(adapted)
+    assert len(weights) > 0 and all(w.weights.shape[0] > 0 and w.weights.shape[1] > 0 for w in weights)
+    meta = adapted.tensor_ee_smp_metadata
+    assert meta["torch_equal"] and meta["max_abs"] == 0
+    return meta
+
+
+@pytest.mark.parametrize("encoder", ["resnext50_32x4d", "mobilenet_v2"])
+def test_grouped_encoders_at64(encoder, offline):
+    meta = _grouped_encoder_build(encoder)
+    print(f"Unet/{encoder}/64: supported, builds, torch adapter equal={meta['torch_equal']}, max_abs={meta['max_abs']}")
+
+
 @pytest.mark.skipif(os.environ.get("TENSOR_EE_SMP_MATRIX") != "1", reason="set TENSOR_EE_SMP_MATRIX=1 for full SMP coverage")
 def test_full_smp_matrix(offline):
     torch.set_num_threads(2)
@@ -244,9 +269,11 @@ def test_full_smp_matrix(offline):
                 print(f"{architecture}/{encoder}/{side}: supported, builds, equal=True, max_abs={meta['max_abs']}")
                 del adapted
             del model
+    for encoder in ("resnext50_32x4d", "mobilenet_v2"):
+        meta = _grouped_encoder_build(encoder)
+        print(f"Unet/{encoder}/64: supported, builds, torch adapter max_abs={meta['max_abs']}")
     negatives = [("Linknet", "resnet18", "ConvTranspose2d"), ("FPN", "resnet18", "GroupNorm"),
-                 ("DeepLabV3Plus", "resnet18", "dilation"), ("Unet", "resnext50_32x4d", "groups"),
-                 ("Unet", "densenet121", "BatchNorm"), ("Unet", "mobilenet_v2", "ReLU6")]
+                 ("DeepLabV3Plus", "resnet18", "dilation"), ("Unet", "densenet121", "BatchNorm")]
     for architecture, encoder, blocker in negatives:
         model = getattr(smp, architecture)(encoder, encoder_weights=None, in_channels=2, classes=2).eval()
         adapted = adapt_smp_model(model, input_shape=(1, 2, 64, 64))

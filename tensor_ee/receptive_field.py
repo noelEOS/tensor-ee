@@ -248,7 +248,7 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
                 if call.kind == "batchnorm_constant":
                     continue
                 support = source(call.inputs[0])
-                if call.kind in ("conv", "pool"):
+                if call.kind in ("conv", "grouped_conv", "pool"):
                     module = call.module
                     kernel = _pair(module.kernel_size, name="Window kernel")
                     stride = _pair(module.stride or module.kernel_size, name="Window stride")

@@ -101,18 +101,18 @@ their own.
 ## Blocks
 
 <!-- BEGIN GENERATED: blocks (tools/block_catalogue.py; edit the code, then rerun) -->
-83 blocks: 21 in `tensor_ee/blocks/raster` and 62 in `tensor_ee/blocks/window`.
+84 blocks: 22 in `tensor_ee/blocks/raster` and 62 in `tensor_ee/blocks/window`.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
-| R → R | 21 | 0 | 21 |
+| R → R | 21 | 1 | 22 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
 | W → W | 20 | 33 | 53 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **47** | **36** | **83** |
+| **All** | **47** | **37** | **84** |
 
 ### Raster-layout (R) blocks
 
@@ -132,6 +132,7 @@ their own.
 | [`eval_dropout`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t02-operators.json](evidence/t02-operators.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`common_score_mask`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json) |
 | [`softmax`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
+| [`grouped_conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | k×k, radius 2 | `float32_operands` | no | Fixed — offline only: 5 x 7 inputs; depthwise k3 stride 1/2 optional bias, k5 stride 1 biased; groups 4, 8 to 8 and 4 to 8 k3 stride 1 biased; clip_footprints=False | [evidence/raster-grouped-conv-offline.json](evidence/raster-grouped-conv-offline.json) |
 | [`conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | k×k, radius 3 | `float32_operands` | no | Ready | [cnn/results/parity.json](history/cnn/results/parity.json); [cnn/results/primitives_float32.json](history/cnn/results/primitives_float32.json); [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json); [cnn/results/tiled_resnet18_2x2_parity.json](history/cnn/results/tiled_resnet18_2x2_parity.json) |
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/parity.json](history/cnn/results/parity.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
@@ -219,7 +220,7 @@ their own.
 
 ### Validated settings
 
-Each block's `validated` record, the status in machine-readable form: 83 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
+Each block's `validated` record, the status in machine-readable form: 84 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
 
 | Block | Layout | Validated settings | Names from |
 |---|---|---|---|
@@ -235,6 +236,7 @@ Each block's `validated` record, the status in machine-readable form: 83 records
 | [`eval_dropout`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
 | [`common_score_mask`](../tensor_ee/blocks/raster/activations.py) | R → R | any accepted call | — |
 | [`softmax`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
+| [`grouped_conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | none live | — |
 | [`conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | any accepted call | — |
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | {dim 1} | — |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | any accepted call | — |

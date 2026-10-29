@@ -1,7 +1,8 @@
 """Raster-lane (R) fixtures: the CNN path's Fixed blocks at today's validated settings
 (calibration), at additional pooling and nearest-resize settings (the selection ``p02``) and
 the bounded activations (``relu6``, ``hardsigmoid``, ``hardswish``; ``hard_activations``),
-standalone inference BatchNorm (``batch_norm``), and integer bilinear resizing (``bilinear``).
+standalone inference BatchNorm (``batch_norm``), integer bilinear resizing (``bilinear``),
+and grouped/depthwise convolution (``grouped_conv``).
 
 Every fixture runs the library block in ``tensor_ee/blocks/raster`` plus float32
 materialization (through the public facade where available, as ``compile_model``
@@ -449,6 +450,103 @@ def _hard_fixtures(cost) -> list[Fixture]:
     return fixtures
 
 
+@dataclass(frozen=True)
+class _Grouped:
+    name: str
+    inputs: int = 4
+    outputs: int = 4
+    groups: int = 4
+    kernel: int = 3
+    stride: int = 1
+    bias: bool = True
+
+
+_GROUPED = (
+    *(_Grouped(f"depthwise-k3-s{s}-{'bias' if b else 'nobias'}", stride=s, bias=b)
+      for s in (1, 2) for b in (False, True)),
+    _Grouped("depthwise-k5-s1-bias", kernel=5),
+    _Grouped("groups4-i8-o8-k3", inputs=8, outputs=8),
+    _Grouped("multiplier2-i4-o8-k3", outputs=8),
+)
+
+
+def _grouped_data(spec: _Grouped):
+    def data(seed: int) -> FixtureData:
+        shape = (spec.outputs, spec.inputs // spec.groups, spec.kernel, spec.kernel)
+        weights = dyadic(seed, "grouped.weight", shape, scale=0.125)
+        weights += np.arange(spec.outputs, dtype=np.float32)[:, None, None, None] / 64
+        state = {"weight": weights}
+        if spec.bias:
+            state["bias"] = dyadic(seed, "grouped.bias", (spec.outputs,), scale=0.125)
+        return FixtureData(inputs={"x": dyadic(seed, "x", (5, 7, spec.inputs))}, weights=state)
+    return data
+
+
+def _grouped_module(spec: _Grouped, data: FixtureData):
+    import torch
+    from torch import nn
+
+    module = nn.Conv2d(spec.inputs, spec.outputs, spec.kernel, stride=spec.stride,
+                       padding=spec.kernel // 2, groups=spec.groups, bias=spec.bias)
+    with torch.no_grad():
+        module.weight.copy_(torch.from_numpy(data.weights["weight"]))
+        if spec.bias:
+            module.bias.copy_(torch.from_numpy(data.weights["bias"]))
+    return module.eval()
+
+
+def _grouped_build(spec: _Grouped):
+    def build(ee, data: FixtureData) -> list:
+        from tensor_ee.blocks.raster.conv import grouped_conv2d
+        from tensor_ee.layouts.raster import _float32, from_image
+
+        g = _rect_grid(20, 5, 7)
+        bands = tuple(f"g{i}" for i in range(spec.inputs))
+        raster = from_image(inline_raster(ee, g.projection(), data.inputs["x"], bands), bands, g)
+        out = _float32(grouped_conv2d(raster, _grouped_module(spec, data)))
+        return [Readout("out", out.image, spec.outputs, raster_grid(out.grid)), _echo(raster)]
+    return build
+
+
+def _grouped_reference(spec: _Grouped):
+    def reference(data: FixtureData) -> dict:
+        import torch
+
+        with torch.no_grad():
+            return {"out": hwc(_grouped_module(spec, data)(nchw(data.inputs["x"])))}
+    return reference
+
+
+def _grouped_mirror(spec: _Grouped):
+    def mirror(data: FixtureData) -> dict:
+        from reference.raster_conv import grouped_conv2d
+
+        return {"out": grouped_conv2d(data.inputs["x"], data.weights["weight"], data.weights.get("bias"),
+                                       groups=spec.groups, stride=spec.stride)}
+    return mirror
+
+
+def _grouped_fixtures(cost) -> list[Fixture]:
+    from torch import nn
+    from tensor_ee.blocks.raster.conv import grouped_conv2d
+
+    return [Fixture(
+        id=f"raster/grouped_conv2d/{spec.name}", lane=LANE, block="grouped_conv2d",
+        settings={"in_channels": spec.inputs, "out_channels": spec.outputs, "groups": spec.groups,
+                  "kernel_size": spec.kernel, "stride": spec.stride, "padding": spec.kernel // 2,
+                  "bias": spec.bias, "clip_footprints": False}, policy=POLICY,
+        shapes={"input": [5, 7, spec.inputs], "output": [(5 + spec.stride - 1) // spec.stride,
+                                                        (7 + spec.stride - 1) // spec.stride, spec.outputs]},
+        seed=61, data=_grouped_data(spec), build=_grouped_build(spec), reference=_grouped_reference(spec),
+        reference_source="torch.nn.Conv2d(..., groups=...).eval()",
+        mirror=MirrorSpec(_grouped_mirror(spec), True, "reference.raster_conv.grouped_conv2d"),
+        requests=1 if spec.stride == 1 else 2,
+        constants=cost("grouped_conv2d", lambda data, spec=spec: (_grouped_module(spec, data),)),
+        history="none: raster grouped convolution, offline only", accepts=(nn.Conv2d, grouped_conv2d),
+        notes="Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
+    ) for spec in _GROUPED]
+
+
 _BILINEAR_SETTINGS = ((2, False), (2, True), (3, False), (4, False), (4, True))
 
 
@@ -604,6 +702,7 @@ SELECTIONS = {
     "batch_norm": ("raster/batch_norm/affine", "raster/batch_norm/nonaffine"),
     "bilinear": tuple(f"raster/bilinear_upsample/f{factor}-align{int(align)}"
                       for factor, align in _BILINEAR_SETTINGS),
+    "grouped_conv": tuple(f"raster/grouped_conv2d/{spec.name}" for spec in _GROUPED),
 }
 """This lane's named selections (``tools.fixtures.select``)."""
 
@@ -677,4 +776,5 @@ def fixtures() -> list[Fixture]:
             accepts=_accepts("nearest"), calibration=True, tolerance=0.0,
             notes="A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0)."),
     ]
-    return calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost) + _bilinear_fixtures(cost)
+    return (calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost)
+            + _bilinear_fixtures(cost) + _grouped_fixtures(cost))

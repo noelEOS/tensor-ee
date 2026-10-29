@@ -1,6 +1,6 @@
 """X02b: every block's validated settings are machine-readable, and agree with its prose status.
 
-- **The record.** All 83 blocks carry ``BlockMetadata.validated``. Its setting names are real
+- **The record.** All 84 blocks carry ``BlockMetadata.validated``. Its setting names are real
   parameters (by signature) of the block function, its cost functions or the record's
   ``sources``, or ``window`` for a block with a W layout.
 - **The prose, setting by setting** (``settings_problems``). Where a status phrase names a
@@ -91,13 +91,14 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = set()
+OFFLINE_ONLY: set[str] = {"raster/grouped_conv2d"}
 """The blocks with no live validation yet, by lane-qualified key (two lanes may share a block
-name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. None today."""
+name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``.
+Raster grouped convolution has offline fixtures only."""
 
 
 def test_every_block_has_a_record():
-    assert len(BLOCKS) == 83
+    assert len(BLOCKS) == 84
     for key, entry in ENTRIES.items():
         assert isinstance(entry.validated, Validated), key
         offline = key in OFFLINE_ONLY

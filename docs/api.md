@@ -53,8 +53,15 @@ average pool follows `count_include_pad`: `True` divides the in-bounds sum by th
 full window (9), as PyTorch's zero padding does; `False` divides by the number of
 in-bounds pixels.
 
-Convolution uses odd same-padded kernels, stride 1/2, dilation 1, groups 1 and
-zero padding mode. Stride-two sampling preserves PyTorch's phase before relabeling
+Convolution uses odd same-padded kernels, stride 1/2, dilation 1 and zero padding
+mode. Groups=1 retains the existing `conv2d` block. Groups greater than one route
+to `grouped_conv2d`, including depthwise convolutions and channel multipliers;
+groups must divide both channel counts. The new block has offline evidence only:
+5 x 7 inputs, depthwise 3 x 3 at strides 1/2 with optional bias, depthwise 5 x 5,
+and grouped/channel-multiplier 3 x 3. Its products and reduction run in double,
+then the compiler materializes float32. Grouped asset weights retain PyTorch's
+`[out, in_per_group * kh * kw]` layout; unshared Conv→BN folding preserves groups.
+Stride-two sampling preserves PyTorch's phase before relabeling
 the output grid. Pooling (`nn.AvgPool2d`, `nn.MaxPool2d`) supports aligned
 average or max pooling with kernel = stride = k and padding 0, for k = 2, 3 or 4,
 on sizes divisible by k; 3×3 max pooling with padding 1 and stride 1 or 2; and
