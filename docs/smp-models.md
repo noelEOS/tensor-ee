@@ -164,7 +164,7 @@ At that revision, the six negative pairs traced and passed the adapter probe
 | Unet/mobilenet_v2 | ReLU6; depthwise convolution |
 
 The table records those earlier results. Grouped/depthwise convolution now lowers
-to the raster `grouped_conv2d` block, with offline evidence only. Unet with
+to the raster `grouped_conv2d` block, validated live on small fixtures. Unet with
 `resnext50_32x4d` and `mobilenet_v2` is checked at 64 x 64 for local compatibility,
 offline graph construction with symbolic weights, and exact PyTorch adapter
 probe equality. These checks do not establish Earth Engine numerical agreement

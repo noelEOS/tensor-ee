@@ -105,14 +105,14 @@ their own.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
-| R → R | 21 | 1 | 22 |
+| R → R | 22 | 0 | 22 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
 | W → W | 20 | 33 | 53 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **47** | **37** | **84** |
+| **All** | **48** | **36** | **84** |
 
 ### Raster-layout (R) blocks
 
@@ -132,7 +132,7 @@ their own.
 | [`eval_dropout`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t02-operators.json](evidence/t02-operators.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`common_score_mask`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json) |
 | [`softmax`](../tensor_ee/blocks/raster/activations.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
-| [`grouped_conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | k×k, radius 2 | `float32_operands` | no | Fixed — offline only: 5 x 7 inputs; depthwise k3 stride 1/2 optional bias, k5 stride 1 biased; groups 4, 8 to 8 and 4 to 8 k3 stride 1 biased; clip_footprints=False | [evidence/raster-grouped-conv-offline.json](evidence/raster-grouped-conv-offline.json) |
+| [`grouped_conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | k×k, radius 2 | `float32_operands` | no | Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2 | [evidence/raster-grouped-conv-offline.json](evidence/raster-grouped-conv-offline.json); [evidence/live-fixtures/20261029T125301Z-grouped_conv.json](evidence/live-fixtures/20261029T125301Z-grouped_conv.json) |
 | [`conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | k×k, radius 3 | `float32_operands` | no | Ready | [cnn/results/parity.json](history/cnn/results/parity.json); [cnn/results/primitives_float32.json](history/cnn/results/primitives_float32.json); [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json); [cnn/results/tiled_resnet18_2x2_parity.json](history/cnn/results/tiled_resnet18_2x2_parity.json) |
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/parity.json](history/cnn/results/parity.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
@@ -236,7 +236,7 @@ Each block's `validated` record, the status in machine-readable form: 84 records
 | [`eval_dropout`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
 | [`common_score_mask`](../tensor_ee/blocks/raster/activations.py) | R → R | any accepted call | — |
 | [`softmax`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
-| [`grouped_conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | none live | — |
+| [`grouped_conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | {clip_footprints False} | — |
 | [`conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | any accepted call | — |
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | {dim 1} | — |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | any accepted call | — |

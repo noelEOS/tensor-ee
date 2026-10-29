@@ -132,7 +132,7 @@ def test_grouped_block_and_legacy_block_keep_separate_acceptance_and_status(offl
     with pytest.raises(UnsupportedOperation, match="groups=1"):
         C.conv_options(module)
     assert C.METADATA["conv2d"].validated.configurations == ((),)
-    assert C.METADATA["grouped_conv2d"].status.startswith("Fixed — offline only:")
+    assert C.METADATA["grouped_conv2d"].status.startswith("Ready — depthwise")
     assert C.METADATA["grouped_conv2d"].radius == 2
 
 

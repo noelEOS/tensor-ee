@@ -56,9 +56,9 @@ in-bounds pixels.
 Convolution uses odd same-padded kernels, stride 1/2, dilation 1 and zero padding
 mode. Groups=1 retains the existing `conv2d` block. Groups greater than one route
 to `grouped_conv2d`, including depthwise convolutions and channel multipliers;
-groups must divide both channel counts. The new block has offline evidence only:
-5 x 7 inputs, depthwise 3 x 3 at strides 1/2 with optional bias, depthwise 5 x 5,
-and grouped/channel-multiplier 3 x 3. Its products and reduction run in double,
+groups must divide both channel counts. The grouped block is validated live for
+depthwise 3 x 3 at strides 1/2 with optional bias, depthwise 5 x 5 at stride 1, and
+3 x 3 at stride 1 with 2 channels per group or a channel multiplier of 2. Its products and reduction run in double,
 then the compiler materializes float32. Grouped asset weights retain PyTorch's
 `[out, in_per_group * kh * kw]` layout; unshared Conv→BN folding preserves groups.
 Stride-two sampling preserves PyTorch's phase before relabeling

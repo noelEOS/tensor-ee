@@ -542,7 +542,7 @@ def _grouped_fixtures(cost) -> list[Fixture]:
         mirror=MirrorSpec(_grouped_mirror(spec), True, "reference.raster_conv.grouped_conv2d"),
         requests=1 if spec.stride == 1 else 2,
         constants=cost("grouped_conv2d", lambda data, spec=spec: (_grouped_module(spec, data),)),
-        history="none: raster grouped convolution, offline only", accepts=(nn.Conv2d, grouped_conv2d),
+        history="docs/evidence/live-fixtures/20261029T125301Z-grouped_conv.json (passed; Earth Engine equal to the mirror)", accepts=(nn.Conv2d, grouped_conv2d),
         notes="Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
     ) for spec in _GROUPED]
 

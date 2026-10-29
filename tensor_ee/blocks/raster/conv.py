@@ -31,10 +31,12 @@ existing coefficient helpers, then weights are widened for double products and
 reduction, as in the window depthwise block. Bias is added in double; the caller
 materializes the output once under ``float32_operands``.
 
-Grouped evidence is offline only: 5 x 7 inputs, depthwise 3 x 3 at strides 1/2
-with/without bias, depthwise 5 x 5 at stride 1 with bias, grouped 8 -> 8 with
-4 groups, and a 4 -> 8 channel multiplier with 4 groups (both 3 x 3, stride 1,
-with bias), clip_footprints=False. It has not been validated live.
+Validated live on 5 x 7 inputs with clip_footprints=False (Earth Engine equal to the
+NumPy mirror in every value): depthwise 3 x 3 at strides 1/2 with and without bias,
+depthwise 5 x 5 at stride 1 with bias, grouped 8 -> 8 with 4 groups (2 channels per
+group), and a 4 -> 8 channel multiplier with 4 groups (both 3 x 3, stride 1, with bias).
+Kernel, stride and groups are settings of the PyTorch module, so the record names only
+clip_footprints and the status names the module settings.
 """
 
 from __future__ import annotations
@@ -47,7 +49,7 @@ import torch
 from torch import nn
 
 from ...core.errors import SemanticUnknown, UnsupportedOperation, reject as _reject
-from ...core.metadata import ANY_SETTINGS, NOT_LIVE, BlockMetadata, Locality, validate_metadata
+from ...core.metadata import ANY_SETTINGS, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
 # Library converters and coefficient transport. These module-level bindings are
@@ -267,9 +269,10 @@ METADATA = validate_metadata({
         name="grouped_conv2d", layout_in="R", layout_out="R", locality=Locality.KERNEL,
         policy=FLOAT32_OPERANDS, embedded_constants=grouped_conv2d_values,
         asset_arrays=grouped_conv2d_arrays, radius=2,
-        status="Fixed — offline only: 5 x 7 inputs; depthwise k3 stride 1/2 optional bias, k5 stride 1 biased; "
-               "groups 4, 8 to 8 and 4 to 8 k3 stride 1 biased; clip_footprints=False",
-        evidence=("docs/evidence/raster-grouped-conv-offline.json",), validated=NOT_LIVE),
+        status="Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2",
+        evidence=("docs/evidence/raster-grouped-conv-offline.json",
+                  "docs/evidence/live-fixtures/20261029T125301Z-grouped_conv.json"),
+        validated=Validated(({"clip_footprints": (False,)},))),
     # Radius k // 2 for a k x k kernel (receptive_field._window_axis with
     # padding k // 2). The static field records the largest validated kernel,
     # 7 (radius 3); kernels 1 and 3 have radius 0 and 1.

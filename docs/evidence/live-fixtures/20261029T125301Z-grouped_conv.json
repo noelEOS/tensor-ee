@@ -1,0 +1,1352 @@
+{
+  "schema_version": 1,
+  "kind": "live_fixture_run",
+  "status": "passed",
+  "command": "python tools/live_fixtures.py --run grouped_conv --project tensor-ee",
+  "selection": [
+    "raster/grouped_conv2d/depthwise-k3-s1-nobias",
+    "raster/grouped_conv2d/depthwise-k3-s1-bias",
+    "raster/grouped_conv2d/depthwise-k3-s2-nobias",
+    "raster/grouped_conv2d/depthwise-k3-s2-bias",
+    "raster/grouped_conv2d/depthwise-k5-s1-bias",
+    "raster/grouped_conv2d/groups4-i8-o8-k3",
+    "raster/grouped_conv2d/multiplier2-i4-o8-k3"
+  ],
+  "project": "tensor-ee",
+  "credentials": "adc",
+  "revision": "ce4a039b4235d5d0e369b99141f43d97d24b665b",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "started_utc": "2026-10-29T12:53:01+00:00",
+  "budget": {
+    "requests": 40,
+    "raster_side": 64,
+    "window_side": 8,
+    "values": 1000000,
+    "request_bytes": 2000000,
+    "in_flight": 4,
+    "assets": 0,
+    "tasks": 0
+  },
+  "plan": {
+    "fixtures": 7,
+    "requests": 9,
+    "values": 2640,
+    "payload_bytes": 10560,
+    "request_bytes": 142459,
+    "max_values": 630,
+    "max_request_bytes": 22990,
+    "max_bands": 18,
+    "embedded_constants": 488,
+    "inline_values": 1400,
+    "assets": 0,
+    "tasks": 0,
+    "in_flight": 1
+  },
+  "max_in_flight": 1,
+  "errors": [],
+  "fixtures": [
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-k3-s1-nobias",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "in_channels": 4,
+          "out_channels": 4,
+          "groups": 4,
+          "kernel_size": 3,
+          "stride": 1,
+          "padding": 1,
+          "bias": false,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            5,
+            7,
+            4
+          ],
+          "output": [
+            5,
+            7,
+            4
+          ]
+        },
+        "seed": 61,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.Conv2d(..., groups=...).eval()",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "none: raster grouped convolution, offline only",
+        "calibration": false,
+        "notes": "Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
+      },
+      "inputs_sha256": "a2d4618b03aea23a084c8023f03ce8d6f91c2999304efb82b2df4f476ab3bae9",
+      "weights_sha256": "129834666bbd4a7363c844b26bbc7778f74d4c7995557279ae4df84bfe73e8ec",
+      "status": "passed",
+      "wall_seconds": 0.333,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 140,
+            "max_abs": 3.725290298461914e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 2,
+              "actual": -0.08500584214925766,
+              "expected": -0.08500580489635468
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 350,
+          "payload_bytes": 1400,
+          "request_bytes": 15057,
+          "graph_sha256": "3021ea2c725496f4f9d77e49047999cbd3217fbd1630f6b7a9598f869c440eb4",
+          "graph_bytes": 14829,
+          "embedded_constants": 36,
+          "inline_values": 140,
+          "status": "ok",
+          "wall_seconds": 0.332
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 140,
+            "max_abs": 3.725290298461914e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 2,
+              "actual": -0.08500584214925766,
+              "expected": -0.08500580489635468
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-k3-s1-bias",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "in_channels": 4,
+          "out_channels": 4,
+          "groups": 4,
+          "kernel_size": 3,
+          "stride": 1,
+          "padding": 1,
+          "bias": true,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            5,
+            7,
+            4
+          ],
+          "output": [
+            5,
+            7,
+            4
+          ]
+        },
+        "seed": 61,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.Conv2d(..., groups=...).eval()",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "none: raster grouped convolution, offline only",
+        "calibration": false,
+        "notes": "Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
+      },
+      "inputs_sha256": "a2d4618b03aea23a084c8023f03ce8d6f91c2999304efb82b2df4f476ab3bae9",
+      "weights_sha256": "7b59ea0db17b800d67ce6fc4e53aa75849e4c5996759806b9fe5a01d3a4b450c",
+      "status": "passed",
+      "wall_seconds": 1.365,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 140,
+            "max_abs": 4.470348358154297e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 2,
+              "actual": -0.16297759115695953,
+              "expected": -0.16297754645347595
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 350,
+          "payload_bytes": 1400,
+          "request_bytes": 15524,
+          "graph_sha256": "c1a4e4b0db5621082ece48e6731d51377d141fd8b87d20890acd072631ca399b",
+          "graph_bytes": 15296,
+          "embedded_constants": 40,
+          "inline_values": 140,
+          "status": "ok",
+          "wall_seconds": 1.365
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 140,
+            "max_abs": 4.470348358154297e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 5,
+              "channel": 2,
+              "actual": -0.16297759115695953,
+              "expected": -0.16297754645347595
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-k3-s2-nobias",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "in_channels": 4,
+          "out_channels": 4,
+          "groups": 4,
+          "kernel_size": 3,
+          "stride": 2,
+          "padding": 1,
+          "bias": false,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            5,
+            7,
+            4
+          ],
+          "output": [
+            3,
+            4,
+            4
+          ]
+        },
+        "seed": 61,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.Conv2d(..., groups=...).eval()",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "none: raster grouped convolution, offline only",
+        "calibration": false,
+        "notes": "Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
+      },
+      "inputs_sha256": "a2d4618b03aea23a084c8023f03ce8d6f91c2999304efb82b2df4f476ab3bae9",
+      "weights_sha256": "129834666bbd4a7363c844b26bbc7778f74d4c7995557279ae4df84bfe73e8ec",
+      "status": "passed",
+      "wall_seconds": 1.524,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 48,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 1,
+              "channel": 0,
+              "actual": 0.14956004917621613,
+              "expected": 0.14956006407737732
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 4,
+              "height": 3
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 4,
+          "height": 3,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 60,
+          "payload_bytes": 240,
+          "request_bytes": 17869,
+          "graph_sha256": "922d701fa2662f05ac0f43a2ba99f06693c8562e816ce8b54d646279d948fb48",
+          "graph_bytes": 17641,
+          "embedded_constants": 36,
+          "inline_values": 140,
+          "status": "ok",
+          "wall_seconds": 0.336
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 175,
+          "payload_bytes": 700,
+          "request_bytes": 9060,
+          "graph_sha256": "59ffdd7591bd38cea27023966de271dad4980fd9bb234d3e764a20b10732eff1",
+          "graph_bytes": 8832,
+          "embedded_constants": 0,
+          "inline_values": 140,
+          "status": "ok",
+          "wall_seconds": 1.187
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            3,
+            4,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 48,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 1,
+              "channel": 0,
+              "actual": 0.14956004917621613,
+              "expected": 0.14956006407737732
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 48,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-k3-s2-bias",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "in_channels": 4,
+          "out_channels": 4,
+          "groups": 4,
+          "kernel_size": 3,
+          "stride": 2,
+          "padding": 1,
+          "bias": true,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            5,
+            7,
+            4
+          ],
+          "output": [
+            3,
+            4,
+            4
+          ]
+        },
+        "seed": 61,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.Conv2d(..., groups=...).eval()",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "none: raster grouped convolution, offline only",
+        "calibration": false,
+        "notes": "Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
+      },
+      "inputs_sha256": "a2d4618b03aea23a084c8023f03ce8d6f91c2999304efb82b2df4f476ab3bae9",
+      "weights_sha256": "7b59ea0db17b800d67ce6fc4e53aa75849e4c5996759806b9fe5a01d3a4b450c",
+      "status": "passed",
+      "wall_seconds": 2.448,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 48,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 3,
+              "actual": -0.16452975571155548,
+              "expected": -0.1645297408103943
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 4,
+              "height": 3
+            },
+            "affineTransform": {
+              "scaleX": 40,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -40,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 4,
+          "height": 3,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 60,
+          "payload_bytes": 240,
+          "request_bytes": 18368,
+          "graph_sha256": "8a9a621d9a23723e0973a2cac5a810b18958c0208d1442cc98fc505bf9d07b08",
+          "graph_bytes": 18140,
+          "embedded_constants": 40,
+          "inline_values": 140,
+          "status": "ok",
+          "wall_seconds": 1.24
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 175,
+          "payload_bytes": 700,
+          "request_bytes": 9060,
+          "graph_sha256": "59ffdd7591bd38cea27023966de271dad4980fd9bb234d3e764a20b10732eff1",
+          "graph_bytes": 8832,
+          "embedded_constants": 0,
+          "inline_values": 140,
+          "status": "ok",
+          "wall_seconds": 1.207
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            3,
+            4,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 48,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 3,
+              "actual": -0.16452975571155548,
+              "expected": -0.1645297408103943
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 48,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-k5-s1-bias",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "in_channels": 4,
+          "out_channels": 4,
+          "groups": 4,
+          "kernel_size": 5,
+          "stride": 1,
+          "padding": 2,
+          "bias": true,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            5,
+            7,
+            4
+          ],
+          "output": [
+            5,
+            7,
+            4
+          ]
+        },
+        "seed": 61,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.Conv2d(..., groups=...).eval()",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "none: raster grouped convolution, offline only",
+        "calibration": false,
+        "notes": "Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
+      },
+      "inputs_sha256": "a2d4618b03aea23a084c8023f03ce8d6f91c2999304efb82b2df4f476ab3bae9",
+      "weights_sha256": "2fbb69f30fdfee0a43541123857be0986b419cd6c9cee261311e94f86555cc67",
+      "status": "passed",
+      "wall_seconds": 1.166,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 140,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 2,
+              "channel": 0,
+              "actual": 0.3881438970565796,
+              "expected": 0.3881438374519348
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 350,
+          "payload_bytes": 1400,
+          "request_bytes": 17655,
+          "graph_sha256": "5f0b5ef6500de47c269ea78e59fff55ed5af994115c3932c4a14f6a4ec801167",
+          "graph_bytes": 17427,
+          "embedded_constants": 104,
+          "inline_values": 140,
+          "status": "ok",
+          "wall_seconds": 1.165
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 140,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 2,
+              "channel": 0,
+              "actual": 0.3881438970565796,
+              "expected": 0.3881438374519348
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/groups4-i8-o8-k3",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "in_channels": 8,
+          "out_channels": 8,
+          "groups": 4,
+          "kernel_size": 3,
+          "stride": 1,
+          "padding": 1,
+          "bias": true,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            5,
+            7,
+            8
+          ],
+          "output": [
+            5,
+            7,
+            8
+          ]
+        },
+        "seed": 61,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.Conv2d(..., groups=...).eval()",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "none: raster grouped convolution, offline only",
+        "calibration": false,
+        "notes": "Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
+      },
+      "inputs_sha256": "1c7480f20404a564334bf62ae559b44fb3fb3b9e8b9f62d53356f34ff4a2bd94",
+      "weights_sha256": "d81db06686b95640d0a9c732b2094de7d9c29244300abf6555fa61859bdfd2b9",
+      "status": "passed",
+      "wall_seconds": 1.26,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 280,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 1,
+              "channel": 4,
+              "actual": -0.41217368841171265,
+              "expected": -0.4121735692024231
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 18,
+          "values": 630,
+          "payload_bytes": 2520,
+          "request_bytes": 22990,
+          "graph_sha256": "d78b6f0f1bf3baa7e75584fd34e6debf15b9c92581fec4c8decb057780199445",
+          "graph_bytes": 22762,
+          "embedded_constants": 152,
+          "inline_values": 280,
+          "status": "ok",
+          "wall_seconds": 1.26
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            8
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 280,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 1,
+              "channel": 4,
+              "actual": -0.41217368841171265,
+              "expected": -0.4121735692024231
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 280,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            8
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 280,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/multiplier2-i4-o8-k3",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "in_channels": 4,
+          "out_channels": 8,
+          "groups": 4,
+          "kernel_size": 3,
+          "stride": 1,
+          "padding": 1,
+          "bias": true,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            5,
+            7,
+            4
+          ],
+          "output": [
+            5,
+            7,
+            8
+          ]
+        },
+        "seed": 61,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.Conv2d(..., groups=...).eval()",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "none: raster grouped convolution, offline only",
+        "calibration": false,
+        "notes": "Odd non-square input; distinct weights for each group, channel-major taps, double reduction."
+      },
+      "inputs_sha256": "a2d4618b03aea23a084c8023f03ce8d6f91c2999304efb82b2df4f476ab3bae9",
+      "weights_sha256": "b225e4c6778ad542d8279a0f1fde79ee9ceb12c3213f1c7597aa202deebedfe3",
+      "status": "passed",
+      "wall_seconds": 1.139,
+      "failures": [],
+      "offline": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 280,
+            "max_abs": 1.1175870895385742e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 6,
+              "actual": 0.014979742467403412,
+              "expected": 0.014979630708694458
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 5
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 5,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 14,
+          "values": 490,
+          "payload_bytes": 1960,
+          "request_bytes": 16876,
+          "graph_sha256": "b46977f6d75cfbc591321c8c2dea5648cdce5f8c8570fe07a770e57635e1ce41",
+          "graph_bytes": 16648,
+          "embedded_constants": 80,
+          "inline_values": 140,
+          "status": "ok",
+          "wall_seconds": 1.139
+        }
+      ],
+      "outputs": {
+        "out": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            8
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 280,
+            "max_abs": 1.1175870895385742e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 6,
+              "actual": 0.014979742467403412,
+              "expected": 0.014979630708694458
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 280,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            5,
+            7,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 140,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    }
+  ],
+  "cloud_calls": {
+    "requests": 9,
+    "computePixels": 9,
+    "algorithms_list": 1,
+    "refused": []
+  },
+  "finished_utc": "2026-10-29T12:53:12+00:00",
+  "wall_seconds": 10.958
+}

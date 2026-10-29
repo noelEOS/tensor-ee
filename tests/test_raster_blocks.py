@@ -359,8 +359,7 @@ def test_compile_model_keeps_the_per_node_float32_cast(offline_ee):
 # ---------------------------------------------------------------------------
 EXPECTED = {   # block -> (locality, radius, status)
     "grouped_conv2d": (M.Locality.KERNEL, 2,
-        "Fixed — offline only: 5 x 7 inputs; depthwise k3 stride 1/2 optional bias, k5 stride 1 biased; "
-        "groups 4, 8 to 8 and 4 to 8 k3 stride 1 biased; clip_footprints=False"),
+        "Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2"),
     "bilinear_upsample": (M.Locality.KERNEL, 1, "Ready — factors 2, 3, 4 (align_corners=False), 2, 4 (align_corners=True)"),
     "batch_norm": (M.Locality.POINTWISE, None, "Ready"),
     "conv2d": (M.Locality.KERNEL, 3, "Ready"),
