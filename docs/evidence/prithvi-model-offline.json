@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "b990da4b7be0ef9a7f9718997cf43646eb420083",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.14",
+    "earthengine-api": "1.7.50",
+    "torch": "2.15.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.3.5"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 1,
+      "requests": 2,
+      "values": 16576,
+      "payload_bytes": 66304,
+      "request_bytes": 1661531,
+      "max_values": 9408,
+      "max_request_bytes": 1581736,
+      "max_bands": 7,
+      "embedded_constants": 929858,
+      "inline_values": 12288,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/concat_rows/prithvi-crop-logits",
+        "lane": "window",
+        "block": "concat_rows",
+        "parts": [
+          "patch_embed",
+          "linear",
+          "layer_norm",
+          "naive_attention",
+          "gelu",
+          "add",
+          "window_depth_to_space",
+          "layer_norm2d",
+          "conv3x3_window",
+          "batch_norm",
+          "relu",
+          "conv1x1",
+          "head_dense"
+        ],
+        "settings": {
+          "window": 14,
+          "rows": [
+            1,
+            196
+          ],
+          "channels": 8,
+          "width": 24,
+          "heads": 3,
+          "depth": 12,
+          "decoder": 16
+        },
+        "policy": "none",
+        "shapes": {
+          "input": [
+            224,
+            224,
+            6
+          ],
+          "logits": [
+            224,
+            224,
+            2
+          ],
+          "readout": [
+            56,
+            56,
+            2
+          ]
+        },
+        "seed": 8217,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "plain torch source-order Prithvi reference",
+        "mirror": {
+          "source": "tests/reference/prithvi_sen1floods11/execution.py",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/api.md#prithvi-sen1floods11",
+        "calibration": false,
+        "notes": "Offline only: full224crop graph, structured random repeated dyadic coefficients; probe every fourth output pixel, all pixels in model tests. No full-model live run."
+      },
+      "inputs_sha256": "78ed02120256f3982c656a3c6151cedc8fd69940ff404d7f03c1850b44e2f799",
+      "weights_sha256": "d41c7522ef8f6bd541a1e0d3f949aa31ced6643d56f86a87b8adde5ecec20d8a",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 4.0,
+              "shearX": 0,
+              "translateX": 0.5,
+              "shearY": 0,
+              "scaleY": -4.0,
+              "translateY": -0.5
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "logits",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 1581736,
+          "graph_sha256": "45872ac59b69642186510e1524aa791db1a2f32e1086a337f3918d7c0f279f3b",
+          "graph_bytes": 1581505,
+          "embedded_constants": 929858,
+          "inline_values": 6144
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 32,
+              "height": 32
+            },
+            "affineTransform": {
+              "scaleX": 1.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -1.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 32,
+          "height": 32,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 6
+            }
+          ],
+          "bands": 7,
+          "values": 7168,
+          "payload_bytes": 28672,
+          "request_bytes": 79795,
+          "graph_sha256": "56ff8c3f8d7a78bbc7ef3fe8b68361c295d54d6eaab2d19744aa6bdd42bc4ca2",
+          "graph_bytes": 79569,
+          "embedded_constants": 0,
+          "inline_values": 6144
+        }
+      ],
+      "errors": [],
+      "seconds": 0.125,
+      "outputs": {
+        "logits": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 3.3080577850341797e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 1,
+              "channel": 1,
+              "actual": -0.27617141604423523,
+              "expected": -0.27617472410202026
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}
