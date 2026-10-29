@@ -505,7 +505,7 @@ def _bilinear_fixtures(cost) -> list[Fixture]:
         reference=_bilinear_reference(factor, align), reference_source="torch.nn.functional.interpolate",
         mirror=MirrorSpec(_bilinear_mirror, True, "reference.raster_resample.bilinear_upsample"),
         requests=2, constants=cost("bilinear_upsample", lambda data, factor=factor: (5, 7, factor)),
-        history="none: raster bilinear interpolation, offline only",
+        history="docs/evidence/live-fixtures/20261029T094157Z-bilinear.json (passed; Earth Engine equal to the mirror)",
         accepts=(BilinearConstants, bilinear_upsample),
         notes="Odd non-square input, distinct dyadic values per pixel and channel; y then x in double."
     ) for factor, align in _BILINEAR_SETTINGS]

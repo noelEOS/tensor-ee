@@ -91,10 +91,9 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = {"raster/bilinear_upsample"}
+OFFLINE_ONLY: set[str] = set()
 """The blocks with no live validation yet, by lane-qualified key (two lanes may share a block
-name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``.
-Raster bilinear resizing has offline fixtures only."""
+name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. None today."""
 
 
 def test_every_block_has_a_record():
@@ -128,10 +127,7 @@ def test_the_record_names_real_parameters(name):
     for source in entry.validated.sources:
         assert source.__module__.startswith("tensor_ee."), (name, source)
     if entry.per_setting is not None:
-        # Offline-only metadata may describe locality before any live setting
-        # exists; its setting names must still be actual callable parameters.
-        names = _vocabulary(entry, function) if name in OFFLINE_ONLY else entry.validated.names
-        assert _parameters(entry.per_setting) <= names, name
+        assert _parameters(entry.per_setting) <= entry.validated.names, name
 
 
 # ---------------------------------------------------------------------------
@@ -158,6 +154,7 @@ NEVER_VARIED = {
     **{f"raster/{name}": {"clip_footprints"} for name in ("leaky_relu", "silu", "gelu", "tanh", "eval_dropout",
                                                           "softmax", "relu6", "hardsigmoid", "hardswish")},
     "raster/concatenate": {"dim"},
+    "raster/bilinear_upsample": {"clip_footprints"},
     "window/layer_norm": {"eps"},
     "window/batch_norm": {"eps"},
     "raster/batch_norm": {"eps", "clip_footprints"},
@@ -671,12 +668,7 @@ def test_per_setting_properties_stay_within_the_static_bounds():
                        "window/swin_patch_embedding", "raster/bilinear_upsample"}
     for name in varying:
         entry = ENTRIES[name]
-        if name in OFFLINE_ONLY:
-            assert name == "raster/bilinear_upsample" and entry.validated == M.NOT_LIVE
-            settings = ({"align_corners": False}, {"align_corners": True})  # Offline fixtures cover both.
-        else:
-            settings = _configurations(entry.validated)
-        at = [metadata_at(entry, setting) for setting in settings]
+        at = [metadata_at(entry, settings) for settings in _configurations(entry.validated)]
         radii = [e.radius or 0 for e in at]
         assert max(radii) == (entry.radius or 0), name
         assert any(e.chip_edge_dependent for e in at) == entry.chip_edge_dependent, name
