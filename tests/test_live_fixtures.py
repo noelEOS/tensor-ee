@@ -702,7 +702,8 @@ def test_fixture_records_reject_a_larger_tolerance_and_malformed_ids():
         "raster/conv2d/k3", "window/patch_merge/w7", "window/patch_embed/p4-vvvh-d96",
         "window/patch_merge/w5", "window/patch_merge/w8", "window/patch_merge/w12",
         "window/patch_embed/p2-b3-d48-w5", "window/patch_embed/p2-b1-d128-w8", "window/patch_embed/p2-b2-d96-w12",
-        "window/patch_embed/p4-b4-d128-w12", "window/patch_embed/p8-b1-d96-w7", "window/patch_embed/p8-b4-d48-w8"]
+        "window/patch_embed/p4-b4-d128-w12", "window/patch_embed/p8-b1-d96-w7", "window/patch_embed/p8-b4-d48-w8",
+        "window/patch_embed/prithvi-1536-768-w14"]
 
 
 def test_comparisons_count_bits_and_non_finite_values():
