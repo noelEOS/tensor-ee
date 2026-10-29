@@ -65,8 +65,8 @@ query partitions attend to all ``window**2 + 1`` keys. Scores are multiplied by
 ``head_dim**-0.5`` after their product. The composite reuses ``split_heads``,
 ``concat_rows`` and ``naive_attention`` with its ``round_each_op`` policy;
 head concatenation only moves values. It has no coefficient constants.
-Windows 3 and 14, heads 3 and 12, and head widths 4 and 64 have offline checks
-only; the composite has not been validated live.
+Validated live at window 3 with 3 heads of width 4 and at window 14 with 12 heads
+of width 64 (Earth Engine equal to the NumPy mirror in every value).
 """
 
 from __future__ import annotations
@@ -74,7 +74,7 @@ from __future__ import annotations
 import numpy as np
 
 from ...core.errors import reject
-from ...core.metadata import (ANY_SETTINGS, COMPOSITE, NO_ARITHMETIC, NOT_LIVE, BlockMetadata, Locality, Validated,
+from ...core.metadata import (ANY_SETTINGS, COMPOSITE, NO_ARITHMETIC, BlockMetadata, Locality, Validated,
                               validate_metadata)
 from ...core.precision import DOUBLE_ROUND_ONCE, ROUND_EACH_OP, validate_policy
 from ...core.tensor import WINDOW
@@ -385,8 +385,10 @@ METADATA = validate_metadata({
         name="class_token_attention", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=COMPOSITE, embedded_constants=class_token_attention_values,
         asset_arrays=class_token_attention_arrays, chip_edge_dependent=False,
-        status="Fixed — offline only: windows 3, 14; heads 3, 12; head widths 4, 64",
-        evidence=("docs/evidence/class-token-offline.json",), validated=NOT_LIVE),
+        status="Ready — window 3, heads 3, dim 12; window 14, heads 12, dim 768",
+        evidence=("docs/evidence/class-token-offline.json", "docs/evidence/live-fixtures/20261029T174042Z-class_token.json"),
+        validated=Validated(({"window": (3,), "heads": (3,), "dim": (12,)},
+                             {"window": (14,), "heads": (12,), "dim": (768,)}))),
     # Validated: any accepted call (token counts, widths, biases, masks and both scales varied).
     "naive_attention": BlockMetadata(
         name="naive_attention", layout_in="W", layout_out="W", locality=Locality.WINDOW,

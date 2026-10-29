@@ -12,7 +12,7 @@ from tensor_ee.blocks.window.attention import (
     naive_attention, split_heads, METADATA as ATTENTION_METADATA,
 )
 from tensor_ee.blocks.window.merge import concat_rows, concat_rows_arrays, concat_rows_values, METADATA
-from tensor_ee.core.metadata import NOT_LIVE
+from tensor_ee.core.metadata import ANY_SETTINGS
 from tensor_ee.core.ops import ValueOps, WindowOps
 from tensor_ee.core.grid import TokenGrid
 from tensor_ee.core.tensor import WindowTensor
@@ -28,7 +28,7 @@ def test_row_order_and_bits():
                          rows=(1, 196), channels=3).values
     expected = mirror_concat([first, rest])
     np.testing.assert_array_equal(actual.view(np.uint32), expected.view(np.uint32))
-    assert METADATA["concat_rows"].validated == NOT_LIVE
+    assert METADATA["concat_rows"].validated == ANY_SETTINGS
     assert concat_rows_values(rows=(1, 196), channels=3) == concat_rows_arrays() == 0
 
 
@@ -102,9 +102,11 @@ def test_compact_heads_rotate_every_qkv_component():
                     component * 64 + (channel + h) % 64)
 
 
-def test_class_attention_has_no_coefficients_and_no_live_record():
+def test_class_attention_has_no_coefficients_and_its_live_record():
     entry = ATTENTION_METADATA["class_token_attention"]
-    assert entry.validated == NOT_LIVE
+    assert entry.validated.configurations == (
+        (("dim", (12,)), ("heads", (3,)), ("window", (3,))),
+        (("dim", (768,)), ("heads", (12,)), ("window", (14,))))
     assert class_token_attention_values() == class_token_attention_arrays() == 0
 
 

@@ -17,7 +17,8 @@ projection with each input resampled (nearest), which silently replicates coarse
 Row concatenation moves raw operands [R1,C], [R2,C], ... to
 [sum(R),C] in operand order, including a one-row class token beside a
 196-row spatial window. It has no arithmetic, casts or coefficient constants.
-This row form has offline evidence only; its metadata remains NOT_LIVE.
+Validated live with one class row before 196 and before 9 spatial rows (Earth Engine
+equal to the NumPy mirror in every value).
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ from __future__ import annotations
 import numpy as np
 
 from ...core.errors import GridMismatch, reject
-from ...core.metadata import ANY_SETTINGS, NOT_LIVE, NO_ARITHMETIC, BlockMetadata, Locality, validate_metadata
+from ...core.metadata import ANY_SETTINGS, NO_ARITHMETIC, BlockMetadata, Locality, validate_metadata
 from ...core.precision import DOUBLE_ROUND_ONCE, validate_policy
 from ...core.tensor import _layout, band_names, same_grid
 from .linear import no_constants
@@ -94,8 +95,9 @@ METADATA = validate_metadata({
     "concat_rows": BlockMetadata(
         name="concat_rows", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
         policy=NO_ARITHMETIC, embedded_constants=concat_rows_values, asset_arrays=concat_rows_arrays,
-        status="Fixed — offline only: one class row followed by spatial rows",
-        evidence=("docs/evidence/class-token-offline.json",), validated=NOT_LIVE),
+        status="Ready",
+        evidence=("docs/evidence/class-token-offline.json", "docs/evidence/live-fixtures/20261029T174042Z-class_token.json"),
+        validated=ANY_SETTINGS),
     "add": BlockMetadata(
         name="add", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=no_constants, asset_arrays=no_constants,

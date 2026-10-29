@@ -158,7 +158,7 @@ def fixtures():
         seed=8217, data=_data, build=_build, reference=_reference,
         reference_source="plain torch source-order Prithvi reference",
         mirror=MirrorSpec(_mirror, False, "tests/reference/prithvi_sen1floods11/execution.py", bound=1e-4),
-        requests=2, constants=_cost, history="docs/api.md#prithvi-sen1floods11",
+        requests=2, constants=_cost, history="docs/evidence/live-fixtures/20261029T185039Z-prithvi_model.json (passed; Earth Engine equal to the mirror)",
         parts=(), accepts=(concat_rows, PrithviConfig, WindowLayout), window=14,
         notes="Reduced-width crop composition check, not individual-block evidence. "
               "All matrix columns and rows and all positional rows are distinguishable. "

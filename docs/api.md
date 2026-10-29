@@ -249,7 +249,7 @@ The caller supplies each part's positive row count and a shared channel count;
 all parts must already represent the same crop pixel. The result is an
 intermediate matrix, so its row count need not be a square window size.
 Empty parts and invalid dimensions are refused. No coefficients are embedded or
-read from assets. Its status remains `Fixed — offline only` pending promotion.
+read from assets. It is validated live.
 
 A class token can therefore remain a one-row array beside a spatial window.
 Concatenate class then spatial keys and values, and call the existing
@@ -262,7 +262,8 @@ cls_qkv, dim=..., heads=..., window=14)` provides this composition for every
 head. Its settings are keyword-only. It takes projected QKV arrays, returns
 the spatial and class outputs separately, and applies post-product score
 scaling through the existing attention core. No coefficient constants are
-introduced by the composite.
+introduced by the composite. It is validated live at window 3 with 3 heads of width 4
+and at window 14 with 12 heads of width 64.
 
 ## Window depth-to-space
 
@@ -275,8 +276,7 @@ The supported window pairs are 14→7 and 7→7, at factor two, on a `TokenGrid`
 with complete windows. Each child window selects its rows and columns directly
 from the expanded parent array. Tensor values undergo no arithmetic or casts;
 no dense channel raster is formed. The block has window locality, needs no
-halo, and has no chip-edge dependence. Its status remains
-`Fixed — offline only: factor 2; windows 7, 14 to window 7` pending promotion.
+halo, and has no chip-edge dependence. It is validated live for both window pairs.
 This supplies the value-moving part of a kernel-two, stride-two transposed
 convolution after an ordinary linear projection.
 
@@ -297,12 +297,13 @@ the bias-free 768-to-256 decoder convolution with BatchNorm, and the two-class
 classifier. Compact random dyadic tiles are expanded identically on the server
 and in the references, with every output channel read. These structured inputs
 keep the unchanged request budget; they do not establish behavior with an
-arbitrary dense coefficient matrix or server runtime memory. Existing statuses
-and validated records are unchanged. The preserved historical record does not
-encode `norm`: `check_settings` alone therefore cannot distinguish its values
-at legacy shapes. Historical evidence requires `norm=True`; `norm=False` has
-only the new offline evidence. Prithvi settings are outside the historical
-record on patch size, band count, width and window.
+arbitrary dense coefficient matrix or server runtime memory. Every fixture
+passed live, with Earth Engine equal to the NumPy mirror in every value. The
+records of `linear`, `conv1x1`, `layer_norm2d` and `conv3x3_window` already
+cover these settings. The patch embedding's record now names `norm`: `True` at
+its historical settings, and `False` at patch 16 with six bands, width 768 and
+window 14. Its metadata radius, and that of `stride_columns`, is 8, half the
+largest validated patch.
 
 
 ## Prithvi Sen1Floods11
@@ -357,6 +358,11 @@ that fraction alone does not establish a need for grouped execution. The
 largest image array is [196,3072], or 602,112 values. The proposed 19 stages
 fit default constant and boundary limits; request sizes depend on the table
 manifest. Symbolic table sizing does not establish server memory or runtime.
+
+A reduced-width random-weight crop (width 24, 3 heads, 12 blocks, decoder 16)
+was checked live: Earth Engine equals the NumPy mirror at every probed logit,
+within 2.64e-07 of PyTorch. This checks the composition, not trained weights
+or accuracy.
 
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with

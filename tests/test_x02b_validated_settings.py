@@ -91,10 +91,9 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = {"window/concat_rows", "window/window_depth_to_space", "window/class_token_attention"}
+OFFLINE_ONLY: set[str] = set()
 """The blocks with no live validation yet, by lane-qualified key (two lanes may share a block
-name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``.
-Row concatenation, window depth-to-space and class-token attention have only offline evidence."""
+name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. None today."""
 
 
 def test_every_block_has_a_record():
@@ -191,6 +190,8 @@ RECORD_ONLY = {
 
 WORDS = {"align_corners": "align_corners", "reducer": "avg/max", "count_include_pad": "divisor rules",
          "bias": "bias", "norm": "final norm"}
+WORDS_BY_BLOCK = {"window/patch_embed": {"norm": "without normalization"}}
+"""Per-block exceptions to ``WORDS``, where a setting name means something else."""
 """Non-numeric settings -> the words of the status that name them."""
 
 IDENTIFIER = re.compile(r"\b[CP][1-4]\b(?:–[CP][1-4]\b)?|stage-1")
@@ -277,7 +278,7 @@ def test_the_record_agrees_with_the_prose_status(name):
         assert len(values) == 1 and len(next(iter(values))) == 1, (name, setting, values)
     for setting in record.names:
         if setting not in by_setting or not by_setting[setting]:
-            assert (setting in NEVER_VARIED.get(name, ()) or WORDS.get(setting, setting) in entry.status
+            assert (setting in NEVER_VARIED.get(name, ()) or WORDS_BY_BLOCK.get(name, {}).get(setting, WORDS.get(setting, setting)) in entry.status
                     or (prefix and setting == "shifted")), (name, setting)
 
 
@@ -401,7 +402,8 @@ def test_the_status_phrases_name_settings():
     assert parsed("window/swin_patch_embedding") == [{"patch": {4}},
                                                      {"window": {7, 8}, "channels": {2, 3}}]
     assert parsed("window/patch_embed") == [{"patch": {2, 4, 8}}, {"channels": {1, 2, 3, 4}},
-                                            {"window": {5, 7, 8, 12}}]      # widths name no setting
+                                            {"window": {5, 7, 8, 12}},      # widths name no setting
+                                            {"window": {14}, "patch": {16}, "channels": {6}}]
     assert parsed("window/head_forward") == [{"classes": {2, 3}}]           # "256 → 2 and 64 → 3 classes"
     assert parsed("window/window_resize") == [{"window": {7, 8}}, {"factor": {2, 4, 8}, "align_corners": {False, True}}]
     assert parsed("window/window_pool") == [
@@ -714,7 +716,7 @@ def test_a_patch_embedding_reaches_half_its_patch(name):
     at = metadata_at(entry, {"patch": 1})
     assert (at.locality, at.radius) == (Locality.POINTWISE, None)
     assert metadata_at(entry, {}).radius == 2                     # the default patch, 4
-    assert entry.radius == (4 if name != "swin_patch_embedding" else 2)   # the bound: patch 8, or 4
+    assert entry.radius == (8 if name != "swin_patch_embedding" else 2)   # the bound: patch 16, or 4
 
 
 def test_an_entry_without_per_setting_is_returned_unchanged():

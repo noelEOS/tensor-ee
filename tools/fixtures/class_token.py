@@ -164,7 +164,7 @@ def fixtures():
         reference=partial(_concat_reference, window=14), reference_source="torch.cat(dim=0)",
         mirror=MirrorSpec(partial(_concat_mirror, window=14), True, "reference.class_token.concat_rows"),
         requests=2, constants=lambda data: {"concat_rows": METADATA["concat_rows"].embedded_constants(
-            rows=(1, 196), channels=3)}, history="docs/evidence/class-token-offline.json",
+            rows=(1, 196), channels=3)}, history="docs/evidence/live-fixtures/20261029T174042Z-class_token.json (passed; Earth Engine equal to the mirror)",
         accepts=(concat_rows, WindowLayout),
         tolerance=0, window=14)]
     for window, heads, head_dim, requests in ((3, 3, 4, 2), (14, 12, 64, 6)):
@@ -179,7 +179,7 @@ def fixtures():
             mirror=MirrorSpec(partial(_mirror, **args), False, "reference.class_token.class_token_attention", bound=1e-4),
             requests=requests, constants=lambda data: {"class_token_attention":
                 ATTENTION_METADATA["class_token_attention"].embedded_constants()},
-            history="docs/evidence/class-token-offline.json", accepts=(class_token_attention,), window=window,
+            history="docs/evidence/live-fixtures/20261029T174042Z-class_token.json (passed; Earth Engine equal to the mirror)", accepts=(class_token_attention,), window=window,
             notes="Both class and spatial queries update; compact random inputs rotate across all heads."))
     return result
 

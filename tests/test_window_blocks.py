@@ -472,16 +472,16 @@ def test_constants_built_for_one_layout_are_refused_by_another(offline_ee):
 # and the halo-based "3x3" -> WINDOW_RING, ring 1; "4x4" and "2x2 windows" (the k x k
 # class) -> KERNEL, radius k // 2 as for the R convolution; "extent" -> EXTENT; "window;
 # depends on chip edge" -> WINDOW, chip_edge_dependent. Since P03, patch_embed and
-# stride_columns ("4x4" in the inventory, at patch 4) have radius 4: half the largest
-# validated patch, 8.
+# stride_columns ("4x4" in the inventory, at patch 4) had radius 4: half the largest
+# validated patch, 8; radius 8 since patch 16 was validated live.
 DRO, REO = P.DOUBLE_ROUND_ONCE, P.ROUND_EACH_OP
 EXPECTED_METADATA = {
     "class_token_attention": (Locality.WINDOW, None, False, M.COMPOSITE,
-        "Fixed — offline only: windows 3, 14; heads 3, 12; head widths 4, 64", "window"),
+        "Ready — window 3, heads 3, dim 12; window 14, heads 12, dim 768", "window"),
     "window_depth_to_space": (Locality.WINDOW, None, False, M.NO_ARITHMETIC,
-        "Fixed — offline only: factor 2; windows 7, 14 to window 7", "window"),
+        "Ready — factor 2; windows 14, 7 to window 7", "window"),
     "concat_rows": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC,
-                    "Fixed — offline only: one class row followed by spatial rows", "per crop pixel"),
+                    "Ready", "per crop pixel"),
     "depthwise_conv3x3_window": (Locality.WINDOW_RING, 1, False, DRO,
         "Ready — 3 × 3, stride1, padding1, dilation1, multiplier1; window7; D4 optional bias, D1024 biased; D16 biased in C4/D16 Mix-FFN", "3x3 depthwise"),
     "linear": (Locality.POINTWISE, None, False, DRO, "Ready", "per token"),
@@ -515,9 +515,11 @@ EXPECTED_METADATA = {
                     "Ready — extents 5, 7, 8, 12 and 14 tokens with bins (1, 2, 3, 6); "
                     "extents 8 and 12 with bins (1, 2, 4, 8)", "extent"),
     "gather": (Locality.EXTENT, None, False, M.NO_ARITHMETIC, "Ready", "extent"),
-    "patch_embed": (Locality.KERNEL, 4, False, DRO,
-                    "Ready — patches 2, 4, 8; 1–4 bands; widths 48, 96, 128; windows 5, 7, 8, 12", "4x4"),
-    "stride_columns": (Locality.KERNEL, 4, False, M.NO_ARITHMETIC, "Ready — patches 2, 4, 8; 1–4 bands", "4x4"),
+    "patch_embed": (Locality.KERNEL, 8, False, DRO,
+                    "Ready — patches 2, 4, 8; 1–4 bands; widths 48, 96, 128; windows 5, 7, 8, 12; "
+                    "without normalization: patch 16, 6 bands, width 768, window 14", "4x4"),
+    "stride_columns": (Locality.KERNEL, 8, False, M.NO_ARITHMETIC,
+                       "Ready — patches 2, 4, 8; 1–4 bands; patch 16, 6 bands", "4x4"),
     "patch_merge": (Locality.KERNEL, 1, False, DRO, "Ready — windows 5, 7, 8, 12", "2x2 windows"),
     "gather_windows": (Locality.KERNEL, 1, False, M.NO_ARITHMETIC, "Ready — windows 5, 7, 8, 12", "2x2 windows"),
     "merge_windows": (Locality.WINDOW, None, False, M.NO_ARITHMETIC, "Ready — windows 5, 7, 8, 12",

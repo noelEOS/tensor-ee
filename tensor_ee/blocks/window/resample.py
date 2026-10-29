@@ -48,7 +48,8 @@ The no-arithmetic window_depth_to_space moves projected columns
 Input arrays are [w*w,4*C]; output arrays are [49,C], with w=7 or14.
 Child windows are sliced directly from the expanded parent array, without
 interpolation, tensor-value casts, dense channel bands or a halo.
-These settings have offline evidence only and retain NOT_LIVE metadata.
+Validated live at factor 2 from windows 14 and 7 to window 7 (Earth Engine equal to the
+NumPy mirror in every value).
 """
 
 from __future__ import annotations
@@ -61,7 +62,7 @@ import torch.nn.functional as F
 
 from ...core.errors import reject
 from ...core.grid import TokenGrid
-from ...core.metadata import NO_ARITHMETIC, NOT_LIVE, BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import NO_ARITHMETIC, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import DOUBLE_ROUND_ONCE, validate_policy
 from ...core.tensor import WINDOW
 from ...layouts.shift import domain_mask
@@ -327,8 +328,9 @@ METADATA = validate_metadata({
         name="window_depth_to_space", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=NO_ARITHMETIC, embedded_constants=window_depth_to_space_values,
         asset_arrays=window_depth_to_space_arrays, chip_edge_dependent=False,
-        status="Fixed — offline only: factor 2; windows 7, 14 to window 7",
-        evidence=("docs/evidence/prithvi-depth-to-space-offline.json",), validated=NOT_LIVE),
+        status="Ready — factor 2; windows 14, 7 to window 7",
+        evidence=("docs/evidence/prithvi-depth-to-space-offline.json", "docs/evidence/live-fixtures/20261029T185116Z-prithvi_depth_to_space.json"),
+        validated=Validated(({"factor": (2,), "window": (14, 7), "out_window": (7,)},))),
 
     # Chip-edge dependent over its validated settings (align_corners=True is one), and exactly
     # by setting through window_resize_edge.

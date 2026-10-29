@@ -68,7 +68,7 @@ FIXTURES = tuple(
         data=partial(_data, window=window), build=partial(_build, window=window),
         reference=_reference, reference_source="torch.nn.functional.pixel_shuffle (channel-major input)",
         mirror=MirrorSpec(_mirror, True, "reference.window_depth_to_space.window_depth_to_space"),
-        requests=2, constants=_constants, accepts=(window_depth_to_space,), history="docs/api.md#window-depth-to-space", tolerance=0,
+        requests=2, constants=_constants, accepts=(window_depth_to_space,), history="docs/evidence/live-fixtures/20261029T185116Z-prithvi_depth_to_space.json (passed; Earth Engine equal to the mirror)", tolerance=0,
         window=window, notes="Unique integer IDs; no arithmetic. Signed zeros are covered by unit tests.")
     for window in (14, 7)
 )

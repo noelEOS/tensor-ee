@@ -301,7 +301,7 @@ def fixtures():
             reference=partial(_reference, case=case), reference_source='torch.nn.functional, native operators',
             mirror=MirrorSpec(partial(_mirror, case=case), True, 'tests/reference/prithvi_settings.py'),
             requests=case.requests, constants=partial(_constants, case=case),
-            history='docs/api.md', parts=parts, accepts=accepts, window=case.window,
+            history='docs/evidence/live-fixtures/20261029T185123Z-prithvi_settings.json (passed; Earth Engine equal to the mirror)', parts=parts, accepts=accepts, window=case.window,
             notes='Full-column seeds and distinct channel and row codes; all output channels are read.'))
     return result
 
