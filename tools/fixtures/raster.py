@@ -525,7 +525,7 @@ def _batch_norm_fixtures(cost) -> list[Fixture]:
         reference=_batch_norm_reference(affine), reference_source="torch.nn.BatchNorm2d(3).eval()",
         mirror=MirrorSpec(_batch_norm_mirror(affine), True, "reference.upernet.ee_mirror_decoder.batch_norm"),
         requests=1, constants=cost("batch_norm", lambda data: (3,)),
-        history="none: standalone raster inference BatchNorm, offline only",
+        history="docs/evidence/live-fixtures/20261029T070703Z-batch_norm.json (passed; Earth Engine equal to the mirror)",
         accepts=(nn.BatchNorm2d, BatchNormConstants, batch_norm),
         notes="Nonlexical band order z,a,m; distinct means, variances 1e-4/0.5/100, negative gamma."
     ) for affine in (True, False)]

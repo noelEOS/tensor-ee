@@ -72,7 +72,7 @@ directly preceding convolution. Other inference BatchNorm2d calls use the pointw
 raster block with inline statistics, including after concatenations and shared
 convolutions. Functional `F.batch_norm` accepts fixed `get_attr` buffers/parameters
 for its statistics and optional affine coefficients, with literal `training=False`;
-other attribute uses remain unsupported. Standalone BatchNorm has offline evidence only.
+other attribute uses remain unsupported. Standalone BatchNorm is validated live at eps 1e-5.
 Float32 accumulation/folding can change rounding;
 compare against the original model on your actual prepared inputs. Public
 primitives and compiler activations materialize float32. `clip_footprints=True`
