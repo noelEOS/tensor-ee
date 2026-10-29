@@ -338,8 +338,7 @@ def test_compile_model_keeps_the_per_node_float32_cast(offline_ee):
 # Metadata: every public R block, locality from the inventory and receptive field
 # ---------------------------------------------------------------------------
 EXPECTED = {   # block -> (locality, radius, status)
-    "batch_norm": (M.Locality.POINTWISE, None,
-                   "Fixed — offline only: 3 channels, affine True/False, eps 1e-5, clip_footprints=False"),
+    "batch_norm": (M.Locality.POINTWISE, None, "Ready"),
     "conv2d": (M.Locality.KERNEL, 3, "Ready"),
     # P02: radius 3, the aligned 4 x 4 pool's offset k - 1 (tests/test_p02_raster_settings.py).
     "pool2d": (M.Locality.KERNEL, 3, "Ready — aligned avg/max k = 2, 3, 4; max 3×3 stride 1 or 2, padding 1; "

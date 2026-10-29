@@ -15,8 +15,8 @@ vectors, eps a finite static real, and var + eps positive.
 
 Policy ``float32_operands``: the work is double and the caller materializes the
 output in float32, as for R activations; this block only calls ``_finish``.
-Offline evidence covers three distinct channels, affine True/False, eps 1e-5,
-and clip_footprints=False. It has not been validated live.
+Validated live at eps 1e-5 and clip_footprints=False, with affine True and False and three
+channels of distinct statistics (Earth Engine equal to the NumPy mirror in every value).
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ import ee
 import numpy as np
 
 from ...core.errors import UnsupportedOperation
-from ...core.metadata import NOT_LIVE, BlockMetadata, Locality, validate_metadata
+from ...core.metadata import BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, exact_scalar, validate_policy
 from ...core.tensor import Raster
 from ...layouts.raster import finish as _finish
@@ -103,6 +103,7 @@ METADATA = validate_metadata({
     "batch_norm": BlockMetadata(
         name="batch_norm", layout_in="R", layout_out="R", locality=Locality.POINTWISE,
         policy=FLOAT32_OPERANDS, embedded_constants=batch_norm_values, asset_arrays=batch_norm_arrays,
-        status="Fixed — offline only: 3 channels, affine True/False, eps 1e-5, clip_footprints=False",
-        evidence=("docs/evidence/raster-batch-norm-offline.json",), validated=NOT_LIVE),
+        status="Ready",
+        evidence=("docs/evidence/raster-batch-norm-offline.json", "docs/evidence/live-fixtures/20261029T070703Z-batch_norm.json"),
+        validated=Validated(({"eps": (1e-5,), "clip_footprints": (False,)},), sources=(BatchNormConstants,))),
 })
