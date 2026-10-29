@@ -28,9 +28,9 @@ their product. Exact float32 coefficients are widened through the existing
 constant helper for double work; policy ``float32_operands`` leaves the final
 float32 materialization to the caller and returns through ``_finish``.
 
-Bilinear evidence is offline only: factors 2 and 4, align_corners False/True,
-and factor 3, align_corners=False,
-5 x 7 input, two channels, clip_footprints=False. No live validation is claimed.
+Validated live at factors 2 and 4 with align_corners False and True, and factor 3 with
+align_corners=False (5 x 7 input, two channels, clip_footprints=False; Earth Engine equal to
+the NumPy mirror in every value).
 The ring radius is one input pixel. With align_corners=True coefficients depend
 on the full source extent, so halos cannot reproduce a resize on another chip.
 """
@@ -44,7 +44,7 @@ from numbers import Real
 import ee
 import numpy as np
 
-from ...core.metadata import NOT_LIVE, BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
 from ...layouts.raster import finish as _finish, project as _project, zero_extended as _zero_extended
@@ -179,8 +179,11 @@ METADATA = validate_metadata({
         name="bilinear_upsample", layout_in="R", layout_out="R", locality=Locality.KERNEL, radius=1,
         policy=FLOAT32_OPERANDS, embedded_constants=bilinear_upsample_values,
         asset_arrays=bilinear_upsample_arrays, chip_edge_dependent=True, per_setting=bilinear_upsample_edge,
-        status="Fixed — offline only: factors 2, 4 (align_corners False/True), 3 (align_corners=False); 5 x 7 input; 2 channels; clip_footprints=False",
-        evidence=("docs/evidence/raster-bilinear-offline.json",), validated=NOT_LIVE),
+        status="Ready — factors 2, 3, 4 (align_corners=False), 2, 4 (align_corners=True)",
+        evidence=("docs/evidence/raster-bilinear-offline.json", "docs/evidence/live-fixtures/20261029T094157Z-bilinear.json"),
+        validated=Validated(({"factor": (2, 3, 4), "align_corners": (False,), "clip_footprints": (False,)},
+                             {"factor": (2, 4), "align_corners": (True,), "clip_footprints": (False,)}),
+                            sources=(BilinearConstants,))),
     # receptive_field._upsample_axis: output index i reads input floor(i / factor),
     # a single input pixel.
     "nearest_upsample": BlockMetadata(

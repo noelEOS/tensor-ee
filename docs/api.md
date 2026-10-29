@@ -70,8 +70,8 @@ as PyTorch does. Downsampling, non-integer or unequal factors, antialias and oth
 interpolation modes are refused. Coefficients come from PyTorch's existing kernel
 reader with explicit float32 model dtype under both alignment rules; the block
 guards their exact float32 representation.
-The raster bilinear block has offline evidence only, at factors 2 and 4 under both
-alignment rules and factor 3 with align_corners=False on a 5 x 7 input.
+The raster bilinear block is validated live at factors 2 and 4 under both alignment
+rules and factor 3 with align_corners=False.
 Constants stay inline and the output rounds once
 to float32. `align_corners=True` depends on the whole source extent; its receptive
 field reports local bounds but refuses a halo guarantee for tiled execution.

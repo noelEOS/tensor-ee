@@ -78,11 +78,13 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
 
 # New blocks stay outside Phase 2's historical calibration census. The depthwise
 # block passed its separate SegFormer G3-live gate, and the bounded activations and the
-# standalone raster BatchNorm theirs; raster bilinear interpolation is offline only.
-OFFLINE_ONLY_FIXED: set[str] = {"bilinear_upsample"}
+# standalone raster BatchNorm and raster bilinear upsampling theirs; no offline-only block
+# remains.
+OFFLINE_ONLY_FIXED: set[str] = set()
 SEGFORMER_G3_BLOCKS = {"depthwise_conv3x3_window"}
 HARD_ACTIVATION_G3_BLOCKS = {"relu6", "hardsigmoid", "hardswish"}
 BATCH_NORM_G3_BLOCKS = {"batch_norm"}
+BILINEAR_G3_BLOCKS = {"bilinear_upsample"}
 
 # The SegFormer composites promoted from the model (X01a): Fixed at the settings the
 # SegFormer-B0 live runs cover, outside Phase 2's calibration census.
@@ -675,7 +677,8 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
     new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear"])
                    if f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
-    assert SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | OFFLINE_ONLY_FIXED <= new_covered
+    assert (SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | BILINEAR_G3_BLOCKS
+            | OFFLINE_ONLY_FIXED <= new_covered)
     covered = {name for f in plan.fixtures for name in (f.block, *f.parts)}
     assert PHASE2_FIXED <= covered
     lanes = {f.lane for f in plan.fixtures}

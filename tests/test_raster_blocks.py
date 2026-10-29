@@ -346,8 +346,7 @@ def test_compile_model_keeps_the_per_node_float32_cast(offline_ee):
 # Metadata: every public R block, locality from the inventory and receptive field
 # ---------------------------------------------------------------------------
 EXPECTED = {   # block -> (locality, radius, status)
-    "bilinear_upsample": (M.Locality.KERNEL, 1,
-        "Fixed — offline only: factors 2, 4 (align_corners False/True), 3 (align_corners=False); 5 x 7 input; 2 channels; clip_footprints=False"),
+    "bilinear_upsample": (M.Locality.KERNEL, 1, "Ready — factors 2, 3, 4 (align_corners=False), 2, 4 (align_corners=True)"),
     "batch_norm": (M.Locality.POINTWISE, None, "Ready"),
     "conv2d": (M.Locality.KERNEL, 3, "Ready"),
     # P02: radius 3, the aligned 4 x 4 pool's offset k - 1 (tests/test_p02_raster_settings.py).
