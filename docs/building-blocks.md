@@ -101,18 +101,18 @@ their own.
 ## Blocks
 
 <!-- BEGIN GENERATED: blocks (tools/block_catalogue.py; edit the code, then rerun) -->
-82 blocks: 20 in `tensor_ee/blocks/raster` and 62 in `tensor_ee/blocks/window`.
+83 blocks: 21 in `tensor_ee/blocks/raster` and 62 in `tensor_ee/blocks/window`.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
-| R → R | 20 | 0 | 20 |
+| R → R | 20 | 1 | 21 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
 | W → W | 20 | 33 | 53 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **46** | **36** | **82** |
+| **All** | **46** | **37** | **83** |
 
 ### Raster-layout (R) blocks
 
@@ -139,6 +139,7 @@ their own.
 | [`segmentation_outputs`](../tensor_ee/blocks/raster/outputs.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`binary_threshold`](../tensor_ee/blocks/raster/outputs.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json) |
 | [`pool2d`](../tensor_ee/blocks/raster/pooling.py) | R → R | k×k, radius 3 | `float32_operands` | no | Ready — aligned avg/max k = 2, 3, 4; max 3×3 stride 1 or 2, padding 1; avg 3×3 stride 1 padding 1, both divisor rules | [evidence/live-fixtures/20261013T065257Z-p02.json](evidence/live-fixtures/20261013T065257Z-p02.json); [evidence/p02-raster-offline.json](evidence/p02-raster-offline.json); [cnn/results/parity.json](history/cnn/results/parity.json); [evidence/t05-primary.json](evidence/t05-primary.json); [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
+| [`bilinear_upsample`](../tensor_ee/blocks/raster/resample.py) | R → R | k×k, radius 1 | `float32_operands` | yes (by setting) | Fixed — offline only: factors 2, 4 (align_corners False/True), 3 (align_corners=False); 5 x 7 input; 2 channels; clip_footprints=False | [evidence/raster-bilinear-offline.json](evidence/raster-bilinear-offline.json) |
 | [`nearest_upsample`](../tensor_ee/blocks/raster/resample.py) | R → R | pointwise | `float32_operands` | no | Ready — factors 2, 3, 4 | [evidence/live-fixtures/20261013T065257Z-p02.json](evidence/live-fixtures/20261013T065257Z-p02.json); [evidence/p02-raster-offline.json](evidence/p02-raster-offline.json); [cnn/results/parity.json](history/cnn/results/parity.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 
 ### Window-layout (W) and value (V) blocks
@@ -218,7 +219,7 @@ their own.
 
 ### Validated settings
 
-Each block's `validated` record, the status in machine-readable form: 82 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
+Each block's `validated` record, the status in machine-readable form: 83 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
 
 | Block | Layout | Validated settings | Names from |
 |---|---|---|---|
@@ -241,6 +242,7 @@ Each block's `validated` record, the status in machine-readable form: 82 records
 | [`segmentation_outputs`](../tensor_ee/blocks/raster/outputs.py) | R → R | any accepted call | — |
 | [`binary_threshold`](../tensor_ee/blocks/raster/outputs.py) | R → R | any accepted call | — |
 | [`pool2d`](../tensor_ee/blocks/raster/pooling.py) | R → R | {kernel 2; padding 0; reducer 'mean' or 'max'; stride 2} ∪ {kernel 3; padding 0; reducer 'mean' or 'max'; stride 3} ∪ {kernel 4; padding 0; reducer 'mean' or 'max'; stride 4} ∪ {kernel 3; padding 1; reducer 'max'; stride 1 or 2} ∪ {count_include_pad True or False; kernel 3; padding 1; reducer 'mean'; stride 1} | `PoolConfig` |
+| [`bilinear_upsample`](../tensor_ee/blocks/raster/resample.py) | R → R | none live | — |
 | [`nearest_upsample`](../tensor_ee/blocks/raster/resample.py) | R → R | {scale_factor 2 or 3 or 4} | — |
 | [`gelu`](../tensor_ee/blocks/window/activations.py) | W → W | any accepted call | — |
 | [`relu`](../tensor_ee/blocks/window/activations.py) | W → W | any accepted call | — |

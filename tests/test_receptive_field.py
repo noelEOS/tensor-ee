@@ -80,7 +80,7 @@ def test_standalone_primitive_is_wrapped_like_the_compiler():
 
 @pytest.mark.parametrize("module", [
     nn.AdaptiveAvgPool2d((1, 1)),
-    nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False),
+    nn.Upsample(scale_factor=2, mode="bicubic", align_corners=False),
     nn.Upsample(size=(16, 16), mode="nearest"),
     nn.Upsample(scale_factor=1.5, mode="nearest"),
     nn.MaxPool2d(2, ceil_mode=True),
@@ -129,7 +129,7 @@ def test_functional_nearest_matches_module_dependency_bounds():
 
 
 @pytest.mark.parametrize('options', [dict(scale_factor=1.5), dict(size=(224,224)),
-                                    dict(scale_factor=2,mode='bilinear',align_corners=False)])
+                                    dict(scale_factor=2,mode='bicubic',align_corners=False)])
 def test_functional_resize_rejects_unproven_semantics(options):
     class Resize(nn.Module):
         def forward(self, x):

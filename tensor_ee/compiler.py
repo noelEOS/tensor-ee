@@ -9,7 +9,7 @@ batch size one; channels are EE bands and spatial dimensions are the Grid.
 Semantics are intentionally strict: finite rectangles, missing input values
 filled with zero, odd same-padded stride-one/two convolutions, aligned k x k
 pooling (k = 2, 3, 4), padded 3x3 max pooling (stride one or two) and stride-one
-average pooling, integer nearest upsampling, residual addition, and channel
+average pooling, integer nearest/bilinear upsampling, residual addition, and channel
 concatenation. Outside every tensor's rectangle is zero for the
 next convolution, including after a biased layer. Intermediate grids retain
 the original upper-left corner; strided operations sample PyTorch's correct
@@ -42,7 +42,7 @@ from .weights.constants import inline_float32_array as _inline_float32_array
 # tensor_ee.blocks.raster.conv._inline_float32_array.
 from .blocks.raster.conv import _names, _pair, conv2d
 from .blocks.raster.pooling import pool2d
-from .blocks.raster.resample import nearest_upsample
+from .blocks.raster.resample import BilinearConstants, bilinear_upsample, nearest_upsample
 from .blocks.raster.merge import concatenate, residual_add
 from .blocks.raster.normalization import BatchNormConstants, batch_norm
 # The activations were private here; the library names them without the
@@ -244,12 +244,13 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                   clip_footprints: bool = False) -> CompiledModel:
     """Convert an eval-mode model into an EE graph; do not evaluate or export it.
 
-    Supports Conv2d, ReLU, AvgPool2d, MaxPool2d, nearest Upsample,
+    Supports Conv2d, ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
     Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, ReLU6, Hardswish, Hardsigmoid,
     eval Dropout/Dropout2d, channel Softmax,
     eval BatchNorm2d and F.batch_norm with fixed buffer/parameter statistics, torch.cat,
     residual tensor addition, torch.relu, F.relu, torch.sigmoid, and F.interpolate with a static integer
-    scale factor, or a proven size with that same integer nearest mapping.
+    scale factor, or a proven size with that same integer mapping. Bilinear requires
+    a static align_corners bool and antialias=False; its coefficients stay inline.
     Unsupported operators fail explicitly with their FX node.
     ``nodes`` includes the input placeholder and each tensor operation, keyed
     by the names in ``graph_module.graph`` for layer-by-layer parity tests.
@@ -360,6 +361,19 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                         raster = pool2d(inputs[0], call.module, clip_footprints=clip_footprints)
                     elif kind == "nearest":
                         raster = nearest_upsample(inputs[0], call.options["factor"], clip_footprints=clip_footprints)
+                    elif kind == "bilinear":
+                        from .blocks.window.resample import model_bilinear_weights
+
+                        source = inputs[0]
+                        factor, align = call.options["factor"], call.options["align_corners"]
+                        constants = BilinearConstants(
+                            model_bilinear_weights(source.grid.height, source.grid.height * factor,
+                                                   dtype=torch.float32, align_corners=align),
+                            model_bilinear_weights(source.grid.width, source.grid.width * factor,
+                                                   dtype=torch.float32, align_corners=align),
+                            factor)
+                        raster = bilinear_upsample(source, constants, align_corners=align,
+                                                   clip_footprints=clip_footprints)
                     elif kind == "cat":
                         raster = concatenate(inputs, call.options["dim"], clip_footprints=clip_footprints)
                     elif kind == "add":

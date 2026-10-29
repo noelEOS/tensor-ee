@@ -68,8 +68,10 @@ def _interpolate_arguments(input, size=None, scale_factor=None, mode="nearest", 
 
 
 def interpolate_options(options: dict[str, Any], input_metadata: TensorMetadata | None = None) -> int:
+    if options["mode"] == "bilinear":
+        return bilinear_options(options, input_metadata)
     if options["mode"] != "nearest":
-        _reject("Only nearest interpolation with scale_factor (not size) is supported")
+        _reject(f"Unsupported interpolation mode {options['mode']!r}; only nearest and bilinear are supported")
     if options["align_corners"] is not None or options["antialias"] is not False:
         _reject("nearest interpolation does not accept align_corners or antialias")
     recompute = options["recompute_scale_factor"]
@@ -90,6 +92,48 @@ def interpolate_options(options: dict[str, Any], input_metadata: TensorMetadata 
         # Fraction avoids rounding a nearly integral ratio into an acceptance.
         return nearest_factor((Fraction(int(size[0]), h), Fraction(int(size[1]), w)))
     return nearest_factor(options["scale_factor"])
+
+
+def bilinear_options(options: dict[str, Any], input_metadata: TensorMetadata | None = None) -> int:
+    """Validate a bilinear call without deriving any interpolation coefficients."""
+    if not isinstance(options["align_corners"], bool):
+        _reject("Bilinear align_corners must be a static bool")
+    if options["antialias"] is not False:
+        _reject("Bilinear antialias must be False")
+    recompute = options["recompute_scale_factor"]
+    if recompute is not None and not isinstance(recompute, bool):
+        _reject("recompute_scale_factor must be None or a static bool")
+    size = options["size"]
+    if size is not None:
+        if options["scale_factor"] is not None:
+            _reject("Bilinear interpolation requires exactly one of size and scale_factor")
+        if recompute is True:
+            _reject("Size-based bilinear interpolation does not accept recompute_scale_factor=True")
+        if (not isinstance(size, (tuple, list)) or len(size) != 2
+                or any(isinstance(x, bool) or not isinstance(x, Integral) or x <= 0 for x in size)):
+            _reject("Bilinear interpolation size must be a static pair of positive integers")
+        if input_metadata is None:
+            raise SemanticUnknown("Bilinear interpolation size requires a proven input spatial shape")
+        h, w = input_metadata.shape[2:]
+        factors = (Fraction(int(size[0]), h), Fraction(int(size[1]), w))
+    else:
+        factors = _pair(options["scale_factor"])
+    if any(isinstance(x, bool) or not isinstance(x, Real) or not math.isfinite(x) for x in factors):
+        _reject("Bilinear upsampling requires static finite real scale factors")
+    if any(x < 1 for x in factors):
+        _reject("Bilinear downsampling is unsupported; scale factors must be at least one")
+    if factors[0] != factors[1]:
+        _reject("Bilinear upsampling requires equal scale factors on both axes")
+    if any(int(x) != x for x in factors):
+        _reject("Bilinear upsampling requires integer scale factors")
+    return int(factors[0])
+
+
+def _interpolation_call(inputs, options):
+    factor = interpolate_options(options)
+    if options["mode"] == "bilinear":
+        return SemanticCall("bilinear", inputs, {"factor": factor, "align_corners": options["align_corners"]})
+    return SemanticCall("nearest", inputs, {"factor": factor})
 
 
 @dataclass(frozen=True)
@@ -152,7 +196,7 @@ def _plumbing_value(node, metadata, values):
 
 
 def specialize_plumbing(graph: GraphModule, input_shape: tuple[int, int, int, int] | None) -> PlumbingResult:
-    """Resolve only proven shape/container bookkeeping and exact nearest sizes.
+    """Resolve only proven shape/container bookkeeping and exact integer resize sizes.
 
     Work on an independent FX graph, without executing activations or changing
     modules. Unsupported arithmetic and its node names remain for diagnostics.
@@ -376,7 +420,7 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
                 options = dict(size=module.size, scale_factor=module.scale_factor, mode=module.mode,
                                align_corners=module.align_corners, recompute_scale_factor=module.recompute_scale_factor,
                                antialias=False)
-                return SemanticCall("nearest", inputs, {"factor": interpolate_options(options)})
+                return _interpolation_call(inputs, options)
             if isinstance(module, nn.ReLU):
                 if module.inplace is not False:
                     _reject("In-place ReLU is unsupported")
@@ -429,7 +473,7 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
                 return SemanticCall("relu" if target in (torch.relu, F.relu) else "sigmoid", _inputs((options["input"],)))
             if target is F.interpolate:
                 options = _bind_options(_interpolate_arguments, node.args, node.kwargs)
-                return SemanticCall("nearest", _inputs((options["input"],)), {"factor": interpolate_options(options)})
+                return _interpolation_call(_inputs((options["input"],)), options)
             _reject(f"Unsupported function {target}", "unsupported_operator")
         if node.op == "call_method" and node.target in ("relu", "sigmoid", "add"):
             options = _bind_options(_add_arguments if node.target == "add" else _input_arguments, node.args, node.kwargs)
@@ -461,7 +505,7 @@ def infer_metadata(call: SemanticCall, inputs: tuple[TensorMetadata, ...]) -> Te
             _reject(aligned_size_message(config.kernel), "input_shape")
         return TensorMetadata((n, c, config.output_size(h), config.output_size(w)),
                               first.scale * config.stride)
-    if call.kind == "nearest":
+    if call.kind in ("nearest", "bilinear"):
         factor = call.options["factor"]
         return TensorMetadata((n, c, h * factor, w * factor), first.scale / factor)
     if call.kind in ("cat", "add"):

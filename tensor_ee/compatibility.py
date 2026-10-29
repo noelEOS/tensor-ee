@@ -47,7 +47,8 @@ def check_compatibility(model: nn.Module, input_shape: tuple[int, int, int, int]
     Checks eval and floating tensor dtypes without changing the model. Shapes
     use integer metadata and exact relative grid spacing, never dummy tensors.
     Storage counts known effective convolution coefficients per FX node (with
-    Conv/BN folding); this is neither request size nor an EE resource estimate.
+    Conv/BN folding), inline BatchNorm vectors and bilinear tap vectors;
+    this is neither request size nor an EE resource estimate.
     """
     if not isinstance(model, nn.Module):
         raise TypeError("model must be a torch.nn.Module")
@@ -159,6 +160,11 @@ def check_compatibility(model: nn.Module, input_shape: tuple[int, int, int, int]
                 if any(metadata.get(x) is None for x in call.inputs):
                     raise SemanticUnknown("Shape depends on an unsupported or unknown predecessor")
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))
+                if call.kind == "bilinear":
+                    from .blocks.raster.resample import bilinear_upsample_values
+                    h, w = metadata[call.inputs[0]].shape[2:]
+                    count += bilinear_upsample_values(h, w, call.options["factor"])
+                    report["weight_storage"]["basis"] = "known effective Conv/BN and inline bilinear coefficients"
             if metadata[node] is not None:
                 entry["output_shape"] = list(metadata[node].shape)
         except SemanticUnknown as error:

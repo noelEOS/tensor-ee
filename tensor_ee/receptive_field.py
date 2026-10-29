@@ -5,6 +5,8 @@ numerical sensitivity. Bounds are inclusive input pixel indices. They describe
 the union of all possible spatial paths, including residual and skip branches.
 Nearest upsampling is treated as ``floor(index / scale)`` rather than as an
 approximate receptive-field width, so bounds retain their sampling phase.
+Bilinear upsampling adds the parent's one-pixel ring. With align_corners=True
+the report marks extent dependence and refuses a halo guarantee.
 
 For a full-resolution output, ``safe_halo`` is rounded to ``alignment`` and is
 guaranteed for cores whose start and exclusive end align to that lattice. Tile
@@ -111,6 +113,12 @@ class ReceptiveFieldReport(SpatialSupport):
 
     alignment: int
     nodes: dict[str, SpatialSupport]
+    chip_edge_dependent: bool = False
+
+    def _require_tileable(self):
+        if self.chip_edge_dependent:
+            raise UnsupportedReceptiveField(
+                "Bilinear align_corners=True depends on the full source extent; halos cannot reproduce it")
 
     @property
     def period(self) -> int:
@@ -119,6 +127,7 @@ class ReceptiveFieldReport(SpatialSupport):
     @property
     def safe_halo(self) -> int:
         """Symmetric halo for lattice-aligned core start and exclusive end."""
+        self._require_tileable()
         self.x._require_full_resolution()
         self.y._require_full_resolution()
         # Monotone bounds attain their extremes at the first/last core pixels.
@@ -131,6 +140,7 @@ class ReceptiveFieldReport(SpatialSupport):
     @property
     def halo_for_any_phase(self) -> int:
         """Uniform conservative halo when core start/end phase is unrestricted."""
+        self._require_tileable()
         extent = max(self.x.left_radius, self.x.right_radius,
                      self.y.left_radius, self.y.right_radius, 0)
         return _round_up(extent, self.alignment)
@@ -140,12 +150,15 @@ class ReceptiveFieldReport(SpatialSupport):
         result.update({
             "alignment": self.alignment,
             "period": self.period,
-            "safe_halo": self.safe_halo,
-            "halo_for_any_phase": self.halo_for_any_phase,
+            "safe_halo": None if self.chip_edge_dependent else self.safe_halo,
+            "halo_for_any_phase": None if self.chip_edge_dependent else self.halo_for_any_phase,
             "aligned_core_requirement": "start and exclusive end divisible by alignment",
             "context_requirement": "origin and dimensions divisible by alignment",
             "bounds_convention": "inclusive input pixel indices; structural dependency envelope",
         })
+        if self.chip_edge_dependent:
+            result["chip_edge_dependent"] = True
+            result["context_requirement"] = "full source extent required"
         if include_nodes:
             result["nodes"] = {name: support.as_dict() for name, support in self.nodes.items()}
         return result
@@ -195,7 +208,7 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
 
     Supports the compiler's odd same-padded convolutions, its pools (aligned
     k x k average/max for k in 2, 3, 4; padded 3x3 max at stride 1 or 2; padded
-    3x3 stride-1 average), fixed integer nearest upsampling, inference BatchNorm,
+    3x3 stride-1 average), fixed integer nearest/bilinear upsampling, inference BatchNorm,
     ReLU/Sigmoid/Identity, residual addition, and channel concatenation. Pools
     and convolutions share one window rule (kernel, stride, padding), so an
     aligned k x k pool sets the lattice alignment k and a stride-1 padded pool
@@ -211,6 +224,7 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
     alignment = 1
     placeholders = 0
     output = None
+    chip_edge_dependent = False
 
     def source(node: Any) -> SpatialSupport:
         if not isinstance(node, Node) or node not in supports:
@@ -245,6 +259,11 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
                 elif call.kind == "nearest":
                     scale = call.options["factor"]
                     support = SpatialSupport(_upsample_axis(support.y, scale), _upsample_axis(support.x, scale))
+                elif call.kind == "bilinear":
+                    scale = call.options["factor"]
+                    support = SpatialSupport(_upsample_axis(_window_axis(support.y, 3, 1, 1), scale),
+                                             _upsample_axis(_window_axis(support.x, 3, 1, 1), scale))
+                    chip_edge_dependent |= call.options["align_corners"]
                 elif call.kind in ("cat", "add"):
                     branches = [source(item) for item in call.inputs]
                     support = SpatialSupport(_union_axis([branch.y for branch in branches]),
@@ -256,4 +275,4 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
         alignment = math.lcm(alignment, support.y.input_shift, support.x.input_shift)
     if output is None:
         raise UnsupportedReceptiveField("Graph has no single supported image tensor output")
-    return ReceptiveFieldReport(output.y, output.x, alignment, nodes)
+    return ReceptiveFieldReport(output.y, output.x, alignment, nodes, chip_edge_dependent)
