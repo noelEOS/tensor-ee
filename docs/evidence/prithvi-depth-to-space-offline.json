@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "7be4c9826aa211f36bd02090a24250ebfff300c5",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.14",
+    "earthengine-api": "1.7.50",
+    "torch": "2.15.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.3.5"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 2,
+      "requests": 4,
+      "values": 14504,
+      "payload_bytes": 58016,
+      "request_bytes": 350661,
+      "max_values": 3920,
+      "max_request_bytes": 191860,
+      "max_bands": 17,
+      "embedded_constants": 0,
+      "inline_values": 12544,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/window_depth_to_space/w14-to-w7-c4",
+        "lane": "window",
+        "block": "window_depth_to_space",
+        "parts": [],
+        "settings": {
+          "window": 14,
+          "out_window": 7,
+          "factor": 2,
+          "channels": 4
+        },
+        "policy": "none",
+        "shapes": {
+          "input": [
+            14,
+            14,
+            16
+          ],
+          "output": [
+            28,
+            28,
+            4
+          ]
+        },
+        "seed": 5114,
+        "tolerance": 0,
+        "requests": 2,
+        "reference": "torch.nn.functional.pixel_shuffle (channel-major input)",
+        "mirror": {
+          "source": "reference.window_depth_to_space.window_depth_to_space",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/api.md#window-depth-to-space",
+        "calibration": false,
+        "notes": "Unique integer IDs; no arithmetic. Signed zeros are covered by unit tests."
+      },
+      "inputs_sha256": "9a1675a9d582aee13bdec926f27fa41e4b952efdcbe72548c1d3a55f6ad58ae1",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 1.25,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -1.25,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "output",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 3920,
+          "payload_bytes": 15680,
+          "request_bytes": 191860,
+          "graph_sha256": "86d467f04033165f9b55981e62358c36fe0d23919910268f097034ff252ac5d6",
+          "graph_bytes": 191632,
+          "embedded_constants": 0,
+          "inline_values": 3136
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 16
+            }
+          ],
+          "bands": 17,
+          "values": 3332,
+          "payload_bytes": 13328,
+          "request_bytes": 37708,
+          "graph_sha256": "0a42f3efe40d92d006748f9ee3b4a2df929ef320d2ab8d018d1d35fdface0056",
+          "graph_bytes": 37482,
+          "embedded_constants": 0,
+          "inline_values": 3136
+        }
+      ],
+      "errors": [],
+      "seconds": 0.02,
+      "outputs": {
+        "output": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 3136,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/window_depth_to_space/w7-to-w7-c4",
+        "lane": "window",
+        "block": "window_depth_to_space",
+        "parts": [],
+        "settings": {
+          "window": 7,
+          "out_window": 7,
+          "factor": 2,
+          "channels": 4
+        },
+        "policy": "none",
+        "shapes": {
+          "input": [
+            14,
+            14,
+            16
+          ],
+          "output": [
+            28,
+            28,
+            4
+          ]
+        },
+        "seed": 5107,
+        "tolerance": 0,
+        "requests": 2,
+        "reference": "torch.nn.functional.pixel_shuffle (channel-major input)",
+        "mirror": {
+          "source": "reference.window_depth_to_space.window_depth_to_space",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/api.md#window-depth-to-space",
+        "calibration": false,
+        "notes": "Unique integer IDs; no arithmetic. Signed zeros are covered by unit tests."
+      },
+      "inputs_sha256": "9a1675a9d582aee13bdec926f27fa41e4b952efdcbe72548c1d3a55f6ad58ae1",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 1.25,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -1.25,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "output",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 3920,
+          "payload_bytes": 15680,
+          "request_bytes": 83385,
+          "graph_sha256": "1ecbd1817d8b9e9c1c07885b7f9503da66cf7214e4b5305e86f6d974dced7ece",
+          "graph_bytes": 83157,
+          "embedded_constants": 0,
+          "inline_values": 3136
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 16
+            }
+          ],
+          "bands": 17,
+          "values": 3332,
+          "payload_bytes": 13328,
+          "request_bytes": 37708,
+          "graph_sha256": "0a42f3efe40d92d006748f9ee3b4a2df929ef320d2ab8d018d1d35fdface0056",
+          "graph_bytes": 37482,
+          "embedded_constants": 0,
+          "inline_values": 3136
+        }
+      ],
+      "errors": [],
+      "seconds": 0.018,
+      "outputs": {
+        "output": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 3136,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

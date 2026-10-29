@@ -225,8 +225,8 @@ avoid large embedded requests but do not remove EE computation limits.
 
 The fixed optional [Swin-T/UPerNet interface](swin.md) is explicitly imported from
 `tensor_ee.swin`; it is separate from the CNN compiler. Its installed orchestration
-entry point preserves three saved-asset stages and explicit resources. Other
-architectures and arbitrary transformers are not supported. ONNX import
+entry point preserves three saved-asset stages and explicit resources. The explicit
+Prithvi crop interface below adds one hand-composed architecture. ONNX import
 (`load_onnx_model`) is in the
 converter layer (`tensor_ee.converter`), not in the top-level API; the
 [block catalogue](building-blocks.md) lists the layers' public names.
@@ -240,3 +240,135 @@ fixed shape, and includes a runnable offline graph-construction example.
 The historical
 research runners are archived at the tag `research-archive-2026-10-12`
 ([history](history/README.md)).
+
+## Class rows beside spatial windows
+
+`tensor_ee.blocks.window.merge.concat_rows(ops, parts, *, rows, channels)`
+concatenates raw array operands along the token axis without arithmetic or casts.
+The caller supplies each part's positive row count and a shared channel count;
+all parts must already represent the same crop pixel. The result is an
+intermediate matrix, so its row count need not be a square window size.
+Empty parts and invalid dimensions are refused. No coefficients are embedded or
+read from assets. It is validated live.
+
+A class token can therefore remain a one-row array beside a spatial window.
+Concatenate class then spatial keys and values, and call the existing
+`naive_attention` twice per head: once for the spatial queries and once for the
+class query. Both calls read all keys and values. The class row must pass through
+every normalization, projection and residual update.
+
+`tensor_ee.blocks.window.attention.class_token_attention(ops, spatial_qkv,
+cls_qkv, dim=..., heads=..., window=14)` provides this composition for every
+head. Its settings are keyword-only. It takes projected QKV arrays, returns
+the spatial and class outputs separately, and applies post-product score
+scaling through the existing attention core. No coefficient constants are
+introduced by the composite. It is validated live at window 3 with 3 heads of width 4
+and at window 14 with 12 heads of width 64.
+
+## Window depth-to-space
+
+`tensor_ee.blocks.window.resample.window_depth_to_space(ee, x, grid, channels,
+window=7, out_window=7, factor=2)` moves a projected window's position-major
+columns `(dy, dx, channel)` to the corresponding fine-grid tokens. It returns
+the array image and its fine token grid. The settings are keyword-only.
+
+The supported window pairs are 14→7 and 7→7, at factor two, on a `TokenGrid`
+with complete windows. Each child window selects its rows and columns directly
+from the expanded parent array. Tensor values undergo no arithmetic or casts;
+no dense channel raster is formed. The block has window locality, needs no
+halo, and has no chip-edge dependence. It is validated live for both window pairs.
+This supplies the value-moving part of a kernel-two, stride-two transposed
+convolution after an ordinary linear projection.
+
+
+## Patch embeddings without normalization
+
+The window patch embedding and its constants builder take keyword-only
+`norm=True`. This default preserves the normalized embedding and its existing
+graphs. Set `norm=False` on both `patch_embed_constants` and `patch_embed` for a
+biased patch projection with no following LayerNorm. The constants builder
+then reads only projection weights and bias; the cost functions take the same
+flag. A mismatched flag or non-boolean flag is refused. Input columns retain
+Conv2d/one-frame Conv3d order `(band, ky, kx)`.
+
+The `prithvi_settings` fixture selection covers patch16 with six bands and
+768 outputs, projection widths 768/2304/3072, channel normalization at 768,
+the bias-free 768-to-256 decoder convolution with BatchNorm, and the two-class
+classifier. Compact random dyadic tiles are expanded identically on the server
+and in the references, with every output channel read. These structured inputs
+keep the unchanged request budget; they do not establish behavior with an
+arbitrary dense coefficient matrix or server runtime memory. Every fixture
+passed live, with Earth Engine equal to the NumPy mirror in every value. The
+records of `linear`, `conv1x1`, `layer_norm2d` and `conv3x3_window` already
+cover these settings. The patch embedding's record now names `norm`: `True` at
+its historical settings, and `False` at patch 16 with six bands, width 768 and
+window 14. Its metadata radius, and that of `stride_columns`, is 8, half the
+largest validated patch.
+
+
+## Prithvi Sen1Floods11
+
+`tensor_ee.models.prithvi_sen1floods11` composes one 224 × 224 crop with six
+already scaled and normalized bands into two logit bands. Import it explicitly;
+`import tensor_ee` does not load it. It uses the window blocks directly,
+independently of the converter and CNN compiler.
+
+```python
+from tensor_ee.models.prithvi_sen1floods11.model import constants, forward
+
+coefficients = constants(ee, state)
+logits = forward(ee, input_raster, coefficients)["logits"]
+```
+
+`state` supplies NumPy float32 arrays or `ServerArray` coefficients under the
+source state names. `parameter_shapes()` declares the inventory. NumPy values
+use native tensor shapes; server arrays also accept the existing asset format's
+flattened matrices, and vector rows or columns. All constants are prepared
+before composition. Position values are supplied, never generated here.
+The unused auxiliary head and BatchNorm counter are ignored.
+State names follow the source model's module hierarchy; they have not been checked against a released checkpoint.
+
+The default configuration is width 768, 12 heads, 12 blocks, MLP width 3072,
+and decoder width 256. `PrithviConfig` also supplies a reduced twin for the
+offline comparisons. Post-product attention scaling follows the historical
+source order. The class row remains a query, key and value through every
+encoder block, alongside 196 spatial rows in W14. Four linear projections
+plus exact depth-to-space moves form the neck, using W7 after the first
+upsampling. The decoder's 3 × 3 convolution has no bias; BatchNorm epsilon is
+1e-5. Neck channel normalization uses epsilon 1e-6. Dropout and same-size final
+bilinear resize are evaluation identities.
+
+The input must already be finite float32 with every pixel valid, in the
+Raster's declared band order. The interface checks shape and band count;
+it cannot inspect remote values or establish mask completeness. Scaling and
+per-band normalization stay outside this model. Each call covers one complete
+independent crop; region and slide inference are outside this interface.
+
+`compose` supports explicit saved boundaries: spatial/class pairs after the
+patch setup, each encoder block and final norm, then a spatial feature after
+each upsampling. Both parts are required when resuming the encoder. The
+`planning` module uses existing cost functions, the planner's `Limits`, and
+`request_size` for explicit hand cuts. It does not claim an optimized converter
+plan. `tools/prithvi_capacity.py` reproduces its offline request measurements.
+
+Capacity estimates for one default crop are 97,602,818 float state values,
+122,783,330 logical evaluated constants, and 145.795 billion MACs. The
+bias-free decoder convolution accounts for about 60.897% of those MACs;
+that fraction alone does not establish a need for grouped execution. The
+largest image array is [196,3072], or 602,112 values. The proposed 19 stages
+fit default constant and boundary limits; request sizes depend on the table
+manifest. Symbolic table sizing does not establish server memory or runtime.
+
+A reduced-width random-weight crop (width 24, 3 heads, 12 blocks, decoder 16)
+was checked live: Earth Engine equals the NumPy mirror at every probed logit,
+within 2.64e-07 of PyTorch. This checks the composition, not trained weights
+or accuracy.
+
+The plain-torch reference uses native convolutions and all 197 attention rows.
+The numerical executor runs the actual library backend and arithmetic, with
+independently checked NumPy spatial transports. Default tests compare every
+logit of a reduced-width 224 crop. A separate opt-in checks full width. The
+`prithvi_model` harness selection probes every fourth output pixel of the
+complete reduced-width graph with structured random coefficients. It is a
+composition check that can be planned and run independently of block validation.
+No whole-model live or accuracy claim is made. The new blocks have offline evidence only.

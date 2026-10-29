@@ -408,14 +408,16 @@ IMPORT_NATIVE_EE = r'''
 import sys
 import tensor_ee
 loaded = sorted(m for m in sys.modules if m == "tensor_ee.converter" or m.startswith("tensor_ee.converter.")
-                or m == "tensor_ee.models.swin_t224" or m.startswith("tensor_ee.models.swin_t224."))
+                or m == "tensor_ee.models.swin_t224" or m.startswith("tensor_ee.models.swin_t224.")
+                or m == "tensor_ee.models.prithvi_sen1floods11"
+                or m.startswith("tensor_ee.models.prithvi_sen1floods11."))
 assert not loaded, loaded
 ''' + NO_RESEARCH + '''
 print("ok")
 '''
 
 
-def test_import_tensor_ee_loads_neither_the_swin_model_nor_the_converter_namespace():
+def test_import_tensor_ee_leaves_swin_prithvi_and_converter_unloaded():
     result = _run(IMPORT_NATIVE_EE)
     assert result.returncode == 0 and result.stdout.strip() == "ok", result.stderr[-2000:]
 

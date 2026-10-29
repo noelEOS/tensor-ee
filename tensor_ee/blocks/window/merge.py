@@ -13,11 +13,19 @@ projection with each input resampled (nearest), which silently replicates coarse
 - ``concat``: torch.cat(dim=1) order (first operand's channels first); window layout
   ``arrayCat`` on axis 1, dense bands renamed and stacked. Values are moved, never
   rounded: no arithmetic, no cast, no policy.
+
+Row concatenation moves raw operands [R1,C], [R2,C], ... to
+[sum(R),C] in operand order, including a one-row class token beside a
+196-row spatial window. It has no arithmetic, casts or coefficient constants.
+Validated live with one class row before 196 and before 9 spatial rows (Earth Engine
+equal to the NumPy mirror in every value).
 """
 
 from __future__ import annotations
 
-from ...core.errors import GridMismatch
+import numpy as np
+
+from ...core.errors import GridMismatch, reject
 from ...core.metadata import ANY_SETTINGS, NO_ARITHMETIC, BlockMetadata, Locality, validate_metadata
 from ...core.precision import DOUBLE_ROUND_ONCE, validate_policy
 from ...core.tensor import _layout, band_names, same_grid
@@ -51,7 +59,45 @@ def concat(parts: list):
     return parts[0].like(image, total)
 
 
+def concat_rows(ops, parts, *, rows, channels: int):
+    """Concatenate raw W/V matrices along rows without arithmetic or casts.
+
+    ``parts`` share one physical grid on the W path. ``rows`` gives their
+    positive row counts; each has ``channels`` columns. Unlike channel concat,
+    the result can have a non-square row count, such as one class row followed
+    by 196 spatial rows. Such an intermediate is an ops operand, not a spatial
+    ``WindowTensor``. The caller supplies aligned raw operands: no implicit
+    resampling or square-window reinterpretation is performed here.
+
+    There are no coefficient constants or constants builder. Row ordering and
+    the class-plus-spatial settings have offline evidence only; no live claim.
+    """
+    parts, rows = tuple(parts), tuple(rows)
+    if not parts or len(parts) != len(rows):
+        reject("parts and rows must be non-empty sequences of equal length")
+    if any(isinstance(n, (bool, np.bool_)) or not isinstance(n, (int, np.integer)) or n < 1
+           for n in (*rows, channels)):
+        reject("row counts and channels must be positive integers")
+    return ops.cat_rows(parts)
+
+
+def concat_rows_values(*, rows, channels: int) -> int:
+    """No embedded coefficient values: concatenation only moves rows."""
+    return 0
+
+
+def concat_rows_arrays() -> int:
+    """No coefficient arrays are read."""
+    return 0
+
+
 METADATA = validate_metadata({
+    "concat_rows": BlockMetadata(
+        name="concat_rows", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
+        policy=NO_ARITHMETIC, embedded_constants=concat_rows_values, asset_arrays=concat_rows_arrays,
+        status="Ready",
+        evidence=("docs/evidence/class-token-offline.json", "docs/evidence/live-fixtures/20261029T174042Z-class_token.json"),
+        validated=ANY_SETTINGS),
     "add": BlockMetadata(
         name="add", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=no_constants, asset_arrays=no_constants,

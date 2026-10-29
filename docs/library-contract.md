@@ -426,8 +426,9 @@ Each block's default policy:
 | W/V: `linear`/`conv1x1`, `layer_norm`, `layer_norm2d`, `gelu`, `batch_norm`, `conv3x3_window`, `window_resize`, `window_matrix_resize`, `window_pool`, `patch_embed`, `patch_merge` | `double_round_once` |
 | W: `group_product` (unrounded partial), fusion `grouped_double` | `double_round_once` / `grouped_double` |
 | W: `window_attention` | composite: Linear in `double_round_once`, attention core in `round_each_op` |
+| W: `class_token_attention` | composite: attention core in `round_each_op`; head splitting and concatenation move values |
 | W: `add` | float32 + float32 rounded once (`.toFloat()`) |
-| W: `relu`, `concat`; every layout transform | no arithmetic, no cast; must not gain one |
+| W: `relu`, `concat`, `concat_rows`, `window_depth_to_space`; every layout transform | no arithmetic, no cast; must not gain one |
 
 GELU has one formula with two policies: the R block rounds at the node boundary,
 the W block with `ops.to_float`. They are different blocks, not two

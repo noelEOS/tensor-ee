@@ -356,7 +356,7 @@ def test_the_research_gathers_and_placement_are_gone():
     unpinned gather: patch embedding gathers by stride, merging gathers whole windows."""
     assert not hasattr(WP, "COLUMN_GATHERS") and not hasattr(WP, "MERGE_GATHERS")
     assert set(inspect.signature(WP.patch_embed).parameters) == {"ops", "x", "grid", "c", "patch", "bands",
-                                                                 "window", "policy"}
+                                                                 "window", "policy", "norm"}
     assert set(inspect.signature(WP.patch_merge).parameters) == {"ops", "x", "c", "coarse1", "window", "policy"}
     assert set(inspect.signature(WP.gather_windows).parameters) == {"ee", "x", "coarse1"}
 
@@ -472,10 +472,16 @@ def test_constants_built_for_one_layout_are_refused_by_another(offline_ee):
 # and the halo-based "3x3" -> WINDOW_RING, ring 1; "4x4" and "2x2 windows" (the k x k
 # class) -> KERNEL, radius k // 2 as for the R convolution; "extent" -> EXTENT; "window;
 # depends on chip edge" -> WINDOW, chip_edge_dependent. Since P03, patch_embed and
-# stride_columns ("4x4" in the inventory, at patch 4) have radius 4: half the largest
-# validated patch, 8.
+# stride_columns ("4x4" in the inventory, at patch 4) had radius 4: half the largest
+# validated patch, 8; radius 8 since patch 16 was validated live.
 DRO, REO = P.DOUBLE_ROUND_ONCE, P.ROUND_EACH_OP
 EXPECTED_METADATA = {
+    "class_token_attention": (Locality.WINDOW, None, False, M.COMPOSITE,
+        "Ready — window 3, heads 3, dim 12; window 14, heads 12, dim 768", "window"),
+    "window_depth_to_space": (Locality.WINDOW, None, False, M.NO_ARITHMETIC,
+        "Ready — factor 2; windows 14, 7 to window 7", "window"),
+    "concat_rows": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC,
+                    "Ready", "per crop pixel"),
     "depthwise_conv3x3_window": (Locality.WINDOW_RING, 1, False, DRO,
         "Ready — 3 × 3, stride1, padding1, dilation1, multiplier1; window7; D4 optional bias, D1024 biased; D16 biased in C4/D16 Mix-FFN", "3x3 depthwise"),
     "linear": (Locality.POINTWISE, None, False, DRO, "Ready", "per token"),
@@ -509,9 +515,11 @@ EXPECTED_METADATA = {
                     "Ready — extents 5, 7, 8, 12 and 14 tokens with bins (1, 2, 3, 6); "
                     "extents 8 and 12 with bins (1, 2, 4, 8)", "extent"),
     "gather": (Locality.EXTENT, None, False, M.NO_ARITHMETIC, "Ready", "extent"),
-    "patch_embed": (Locality.KERNEL, 4, False, DRO,
-                    "Ready — patches 2, 4, 8; 1–4 bands; widths 48, 96, 128; windows 5, 7, 8, 12", "4x4"),
-    "stride_columns": (Locality.KERNEL, 4, False, M.NO_ARITHMETIC, "Ready — patches 2, 4, 8; 1–4 bands", "4x4"),
+    "patch_embed": (Locality.KERNEL, 8, False, DRO,
+                    "Ready — patches 2, 4, 8; 1–4 bands; widths 48, 96, 128; windows 5, 7, 8, 12; "
+                    "without normalization: patch 16, 6 bands, width 768, window 14", "4x4"),
+    "stride_columns": (Locality.KERNEL, 8, False, M.NO_ARITHMETIC,
+                       "Ready — patches 2, 4, 8; 1–4 bands; patch 16, 6 bands", "4x4"),
     "patch_merge": (Locality.KERNEL, 1, False, DRO, "Ready — windows 5, 7, 8, 12", "2x2 windows"),
     "gather_windows": (Locality.KERNEL, 1, False, M.NO_ARITHMETIC, "Ready — windows 5, 7, 8, 12", "2x2 windows"),
     "merge_windows": (Locality.WINDOW, None, False, M.NO_ARITHMETIC, "Ready — windows 5, 7, 8, 12",
@@ -635,12 +643,12 @@ NOT_BLOCKS = {
     "activations": set(),
     "normalization": {"BatchNormConstants", "layer_norm_values", "layer_norm_arrays", "batch_norm_values",
                       "batch_norm_arrays"},
-    "attention": {"relative_position_index", "coarse_projection", "window_coordinates", "region_boundaries",
+    "attention": {"class_token_attention_values", "class_token_attention_arrays", "relative_position_index", "coarse_projection", "window_coordinates", "region_boundaries",
                   "relative_bias_values", "relative_bias_arrays", "window_attention_values",
                   "window_attention_arrays"},
     "conv": {"DepthwiseConv3x3Constants", "depthwise_conv3x3_values", "depthwise_conv3x3_arrays", "Conv3x3Constants", "group_weight", "conv3x3_values", "conv3x3_arrays", "group_product_values",
              "group_product_arrays"},
-    "resample": {"bilinear_weights", "model_bilinear_weights", "float32_exact", "local_matrices",
+    "resample": {"window_depth_to_space_values", "window_depth_to_space_arrays", "bilinear_weights", "model_bilinear_weights", "float32_exact", "local_matrices",
                  "window_token_order", "output_weights", "window_matrix_weights", "window_resize_values",
                  "window_matrix_resize_values", "window_resize_edge"},
     "pooling": {"bins", "onehot_bins", "check_rule", "pool_rows", "offsets", "axis_membership", "PoolPlan",
@@ -648,7 +656,7 @@ NOT_BLOCKS = {
     "patch": {"PatchEmbedConstants", "patch_embed_constants", "valid_fraction", "PatchMergeConstants",
               "patch_merge_constants", "stage2_coarse", "patch_embed_values", "patch_embed_arrays",
               "patch_merge_values", "patch_merge_arrays", "patch_locality"},
-    "merge": set(),
+    "merge": {"concat_rows_values", "concat_rows_arrays"},
     "segformer": {"NormConstants", "norm_constants", "OverlapConstants", "overlap_constants",
                   "AttentionConstants", "attention_constants", "MixFFNConstants", "mix_ffn_constants",
                   "MiTBlockConstants", "mit_block_constants",

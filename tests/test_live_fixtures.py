@@ -79,13 +79,18 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
 # New blocks stay outside Phase 2's historical calibration census. The depthwise
 # block passed its separate SegFormer G3-live gate, and the bounded activations and the
 # standalone raster BatchNorm, raster bilinear upsampling and raster grouped convolution
+# theirs, and row concatenation, window depth-to-space and class-token attention
 # theirs; no offline-only block remains.
 OFFLINE_ONLY_FIXED: set[str] = set()
+COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits"}
+"""Runnable composition checks excluded from block coverage and evidence counts."""
+
 SEGFORMER_G3_BLOCKS = {"depthwise_conv3x3_window"}
 HARD_ACTIVATION_G3_BLOCKS = {"relu6", "hardsigmoid", "hardswish"}
 BATCH_NORM_G3_BLOCKS = {"batch_norm"}
 BILINEAR_G3_BLOCKS = {"bilinear_upsample"}
 GROUPED_CONV_G3_BLOCKS = {"grouped_conv2d"}
+PRITHVI_G3_BLOCKS = {"concat_rows", "window_depth_to_space", "class_token_attention"}
 
 # The SegFormer composites promoted from the model (X01a): Fixed at the settings the
 # SegFormer-B0 live runs cover, outside Phase 2's calibration census.
@@ -675,16 +680,23 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
     offline = {name for (_, name), entry in catalogue.items()
                if entry.status.startswith("Fixed — offline only:")}
     assert offline == OFFLINE_ONLY_FIXED
-    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv"])
-                   if f.mirror is not None and not f.calibration
+    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model"])
+                   if f.id not in COMPOSITION_FIXTURES and f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert (SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | BILINEAR_G3_BLOCKS
-            | GROUPED_CONV_G3_BLOCKS | OFFLINE_ONLY_FIXED <= new_covered)
-    covered = {name for f in plan.fixtures for name in (f.block, *f.parts)}
+            | GROUPED_CONV_G3_BLOCKS | PRITHVI_G3_BLOCKS | OFFLINE_ONLY_FIXED <= new_covered)
+    covered = {name for f in plan.fixtures if f.id not in COMPOSITION_FIXTURES
+               for name in (f.block, *f.parts)}
     assert PHASE2_FIXED <= covered
     lanes = {f.lane for f in plan.fixtures}
     assert lanes == {"raster", "window"}
     assert all(f.tolerance <= core.TOLERANCE for f in plan.fixtures)
+
+
+def test_composition_fixture_does_not_claim_block_coverage():
+    fixtures = select(["prithvi_model"])
+    assert {fixture.id for fixture in fixtures} == COMPOSITION_FIXTURES
+    assert all(not fixture.calibration and fixture.parts == () for fixture in fixtures)
 
 
 def test_fixture_records_reject_a_larger_tolerance_and_malformed_ids():
@@ -702,7 +714,8 @@ def test_fixture_records_reject_a_larger_tolerance_and_malformed_ids():
         "raster/conv2d/k3", "window/patch_merge/w7", "window/patch_embed/p4-vvvh-d96",
         "window/patch_merge/w5", "window/patch_merge/w8", "window/patch_merge/w12",
         "window/patch_embed/p2-b3-d48-w5", "window/patch_embed/p2-b1-d128-w8", "window/patch_embed/p2-b2-d96-w12",
-        "window/patch_embed/p4-b4-d128-w12", "window/patch_embed/p8-b1-d96-w7", "window/patch_embed/p8-b4-d48-w8"]
+        "window/patch_embed/p4-b4-d128-w12", "window/patch_embed/p8-b1-d96-w7", "window/patch_embed/p8-b4-d48-w8",
+        "window/patch_embed/prithvi-1536-768-w14"]
 
 
 def test_comparisons_count_bits_and_non_finite_values():

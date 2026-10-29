@@ -111,9 +111,10 @@ def _extent(k: int):
 
 EDGE_SETTINGS = {
     "project_pyramid": _pyramid_edges, "fuse_head": _head_edges,
-    # Swin and UPerNet: the bands a patch embedding reads; C4's extent for the PSP and the
+    # Swin and UPerNet: the bands a patch embedding reads (and its norm, which the recognizer
+    # requires: timm's PatchEmbed with a LayerNorm); C4's extent for the PSP and the
     # fusion (its last input), the map an FPN merge upsamples, C1's for the head.
-    "patch_embed": lambda inputs: {"channels": inputs[0].channels},
+    "patch_embed": lambda inputs: {"channels": inputs[0].channels, "norm": True},
     "psp_forward": _extent(0), "fusion_forward": _extent(3), "head_logits": _extent(0),
     "fpn_merge": lambda inputs: {"decoder": inputs[0].channels, **_extent(0)(inputs)},
     "head_dense": lambda inputs: {"classes": inputs[0].channels},

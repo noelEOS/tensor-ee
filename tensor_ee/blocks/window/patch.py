@@ -49,6 +49,15 @@ input bands (distinct names without regular-expression syntax, in any raster ord
 embedding widths 48, 96 and 128, and windows 5, 7, 8 and 12 (against timm's
 PatchEmbed); other patches and widths are not. The default bands
 ("VV", "VH") are recipe-facing: the Swin-T224 adapter's sensor names (contract section 11).
+
+The keyword-only norm=True setting retains the normalized embedding above.
+With norm=False the masked projection is returned directly: there is no
+LayerNorm arithmetic, extra rounding or normalization coefficient read.
+The constants builder and cost functions accept the same setting.
+Validated live with norm=False at patch 16, six bands, width 768 and window 14
+(Earth Engine equal to the NumPy mirror in every value); the record names norm,
+True at the historical settings above and False at this one. ``stride_columns``
+is validated at patch 16 with six bands as its part.
 """
 
 from __future__ import annotations
@@ -87,16 +96,19 @@ class PatchEmbedConstants:
     rows: int                      # window ** 2 (49 at window 7)
 
 
-def patch_embed_constants(ops, pe: dict, rows=WINDOW_LAYOUT) -> PatchEmbedConstants:
+def patch_embed_constants(ops, pe: dict, rows=WINDOW_LAYOUT, *, norm: bool = True) -> PatchEmbedConstants:
     """pe: {"proj.weight" [dim, C patch^2] (Conv2d's weight flattened in (c, ky, kx) order;
     [96, 32] today), "proj.bias", "norm.weight", "norm.bias"} as NumPy arrays (inline) or
     ServerArrays (asset-backed). ``rows``: the layout the constants serve
-    (``WindowLayout(7)`` by default) or its row count."""
+    (``WindowLayout(7)`` by default) or its row count. ``norm=False`` builds only
+    the projection and does not require normalization coefficients."""
+    if not isinstance(norm, bool):
+        raise ValueError("norm must be a bool")
     rows = builder_rows(rows)
     return PatchEmbedConstants(
         proj=LinearConstants(ops, pe["proj.weight"], pe["proj.bias"], rows),
-        norm_weight=ops.constant(pe["norm.weight"], repeat_rows=rows),
-        norm_bias=ops.constant(pe["norm.bias"], repeat_rows=rows), rows=rows)
+        norm_weight=ops.constant(pe["norm.weight"], repeat_rows=rows) if norm else None,
+        norm_bias=ops.constant(pe["norm.bias"], repeat_rows=rows) if norm else None, rows=rows)
 
 
 _REGEX_SPECIAL = frozenset("\\^$.|?*+()[]{}")
@@ -140,7 +152,7 @@ def stride_columns(ee, x, grid, *, patch: int = PATCH, bands=BANDS):
 
 
 def patch_embed(ops, x, grid, c: PatchEmbedConstants, *, patch: int = PATCH, bands=BANDS,
-                window: int = WINDOW, policy: str = DOUBLE_ROUND_ONCE) -> dict:
+                window: int = WINDOW, policy: str = DOUBLE_ROUND_ONCE, norm: bool = True) -> dict:
     """{"pe_columns", "pe_patches", "pe_proj", "x"} from the input x on the input grid.
 
     "x" is the stage-1 input of the complete encoder: window layout on the stage-1
@@ -150,9 +162,16 @@ def patch_embed(ops, x, grid, c: PatchEmbedConstants, *, patch: int = PATCH, ban
     are refused, and so is a projection whose input width is not
     ``len(bands) * patch ** 2`` (proj.weight [dim, C patch^2], flattened (c, ky, kx)).
     Validated at patches 2, 4 and 8, 1 to 4 bands, widths 48, 96 and 128 and windows 5,
-    7, 8 and 12.
+    7, 8 and 12; with ``norm=False``, at patch 16, 6 bands, width 768 and window 14.
+    ``norm=False`` omits LayerNorm; its constants must be built
+    with the same flag. The default retains the normalized embedding graph.
     """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
+    if not isinstance(norm, bool):
+        raise ValueError("norm must be a bool")
+    if (norm and (c.norm_weight is None or c.norm_bias is None)
+            or not norm and (c.norm_weight is not None or c.norm_bias is not None)):
+        raise ValueError("norm and patch embedding constants must agree")
     patch, bands = _check_patch_settings(patch, bands)
     columns = len(bands) * patch * patch
     if c.proj.in_features != columns:
@@ -167,7 +186,7 @@ def patch_embed(ops, x, grid, c: PatchEmbedConstants, *, patch: int = PATCH, ban
     t = {"pe_columns": cols, "pe_patches": to_windows(ee, cols, tokens, window=window)}
     check_rows(c, WindowLayout(window))
     t["pe_proj"] = linear(ops, t["pe_patches"], c.proj)
-    x1 = layer_norm(ops, t["pe_proj"], c.norm_weight, c.norm_bias, dim=dim)
+    x1 = layer_norm(ops, t["pe_proj"], c.norm_weight, c.norm_bias, dim=dim) if norm else t["pe_proj"]
     t["x"] = x1.updateMask(domain_mask(ee, coarse))
     return t
 
@@ -268,16 +287,20 @@ def patch_merge(ops, x, c: PatchMergeConstants, coarse1, *, window: int = WINDOW
 # Cost functions (contract section 9)
 # ---------------------------------------------------------------------------
 def patch_embed_values(dim: int, *, patch: int = PATCH, channels: int = len(BANDS),
-                       layout=WINDOW_LAYOUT) -> int:
+                       layout=WINDOW_LAYOUT, norm: bool = True) -> int:
     """Values embedded for NumPy weights: the projection W^T [C patch^2, dim] and its bias
-    rows, and the LayerNorm's gamma and beta rows."""
+    rows, and the LayerNorm's gamma and beta rows when ``norm=True``."""
+    if not isinstance(norm, bool):
+        raise ValueError("norm must be a bool")
     return (linear_values(channels * patch * patch, dim, bias=True, layout=layout)
-            + layer_norm_values(dim, layout=layout))
+            + (layer_norm_values(dim, layout=layout) if norm else 0))
 
 
-def patch_embed_arrays() -> int:
-    """Server arrays read: proj.weight, proj.bias, norm.weight, norm.bias."""
-    return 4
+def patch_embed_arrays(*, norm: bool = True) -> int:
+    """Server arrays read: projection weight/bias, plus norm weight/bias when enabled."""
+    if not isinstance(norm, bool):
+        raise ValueError("norm must be a bool")
+    return 4 if norm else 2
 
 
 def patch_merge_values(channels: int, *, bias: bool = False, layout=WINDOW_LAYOUT) -> int:
@@ -292,11 +315,12 @@ def patch_merge_arrays(*, bias: bool = False) -> int:
     return 4 if bias else 3
 
 
-_LARGEST_PATCH = 8
+_LARGEST_PATCH = 16
 """The largest validated patch. The metadata radius of ``patch_embed`` and
 ``stride_columns`` is half of it, the reach of a token's patch from its centre: the largest
 validated reach, as for ``pool2d``. It was ``PATCH // 2`` = 2 while only patch 4 was
-validated. ``patch_locality`` gives the reach at a call's patch."""
+validated, and 4 while patch 8 was the largest. ``patch_locality`` gives the reach at a
+call's patch."""
 
 
 def patch_locality(*, patch: int = PATCH) -> dict:
@@ -319,20 +343,25 @@ METADATA = validate_metadata({
     "patch_embed": BlockMetadata(
         name="patch_embed", layout_in="R", layout_out="W", locality=Locality.KERNEL, radius=_LARGEST_PATCH // 2,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=patch_embed_values, asset_arrays=patch_embed_arrays,
-        status="Ready — patches 2, 4, 8; 1–4 bands; widths 48, 96, 128; windows 5, 7, 8, 12",
+        status=("Ready — patches 2, 4, 8; 1–4 bands; widths 48, 96, 128; windows 5, 7, 8, 12; "
+                "without normalization: patch 16, 6 bands, width 768, window 14"),
         evidence=("docs/history/building-blocks-2026-10-11.md#33-convolution", "docs/history/swin_image_encoder/notes/milestone6_findings.md",
                   "docs/evidence/p03-offline.json",
-                  "docs/evidence/live-fixtures/20261013T120034Z-p03.json"),
-        validated=Validated(({**_PATCHES, "dim": (48, 96, 128), "window": _WINDOWS},)),
+                  "docs/evidence/live-fixtures/20261013T120034Z-p03.json",
+                  "docs/evidence/live-fixtures/20261029T185123Z-prithvi_settings.json"),
+        validated=Validated(({**_PATCHES, "dim": (48, 96, 128), "window": _WINDOWS, "norm": (True,)},
+                             {"patch": (16,), "channels": (6,), "dim": (768,), "window": (14,),
+                              "norm": (False,)})),
         per_setting=patch_locality),
     "stride_columns": BlockMetadata(
         name="stride_columns", layout_in="R", layout_out="W", locality=Locality.KERNEL, radius=_LARGEST_PATCH // 2,
         policy=NO_ARITHMETIC, embedded_constants=no_constants, asset_arrays=no_constants,
-        status="Ready — patches 2, 4, 8; 1–4 bands",
+        status="Ready — patches 2, 4, 8; 1–4 bands; patch 16, 6 bands",
         evidence=("docs/history/building-blocks-2026-10-11.md#33-convolution", "docs/history/swin_image_encoder/notes/milestone6_findings.md",
                   "docs/evidence/p03-offline.json",
-                  "docs/evidence/live-fixtures/20261013T120034Z-p03.json"),
-        validated=Validated((_PATCHES,), sources=(patch_embed_values,)),
+                  "docs/evidence/live-fixtures/20261013T120034Z-p03.json",
+                  "docs/evidence/live-fixtures/20261029T185123Z-prithvi_settings.json"),
+        validated=Validated((_PATCHES, {"patch": (16,), "channels": (6,)}), sources=(patch_embed_values,)),
         per_setting=patch_locality),
     # Validated: the window sizes above; timm's PatchMerging has no reduction bias (never varied).
     "patch_merge": BlockMetadata(

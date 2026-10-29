@@ -1,0 +1,1656 @@
+{
+  "schema_version": 1,
+  "kind": "live_fixture_run",
+  "status": "passed",
+  "command": "python tools/live_fixtures.py --run class_token --project tensor-ee",
+  "selection": [
+    "window/concat_rows/class-spatial-w14",
+    "window/class_token_attention/w3-h3-d4",
+    "window/class_token_attention/w14-h12-d64"
+  ],
+  "project": "tensor-ee",
+  "credentials": "adc",
+  "revision": "06630d71bf46cb1d9dce5dc7f55d764b399553ce",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "started_utc": "2026-10-29T17:40:42+00:00",
+  "budget": {
+    "requests": 40,
+    "raster_side": 64,
+    "window_side": 8,
+    "values": 1000000,
+    "request_bytes": 2000000,
+    "in_flight": 4,
+    "assets": 0,
+    "tasks": 0
+  },
+  "plan": {
+    "fixtures": 3,
+    "requests": 10,
+    "values": 192335,
+    "payload_bytes": 769340,
+    "request_bytes": 5142834,
+    "max_values": 75852,
+    "max_request_bytes": 995674,
+    "max_bands": 387,
+    "embedded_constants": 0,
+    "inline_values": 228366,
+    "assets": 0,
+    "tasks": 0,
+    "in_flight": 1
+  },
+  "max_in_flight": 1,
+  "errors": [],
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/concat_rows/class-spatial-w14",
+        "lane": "window",
+        "block": "concat_rows",
+        "parts": [],
+        "settings": {
+          "window": 14,
+          "rows": [
+            1,
+            196
+          ],
+          "channels": 3
+        },
+        "policy": "none",
+        "shapes": {
+          "spatial": [
+            196,
+            3
+          ],
+          "class": [
+            1,
+            3
+          ]
+        },
+        "seed": 224,
+        "tolerance": 0,
+        "requests": 2,
+        "reference": "torch.cat(dim=0)",
+        "mirror": {
+          "source": "reference.class_token.concat_rows",
+          "exact": true,
+          "bound": null
+        },
+        "history": "docs/evidence/class-token-offline.json",
+        "calibration": false,
+        "notes": ""
+      },
+      "inputs_sha256": "2f6a13ecb321920983d7e64eade85beab903cc131adf293df6c664b4b16516db",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 2.878,
+      "failures": [],
+      "offline": {
+        "p0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 588,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.09133923053741455,
+              "expected": 0.09133923053741455
+            }
+          }
+        },
+        "c0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 3,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.2259817123413086,
+              "expected": 0.2259817123413086
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "p0",
+              "kind": "output",
+              "channels": 3
+            },
+            {
+              "name": "x",
+              "kind": "input",
+              "channels": 3
+            }
+          ],
+          "bands": 8,
+          "values": 1568,
+          "payload_bytes": 6272,
+          "request_bytes": 165868,
+          "graph_sha256": "ee15a6dc73112c8e0c07ef6faa7417abf96a0e5ccb289f4fc8a8a7ff202de53a",
+          "graph_bytes": 165640,
+          "embedded_constants": 0,
+          "inline_values": 591,
+          "status": "ok",
+          "wall_seconds": 1.703
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 1
+            },
+            "affineTransform": {
+              "scaleX": 140.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -140.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 1,
+          "readouts": [
+            {
+              "name": "c0",
+              "kind": "output",
+              "channels": 3
+            },
+            {
+              "name": "c",
+              "kind": "input",
+              "channels": 3
+            }
+          ],
+          "bands": 8,
+          "values": 8,
+          "payload_bytes": 32,
+          "request_bytes": 163712,
+          "graph_sha256": "1255d6490292fd735a261a292624a1b53d250e63d3dfe9ab906994171eb5614f",
+          "graph_bytes": 163484,
+          "embedded_constants": 0,
+          "inline_values": 591,
+          "status": "ok",
+          "wall_seconds": 1.175
+        }
+      ],
+      "outputs": {
+        "p0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            3
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 588,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.09133923053741455,
+              "expected": 0.09133923053741455
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 588,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "x": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            3
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 588,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c0": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            1,
+            1,
+            3
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 3,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.2259817123413086,
+              "expected": 0.2259817123413086
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 3,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            1,
+            1,
+            3
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 3,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/class_token_attention/w3-h3-d4",
+        "lane": "window",
+        "block": "class_token_attention",
+        "parts": [
+          "naive_attention",
+          "split_heads",
+          "concat_rows"
+        ],
+        "settings": {
+          "window": 3,
+          "dim": 12,
+          "heads": 3
+        },
+        "policy": "composite",
+        "shapes": {
+          "keys": 10,
+          "heads": 3,
+          "head_dim": 4
+        },
+        "seed": 225,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "plain torch post-QK scaling and softmax",
+        "mirror": {
+          "source": "reference.class_token.class_token_attention",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/evidence/class-token-offline.json",
+        "calibration": false,
+        "notes": "Both class and spatial queries update; compact random inputs rotate across all heads."
+      },
+      "inputs_sha256": "59a8c021cf200e894be72b20353db4a65482d605ec716937260b64b3af0db10b",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 2.889,
+      "failures": [],
+      "offline": {
+        "p0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 108,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 2,
+              "actual": 0.11919450014829636,
+              "expected": 0.11919448524713516
+            }
+          }
+        },
+        "c0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.0906037911772728,
+              "expected": -0.09060380607843399
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 3,
+              "height": 3
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 3,
+          "height": 3,
+          "readouts": [
+            {
+              "name": "p0",
+              "kind": "output",
+              "channels": 12
+            },
+            {
+              "name": "x",
+              "kind": "input",
+              "channels": 12
+            }
+          ],
+          "bands": 26,
+          "values": 234,
+          "payload_bytes": 936,
+          "request_bytes": 54814,
+          "graph_sha256": "af9e41ee9ed8a57886a2b239d70a7178e09974b27d232d9a67872289a9552a41",
+          "graph_bytes": 54588,
+          "embedded_constants": 0,
+          "inline_values": 120,
+          "status": "ok",
+          "wall_seconds": 1.597
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 1
+            },
+            "affineTransform": {
+              "scaleX": 30.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -30.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 1,
+          "readouts": [
+            {
+              "name": "c0",
+              "kind": "output",
+              "channels": 12
+            },
+            {
+              "name": "c",
+              "kind": "input",
+              "channels": 12
+            }
+          ],
+          "bands": 26,
+          "values": 26,
+          "payload_bytes": 104,
+          "request_bytes": 52943,
+          "graph_sha256": "de29ba551ab8b7c966c12b591a0e13349eaff66fdb791caaa407fa561aebea46",
+          "graph_bytes": 52717,
+          "embedded_constants": 0,
+          "inline_values": 120,
+          "status": "ok",
+          "wall_seconds": 1.291
+        }
+      ],
+      "outputs": {
+        "p0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            3,
+            3,
+            12
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 108,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 2,
+              "actual": 0.11919450014829636,
+              "expected": 0.11919448524713516
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 108,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "x": {
+          "kind": "input",
+          "request": 0,
+          "shape": [
+            3,
+            3,
+            12
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 108,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c0": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            1,
+            1,
+            12
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -0.0906037911772728,
+              "expected": -0.09060380607843399
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 12,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            1,
+            1,
+            12
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 12,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/class_token_attention/w14-h12-d64",
+        "lane": "window",
+        "block": "class_token_attention",
+        "parts": [
+          "naive_attention",
+          "split_heads",
+          "concat_rows"
+        ],
+        "settings": {
+          "window": 14,
+          "dim": 768,
+          "heads": 12
+        },
+        "policy": "composite",
+        "shapes": {
+          "keys": 197,
+          "heads": 12,
+          "head_dim": 64
+        },
+        "seed": 225,
+        "tolerance": 0.0001,
+        "requests": 6,
+        "reference": "plain torch post-QK scaling and softmax",
+        "mirror": {
+          "source": "reference.class_token.class_token_attention",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "docs/evidence/class-token-offline.json",
+        "calibration": false,
+        "notes": "Both class and spatial queries update; compact random inputs rotate across all heads."
+      },
+      "inputs_sha256": "f1f70aef707922e00d2ea364687f5bf0cc7e31ac64e71e477af090d045300174",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 41.519,
+      "failures": [],
+      "offline": {
+        "p0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 1,
+              "channel": 44,
+              "actual": 0.05443199351429939,
+              "expected": 0.054432034492492676
+            }
+          }
+        },
+        "p1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 1,
+              "channel": 42,
+              "actual": 0.05443199351429939,
+              "expected": 0.054432034492492676
+            }
+          }
+        },
+        "p2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 3.725290298461914e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 10,
+              "channel": 40,
+              "actual": 0.05160614103078842,
+              "expected": 0.05160610377788544
+            }
+          }
+        },
+        "p3": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 10,
+              "channel": 38,
+              "actual": 0.05160614103078842,
+              "expected": 0.05160610005259514
+            }
+          }
+        },
+        "p4": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 1,
+              "channel": 36,
+              "actual": 0.05443199351429939,
+              "expected": 0.054432034492492676
+            }
+          }
+        },
+        "p5": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 1,
+              "channel": 34,
+              "actual": 0.05443199351429939,
+              "expected": 0.054432034492492676
+            }
+          }
+        },
+        "c0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.30385160446167e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 31,
+              "actual": 0.009137199260294437,
+              "expected": 0.009137186221778393
+            }
+          }
+        },
+        "c1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 92,
+              "actual": 0.009137199260294437,
+              "expected": 0.009137184359133244
+            }
+          }
+        },
+        "c2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 27,
+              "actual": 0.009137199260294437,
+              "expected": 0.009137184359133244
+            }
+          }
+        },
+        "c3": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.30385160446167e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 28,
+              "actual": 0.026002705097198486,
+              "expected": 0.02600269205868244
+            }
+          }
+        },
+        "c4": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 105,
+              "actual": 0.029737107455730438,
+              "expected": 0.029737092554569244
+            }
+          }
+        },
+        "c5": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 21,
+              "actual": 0.009137199260294437,
+              "expected": 0.009137184359133244
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "p0",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "p1",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "p2",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 387,
+          "values": 75852,
+          "payload_bytes": 303408,
+          "request_bytes": 995674,
+          "graph_sha256": "d1c61ea1f6e176d35025ffc11cea2f4301f9ea8df96bf10494b1acb38d49ae4d",
+          "graph_bytes": 995446,
+          "embedded_constants": 0,
+          "inline_values": 37824,
+          "status": "ok",
+          "wall_seconds": 8.984
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "p3",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "p4",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "p5",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 387,
+          "values": 75852,
+          "payload_bytes": 303408,
+          "request_bytes": 995674,
+          "graph_sha256": "86751a3f3bdeec0d52d2222f4beed61437d49bda30045a9c3ab4a66762383b3e",
+          "graph_bytes": 995446,
+          "embedded_constants": 0,
+          "inline_values": 37824,
+          "status": "ok",
+          "wall_seconds": 9.169
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "x",
+              "kind": "input",
+              "channels": 192
+            }
+          ],
+          "bands": 193,
+          "values": 37828,
+          "payload_bytes": 151312,
+          "request_bytes": 603626,
+          "graph_sha256": "bfefc8d52da608779eb26fa7ddb482d7d0063da082e9f869963e76038fcfd3cc",
+          "graph_bytes": 603398,
+          "embedded_constants": 0,
+          "inline_values": 37824,
+          "status": "ok",
+          "wall_seconds": 5.388
+        },
+        {
+          "index": 3,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 1
+            },
+            "affineTransform": {
+              "scaleX": 140.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -140.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 1,
+          "readouts": [
+            {
+              "name": "c0",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "c1",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "c2",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 387,
+          "values": 387,
+          "payload_bytes": 1548,
+          "request_bytes": 992649,
+          "graph_sha256": "a990dbc14c9c632d832ecdcb94b46af003b2b38f078d5037f05641415b1f4a62",
+          "graph_bytes": 992421,
+          "embedded_constants": 0,
+          "inline_values": 37824,
+          "status": "ok",
+          "wall_seconds": 8.044
+        },
+        {
+          "index": 4,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 1
+            },
+            "affineTransform": {
+              "scaleX": 140.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -140.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 1,
+          "readouts": [
+            {
+              "name": "c3",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "c4",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "c5",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 387,
+          "values": 387,
+          "payload_bytes": 1548,
+          "request_bytes": 992649,
+          "graph_sha256": "752dec979f8e684d99752b5f77f6b8d66e554a07beb8ca39c6cd9725755ce238",
+          "graph_bytes": 992421,
+          "embedded_constants": 0,
+          "inline_values": 37824,
+          "status": "ok",
+          "wall_seconds": 8.679
+        },
+        {
+          "index": 5,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 1
+            },
+            "affineTransform": {
+              "scaleX": 140.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -140.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 1,
+          "readouts": [
+            {
+              "name": "c",
+              "kind": "input",
+              "channels": 192
+            }
+          ],
+          "bands": 193,
+          "values": 193,
+          "payload_bytes": 772,
+          "request_bytes": 125225,
+          "graph_sha256": "f51c62fb266a019826860650def281f646578921220b4ae00ce1182287d6c120",
+          "graph_bytes": 124997,
+          "embedded_constants": 0,
+          "inline_values": 37824,
+          "status": "ok",
+          "wall_seconds": 1.243
+        }
+      ],
+      "outputs": {
+        "p0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 1,
+              "channel": 44,
+              "actual": 0.05443199351429939,
+              "expected": 0.054432034492492676
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 25088,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "p1": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 1,
+              "channel": 42,
+              "actual": 0.05443199351429939,
+              "expected": 0.054432034492492676
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 25088,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "p2": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 3.725290298461914e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 10,
+              "channel": 40,
+              "actual": 0.05160614103078842,
+              "expected": 0.05160610377788544
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 25088,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "p3": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 10,
+              "channel": 38,
+              "actual": 0.05160614103078842,
+              "expected": 0.05160610005259514
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 25088,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "p4": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 1,
+              "channel": 36,
+              "actual": 0.05443199351429939,
+              "expected": 0.054432034492492676
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 25088,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "p5": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 4.0978193283081055e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 1,
+              "channel": 34,
+              "actual": 0.05443199351429939,
+              "expected": 0.054432034492492676
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 25088,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "x": {
+          "kind": "input",
+          "request": 2,
+          "shape": [
+            14,
+            14,
+            192
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 37632,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c0": {
+          "kind": "output",
+          "request": 3,
+          "shape": [
+            1,
+            1,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.30385160446167e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 31,
+              "actual": 0.009137199260294437,
+              "expected": 0.009137186221778393
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 128,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c1": {
+          "kind": "output",
+          "request": 3,
+          "shape": [
+            1,
+            1,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 92,
+              "actual": 0.009137199260294437,
+              "expected": 0.009137184359133244
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 128,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c2": {
+          "kind": "output",
+          "request": 3,
+          "shape": [
+            1,
+            1,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 27,
+              "actual": 0.009137199260294437,
+              "expected": 0.009137184359133244
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 128,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c3": {
+          "kind": "output",
+          "request": 4,
+          "shape": [
+            1,
+            1,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.30385160446167e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 28,
+              "actual": 0.026002705097198486,
+              "expected": 0.02600269205868244
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 128,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c4": {
+          "kind": "output",
+          "request": 4,
+          "shape": [
+            1,
+            1,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 105,
+              "actual": 0.029737107455730438,
+              "expected": 0.029737092554569244
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 128,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c5": {
+          "kind": "output",
+          "request": 4,
+          "shape": [
+            1,
+            1,
+            128
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 21,
+              "actual": 0.009137199260294437,
+              "expected": 0.009137184359133244
+            }
+          },
+          "mirror": {
+            "exact": false,
+            "bound": 0.0001,
+            "values": 128,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "c": {
+          "kind": "input",
+          "request": 5,
+          "shape": [
+            1,
+            1,
+            192
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 192,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    }
+  ],
+  "cloud_calls": {
+    "requests": 10,
+    "computePixels": 10,
+    "algorithms_list": 1,
+    "refused": []
+  },
+  "finished_utc": "2026-10-29T17:41:37+00:00",
+  "wall_seconds": 54.495
+}
