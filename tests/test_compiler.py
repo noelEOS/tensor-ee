@@ -101,7 +101,7 @@ class TestCompiler(ApiTestCase):
         with self.assertRaisesRegex(ValueError, "north-up"):
             Grid("EPSG:32651", (10, 1, 0, 0, -10, 0), 8, 8)
 
-    def test_shared_convolution_batchnorm_is_rejected(self):
+    def test_shared_convolution_batchnorm_is_standalone(self):
         class Shared(nn.Module):
             def __init__(self):
                 super().__init__()
@@ -112,8 +112,10 @@ class TestCompiler(ApiTestCase):
                 x = self.conv(x)
                 return torch.cat([self.bn(x), x], dim=1)
 
-        with self.assertRaisesRegex(UnsupportedOperation, "unshared Conv2d"):
-            self.compile(Shared().eval())
+        compiled = self.compile(Shared().eval())
+        self.assertEqual(compiled.folded_batchnorms, ())
+        self.assertEqual(compiled.bands, ("c0", "c1", "c2", "c3"))
+        self.assertIn("Image.divide", algorithm_names(json.loads(compiled.image.serialize())))
 
     def test_strided_convolution_keeps_canonical_origin_and_ceil_shape(self):
         grid = Grid(self.grid.crs, self.grid.transform, 7, 9)

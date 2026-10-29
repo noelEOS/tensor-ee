@@ -68,7 +68,12 @@ happen to match; residual addition rejects broadcasting.
 Model and submodules must already be in eval mode. Computational weights,
 biases and BatchNorm statistics are finite float32 with declared shapes;
 nonfloating bookkeeping counters are allowed. BatchNorm folds into an unshared
-directly preceding convolution. Float32 accumulation/folding can change rounding;
+directly preceding convolution. Other inference BatchNorm2d calls use the pointwise
+raster block with inline statistics, including after concatenations and shared
+convolutions. Functional `F.batch_norm` accepts fixed `get_attr` buffers/parameters
+for its statistics and optional affine coefficients, with literal `training=False`;
+other attribute uses remain unsupported. Standalone BatchNorm has offline evidence only.
+Float32 accumulation/folding can change rounding;
 compare against the original model on your actual prepared inputs. Public
 primitives and compiler activations materialize float32. `clip_footprints=True`
 is the existing optional clipping experiment with the same finite padding rules.

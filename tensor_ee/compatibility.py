@@ -147,11 +147,15 @@ def check_compatibility(model: nn.Module, input_shape: tuple[int, int, int, int]
                 # Static semantics first: invalid options remain blockers even
                 # when a predecessor's shape could not be inferred.
                 call = semantic_call(node, graph)
+                if call.kind == "batchnorm_constant":
+                    continue
                 if call.kind == "conv":
                     if not diagnostic_convolution(node, graph):
                         count += int(call.module.weight.numel()) + (0 if call.module.bias is None else int(call.module.bias.numel()))
                 elif call.kind == "batchnorm":
                     count += int(call.module.weight.numel()) + int(call.module.bias.numel())
+                elif call.kind == "batch_norm":
+                    count += 4 * call.options["channels"]
                 if any(metadata.get(x) is None for x in call.inputs):
                     raise SemanticUnknown("Shape depends on an unsupported or unknown predecessor")
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))

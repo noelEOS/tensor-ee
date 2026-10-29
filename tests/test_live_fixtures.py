@@ -78,8 +78,8 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
 
 # New blocks stay outside Phase 2's historical calibration census. The depthwise
 # block passed its separate SegFormer G3-live gate, and the bounded activations theirs;
-# no offline-only block remains.
-OFFLINE_ONLY_FIXED: set[str] = set()
+# standalone raster BatchNorm has offline evidence only.
+OFFLINE_ONLY_FIXED: set[str] = {"batch_norm"}
 SEGFORMER_G3_BLOCKS = {"depthwise_conv3x3_window"}
 HARD_ACTIVATION_G3_BLOCKS = {"relu6", "hardsigmoid", "hardswish"}
 
@@ -671,7 +671,7 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
     offline = {name for (_, name), entry in catalogue.items()
                if entry.status.startswith("Fixed — offline only:")}
     assert offline == OFFLINE_ONLY_FIXED
-    new_covered = {name for f in select(["segformer_b0", "hard_activations"])
+    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm"])
                    if f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | OFFLINE_ONLY_FIXED <= new_covered

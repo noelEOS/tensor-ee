@@ -19,6 +19,7 @@ from unittest.mock import patch
 
 import ee
 from ee.apitestcase import ApiTestCase
+import numpy as np
 import pytest
 import torch
 from torch import nn
@@ -28,7 +29,7 @@ import tensor_ee
 import tensor_ee.converter
 from tensor_ee import compiler, primitives
 from tensor_ee.blocks.raster import activations as A, conv as CV, merge as MG, outputs as OUT
-from tensor_ee.blocks.raster import pooling as PL, resample as RS
+from tensor_ee.blocks.raster import normalization as NM, pooling as PL, resample as RS
 from tensor_ee.core import metadata as M, precision as P
 from tensor_ee.core.errors import UnsupportedOperation
 from tensor_ee.layouts import raster as LR
@@ -36,7 +37,8 @@ from tensor_ee.weights import constants as K
 
 ROOT = Path(__file__).resolve().parents[1]
 RASTER = "tensor_ee.blocks.raster"
-BLOCK_MODULES = {"conv": CV, "pooling": PL, "resample": RS, "merge": MG, "activations": A, "outputs": OUT}
+BLOCK_MODULES = {"conv": CV, "pooling": PL, "resample": RS, "merge": MG, "activations": A,
+                 "outputs": OUT, "normalization": NM}
 
 # (old module, old name, library module, library name): the 17 moved L03 map
 # entries (16 functions; pool2d has two branches) and the helpers that moved with
@@ -92,6 +94,7 @@ MOVED = [
 
 # The public R blocks: the names of the moved map targets.
 BLOCKS = {"conv2d": "conv", "pool2d": "pooling", "nearest_upsample": "resample",
+          "batch_norm": "normalization",
           "concatenate": "merge", "residual_add": "merge",
           "relu": "activations", "sigmoid": "activations", "leaky_relu": "activations",
           "silu": "activations", "gelu": "activations", "tanh": "activations",
@@ -160,9 +163,8 @@ def test_every_map_entry_owned_by_l03_is_at_its_target():
         old_path = current(old_path)
         assert _attr(old_path[:-3].replace("/", "."), old_name) is target, entry["id"]
         assert BLOCKS[name] == path.split("/")[-1][:-3]
-    # The moved names are the L03 blocks; the bounded activations came later, are not moves,
-    # and are the only blocks the map does not list.
-    assert {e["target"].split("::")[1] for e in moved} == set(BLOCKS) - {"relu6", "hardsigmoid", "hardswish"}
+    # Later blocks are additions, so the historical module map does not list them.
+    assert {e["target"].split("::")[1] for e in moved} == set(BLOCKS) - {"relu6", "hardsigmoid", "hardswish", "batch_norm"}
     for entry in stays:
         path, name = entry["target"].split("::")
         assert entry["id"].split(":")[0] == path   # the converter stays where it is
@@ -173,7 +175,7 @@ def test_every_map_entry_owned_by_l03_is_at_its_target():
 def test_package_reexports_its_blocks():
     import tensor_ee.blocks.raster as R
     for name in R.__all__:
-        module = BLOCKS.get(name, "outputs")
+        module = "normalization" if name == "BatchNormConstants" else BLOCKS.get(name, "outputs")
         assert getattr(R, name) is getattr(BLOCK_MODULES[module], name)
     assert set(BLOCKS) <= set(R.__all__)
 
@@ -195,6 +197,8 @@ def test_public_api_names_resolve_to_the_same_objects():
 POSITIONAL, KEYWORD = inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY
 _EMPTY = inspect.Parameter.empty
 BASE_PARAMETERS = {
+    "batch_norm": [("raster", POSITIONAL, _EMPTY), ("constants", POSITIONAL, _EMPTY),
+                   ("clip_footprints", KEYWORD, False)],
     "conv2d": [("raster", POSITIONAL, _EMPTY), ("module", POSITIONAL, _EMPTY), ("parameters", POSITIONAL, None),
                ("execution_dtype", KEYWORD, "float32"), ("clip_footprints", KEYWORD, False)],
     "pool2d": [("raster", POSITIONAL, _EMPTY), ("module", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
@@ -263,6 +267,9 @@ def _fixture():
 
 
 CALLS = {   # block name -> call(function, fixture, **policy)
+    "batch_norm": lambda f, x, **kw: f(x[1], NM.BatchNormConstants(
+        None, None, np.zeros(3, np.float32), np.ones(3, np.float32),
+        bands=x[1].bands), **kw),
     "conv2d": lambda f, x, **kw: f(x[1], x[3], **kw),
     "pool2d": lambda f, x, **kw: (f(x[1], nn.AvgPool2d(2), **kw), f(x[1], nn.MaxPool2d(3, 2, 1), **kw)),
     "nearest_upsample": lambda f, x, **kw: f(x[1], 2, **kw),
@@ -331,6 +338,8 @@ def test_compile_model_keeps_the_per_node_float32_cast(offline_ee):
 # Metadata: every public R block, locality from the inventory and receptive field
 # ---------------------------------------------------------------------------
 EXPECTED = {   # block -> (locality, radius, status)
+    "batch_norm": (M.Locality.POINTWISE, None,
+                   "Fixed — offline only: 3 channels, affine True/False, eps 1e-5, clip_footprints=False"),
     "conv2d": (M.Locality.KERNEL, 3, "Ready"),
     # P02: radius 3, the aligned 4 x 4 pool's offset k - 1 (tests/test_p02_raster_settings.py).
     "pool2d": (M.Locality.KERNEL, 3, "Ready — aligned avg/max k = 2, 3, 4; max 3×3 stride 1 or 2, padding 1; "
@@ -403,7 +412,7 @@ def test_metadata_radius_follows_the_receptive_field_rules():
         assert max(support.x.maximum_support_width, support.y.maximum_support_width) <= 2 * PL.METADATA["pool2d"].radius + 1
     # Pointwise blocks read one input pixel.
     for module in (nn.Upsample(scale_factor=2), _Cat(), _Add(), nn.ReLU(), nn.Sigmoid(), nn.LeakyReLU(),
-                   nn.SiLU(), nn.GELU(), nn.Tanh(), nn.Dropout(), nn.Softmax(dim=1)):
+                   nn.SiLU(), nn.GELU(), nn.Tanh(), nn.Dropout(), nn.Softmax(dim=1), nn.BatchNorm2d(3)):
         support = analyze_receptive_field(module.eval())
         assert support.x.maximum_support_width == support.y.maximum_support_width == 1, module
 
@@ -415,9 +424,11 @@ def test_metadata_costs():
     unbiased = nn.Conv2d(3, 2, 1, bias=False)
     assert entry.embedded_constants(unbiased) == 6 and entry.asset_arrays(unbiased) == 1
     for name, module in BLOCKS.items():
-        if name != "conv2d":
+        if name not in ("conv2d", "batch_norm"):
             metadata = getattr(BLOCK_MODULES[module], "METADATA")[name]
             assert metadata.embedded_constants() == metadata.asset_arrays() == 0
+    assert NM.METADATA["batch_norm"].embedded_constants(3) == 12
+    assert NM.METADATA["batch_norm"].asset_arrays() == 0
 
 
 def test_conv2d_embedded_constant_count_matches_its_inline_graph(offline_ee):
@@ -540,7 +551,7 @@ def _within(name: str, prefixes) -> bool:
 def test_raster_blocks_respect_the_layer_rule():
     files = sorted((ROOT / "tensor_ee/blocks/raster").glob("*.py"))
     assert {p.name for p in files} == {"__init__.py", "conv.py", "pooling.py", "resample.py", "merge.py",
-                                       "activations.py", "outputs.py"}
+                                       "activations.py", "outputs.py", "normalization.py"}
     violations = []
     for path in files:
         for name in _imports(path):

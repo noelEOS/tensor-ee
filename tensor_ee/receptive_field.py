@@ -202,7 +202,7 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
     adds a one-pixel radius.
     Channel widths and weight values do not change the spatial guarantee.
     """
-    primitives = (*_ROOT_MODULES, nn.BatchNorm2d)
+    primitives = _ROOT_MODULES
     if isinstance(model, primitives):
         model = nn.Sequential(model)
     graph = model if isinstance(model, GraphModule) else symbolic_trace(model)
@@ -231,6 +231,8 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
                 continue
             else:
                 call = semantic_call(node, graph)
+                if call.kind == "batchnorm_constant":
+                    continue
                 support = source(call.inputs[0])
                 if call.kind in ("conv", "pool"):
                     module = call.module

@@ -1,9 +1,10 @@
 """Raster-lane (R) fixtures: the CNN path's Fixed blocks at today's validated settings
 (calibration), at additional pooling and nearest-resize settings (the selection ``p02``) and
-the bounded activations (``relu6``, ``hardsigmoid``, ``hardswish``; ``hard_activations``).
+the bounded activations (``relu6``, ``hardsigmoid``, ``hardswish``; ``hard_activations``),
+and standalone inference BatchNorm (``batch_norm``).
 
-Every fixture runs the public ``tensor_ee`` primitive (the library block in
-``tensor_ee/blocks/raster`` plus the facade's float32 materialization, as ``compile_model``
+Every fixture runs the library block in ``tensor_ee/blocks/raster`` plus float32
+materialization (through the public facade where available, as ``compile_model``
 runs each node) on an inline input on a ``Grid`` (20 or 40 m for the calibration; 10, 30 or
 40 m for the additional raster settings), and compares it with the PyTorch module or ``torch.nn.functional`` call it
 implements, with random weights.
@@ -14,6 +15,9 @@ The calibration and ``p02`` fixtures compare with PyTorch alone (``mirror=None``
 (``reference.activations``), so those three fixtures compare with both. Max pooling and
 nearest upsampling select or copy values, so there Earth Engine must equal PyTorch exactly;
 the recorded runs found 0.
+
+BatchNorm reuses ``reference.upernet.ee_mirror_decoder.batch_norm``: its channel-last
+formula and double constant square root fit both layouts, with one final float32 rounding.
 
 Policy ``float32_operands`` for every R block (contract section 7).
 """
@@ -51,9 +55,9 @@ def _echo(raster, source: str = "x") -> Readout:
 
 
 def _metadata(block: str):
-    from tensor_ee.blocks.raster import activations, conv, pooling, resample
+    from tensor_ee.blocks.raster import activations, conv, normalization, pooling, resample
 
-    for module in (conv, pooling, resample, activations):
+    for module in (conv, pooling, resample, activations, normalization):
         if block in module.METADATA:
             return module.METADATA[block]
     raise KeyError(block)
@@ -445,6 +449,88 @@ def _hard_fixtures(cost) -> list[Fixture]:
     return fixtures
 
 
+def _batch_norm_data(seed: int) -> FixtureData:
+    """Three channels: nonzero means, negative gamma, variances from 1e-4 to 100."""
+    return FixtureData(inputs={"x": dyadic(seed, "x", (8, 8, 3), scale=0.25)},
+                       weights={"mean": np.array([0.125, -0.25, 0.75], np.float32),
+                                "var": np.array([1e-4, 0.5, 100], np.float32),
+                                "gamma": np.array([-0.5, 1.25, 2.0], np.float32),
+                                "beta": np.array([0.25, -0.125, 0.5], np.float32)})
+
+
+def _batch_norm_module(data: FixtureData, affine: bool):
+    import torch
+    from torch import nn
+
+    module = nn.BatchNorm2d(3, affine=affine, eps=1e-5).eval()
+    with torch.no_grad():
+        module.running_mean.copy_(torch.from_numpy(data.weights["mean"]))
+        module.running_var.copy_(torch.from_numpy(data.weights["var"]))
+        if affine:
+            module.weight.copy_(torch.from_numpy(data.weights["gamma"]))
+            module.bias.copy_(torch.from_numpy(data.weights["beta"]))
+    return module
+
+
+def _batch_norm_build(affine: bool):
+    def build(ee, data: FixtureData) -> list:
+        from tensor_ee.blocks.raster.normalization import BatchNormConstants, batch_norm
+        from tensor_ee.core.tensor import Raster
+        from tensor_ee.layouts.raster import _float32, from_image
+
+        bands = ("z", "a", "m")  # Deliberately not lexical order.
+        grid = _grid(20, 8)
+        raster = from_image(inline_raster(ee, grid.projection(), data.inputs["x"], bands), bands, grid)
+        # Keep the nonlexical names rather than from_image's canonical c0.. names.
+        raster = Raster(raster.image.rename(list(bands)), bands, grid)
+        w = data.weights
+        c = BatchNormConstants(w["gamma"] if affine else None, w["beta"] if affine else None,
+                               w["mean"], w["var"], bands=bands, eps=1e-5)
+        out = _float32(batch_norm(raster, c, policy=POLICY))
+        return [Readout("out", out.image, 3, raster_grid(grid)), _echo(raster)]
+    return build
+
+
+def _batch_norm_reference(affine: bool):
+    def reference(data: FixtureData) -> dict:
+        import torch
+
+        with torch.no_grad():
+            return {"out": hwc(_batch_norm_module(data, affine)(nchw(data.inputs["x"])))}
+    return reference
+
+
+def _batch_norm_mirror(affine: bool):
+    def mirror(data: FixtureData) -> dict:
+        # Reuse the decoder's NumPy-output mirror: the same channel-last formula,
+        # double constant sqrt and operation order, rounded once to float32.
+        from reference.upernet.ee_mirror_decoder import batch_norm
+
+        w = data.weights
+        gamma = w["gamma"] if affine else np.ones(3, np.float32)
+        beta = w["beta"] if affine else np.zeros(3, np.float32)
+        return {"out": batch_norm(data.inputs["x"], gamma, beta, w["mean"], w["var"], eps=1e-5)}
+    return mirror
+
+
+def _batch_norm_fixtures(cost) -> list[Fixture]:
+    from torch import nn
+    from tensor_ee.blocks.raster.normalization import BatchNormConstants, batch_norm
+
+    return [Fixture(
+        id=f"raster/batch_norm/{'affine' if affine else 'nonaffine'}", lane=LANE, block="batch_norm",
+        settings={"affine": affine, "eps": 1e-5, "clip_footprints": False}, policy=POLICY,
+        shapes={"input": [8, 8, 3], "output": [8, 8, 3]}, seed=41,
+        data=_batch_norm_data, build=_batch_norm_build(affine),
+        reference=_batch_norm_reference(affine), reference_source="torch.nn.BatchNorm2d(3).eval()",
+        mirror=MirrorSpec(_batch_norm_mirror(affine), True, "reference.upernet.ee_mirror_decoder.batch_norm"),
+        requests=1, constants=cost("batch_norm", lambda data: (3,)),
+        history="none: standalone raster inference BatchNorm, offline only",
+        accepts=(nn.BatchNorm2d, BatchNormConstants, batch_norm),
+        notes="Nonlexical band order z,a,m; distinct means, variances 1e-4/0.5/100, negative gamma."
+    ) for affine in (True, False)]
+
+
 SELECTIONS = {
     # raster-setting validation: every new setting, plus today's pooling and nearest settings as regression checks
     # (three calibration fixtures).
@@ -453,6 +539,7 @@ SELECTIONS = {
             *(f"raster/nearest_upsample/{spec.name}" for spec in _P02_NEAREST)),
     # the three bounded activations, one fixture each.
     "hard_activations": ("raster/relu6/default", "raster/hardsigmoid/default", "raster/hardswish/default"),
+    "batch_norm": ("raster/batch_norm/affine", "raster/batch_norm/nonaffine"),
 }
 """This lane's named selections (``tools.fixtures.select``)."""
 
@@ -526,4 +613,4 @@ def fixtures() -> list[Fixture]:
             accepts=_accepts("nearest"), calibration=True, tolerance=0.0,
             notes="A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0)."),
     ]
-    return calibration + _p02_fixtures(cost) + _hard_fixtures(cost)
+    return calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost)
