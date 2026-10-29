@@ -225,8 +225,8 @@ avoid large embedded requests but do not remove EE computation limits.
 
 The fixed optional [Swin-T/UPerNet interface](swin.md) is explicitly imported from
 `tensor_ee.swin`; it is separate from the CNN compiler. Its installed orchestration
-entry point preserves three saved-asset stages and explicit resources. Other
-architectures and arbitrary transformers are not supported. ONNX import
+entry point preserves three saved-asset stages and explicit resources. The explicit
+Prithvi crop interface below adds one hand-composed architecture. ONNX import
 (`load_onnx_model`) is in the
 converter layer (`tensor_ee.converter`), not in the top-level API; the
 [block catalogue](building-blocks.md) lists the layers' public names.
@@ -297,3 +297,67 @@ encode `norm`: `check_settings` alone therefore cannot distinguish its values
 at legacy shapes. Historical evidence requires `norm=True`; `norm=False` has
 only the new offline evidence. Prithvi settings are outside the historical
 record on patch size, band count, width and window.
+
+
+## Prithvi Sen1Floods11
+
+`tensor_ee.models.prithvi_sen1floods11` composes one 224 × 224 crop with six
+already scaled and normalized bands into two logit bands. Import it explicitly;
+`import tensor_ee` does not load it. It uses the window blocks directly,
+independently of the converter and CNN compiler.
+
+```python
+from tensor_ee.models.prithvi_sen1floods11.model import constants, forward
+
+coefficients = constants(ee, state)
+logits = forward(ee, input_raster, coefficients)["logits"]
+```
+
+`state` supplies NumPy float32 arrays or `ServerArray` coefficients under the
+source state names. `parameter_shapes()` declares the inventory. NumPy values
+use native tensor shapes; server arrays also accept the existing asset format's
+flattened matrices, and vector rows or columns. All constants are prepared
+before composition. Position values are supplied, never generated here.
+The unused auxiliary head and BatchNorm counter are ignored. The checkpoint
+is absent, so its actual prefixes could not be checked against a file.
+
+The default configuration is width 768, 12 heads, 12 blocks, MLP width 3072,
+and decoder width 256. `PrithviConfig` also supplies a reduced twin for the
+offline comparisons. Post-product attention scaling follows the historical
+source order. The class row remains a query, key and value through every
+encoder block, alongside 196 spatial rows in W14. Four linear projections
+plus exact depth-to-space moves form the neck, using W7 after the first
+upsampling. The decoder's 3 × 3 convolution has no bias; BatchNorm epsilon is
+1e-5. Neck channel normalization uses epsilon 1e-6. Dropout and same-size final
+bilinear resize are evaluation identities.
+
+The input must already be finite float32 with every pixel valid, in the
+Raster's declared band order. The interface checks shape and band count;
+it cannot inspect remote values or establish mask completeness. Scaling and
+per-band normalization stay outside this model. Each call covers one complete
+independent crop; region and slide inference are outside this interface.
+
+`compose` supports explicit saved boundaries: spatial/class pairs after the
+patch setup, each encoder block and final norm, then a spatial feature after
+each upsampling. Both parts are required when resuming the encoder. The
+`planning` module uses existing cost functions, the planner's `Limits`, and
+`request_size` for explicit hand cuts. It does not claim an optimized converter
+plan. `tools/prithvi_capacity.py` reproduces its offline request measurements.
+
+Capacity estimates for one default crop are 97,602,818 float state values,
+122,783,330 logical evaluated constants, and 145.795 billion MACs. The
+bias-free decoder convolution accounts for about 60.897% of those MACs;
+that fraction alone does not establish a need for grouped execution. The
+largest image array is [196,3072], or 602,112 values. The proposed 19 stages
+fit default constant and boundary limits; request sizes depend on the table
+manifest. Symbolic table sizing does not establish server memory or runtime.
+Existing `group_product` divides input channels, not output channels.
+
+The plain-torch reference uses native convolutions and all 197 attention rows.
+The numerical executor runs the actual library backend and arithmetic, with
+independently checked NumPy spatial transports. Default tests compare every
+logit of a reduced-width 224 crop. A separate opt-in checks full width. The
+`prithvi_model` harness selection probes every fourth output pixel of the
+complete reduced-width graph with structured random coefficients; it is
+intended only for offline checking. No whole-model live or accuracy claim is
+made. New blocks retain their offline-only status pending promotion.

@@ -28,10 +28,10 @@ def registry() -> dict[str, Fixture]:
     """Every registered fixture by id (built once)."""
     global _REGISTRY
     if _REGISTRY is None:
-        from . import class_token, depth_space, prithvi_settings, decoder, patch, raster, window, segformer_b0
+        from . import class_token, depth_space, prithvi_settings, prithvi_model, decoder, patch, raster, window, segformer_b0
 
         built = Registry()
-        for module in (raster, window, decoder, patch, segformer_b0, class_token, depth_space, prithvi_settings):
+        for module in (raster, window, decoder, patch, segformer_b0, class_token, depth_space, prithvi_settings, prithvi_model):
             for fixture in module.fixtures():
                 built.add(fixture)
         _REGISTRY = built.fixtures
@@ -49,10 +49,10 @@ def selections() -> dict[str, tuple[str, ...]]:
     A value is a sequence of fixture ids, or a zero-argument callable that returns one. A
     name is not ``all``, ``calibration`` or a fixture id, and is defined once; a selection
     is not empty and lists registered ids only."""
-    from . import class_token, depth_space, prithvi_settings, decoder, patch, raster, window, segformer_b0
+    from . import class_token, depth_space, prithvi_settings, prithvi_model, decoder, patch, raster, window, segformer_b0
 
     fixtures, named = registry(), {}
-    for module in (raster, window, decoder, patch, segformer_b0, class_token, depth_space, prithvi_settings):
+    for module in (raster, window, decoder, patch, segformer_b0, class_token, depth_space, prithvi_settings, prithvi_model):
         for name, value in getattr(module, "SELECTIONS", {}).items():
             if name in ("all", "calibration") or name in fixtures or name in named:
                 raise ValueError(f"selection name {name!r} is reserved, a fixture id or defined twice")

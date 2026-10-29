@@ -675,7 +675,7 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
     offline = {name for (_, name), entry in catalogue.items()
                if entry.status.startswith("Fixed — offline only:")}
     assert offline == OFFLINE_ONLY_FIXED
-    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings"])
+    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model"])
                    if f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert (SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | BILINEAR_G3_BLOCKS
