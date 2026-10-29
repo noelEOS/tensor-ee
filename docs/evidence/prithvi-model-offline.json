@@ -3,20 +3,20 @@
   "kind": "offline_fixture_check",
   "cloud_calls": 0,
   "status": "passed",
-  "revision": "7be4c9826aa211f36bd02090a24250ebfff300c5",
+  "revision": "8b8cb85c39cca3ad2d7452726e42d8e96c4b1940",
   "dirty": false,
   "tensor_ee": "tensor_ee/__init__.py",
   "versions": {
-    "python": "3.12.14",
-    "earthengine-api": "1.7.50",
-    "torch": "2.15.0+cpu",
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
     "timm": "1.0.30",
     "segmentation-models-pytorch": "0.5.0",
-    "numpy": "2.3.5"
+    "numpy": "2.5.3"
   },
   "platform": {
-    "system": "Linux",
-    "machine": "x86_64"
+    "system": "Darwin",
+    "machine": "arm64"
   },
   "plan": {
     "totals": {
@@ -24,9 +24,9 @@
       "requests": 2,
       "values": 16576,
       "payload_bytes": 66304,
-      "request_bytes": 1945200,
+      "request_bytes": 1944902,
       "max_values": 9408,
-      "max_request_bytes": 1865405,
+      "max_request_bytes": 1865107,
       "max_bands": 7,
       "embedded_constants": 929858,
       "inline_values": 12288,
@@ -118,9 +118,9 @@
           "bands": 3,
           "values": 9408,
           "payload_bytes": 37632,
-          "request_bytes": 1865405,
-          "graph_sha256": "6cc8ef2b4f5ee8ab4c939fc68993cae817077f2fa2944f09e53050278aeaa489",
-          "graph_bytes": 1865174,
+          "request_bytes": 1865107,
+          "graph_sha256": "8950a4eda0e32cb236f4ead4665645ddd5d979a66a205816cb9a850064dd52be",
+          "graph_bytes": 1864876,
           "embedded_constants": 929858,
           "inline_values": 6144
         },
@@ -161,22 +161,22 @@
         }
       ],
       "errors": [],
-      "seconds": 0.114,
+      "seconds": 0.095,
       "outputs": {
         "logits": {
           "mirror_vs_pytorch": {
             "tolerance": 0.0001,
             "comparison": "absolute",
             "values": 6272,
-            "max_abs": 1.9371509552001953e-07,
+            "max_abs": 2.635642886161804e-07,
             "over_tolerance": 0,
             "pass": true,
             "worst": {
-              "row": 23,
-              "col": 8,
+              "row": 10,
+              "col": 9,
               "channel": 1,
-              "actual": -0.05324950069189072,
-              "expected": -0.0532493069767952
+              "actual": -0.011908389627933502,
+              "expected": -0.011908653192222118
             }
           }
         }
