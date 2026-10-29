@@ -3,7 +3,7 @@
   "kind": "offline_fixture_check",
   "cloud_calls": 0,
   "status": "passed",
-  "revision": "b990da4b7be0ef9a7f9718997cf43646eb420083",
+  "revision": "7be4c9826aa211f36bd02090a24250ebfff300c5",
   "dirty": false,
   "tensor_ee": "tensor_ee/__init__.py",
   "versions": {
@@ -24,9 +24,9 @@
       "requests": 2,
       "values": 16576,
       "payload_bytes": 66304,
-      "request_bytes": 1661531,
+      "request_bytes": 1945200,
       "max_values": 9408,
-      "max_request_bytes": 1581736,
+      "max_request_bytes": 1865405,
       "max_bands": 7,
       "embedded_constants": 929858,
       "inline_values": 12288,
@@ -42,21 +42,7 @@
         "id": "window/concat_rows/prithvi-crop-logits",
         "lane": "window",
         "block": "concat_rows",
-        "parts": [
-          "patch_embed",
-          "linear",
-          "layer_norm",
-          "naive_attention",
-          "gelu",
-          "add",
-          "window_depth_to_space",
-          "layer_norm2d",
-          "conv3x3_window",
-          "batch_norm",
-          "relu",
-          "conv1x1",
-          "head_dense"
-        ],
+        "parts": [],
         "settings": {
           "window": 14,
           "rows": [
@@ -98,10 +84,10 @@
         },
         "history": "docs/api.md#prithvi-sen1floods11",
         "calibration": false,
-        "notes": "Offline only: full224crop graph, structured random repeated dyadic coefficients; probe every fourth output pixel, all pixels in model tests. No full-model live run."
+        "notes": "Reduced-width crop composition check, not individual-block evidence. All matrix columns and rows and all positional rows are distinguishable. The source adds a global pixel code to the periodic seed. Probe every fourth output pixel; model tests compare all pixels."
       },
       "inputs_sha256": "78ed02120256f3982c656a3c6151cedc8fd69940ff404d7f03c1850b44e2f799",
-      "weights_sha256": "d41c7522ef8f6bd541a1e0d3f949aa31ced6643d56f86a87b8adde5ecec20d8a",
+      "weights_sha256": "c11e7c982bea1293235155d173aa18f6f88ab473a63b4f6d2e07ba8db97de9b6",
       "requests": [
         {
           "index": 0,
@@ -132,9 +118,9 @@
           "bands": 3,
           "values": 9408,
           "payload_bytes": 37632,
-          "request_bytes": 1581736,
-          "graph_sha256": "45872ac59b69642186510e1524aa791db1a2f32e1086a337f3918d7c0f279f3b",
-          "graph_bytes": 1581505,
+          "request_bytes": 1865405,
+          "graph_sha256": "6cc8ef2b4f5ee8ab4c939fc68993cae817077f2fa2944f09e53050278aeaa489",
+          "graph_bytes": 1865174,
           "embedded_constants": 929858,
           "inline_values": 6144
         },
@@ -175,22 +161,22 @@
         }
       ],
       "errors": [],
-      "seconds": 0.125,
+      "seconds": 0.114,
       "outputs": {
         "logits": {
           "mirror_vs_pytorch": {
             "tolerance": 0.0001,
             "comparison": "absolute",
             "values": 6272,
-            "max_abs": 3.3080577850341797e-06,
+            "max_abs": 1.9371509552001953e-07,
             "over_tolerance": 0,
             "pass": true,
             "worst": {
-              "row": 2,
-              "col": 1,
+              "row": 23,
+              "col": 8,
               "channel": 1,
-              "actual": -0.27617141604423523,
-              "expected": -0.27617472410202026
+              "actual": -0.05324950069189072,
+              "expected": -0.0532493069767952
             }
           }
         }

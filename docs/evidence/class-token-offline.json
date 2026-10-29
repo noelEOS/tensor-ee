@@ -3,7 +3,7 @@
   "kind": "offline_fixture_check",
   "cloud_calls": 0,
   "status": "passed",
-  "revision": "effa80d67ca21e84d304b57b351e2ca0bb0f4230",
+  "revision": "7be4c9826aa211f36bd02090a24250ebfff300c5",
   "dirty": false,
   "tensor_ee": "tensor_ee/__init__.py",
   "versions": {
@@ -71,7 +71,7 @@
           "exact": true,
           "bound": null
         },
-        "history": "docs/api.md",
+        "history": "docs/evidence/class-token-offline.json",
         "calibration": false,
         "notes": ""
       },
@@ -160,7 +160,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.021,
+      "seconds": 0.02,
       "outputs": {
         "p0": {
           "mirror_vs_pytorch": {
@@ -201,22 +201,20 @@
     },
     {
       "spec": {
-        "id": "window/concat_rows/attention-w3-h3-d4",
+        "id": "window/class_token_attention/w3-h3-d4",
         "lane": "window",
-        "block": "concat_rows",
+        "block": "class_token_attention",
         "parts": [
           "naive_attention",
-          "split_heads"
+          "split_heads",
+          "concat_rows"
         ],
         "settings": {
           "window": 3,
-          "rows": [
-            1,
-            9
-          ],
-          "channels": 4
+          "dim": 12,
+          "heads": 3
         },
-        "policy": "none",
+        "policy": "composite",
         "shapes": {
           "keys": 10,
           "heads": 3,
@@ -227,11 +225,11 @@
         "requests": 2,
         "reference": "plain torch post-QK scaling and softmax",
         "mirror": {
-          "source": "reference.class_token.attention",
+          "source": "reference.class_token.class_token_attention",
           "exact": false,
           "bound": 0.0001
         },
-        "history": "docs/api.md",
+        "history": "docs/evidence/class-token-offline.json",
         "calibration": false,
         "notes": "Both class and spatial queries update; compact random inputs rotate across all heads."
       },
@@ -320,7 +318,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.021,
+      "seconds": 0.019,
       "outputs": {
         "p0": {
           "mirror_vs_pytorch": {
@@ -361,22 +359,20 @@
     },
     {
       "spec": {
-        "id": "window/concat_rows/attention-w14-h12-d64",
+        "id": "window/class_token_attention/w14-h12-d64",
         "lane": "window",
-        "block": "concat_rows",
+        "block": "class_token_attention",
         "parts": [
           "naive_attention",
-          "split_heads"
+          "split_heads",
+          "concat_rows"
         ],
         "settings": {
           "window": 14,
-          "rows": [
-            1,
-            196
-          ],
-          "channels": 64
+          "dim": 768,
+          "heads": 12
         },
-        "policy": "none",
+        "policy": "composite",
         "shapes": {
           "keys": 197,
           "heads": 12,
@@ -387,11 +383,11 @@
         "requests": 6,
         "reference": "plain torch post-QK scaling and softmax",
         "mirror": {
-          "source": "reference.class_token.attention",
+          "source": "reference.class_token.class_token_attention",
           "exact": false,
           "bound": 0.0001
         },
-        "history": "docs/api.md",
+        "history": "docs/evidence/class-token-offline.json",
         "calibration": false,
         "notes": "Both class and spatial queries update; compact random inputs rotate across all heads."
       },
@@ -650,7 +646,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.029,
+      "seconds": 0.06,
       "outputs": {
         "p0": {
           "mirror_vs_pytorch": {

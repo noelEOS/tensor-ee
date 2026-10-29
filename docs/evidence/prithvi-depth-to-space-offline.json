@@ -3,7 +3,7 @@
   "kind": "offline_fixture_check",
   "cloud_calls": 0,
   "status": "passed",
-  "revision": "fd40f88884466ab119499bad87d16971c9dcea56",
+  "revision": "7be4c9826aa211f36bd02090a24250ebfff300c5",
   "dirty": false,
   "tensor_ee": "tensor_ee/__init__.py",
   "versions": {
@@ -150,7 +150,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.022,
+      "seconds": 0.02,
       "outputs": {
         "output": {
           "mirror_vs_pytorch": {
@@ -285,7 +285,7 @@
         }
       ],
       "errors": [],
-      "seconds": 0.021,
+      "seconds": 0.018,
       "outputs": {
         "output": {
           "mirror_vs_pytorch": {
