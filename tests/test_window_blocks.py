@@ -476,6 +476,8 @@ def test_constants_built_for_one_layout_are_refused_by_another(offline_ee):
 # validated patch, 8.
 DRO, REO = P.DOUBLE_ROUND_ONCE, P.ROUND_EACH_OP
 EXPECTED_METADATA = {
+    "window_depth_to_space": (Locality.WINDOW, None, False, M.NO_ARITHMETIC,
+        "Fixed — offline only: factor 2; windows 7, 14 to window 7", "window"),
     "concat_rows": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC,
                     "Fixed — offline only: one class row followed by spatial rows", "per crop pixel"),
     "depthwise_conv3x3_window": (Locality.WINDOW_RING, 1, False, DRO,
@@ -642,7 +644,7 @@ NOT_BLOCKS = {
                   "window_attention_arrays"},
     "conv": {"DepthwiseConv3x3Constants", "depthwise_conv3x3_values", "depthwise_conv3x3_arrays", "Conv3x3Constants", "group_weight", "conv3x3_values", "conv3x3_arrays", "group_product_values",
              "group_product_arrays"},
-    "resample": {"bilinear_weights", "model_bilinear_weights", "float32_exact", "local_matrices",
+    "resample": {"window_depth_to_space_values", "window_depth_to_space_arrays", "bilinear_weights", "model_bilinear_weights", "float32_exact", "local_matrices",
                  "window_token_order", "output_weights", "window_matrix_weights", "window_resize_values",
                  "window_matrix_resize_values", "window_resize_edge"},
     "pooling": {"bins", "onehot_bins", "check_rule", "pool_rows", "offsets", "axis_membership", "PoolPlan",

@@ -257,3 +257,19 @@ Concatenate class then spatial keys and values, and call the existing
 class query. Both calls read all keys and values. The class row must pass through
 every normalization, projection and residual update. For post-product scaling,
 use `score_scale`; this preserves the existing attention policy.
+
+## Window depth-to-space
+
+`tensor_ee.blocks.window.resample.window_depth_to_space(ee, x, grid, channels,
+window=7, out_window=7, factor=2)` moves a projected window's position-major
+columns `(dy, dx, channel)` to the corresponding fine-grid tokens. It returns
+the array image and its fine token grid. The settings are keyword-only.
+
+The supported window pairs are 14→7 and 7→7, at factor two, on a `TokenGrid`
+with complete windows. Each child window selects its rows and columns directly
+from the expanded parent array. Tensor values undergo no arithmetic or casts;
+no dense channel raster is formed. The block has window locality, needs no
+halo, and has no chip-edge dependence. Its status remains
+`Fixed — offline only: factor 2; windows 7, 14 to window 7` pending promotion.
+This supplies the value-moving part of a kernel-two, stride-two transposed
+convolution after an ordinary linear projection.

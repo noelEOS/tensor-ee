@@ -46,12 +46,14 @@ window with align_corners=False. Other windows, factors and sources are not vali
 
 from __future__ import annotations
 
+import numbers
+
 import numpy as np
 import torch
 import torch.nn.functional as F
 
 from ...core.grid import TokenGrid
-from ...core.metadata import BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import NO_ARITHMETIC, NOT_LIVE, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import DOUBLE_ROUND_ONCE, validate_policy
 from ...core.tensor import WINDOW
 from ...layouts.shift import domain_mask
@@ -257,7 +259,69 @@ def window_resize_edge(*, align_corners: bool = False) -> dict:
     return {"chip_edge_dependent": bool(align_corners)}
 
 
+def window_depth_to_space(ee, x, grid: TokenGrid, channels: int, *, window: int = 7,
+                          out_window: int = 7, factor: int = 2):
+    """[window², 4*C] on grid.coarse(window) -> [out_window², C] on a finer grid.
+
+    ``grid`` is the input token grid, ``channels`` the output channel count.
+    Source column ``(dy*2+dx)*C+c`` moves to fine token ``(2*y+dy,2*x+dx,c)``.
+    Returns ``(image, fine_tokens)``. Positive integral channel/window dimensions,
+    factor 2, window pairs (7,7)/(14,7), TokenGrid origin (0,0), and complete
+    input and output windows are required. The operation
+    only reindexes values, including their signed zeros.
+    """
+    if not isinstance(grid, TokenGrid):
+        raise TypeError("grid must be a TokenGrid with origin (0, 0)")
+    for name, value in (("channels", channels), ("window", window), ("out_window", out_window)):
+        if isinstance(value, bool) or not isinstance(value, numbers.Integral) or value < 1:
+            raise ValueError(f"{name} must be a positive integer; received {value!r}")
+    if isinstance(factor, bool) or not isinstance(factor, numbers.Integral) or factor != 2:
+        raise ValueError(f"factor must be 2; received {factor!r}")
+    if (window, out_window) not in ((7, 7), (14, 7)):
+        raise ValueError("supported window pairs are (7, 7) and (14, 7)")
+    if grid.height % window or grid.width % window:
+        raise ValueError("input token dimensions must be divisible by window")
+    fine = TokenGrid(grid.height * factor, grid.width * factor, grid.scale / factor, grid.crs)
+    if fine.height % out_window or fine.width % out_window:
+        raise ValueError("output token dimensions must be divisible by out_window")
+    # [y, x, dy, dx, C] -> [y, dy, x, dx, C]; no tensor-value arithmetic.
+    local = reshape(ee, x, [window, window, factor, factor, channels]).arrayTranspose(1, 2)
+    local = reshape(ee, local, [window * factor, window * factor, channels])
+    parent = grid.coarse(window)
+    child = fine.coarse(out_window)
+    projection = ee.Projection(child.crs, child.transform)
+    # Every child reads its parent array by nearest sampling. Scalar-band
+    # materialization and one stride-sample call per output token are unnecessary.
+    local = local.reproject(ee.Projection(parent.crs, parent.transform)).reproject(projection)
+    coordinates = ee.Image.pixelCoordinates(projection).floor()
+    subdivisions = window * factor // out_window
+    offsets = [coordinates.select(axis).mod(subdivisions).add(subdivisions)
+               .mod(subdivisions).multiply(out_window).toInt() for axis in ("y", "x")]
+    row, col = offsets
+    selected = local.arraySlice(0, row, row.add(out_window)).arraySlice(1, col, col.add(out_window))
+    output = reshape(ee, selected, [out_window * out_window, channels])
+    return output.updateMask(domain_mask(ee, child)), fine
+
+
+def window_depth_to_space_values() -> int:
+    """No embedded arithmetic constants (shape integers and indices only)."""
+    return 0
+
+
+def window_depth_to_space_arrays() -> int:
+    """No asset-backed arrays."""
+    return 0
+
+
+
 METADATA = validate_metadata({
+    "window_depth_to_space": BlockMetadata(
+        name="window_depth_to_space", layout_in="W", layout_out="W", locality=Locality.WINDOW,
+        policy=NO_ARITHMETIC, embedded_constants=window_depth_to_space_values,
+        asset_arrays=window_depth_to_space_arrays, chip_edge_dependent=False,
+        status="Fixed — offline only: factor 2; windows 7, 14 to window 7",
+        evidence=("docs/api.md#window-depth-to-space",), validated=NOT_LIVE),
+
     # Chip-edge dependent over its validated settings (align_corners=True is one), and exactly
     # by setting through window_resize_edge.
     "window_resize": BlockMetadata(

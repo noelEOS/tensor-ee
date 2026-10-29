@@ -101,18 +101,18 @@ their own.
 ## Blocks
 
 <!-- BEGIN GENERATED: blocks (tools/block_catalogue.py; edit the code, then rerun) -->
-85 blocks: 22 in `tensor_ee/blocks/raster` and 63 in `tensor_ee/blocks/window`.
+86 blocks: 22 in `tensor_ee/blocks/raster` and 64 in `tensor_ee/blocks/window`.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
 | R → R | 22 | 0 | 22 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
-| W → W | 20 | 34 | 54 |
+| W → W | 20 | 35 | 55 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **48** | **37** | **85** |
+| **All** | **48** | **38** | **86** |
 
 ### Raster-layout (R) blocks
 
@@ -174,6 +174,7 @@ their own.
 | [`merge_windows`](../tensor_ee/blocks/window/patch.py) | W → W | window | none (no arithmetic) | no | Ready — windows 5, 7, 8, 12 | [building-blocks-2026-10-11.md#37-resampling](history/building-blocks-2026-10-11.md#37-resampling); [swin_hierarchy/notes/milestone4_findings.md](history/swin_hierarchy/notes/milestone4_findings.md); [evidence/p01-offline.json](evidence/p01-offline.json); [evidence/live-fixtures/20261013T074301Z-p01a.json](evidence/live-fixtures/20261013T074301Z-p01a.json); [evidence/live-fixtures/20261013T074330Z-p01b.json](evidence/live-fixtures/20261013T074330Z-p01b.json); [evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json](evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json) |
 | [`window_pool`](../tensor_ee/blocks/window/pooling.py) | W → V | extent | `double_round_once` | no | Ready — extents 5, 7, 8, 12 and 14 tokens with bins (1, 2, 3, 6); extents 8 and 12 with bins (1, 2, 4, 8) | [building-blocks-2026-10-11.md#38-pooling](history/building-blocks-2026-10-11.md#38-pooling); [upernet/notes/milestone8_findings.md](history/upernet/notes/milestone8_findings.md); [evidence/p04-offline.json](evidence/p04-offline.json); [evidence/live-fixtures/20261013T115558Z-p04.json](evidence/live-fixtures/20261013T115558Z-p04.json) |
 | [`gather`](../tensor_ee/blocks/window/pooling.py) | W → V | extent | none (no arithmetic) | no | Ready | [building-blocks-2026-10-11.md#38-pooling](history/building-blocks-2026-10-11.md#38-pooling); [upernet/notes/milestone8_findings.md](history/upernet/notes/milestone8_findings.md) |
+| [`window_depth_to_space`](../tensor_ee/blocks/window/resample.py) | W → W | window | none (no arithmetic) | no | Fixed — offline only: factor 2; windows 7, 14 to window 7 | [api.md#window-depth-to-space](api.md#window-depth-to-space) |
 | [`window_resize`](../tensor_ee/blocks/window/resample.py) | W → W | window + ring of 1 | `double_round_once` | yes (by setting) | Ready — windows 7, 8; factors 2, 4, 8 (align_corners=False), 4 (align_corners=True) | [building-blocks-2026-10-11.md#37-resampling](history/building-blocks-2026-10-11.md#37-resampling); [upernet/notes/milestone7_findings.md](history/upernet/notes/milestone7_findings.md); [upernet/notes/milestone11_findings.md](history/upernet/notes/milestone11_findings.md); [evidence/c0b-offline.json](evidence/c0b-offline.json); [evidence/live-fixtures/20261013T154410Z-c0b.json](evidence/live-fixtures/20261013T154410Z-c0b.json) |
 | [`window_matrix_resize`](../tensor_ee/blocks/window/resample.py) | V → W | extent | `double_round_once` | no | Ready — windows 7, 8; sources 1, 2, 3, 6 onto one window (align_corners=False) | [building-blocks-2026-10-11.md#37-resampling](history/building-blocks-2026-10-11.md#37-resampling); [upernet/notes/milestone8_findings.md](history/upernet/notes/milestone8_findings.md); [evidence/c0b-offline.json](evidence/c0b-offline.json); [evidence/live-fixtures/20261013T154410Z-c0b.json](evidence/live-fixtures/20261013T154410Z-c0b.json) |
 | [`channel_norm`](../tensor_ee/blocks/window/segformer.py) | W → W | pointwise | composite | no | Fixed — SegFormer-B0 (mit_b0) at 224 × 224: widths 32, 64, 160, 256; eps 1e-5, 1e-6; window 7 | [evidence/segformer_b0-fullmodel-live.json](evidence/segformer_b0-fullmodel-live.json); [evidence/segformer_b0-live.json](evidence/segformer_b0-live.json); *parts: layer_norm (eps 1e-5) or layer_norm2d (eps 1e-6), double_round_once* |
@@ -221,7 +222,7 @@ their own.
 
 ### Validated settings
 
-Each block's `validated` record, the status in machine-readable form: 85 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
+Each block's `validated` record, the status in machine-readable form: 86 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
 
 | Block | Layout | Validated settings | Names from |
 |---|---|---|---|
@@ -272,6 +273,7 @@ Each block's `validated` record, the status in machine-readable form: 85 records
 | [`merge_windows`](../tensor_ee/blocks/window/patch.py) | W → W | {window 5 or 7 or 8 or 12} | — |
 | [`window_pool`](../tensor_ee/blocks/window/pooling.py) | W → V | {height 5; sizes (1, 2, 3, 6); width 5} ∪ {height 7; sizes (1, 2, 3, 6); width 7} ∪ {height 8; sizes (1, 2, 3, 6); width 8} ∪ {height 12; sizes (1, 2, 3, 6); width 12} ∪ {height 14; sizes (1, 2, 3, 6); width 14} ∪ {height 8; sizes (1, 2, 4, 8); width 8} ∪ {height 12; sizes (1, 2, 4, 8); width 12} | — |
 | [`gather`](../tensor_ee/blocks/window/pooling.py) | W → V | any accepted call | — |
+| [`window_depth_to_space`](../tensor_ee/blocks/window/resample.py) | W → W | none live | — |
 | [`window_resize`](../tensor_ee/blocks/window/resample.py) | W → W | {align_corners False; factor 2 or 4 or 8; window 7 or 8} ∪ {align_corners True; factor 4; window 7 or 8} | — |
 | [`window_matrix_resize`](../tensor_ee/blocks/window/resample.py) | V → W | {align_corners False; col0 0; height 7; in_size (1, 1) or (2, 2) or (3, 3) or (6, 6); out_size None; row0 0; width 7; window 7} ∪ {align_corners False; col0 0; height 8; in_size (1, 1) or (2, 2) or (3, 3) or (6, 6); out_size None; row0 0; width 8; window 8} | — |
 | [`channel_norm`](../tensor_ee/blocks/window/segformer.py) | W → W | {channels 32 or 64 or 160 or 256; eps 1e-05 or 1e-06; window 7} | `norm_constants` |
