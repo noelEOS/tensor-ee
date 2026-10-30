@@ -110,6 +110,47 @@ def cut_proposal(config=PRITHVI, *, limits=None):
     }
 
 
+def stage_rasters(ee, coefficients, *, config=PRITHVI, namespace="projects/example/assets/prithvi"):
+    """Each explicit stage's exported images, built from the previous stage's saved assets.
+
+    Yields ``(stage, [(name, raster), ...])`` in model order. The patch setup, each encoder
+    block and the final norm export a spatial and a class image (``<stage>_spatial``,
+    ``<stage>_class``); each upsampling and the logits export one. Stage inputs are read
+    from ``<namespace>_<name>`` (the crop itself from ``<namespace>_input``), so a stage can
+    be built only once its predecessor's assets exist. Builds expressions only.
+    """
+    previous = "input"
+
+    def saved(name, grid, channels, window):
+        image = saved_image(ee, namespace + "_" + name, band_names(channels), grid)
+        return boundary_windows(ee, image, grid, channels, window=window)
+
+    for stage in stage_names(config)[1:]:
+        if previous == "input":
+            image = saved_image(ee, namespace + "_input", BANDS, INPUT_GRID)
+            incoming = Raster(image, BANDS, INPUT_GRID)
+        elif previous == "patch" or previous.startswith("block") or previous == "norm":
+            incoming = (
+                saved(previous + "_spatial", TOKEN_GRID, config.width, 14),
+                saved(previous + "_class", TOKEN_GRID.coarse(14), config.width, 1),
+            )
+        else:
+            side = int(previous[8:])
+            grid = INPUT_GRID.coarse(224 // side)
+            incoming = saved(previous, grid, config.width, 7)
+        output = compose(
+            coefficients.backend, incoming, config, start=previous, stop=stage,
+        )[stage]
+        outputs = output if isinstance(output, tuple) else (output,)
+        images = []
+        for index, item in enumerate(outputs):
+            raster = boundary_raster(ee, item) if isinstance(item, WindowTensor) else item
+            suffix = ("_spatial", "_class")[index] if len(outputs) == 2 else ""
+            images.append((stage + suffix, raster))
+        yield stage, images
+        previous = stage
+
+
 def measured_cuts(ee, parameters, *, config=PRITHVI,
                   namespace="projects/example/assets/prithvi", limits=None):
     """Size every explicit stage with asset-backed weights and saved image inputs.
@@ -128,45 +169,17 @@ def measured_cuts(ee, parameters, *, config=PRITHVI,
     limits = Limits() if limits is None else limits
     coefficients = constants(ee, parameters, config=config)
     records = []
-    previous = "input"
     proposal = cut_proposal(config, limits=limits)
-
-    def saved(name, grid, channels, window):
-        image = saved_image(ee, namespace + "_" + name, band_names(channels), grid)
-        return boundary_windows(ee, image, grid, channels, window=window)
-
-    for stage, base in zip(stage_names(config)[1:], proposal["stages"]):
-        if previous == "input":
-            image = saved_image(ee, namespace + "_input", BANDS, INPUT_GRID)
-            incoming = Raster(image, BANDS, INPUT_GRID)
-        elif previous == "patch" or previous.startswith("block") or previous == "norm":
-            incoming = (
-                saved(previous + "_spatial", TOKEN_GRID, config.width, 14),
-                saved(previous + "_class", TOKEN_GRID.coarse(14), config.width, 1),
-            )
-        else:
-            side = int(previous[8:])
-            grid = INPUT_GRID.coarse(224 // side)
-            incoming = saved(previous, grid, config.width, 7)
-        output = compose(
-            coefficients.backend, incoming, config, start=previous, stop=stage,
-        )[stage]
-        outputs = output if isinstance(output, tuple) else (output,)
-        sizes = []
-        for index, item in enumerate(outputs):
-            raster = boundary_raster(ee, item) if isinstance(item, WindowTensor) else item
-            suffix = ("_spatial", "_class")[index] if len(outputs) == 2 else ""
-            name = stage + suffix
-            sizes.append(request_size(
-                raster.image, raster.grid,
-                asset_id=namespace + "_" + name, description="prithvi_" + name,
-            ))
+    stages = stage_rasters(ee, coefficients, config=config, namespace=namespace)
+    for (stage, images), base in zip(stages, proposal["stages"]):
+        sizes = [request_size(raster.image, raster.grid, asset_id=namespace + "_" + name,
+                              description="prithvi_" + name)
+                 for name, raster in images]
         records.append({
             **base,
             "request_bytes": sizes,
             "request_limit_satisfied": all(size <= limits.request_bytes for size in sizes),
         })
-        previous = stage
     within_limits = all(
         record["constant_limit_satisfied"] and record["band_limit_satisfied"]
         and record["request_limit_satisfied"]

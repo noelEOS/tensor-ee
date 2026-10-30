@@ -1,0 +1,386 @@
+{
+  "schema_version": 1,
+  "kind": "prithvi_sen1floods11_trained_crop_live",
+  "target": 0.0001,
+  "accuracy_claim": false,
+  "reference": "tests/reference/prithvi_sen1floods11 forward_torch (plain torch, eval float32) on the input fetched back from Earth Engine",
+  "validation": "one complete 224 x 224 crop, 6 bands, 2 logits; 19 staged boundaries of planning.stage_rasters exported to assets, each stage reading its predecessor's assets; no spatial tiles",
+  "input": {
+    "generator": "tools/prithvi_trained_run.py input_crop (seed 2024, dyadic, 12 bits, [-2, 2))",
+    "synthetic": true,
+    "fetched_equals_local": true
+  },
+  "weights": {
+    "source": "huggingface.co/ibm-nasa-geospatial/Prithvi-EO-1.0-100M-sen1floods11, sen1floods11_Prithvi_100M.pth",
+    "checkpoint_bytes": 1198539289,
+    "checkpoint_sha256": "c3b8af485ea03dab2a352c9269cb633a9f1550aa672733c1601306d4cd65b149",
+    "converted_state_sha256": "28527a0d032de21ba2515df4a9b17173db84334fd2482bc171a8cc6334023222",
+    "kept": "backbone, neck and decode_head state; auxiliary_head dropped",
+    "transport": "native_ee_featurecollection_weights_v2",
+    "values": 97602818,
+    "tables": 217,
+    "serialized_bytes": 1514515339,
+    "upload_wall_seconds": 13336
+  },
+  "namespace": "projects/YOUR_EE_PROJECT/assets/prithvi_sen1floods11/trained_run1",
+  "runner_revision": "e0c3edc",
+  "stages": [
+    {
+      "stage": "input",
+      "exports": [
+        {
+          "name": "input",
+          "request_bytes": 3228085,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 0.883,
+          "wall_seconds": 30.6
+        }
+      ]
+    },
+    {
+      "stage": "patch",
+      "exports": [
+        {
+          "name": "patch_spatial",
+          "request_bytes": 847412,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 16.846,
+          "wall_seconds": 62.0
+        },
+        {
+          "name": "patch_class",
+          "request_bytes": 14397,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 0.699,
+          "wall_seconds": 31.2
+        }
+      ]
+    },
+    {
+      "stage": "block0",
+      "exports": [
+        {
+          "name": "block0_spatial",
+          "request_bytes": 228313,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 13.352,
+          "wall_seconds": 63.4
+        },
+        {
+          "name": "block0_class",
+          "request_bytes": 228158,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 12.466,
+          "wall_seconds": 122.5
+        }
+      ]
+    },
+    {
+      "stage": "block1",
+      "exports": [
+        {
+          "name": "block1_spatial",
+          "request_bytes": 228253,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 15.534,
+          "wall_seconds": 63.3
+        },
+        {
+          "name": "block1_class",
+          "request_bytes": 228098,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 13.597,
+          "wall_seconds": 184.2
+        }
+      ]
+    },
+    {
+      "stage": "block2",
+      "exports": [
+        {
+          "name": "block2_spatial",
+          "request_bytes": 227841,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 15.35,
+          "wall_seconds": 94.0
+        },
+        {
+          "name": "block2_class",
+          "request_bytes": 227686,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 11.369,
+          "wall_seconds": 61.9
+        }
+      ]
+    },
+    {
+      "stage": "block3",
+      "exports": [
+        {
+          "name": "block3_spatial",
+          "request_bytes": 228315,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 20.143,
+          "wall_seconds": 95.3
+        },
+        {
+          "name": "block3_class",
+          "request_bytes": 228160,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 10.322,
+          "wall_seconds": 61.9
+        }
+      ]
+    },
+    {
+      "stage": "block4",
+      "exports": [
+        {
+          "name": "block4_spatial",
+          "request_bytes": 228253,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 19.023,
+          "wall_seconds": 63.3
+        },
+        {
+          "name": "block4_class",
+          "request_bytes": 228098,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 12.592,
+          "wall_seconds": 92.2
+        }
+      ]
+    },
+    {
+      "stage": "block5",
+      "exports": [
+        {
+          "name": "block5_spatial",
+          "request_bytes": 227903,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 13.791,
+          "wall_seconds": 63.3
+        },
+        {
+          "name": "block5_class",
+          "request_bytes": 227749,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 9.203,
+          "wall_seconds": 61.9
+        }
+      ]
+    },
+    {
+      "stage": "block6",
+      "exports": [
+        {
+          "name": "block6_spatial",
+          "request_bytes": 228253,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 17.146,
+          "wall_seconds": 155.1
+        },
+        {
+          "name": "block6_class",
+          "request_bytes": 228098,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 12.464,
+          "wall_seconds": 92.6
+        }
+      ]
+    },
+    {
+      "stage": "block7",
+      "exports": [
+        {
+          "name": "block7_spatial",
+          "request_bytes": 228253,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 14.616,
+          "wall_seconds": 64.3
+        },
+        {
+          "name": "block7_class",
+          "request_bytes": 228098,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 11.629,
+          "wall_seconds": 62.9
+        }
+      ]
+    },
+    {
+      "stage": "block8",
+      "exports": [
+        {
+          "name": "block8_spatial",
+          "request_bytes": 228253,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 14.944,
+          "wall_seconds": 95.8
+        },
+        {
+          "name": "block8_class",
+          "request_bytes": 228098,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 9.24,
+          "wall_seconds": 63.8
+        }
+      ]
+    },
+    {
+      "stage": "block9",
+      "exports": [
+        {
+          "name": "block9_spatial",
+          "request_bytes": 227841,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 21.4,
+          "wall_seconds": 94.9
+        },
+        {
+          "name": "block9_class",
+          "request_bytes": 227686,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 9.528,
+          "wall_seconds": 62.9
+        }
+      ]
+    },
+    {
+      "stage": "block10",
+      "exports": [
+        {
+          "name": "block10_spatial",
+          "request_bytes": 228329,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 14.394,
+          "wall_seconds": 63.3
+        },
+        {
+          "name": "block10_class",
+          "request_bytes": 228174,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 10.076,
+          "wall_seconds": 61.7
+        }
+      ]
+    },
+    {
+      "stage": "block11",
+      "exports": [
+        {
+          "name": "block11_spatial",
+          "request_bytes": 228331,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 15.752,
+          "wall_seconds": 95.3
+        },
+        {
+          "name": "block11_class",
+          "request_bytes": 228176,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 9.094,
+          "wall_seconds": 31.3
+        }
+      ]
+    },
+    {
+      "stage": "norm",
+      "exports": [
+        {
+          "name": "norm_spatial",
+          "request_bytes": 153080,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 2.557,
+          "wall_seconds": 31.2
+        },
+        {
+          "name": "norm_class",
+          "request_bytes": 18609,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 1.278,
+          "wall_seconds": 31.0
+        }
+      ]
+    },
+    {
+      "stage": "upsample28",
+      "exports": [
+        {
+          "name": "upsample28",
+          "request_bytes": 166944,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 6.726,
+          "wall_seconds": 60.9
+        }
+      ]
+    },
+    {
+      "stage": "upsample56",
+      "exports": [
+        {
+          "name": "upsample56",
+          "request_bytes": 59902,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 9.738,
+          "wall_seconds": 61.8
+        }
+      ]
+    },
+    {
+      "stage": "upsample112",
+      "exports": [
+        {
+          "name": "upsample112",
+          "request_bytes": 66671,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 58.372,
+          "wall_seconds": 182.1
+        }
+      ]
+    },
+    {
+      "stage": "upsample224",
+      "exports": [
+        {
+          "name": "upsample224",
+          "request_bytes": 59849,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 92.757,
+          "wall_seconds": 151.9
+        }
+      ]
+    },
+    {
+      "stage": "logits",
+      "exports": [
+        {
+          "name": "logits",
+          "request_bytes": 89625,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 409.432,
+          "wall_seconds": 273.5
+        }
+      ]
+    }
+  ],
+  "execution": {
+    "exports": 34,
+    "failed": 0,
+    "batch_eecu_seconds": 926.31,
+    "wall_seconds": 2117,
+    "largest_request_bytes": 3228085,
+    "interactive_requests": 2
+  },
+  "result": {
+    "pixels": 50176,
+    "max_abs": 4.112720489501953e-06,
+    "over_1e-4": 0,
+    "argmax_flips": 0,
+    "logit_range": [
+      -2.9332406520843506,
+      2.9259214401245117
+    ],
+    "passed": true
+  }
+}
