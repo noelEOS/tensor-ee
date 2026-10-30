@@ -8,7 +8,7 @@ the next stage, so a run is a sequence of batch exports, resumable from ``<run-d
     python tools/prithvi_trained_run.py plan --manifest M [--cuts C1,C2,..] [--start S]
     python tools/prithvi_trained_run.py run --manifest M --run-dir D --project P --namespace N \\
         [--cuts C1,C2,..] [--start S] [--source-namespace SN] [--until STAGE]
-    python tools/prithvi_trained_run.py compare --weights W.npz --run-dir D --project P
+    python tools/prithvi_trained_run.py compare --weights W.npz --run-dir D --project P [--real-input]
     python tools/prithvi_trained_run.py identity --run-dir D --project P --reference-namespace R \
         [--crop I,J]
 
@@ -358,7 +358,8 @@ def seam_ring(height: int, width: int, crop: int = 224) -> np.ndarray:
 
 def crop_comparison(fetched_input, logits, reference, seeds, crops) -> dict:
     """Each crop's logits against ``reference(crop_input)`` (the plain-torch forward of that
-    crop alone), with the fetched input checked against the crop's seed; no cloud call."""
+    crop alone), with the fetched input checked against the crop's seed; no cloud call. A
+    seed of None is a real input: nothing to check it against (``input_equals_local`` None)."""
     rows, cols = crops
     expected = np.empty(logits.shape, np.float64)
     per_crop = {}
@@ -369,14 +370,14 @@ def crop_comparison(fetched_input, logits, reference, seeds, crops) -> dict:
         expected[window] = reference(crop_input)
         error = np.abs(logits[window].astype(np.float64) - expected[window])
         per_crop[f"{row},{col}"] = {
-            "seed": seed, "input_equals_local": bool(np.array_equal(
+            "seed": seed, "input_equals_local": None if seed is None else bool(np.array_equal(
                 crop_input.view(np.uint32), input_crop(seed).view(np.uint32))),
             "max_abs": float(error.max()), "argmax_flips": int(
                 (logits[window].argmax(-1) != expected[window].argmax(-1)).sum())}
     difference = np.abs(logits.astype(np.float64) - expected)
     ring = seam_ring(*logits.shape[:2])
     return {
-        "input_equals_local": all(c["input_equals_local"] for c in per_crop.values()),
+        "input_equals_local": None if None in seeds else all(c["input_equals_local"] for c in per_crop.values()),
         "max_abs": float(difference.max()), "over_1e-4": int((difference > 1e-4).sum()),
         "argmax_flips": int((logits.argmax(-1) != expected.argmax(-1)).sum()),
         "pixels": int(logits.shape[0] * logits.shape[1]),
@@ -387,9 +388,11 @@ def crop_comparison(fetched_input, logits, reference, seeds, crops) -> dict:
     }
 
 
-def compare(weights: Path, run_dir: Path, project: str) -> dict:
+def compare(weights: Path, run_dir: Path, project: str, real_input: bool = False) -> dict:
     """Fetch the input and logits once each; compare each crop's logits with the torch
-    reference on that crop's fetched input."""
+    reference on that crop's fetched input. ``real_input``: the input is prepared imagery
+    (``tools/prithvi_real_input.py``), not a seeded crop, so it is not checked against a
+    seed; the fetched input and logits are kept as ``input.npy`` and ``logits.npy``."""
     sys.path.insert(0, str(ROOT / "tests"))
     from reference.prithvi_sen1floods11.reference import forward_torch
     from tensor_ee.core.tensor import band_names
@@ -402,12 +405,19 @@ def compare(weights: Path, run_dir: Path, project: str) -> dict:
     run_layout = _recorded_layout(state)
     crops = tuple(run_layout["crops"])
     seeds = run_layout["input_seeds"] or [state.get("input_seed", INPUT_SEED)]
+    if real_input:
+        if crops != (1, 1) or exports_input(run_layout):
+            raise ValueError("--real-input compares one crop read from a prepared input (--source-namespace)")
+        seeds = [None]
     grid = region_grid(*crops)
     ee = _initialize(project)
     namespace = state["namespace"]
     source = state.get("source_namespace") or namespace
     fetched_input = _fetch(ee, source + "_input", BANDS, grid)
     logits = _fetch(ee, namespace + "_logits", band_names(2), grid)
+    if real_input:
+        np.save(run_dir / "input.npy", fetched_input)
+        np.save(run_dir / "logits.npy", logits)
     with np.load(weights, allow_pickle=False) as f:
         parameters = {name: np.asarray(f[name], np.float32) for name in parameter_shapes()}
     record = crop_comparison(
@@ -574,6 +584,7 @@ def main(argv=None) -> None:
     p = sub.add_parser("plan")
     p.add_argument("--manifest", type=Path, required=True)
     _layout_arguments(p)
+    p.add_argument("--source-namespace", help="size a run that reads its start from this run's assets")
     r = sub.add_parser("run")
     for name in ("--manifest", "--run-dir"):
         r.add_argument(name, type=Path, required=True)
@@ -586,6 +597,8 @@ def main(argv=None) -> None:
     for name in ("--weights", "--run-dir"):
         c.add_argument(name, type=Path, required=True)
     c.add_argument("--project", required=True)
+    c.add_argument("--real-input", action="store_true",
+                   help="the input is prepared imagery: no seed check; keep input.npy and logits.npy")
     i = sub.add_parser("identity")
     i.add_argument("--run-dir", type=Path, required=True)
     i.add_argument("--project", required=True)
@@ -600,7 +613,7 @@ def main(argv=None) -> None:
     elif args.command == "identity":
         result = identity(args.run_dir, args.project, args.reference_namespace, args.crop)
     else:
-        result = compare(args.weights, args.run_dir, args.project)
+        result = compare(args.weights, args.run_dir, args.project, args.real_input)
     print(json.dumps(result, indent=1))
 
 

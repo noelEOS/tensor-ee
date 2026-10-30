@@ -422,6 +422,29 @@ by about a quarter between identical runs. One-crop shards finished it in 12
 minutes, one shard for the whole region in 19
 ([probes](evidence/prithvi_sen1floods11-logits-probes-live.json)).
 
+`tensor_ee.models.prithvi_sen1floods11.preprocessing` prepares Sentinel-2 L1C as
+the source does: bands B2, B3, B4, B8A, B11 and B12, missing pixels zero-filled
+(`from_image`), then `standardize` with scale 1e-4 and the configuration's
+per-band statistics, which reproduces the source's float32 recipe bit for bit.
+The 20 m bands are resampled to the crop grid by nearest neighbour; how the
+training data were resampled is undocumented, which affects accuracy only.
+`tools/prithvi_real_input.py` finds the day's `COPERNICUS/S2_HARMONIZED` image
+containing a crop (`discover`), exports the prepared crop as a run's input
+(`prepare`, then `run --source-namespace`), checks the fetched input against the
+block's mirror and the source recipe (`check-input`, after
+`compare --real-input`), and maps the predicted water against a hand label
+(`map`: IoU on that crop only). The scene is given as arguments.
+
+It ran live on one 224 × 224 crop of a hand-labelled Sen1Floods11 chip from the
+event held out of the model's training: one L1C image, 21 requests, 16 stage
+exports in 30 minutes and 1,071 batch EECU-seconds. The prepared input is bit for
+bit the source recipe's (0 of 301,056 values differ); the logits match the
+plain-torch reference on it within 1.41e-05, with 0 argmax flips; and the
+predicted water has an IoU of 0.911 with the hand label (pixel accuracy 0.944)
+([record](evidence/prithvi_sen1floods11-real-imagery-live.json)). That is one
+crop and one forward pass, not an accuracy score: the model card's numbers come
+from slide inference over whole chips.
+
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with
 independently checked NumPy spatial transports. Default tests compare every
