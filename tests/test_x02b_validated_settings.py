@@ -91,10 +91,9 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = {"raster/standardize"}
+OFFLINE_ONLY: set[str] = set()
 """The blocks with no live validation yet, by lane-qualified key (two lanes may share a block
-name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. Raster
-input standardization has offline fixtures only."""
+name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. None today."""
 
 
 def test_every_block_has_a_record():
@@ -160,6 +159,7 @@ NEVER_VARIED = {
     "window/layer_norm": {"eps"},
     "window/batch_norm": {"eps"},
     "raster/batch_norm": {"eps", "clip_footprints"},
+    "raster/standardize": {"clip_footprints"},
     "window/shifted_window_mask": {"value"},
     "window/group_product": {"k"},
     "window/patch_merge": {"bias"},

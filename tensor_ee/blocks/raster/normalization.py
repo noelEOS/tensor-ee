@@ -35,8 +35,10 @@ the block reproduces a float32 pipeline such as ``x * 1e-4`` on a float32 array 
 Each constant is a scalar band in the supplied ``bands`` order (positional pairing, as for
 BatchNorm); the scale is one scalar for every band, multiplied as ``float32(scale)``, as a
 float32 array multiplied by a Python float is. Mean and std must be finite float32 vectors,
-std positive; the scale finite and nonzero in float32. Not validated live: the status names the settings its offline
-fixtures cover.
+std positive; the scale finite and nonzero in float32. Validated live with six bands at
+scale 1e-4 (Prithvi Sen1Floods11's statistics on raw digital numbers, zeros included) and with
+three bands without a scale, clip_footprints=False: Earth Engine equal to the NumPy mirror and
+to the source recipe in every value. Other settings are not validated.
 """
 
 from __future__ import annotations
@@ -48,7 +50,7 @@ import ee
 import numpy as np
 
 from ...core.errors import UnsupportedOperation, reject
-from ...core.metadata import NOT_LIVE, BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, ROUND_EACH_OP, exact_scalar, validate_policy
 from ...core.tensor import Raster
 from ...layouts.raster import finish as _finish
@@ -147,17 +149,19 @@ class StandardizeConstants:
         self.std = image(std)
         # A float32 pipeline multiplies by float32(scale) (1e-4 is not a float32 value):
         # the constant is that float32 value, exactly.
-        self.scale = None if scale is None else ee.Image.constant(exact_scalar(float(np.float32(scale))))
+        self.scale_value = None if scale is None else float(np.float32(scale))
+        self.scale = None if scale is None else ee.Image.constant(exact_scalar(self.scale_value))
 
     @property
     def embedded_values(self) -> int:
-        return standardize_values(self.channels, scale=self.scale is not None)
+        return standardize_values(self.channels, scale=self.scale_value)
 
 
 def standardize(raster: Raster, constants: StandardizeConstants, *, clip_footprints: bool = False,
                 policy: str = ROUND_EACH_OP) -> Raster:
     """Per-band ``(x * scale - mean) / std``, each operation rounded to float32 (the input
-    read as float32), preserving the Raster's positional channel order. Not validated live."""
+    read as float32), preserving the Raster's positional channel order. Validated live at
+    six bands with scale 1e-4 and three bands without a scale."""
     validate_policy(policy, allowed=ROUND_EACH_OP)
     if len(raster.bands) != constants.channels:
         reject("standardize input channel count does not match constants")
@@ -168,9 +172,9 @@ def standardize(raster: Raster, constants: StandardizeConstants, *, clip_footpri
     return _finish(image, raster.bands, raster.grid, clip_footprints)
 
 
-def standardize_values(channels: int, *, scale: bool = False) -> int:
-    """Inline values: the mean and std vectors, and the scale scalar if any."""
-    return 2 * channels + int(bool(scale))
+def standardize_values(channels: int, *, scale=None) -> int:
+    """Inline values: the mean and std vectors, and the scale scalar if there is one."""
+    return 2 * channels + int(scale is not None)
 
 
 def standardize_arrays() -> int:
@@ -198,7 +202,9 @@ METADATA = validate_metadata({
     "standardize": BlockMetadata(
         name="standardize", layout_in="R", layout_out="R", locality=Locality.POINTWISE,
         policy=ROUND_EACH_OP, embedded_constants=standardize_values, asset_arrays=standardize_arrays,
-        status="Fixed — offline only: 6 bands with scale 1e-4; 3 bands without scale; clip_footprints=False",
-        evidence=("docs/evidence/raster-standardize-offline.json",),
-        validated=NOT_LIVE),
+        status="Ready — 6 bands with scale 1e-4; 3 bands without scale",
+        evidence=("docs/evidence/raster-standardize-offline.json", "docs/evidence/live-fixtures/20261030T152829Z-standardize.json"),
+        validated=Validated(({"channels": (6,), "scale": (1e-4,), "clip_footprints": (False,)},
+                             {"channels": (3,), "scale": (None,), "clip_footprints": (False,)}),
+                            sources=(StandardizeConstants,))),
 })

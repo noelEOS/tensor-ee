@@ -105,14 +105,14 @@ their own.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
-| R → R | 22 | 1 | 23 |
+| R → R | 23 | 0 | 23 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
 | W → W | 23 | 33 | 56 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **51** | **37** | **88** |
+| **All** | **52** | **36** | **88** |
 
 ### Raster-layout (R) blocks
 
@@ -137,7 +137,7 @@ their own.
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/parity.json](history/cnn/results/parity.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 | [`batch_norm`](../tensor_ee/blocks/raster/normalization.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/raster-batch-norm-offline.json](evidence/raster-batch-norm-offline.json); [evidence/live-fixtures/20261029T070703Z-batch_norm.json](evidence/live-fixtures/20261029T070703Z-batch_norm.json) |
-| [`standardize`](../tensor_ee/blocks/raster/normalization.py) | R → R | pointwise | `round_each_op` | no | Fixed — offline only: 6 bands with scale 1e-4; 3 bands without scale; clip_footprints=False | [evidence/raster-standardize-offline.json](evidence/raster-standardize-offline.json) |
+| [`standardize`](../tensor_ee/blocks/raster/normalization.py) | R → R | pointwise | `round_each_op` | no | Ready — 6 bands with scale 1e-4; 3 bands without scale | [evidence/raster-standardize-offline.json](evidence/raster-standardize-offline.json); [evidence/live-fixtures/20261030T152829Z-standardize.json](evidence/live-fixtures/20261030T152829Z-standardize.json) |
 | [`segmentation_outputs`](../tensor_ee/blocks/raster/outputs.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`binary_threshold`](../tensor_ee/blocks/raster/outputs.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json) |
 | [`pool2d`](../tensor_ee/blocks/raster/pooling.py) | R → R | k×k, radius 3 | `float32_operands` | no | Ready — aligned avg/max k = 2, 3, 4; max 3×3 stride 1 or 2, padding 1; avg 3×3 stride 1 padding 1, both divisor rules | [evidence/live-fixtures/20261013T065257Z-p02.json](evidence/live-fixtures/20261013T065257Z-p02.json); [evidence/p02-raster-offline.json](evidence/p02-raster-offline.json); [cnn/results/parity.json](history/cnn/results/parity.json); [evidence/t05-primary.json](evidence/t05-primary.json); [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
@@ -245,7 +245,7 @@ Each block's `validated` record, the status in machine-readable form: 88 records
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | {dim 1} | — |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | any accepted call | — |
 | [`batch_norm`](../tensor_ee/blocks/raster/normalization.py) | R → R | {clip_footprints False; eps 1e-05} | `BatchNormConstants` |
-| [`standardize`](../tensor_ee/blocks/raster/normalization.py) | R → R | none live | — |
+| [`standardize`](../tensor_ee/blocks/raster/normalization.py) | R → R | {channels 6; clip_footprints False; scale 0.0001} ∪ {channels 3; clip_footprints False; scale None} | `StandardizeConstants` |
 | [`segmentation_outputs`](../tensor_ee/blocks/raster/outputs.py) | R → R | any accepted call | — |
 | [`binary_threshold`](../tensor_ee/blocks/raster/outputs.py) | R → R | any accepted call | — |
 | [`pool2d`](../tensor_ee/blocks/raster/pooling.py) | R → R | {kernel 2; padding 0; reducer 'mean' or 'max'; stride 2} ∪ {kernel 3; padding 0; reducer 'mean' or 'max'; stride 3} ∪ {kernel 4; padding 0; reducer 'mean' or 'max'; stride 4} ∪ {kernel 3; padding 1; reducer 'max'; stride 1 or 2} ∪ {count_include_pad True or False; kernel 3; padding 1; reducer 'mean'; stride 1} | `PoolConfig` |

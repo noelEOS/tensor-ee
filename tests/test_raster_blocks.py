@@ -371,8 +371,7 @@ EXPECTED = {   # block -> (locality, radius, status)
         "Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2"),
     "bilinear_upsample": (M.Locality.KERNEL, 1, "Ready — factors 2, 3, 4 (align_corners=False), 2, 4 (align_corners=True)"),
     "batch_norm": (M.Locality.POINTWISE, None, "Ready"),
-    "standardize": (M.Locality.POINTWISE, None,
-                    "Fixed — offline only: 6 bands with scale 1e-4; 3 bands without scale; clip_footprints=False"),
+    "standardize": (M.Locality.POINTWISE, None, "Ready — 6 bands with scale 1e-4; 3 bands without scale"),
     "conv2d": (M.Locality.KERNEL, 3, "Ready"),
     # P02: radius 3, the aligned 4 x 4 pool's offset k - 1 (tests/test_p02_raster_settings.py).
     "pool2d": (M.Locality.KERNEL, 3, "Ready — aligned avg/max k = 2, 3, 4; max 3×3 stride 1 or 2, padding 1; "
@@ -463,7 +462,7 @@ def test_metadata_costs():
             assert metadata.embedded_constants() == metadata.asset_arrays() == 0
     assert NM.METADATA["batch_norm"].embedded_constants(3) == 12
     assert NM.METADATA["batch_norm"].asset_arrays() == 0
-    assert NM.METADATA["standardize"].embedded_constants(6, scale=True) == 13
+    assert NM.METADATA["standardize"].embedded_constants(6, scale=1e-4) == 13
     assert NM.METADATA["standardize"].asset_arrays() == 0
     assert RS.METADATA["bilinear_upsample"].embedded_constants(5, 7, 2) == 72
     assert RS.METADATA["bilinear_upsample"].asset_arrays() == 0

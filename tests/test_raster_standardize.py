@@ -6,6 +6,7 @@
   fixtures' graphs equal the mirror bit for bit, and the mirror equals the source recipe
   (NumPy float32 ``x * 1e-4``, then torchvision's ``sub_(mean).div_(std)``) bit for bit.
 - Unsupported forms are refused before any image is built.
+- Validated live at both fixtures' settings; the record names exactly those.
 """
 import importlib.util
 from pathlib import Path
@@ -54,12 +55,16 @@ def test_the_selection_and_the_metadata():
     assert selections()["standardize"] == FIXTURES
     entry = N.METADATA["standardize"]
     assert (entry.layout_in, entry.layout_out, entry.locality, entry.radius) == ("R", "R", M.Locality.POINTWISE, None)
-    assert entry.policy == ROUND_EACH_OP and entry.validated == M.NOT_LIVE and not entry.chip_edge_dependent
-    assert entry.status.startswith(M.OFFLINE_ONLY)
-    assert entry.embedded_constants(6, scale=True) == 13 and entry.embedded_constants(3) == 6
+    assert entry.policy == ROUND_EACH_OP and not entry.chip_edge_dependent
+    assert entry.status == "Ready — 6 bands with scale 1e-4; 3 bands without scale" and "docs/evidence/live-fixtures/20261030T152829Z-standardize.json" in entry.evidence
+    assert entry.embedded_constants(6, scale=1e-4) == 13 and entry.embedded_constants(3) == 6
     assert entry.asset_arrays() == 0
+    assert not M.check_settings(entry, {"channels": 6, "scale": 1e-4}).outside
+    assert not M.check_settings(entry, {"channels": 3, "scale": None}).outside
+    assert M.check_settings(entry, {"channels": 6, "scale": None}).outside       # not run together
+    assert M.check_settings(entry, {"channels": 4, "scale": 1e-4}).outside
     for fixture_id in FIXTURES:
-        assert registry()[fixture_id].history.startswith("New block")
+        assert registry()[fixture_id].history.startswith("docs/evidence/live-fixtures/20261030T152829Z-standardize.json")
 
 
 def test_each_operation_is_rounded_and_constants_pair_by_position(offline_ee):

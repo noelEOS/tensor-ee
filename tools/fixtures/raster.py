@@ -790,8 +790,8 @@ def _standardize_fixtures(cost) -> list[Fixture]:
         mirror=MirrorSpec(_standardize_mirror(spec), True, "reference.raster_standardize.standardize"),
         requests=1,
         constants=lambda data, spec=spec: {"standardize": _metadata("standardize").embedded_constants(
-            len(spec.bands), scale=spec.scale is not None)},
-        history="New block (input standardization): not yet run live.",
+            len(spec.bands), scale=spec.scale)},
+        history="docs/evidence/live-fixtures/20261030T152829Z-standardize.json (passed; Earth Engine equal to the mirror)",
         accepts=(StandardizeConstants, standardize),
         notes=("Prithvi Sen1Floods11's input statistics on raw digital numbers 0 .. 16383, a zero "
                "row standing for replaced nodata." if spec.scale is not None else

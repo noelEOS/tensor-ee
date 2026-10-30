@@ -102,8 +102,8 @@ Input preparation for models trained on scaled, normalized imagery uses
 `tensor_ee.blocks.raster.standardize`: per band `(x * scale - mean) / std`, each
 operation rounded to float32 (`round_each_op`), so it reproduces a float32 pipeline
 such as `x * 1e-4` followed by torchvision's `normalize` bit for bit. Zero-fill missing
-pixels first (`from_image` does). It is not called by `compile_model`, and has offline
-evidence only.
+pixels first (`from_image` does). It is not called by `compile_model`. Validated live
+with six bands at scale 1e-4 and three bands without a scale.
 
 Local convolution coefficients at or above +2⁶³ or below −2⁶³ use parsed EE
 numbers inside the existing array constructor, avoiding observed integral-literal
