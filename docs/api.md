@@ -374,6 +374,19 @@ EECU-seconds and 35 minutes ([record](evidence/prithvi_sen1floods11-trained-live
 `plan` measures every export request offline first. The input is synthetic:
 this checks the trained arithmetic, not flood-mapping accuracy.
 
+`--cuts` exports fewer boundaries, so one stage covers several blocks;
+`--start` and `--source-namespace` begin a run from another run's saved
+boundary, and `identity` compares each saved image with another run's.
+Request size does not bound the merge: Earth Engine refused stages of 4, 6
+and 12 encoder blocks ("Encoded object too large") at 0.54 to 1.36 MB, while
+2 blocks and the merged decoder ran. With
+`--cuts patch,block1,block3,block5,block7,block9,block11,upsample56,logits`
+the crop runs in 16 exports instead of 33 and 751 batch EECU-seconds instead
+of 925, every saved image equal to the 19-stage run's, and the same logits
+([record](evidence/prithvi_sen1floods11-fewer-stages-live.json)). Its wall
+time, 35 minutes, did not fall: two stages waited 8 to 9 minutes in the batch
+queue.
+
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with
 independently checked NumPy spatial transports. Default tests compare every

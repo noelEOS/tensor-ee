@@ -110,24 +110,54 @@ def cut_proposal(config=PRITHVI, *, limits=None):
     }
 
 
-def stage_rasters(ee, coefficients, *, config=PRITHVI, namespace="projects/example/assets/prithvi"):
+def stage_cuts(cuts=None, *, config=PRITHVI, start="input"):
+    """The validated saved boundaries a staged run exports, after ``start``.
+
+    ``None`` means every boundary after ``start``: one stage per boundary, as in
+    ``measured_cuts``. Otherwise the cuts must name boundaries after ``start`` in
+    strictly increasing model order; a list need not end at the logits.
+    """
+    names = stage_names(config)
+    if start not in names or start == names[-1]:
+        raise ValueError(f"start must name a boundary before {names[-1]!r}: {start!r}")
+    if cuts is None:
+        return names[names.index(start) + 1:]
+    cuts = tuple(cuts)
+    unknown = [cut for cut in cuts if cut not in names]
+    if not cuts or unknown:
+        raise ValueError(f"cuts must name saved boundaries {names[1:]}: {unknown or 'none given'}")
+    order = [names.index(start)] + [names.index(cut) for cut in cuts]
+    if any(later <= earlier for earlier, later in zip(order, order[1:])):
+        raise ValueError(f"cuts must follow {start!r} in strictly increasing model order: {cuts}")
+    return cuts
+
+
+def stage_rasters(ee, coefficients, *, config=PRITHVI, namespace="projects/example/assets/prithvi",
+                  cuts=None, start="input", source_namespace=None):
     """Each explicit stage's exported images, built from the previous stage's saved assets.
 
-    Yields ``(stage, [(name, raster), ...])`` in model order. The patch setup, each encoder
-    block and the final norm export a spatial and a class image (``<stage>_spatial``,
-    ``<stage>_class``); each upsampling and the logits export one. Stage inputs are read
-    from ``<namespace>_<name>`` (the crop itself from ``<namespace>_input``), so a stage can
-    be built only once its predecessor's assets exist. Builds expressions only.
+    Yields ``(stage, [(name, raster), ...])`` in model order, one stage per cut of
+    ``stage_cuts(cuts, start=start)``; by default one per saved boundary. A stage computes
+    every boundary between the previous cut and its own in one expression, and exports
+    only its own: encoder boundaries (patch, blocks, norm) as a spatial and a class image
+    (``<stage>_spatial``, ``<stage>_class``), each upsampling and the logits as one. The
+    two images of an encoder stage are separate exports, so each recomputes the whole
+    stage. Stage inputs are read from ``<namespace>_<name>``; the first stage reads
+    ``start``'s from ``<source_namespace>_<name>`` instead when one is given (the crop
+    itself is ``_input``), so a stage can be built only once its predecessor's assets
+    exist. Builds expressions only.
     """
-    previous = "input"
+    cuts = stage_cuts(cuts, config=config, start=start)
+    previous = start
+    prefix = namespace if source_namespace is None else source_namespace
 
     def saved(name, grid, channels, window):
-        image = saved_image(ee, namespace + "_" + name, band_names(channels), grid)
+        image = saved_image(ee, prefix + "_" + name, band_names(channels), grid)
         return boundary_windows(ee, image, grid, channels, window=window)
 
-    for stage in stage_names(config)[1:]:
+    for stage in cuts:
         if previous == "input":
-            image = saved_image(ee, namespace + "_input", BANDS, INPUT_GRID)
+            image = saved_image(ee, prefix + "_input", BANDS, INPUT_GRID)
             incoming = Raster(image, BANDS, INPUT_GRID)
         elif previous == "patch" or previous.startswith("block") or previous == "norm":
             incoming = (
@@ -149,6 +179,7 @@ def stage_rasters(ee, coefficients, *, config=PRITHVI, namespace="projects/examp
             images.append((stage + suffix, raster))
         yield stage, images
         previous = stage
+        prefix = namespace
 
 
 def measured_cuts(ee, parameters, *, config=PRITHVI,
