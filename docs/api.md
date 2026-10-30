@@ -400,8 +400,16 @@ input asset), then one export places them side by side. Every region export sets
 `compare` checks each crop against the plain-torch reference on that crop alone
 and reports the largest absolute error per crop and on the seam ring, the pixels
 next to an interior crop edge; `identity --crop I,J` compares crop (I, J) with a
-single-crop run. A region of 2 × 2 crops plans 20 exports in 11 sequential
-stages; it has not been run live.
+single-crop run. A region of 2 × 2 crops with the 2-block cut list ran live in
+20 exports in 11 sequential stages, with the trained weights and synthetic
+input. Crop (0, 0) was bit-identical to the single-crop run at all 16 saved
+images, and every crop's logits match the plain-torch reference within
+6.11e-06, 0 argmax flips, 2.50e-06 on the seam ring
+([record](evidence/prithvi_sen1floods11-region-live.json)). Its stages took 54
+minutes for the 4 crops, 13 minutes a crop, against 35 for one crop alone, and
+3,154 batch EECU-seconds, against 751. The encoder stages cost about twice one
+crop's EECU; the logits stage cost about six times, and took 30 of the 54
+minutes.
 
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with
