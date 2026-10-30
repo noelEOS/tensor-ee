@@ -27,6 +27,13 @@ rounding, so ``group_product`` accepts both ``double_round_once`` and
 
 The research ``window_taps`` method (nine [N, Cin] x [Cin, Cout] products summed in
 double, with per-tap constants) was removed when the research code was archived; the im2col product is the only form.
+``conv3x3_window`` takes a keyword-only ``crop`` (default ``None``, today's graph): with
+``crop=k`` every k x k block of windows is an independent crop with its own zero padding
+(``tensor_ee.layouts.window.halo``), so a grid of crops gives each crop's convolution as if
+it ran alone, PyTorch's padding at every crop edge. It adds masks only, no arithmetic or
+cast. Validated live at window 7 with crop 2 (a 2 x 2 grid of crops) and crop 32 (two
+224 x 224 crops side by side, the Prithvi head's setting): Earth Engine equal to the NumPy
+mirror in every value. Other crops and windows are not validated.
 Kernel 3, window 7 and 4 groups are the defaults. The 3 x 3 kernel is the window
 convolution's identity, not a setting: other kernels are refused. ``conv3x3_window`` is
 validated at windows 5, 7, 8 and 12. ``group_product`` is validated at 1, 2, 4 and 8
@@ -191,16 +198,19 @@ def _check_kernel(c: Conv3x3Constants) -> None:
 
 
 def conv3x3_window(ops, x, c: Conv3x3Constants, coarse, *, window: int = WINDOW,
-                   policy: str = DOUBLE_ROUND_ONCE):
+                   policy: str = DOUBLE_ROUND_ONCE, crop: int | None = None):
     """Window layout [w^2, Cin] on the window grid `coarse` -> [w^2, Cout] (zero padding at
     the raster edge, exactly PyTorch's). Constants built for another row count than
     ``window ** 2`` are refused, and so are constants for another kernel than 3 x 3, the
-    block's identity. Validated at windows 5, 7, 8 and 12."""
+    block's identity. Validated at windows 5, 7, 8 and 12. ``crop=k``: zero padding at
+    the edge of every k x k block of windows as well, validated at crops 2 and 32 at
+    window 7 (a ``crop`` that is not a positive integer dividing the window grid is
+    refused)."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     _check_kernel(c)
     check_rows(c, WindowLayout(window))
     ee = ops.ee
-    halo3 = halo(ee, x, coarse, c.cin, window=window)
+    halo3 = halo(ee, x, coarse, c.cin, window=window, crop=crop)
     return _finish(ops, ops.matmul_double(im2col(ee, halo3, c.cin, c.k, window=window), c.weight_t), c)
 
 
@@ -301,13 +311,17 @@ METADATA = validate_metadata({
     "conv3x3_window": BlockMetadata(
         name="conv3x3_window", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=1,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=conv3x3_values, asset_arrays=conv3x3_arrays,
-        status="Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12",
+        status="Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; crops of 2 and 32 windows at window 7",
         evidence=("docs/history/building-blocks-2026-10-11.md#33-convolution", "docs/history/upernet/notes/milestone7_findings.md",
                   "docs/evidence/p01-offline.json",
                   "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json",
-                  "docs/evidence/live-fixtures/20261013T115558Z-p04.json"),   # decoder-setting validation live record
+                  "docs/evidence/live-fixtures/20261013T115558Z-p04.json",   # decoder-setting validation live record
+                  "docs/evidence/window-conv3x3-crop-offline.json", "docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json"),
         # The 3 x 3 kernel is the block's identity (k, refused otherwise); stride 1 is its only stride.
-        validated=Validated(({"k": (KERNEL,), "window": (5, 7, 8, 12)},), sources=(Conv3x3Constants,))),
+        # crop None: the whole raster is one padding domain; crops 2 and 32 ran live at window 7.
+        validated=Validated(({"k": (KERNEL,), "window": (5, 7, 8, 12), "crop": (None,)},
+                             {"k": (KERNEL,), "window": (7,), "crop": (2, 32)}),
+                            sources=(Conv3x3Constants,))),
     "group_product": BlockMetadata(
         name="group_product", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=1,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=group_product_values, asset_arrays=group_product_arrays,

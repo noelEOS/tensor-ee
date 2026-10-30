@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "5e40cb56d19a18fa13e6d73cedea72ac03161996",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 2,
+      "requests": 4,
+      "values": 43700,
+      "payload_bytes": 174800,
+      "request_bytes": 380458,
+      "max_values": 15680,
+      "max_request_bytes": 112063,
+      "max_bands": 10,
+      "embedded_constants": 1020,
+      "inline_values": 13936,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/conv3x3_window/k3-w7-crop2",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "k": 3,
+          "window": 7,
+          "crop": 2
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            28,
+            28
+          ],
+          "crops": [
+            2,
+            2
+          ],
+          "in": 4,
+          "out": 4,
+          "bias": true
+        },
+        "seed": 17,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "torch.nn.functional.conv2d(padding=1) on each 14 x 14 crop alone, random weights",
+        "mirror": {
+          "source": "reference.conv_crop.conv3x3_crops: reference.upernet.ee_mirror_decoder.conv3x3 (window_im2col) on each crop alone",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (region inference): not yet run live.",
+        "calibration": false,
+        "notes": "A 2 x 2 grid of crops of 2 x 2 windows: every window touches a crop seam, the raster border or both, and the centre is a corner of four crops. Exact: as k3-w7, each crop alone (K = 36); the seam zeros are the raster-border zeros."
+      },
+      "inputs_sha256": "0e7099df17d2bbd163b6bfc231ee9549228c428741778a10668228ceee112b9d",
+      "weights_sha256": "460c100618f8259f05a55052c4bbd710c1b9dbab25896514a1584066142a83ec",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 7840,
+          "payload_bytes": 31360,
+          "request_bytes": 106852,
+          "graph_sha256": "d5da7413a4a97cbafe3054b9e53c3610217f0ed3fc2a87d0effef4edc9bf1b2e",
+          "graph_bytes": 106624,
+          "embedded_constants": 340,
+          "inline_values": 3136
+        }
+      ],
+      "errors": [],
+      "seconds": 0.023,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 7,
+              "col": 6,
+              "channel": 1,
+              "actual": -1.2046786546707153,
+              "expected": -1.2046782970428467
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/conv3x3_window/k3-w7-crop32",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "k": 3,
+          "window": 7,
+          "crop": 32
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            224,
+            448
+          ],
+          "crops": [
+            1,
+            2
+          ],
+          "seed": [
+            30,
+            30
+          ],
+          "readout": [
+            56,
+            56
+          ],
+          "in": 4,
+          "out": 4,
+          "bias": true
+        },
+        "seed": 18,
+        "tolerance": 0.0001,
+        "requests": 3,
+        "reference": "torch.nn.functional.conv2d(padding=1) on each 224 x 224 crop alone, random weights",
+        "mirror": {
+          "source": "reference.conv_crop.conv3x3_crops: reference.upernet.ee_mirror_decoder.conv3x3 (window_im2col) on each crop alone",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting (region inference): not yet run live.",
+        "calibration": false,
+        "notes": "The Prithvi head's setting: two 224 x 224 crops side by side at window 7 (32 x 32 windows each). The input repeats a 30 x 30 seed (periodic inline raster), so the crops differ. Two 56 x 56 readouts straddle the seam at the top and bottom raster edges; the seed is echoed."
+      },
+      "inputs_sha256": "590313e03b3184bd3dc4bcb9527a3c6277fc54d59e6c088d0306193e5965c021",
+      "weights_sha256": "6e7daed3bbe2c9c89bd5ad7577b103a8c4a7759e38e077bc71e5d578863a6d0c",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 1960.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "seam_top",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 15680,
+          "payload_bytes": 62720,
+          "request_bytes": 112044,
+          "graph_sha256": "e8d98590b9e0ffcb2e56fef9c5f62852a785ddc594c3a47b40b0c216006656e6",
+          "graph_bytes": 111809,
+          "embedded_constants": 340,
+          "inline_values": 3600
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 1960.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": -1680.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "seam_bottom",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 15680,
+          "payload_bytes": 62720,
+          "request_bytes": 112063,
+          "graph_sha256": "c61d27c5ba028419162b2675bd44e0aea97d97499e2c96caf13c9ce65136e93a",
+          "graph_bytes": 111824,
+          "embedded_constants": 340,
+          "inline_values": 3600
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 30,
+              "height": 30
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 30,
+          "height": 30,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 4500,
+          "payload_bytes": 18000,
+          "request_bytes": 49499,
+          "graph_sha256": "121677fe71cca25e8a4d51ec71d0190a8da1cbca665f714392fac7b13d057830",
+          "graph_bytes": 49271,
+          "embedded_constants": 0,
+          "inline_values": 3600
+        }
+      ],
+      "errors": [],
+      "seconds": 0.066,
+      "outputs": {
+        "seam_top": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 8,
+              "col": 13,
+              "channel": 1,
+              "actual": -1.3660551309585571,
+              "expected": -1.3660547733306885
+            }
+          }
+        },
+        "seam_bottom": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 3.5762786865234375e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 9,
+              "channel": 1,
+              "actual": -0.7446959018707275,
+              "expected": -0.7446962594985962
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

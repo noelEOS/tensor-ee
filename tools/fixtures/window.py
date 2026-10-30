@@ -589,6 +589,109 @@ def _conv_mirror(data: FixtureData) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# conv3x3_window with crop: a grid of crops, each zero-padded at its own edges
+# ---------------------------------------------------------------------------
+CROP_SEED_SIDE = 30
+"""The periodic seed of the crop-32 input: 224 is not a multiple of 30, so the two crops
+differ and every seam window reads values that differ from zero."""
+
+CROP_READ = 8
+"""Windows per side of each crop-32 readout (the window lane's request side)."""
+
+
+def _crop_data(seed: int, *, side: int) -> FixtureData:
+    """``side``: the input's token side (a full grid), or the periodic seed's."""
+    return FixtureData(
+        inputs={"x": dyadic(seed, "x", (side, side, CONV_IN))},
+        weights={"weight": dyadic(seed, "weight", (CONV_OUT, CONV_IN, 3, 3), scale=0.25),
+                 "bias": dyadic(seed, "bias", (CONV_OUT,), scale=0.125)})
+
+
+def _crop_reads(window: int, crop: int, cols: int) -> dict:
+    """{name: (top token, left token)} of the crop-32 readouts: CROP_READ x CROP_READ
+    windows centred on the vertical seam of a 1 x 2 grid of crops, at the top and bottom
+    raster edges."""
+    half = CROP_READ // 2 * window
+    seam = crop * window
+    bottom = crop * window - CROP_READ * window
+    return {"seam_top": (0, seam - half), "seam_bottom": (bottom, seam - half)}
+
+
+def _crop_input(data: FixtureData, rows: int, cols: int) -> np.ndarray:
+    """The periodic input of the crop-32 fixture: ``seed[i mod s, j mod s]``."""
+    x = data.inputs["x"]
+    s = x.shape[0]
+    return np.tile(x, (-(-rows // s), -(-cols // s), 1))[:rows, :cols]
+
+
+def _crop_build(ee, data: FixtureData, *, crop: int, crops: tuple, window: int = WINDOW,
+                periodic: bool = False) -> list:
+    from tensor_ee.blocks.window.conv import Conv3x3Constants, conv3x3_window
+    from tensor_ee.core.grid import FeatureGrid, TokenGrid
+    from tensor_ee.core.ops import WindowOps
+
+    ops = WindowOps(ee)
+    tokens = _tokens(crops[0] * crop, crops[1] * crop, window)
+    dense = _dense(ee, tokens, data.inputs["x"], periodic=periodic)
+    x = _windows(ee, tokens, dense, CONV_IN, window)
+    c = Conv3x3Constants(ops, data.weights["weight"], data.weights["bias"], rows=_layout(window), k=3)
+    y = conv3x3_window(ops, x, c, tokens.coarse(window), window=window, policy=DRO, crop=crop)
+    if not periodic:
+        return [_read("out", ee, tokens, y, CONV_OUT, window), _echo(dense, tokens, CONV_IN)]
+    from tensor_ee.layouts.window import to_dense
+
+    out = to_dense(ee, tokens, y, CONV_OUT, window=window)
+    side = CROP_READ * window
+    readouts = [Readout(name, out, CONV_OUT, FeatureGrid(tokens.crs, left * tokens.scale, -top * tokens.scale,
+                                                         tokens.scale, side, side).pixel_grid())
+                for name, (top, left) in _crop_reads(window, crop, crops[1]).items()]
+    seed = TokenGrid(CROP_SEED_SIDE, CROP_SEED_SIDE)
+    return readouts + [_echo(dense, seed, CONV_IN)]
+
+
+def _crop_outputs(full: np.ndarray, *, crop: int, crops: tuple, window: int, periodic: bool) -> dict:
+    if not periodic:
+        return {"out": full}
+    side = CROP_READ * window
+    return {name: np.ascontiguousarray(full[top:top + side, left:left + side])
+            for name, (top, left) in _crop_reads(window, crop, crops[1]).items()}
+
+
+def _crop_full_input(data: FixtureData, *, crop: int, crops: tuple, window: int, periodic: bool):
+    if not periodic:
+        return data.inputs["x"]
+    return _crop_input(data, crops[0] * crop * window, crops[1] * crop * window)
+
+
+def _crop_reference(data: FixtureData, *, crop: int, crops: tuple, window: int = WINDOW,
+                    periodic: bool = False) -> dict:
+    """torch.nn.functional.conv2d(padding=1) on each crop alone, the crops put back in place."""
+    import torch
+    import torch.nn.functional as F
+
+    x = _crop_full_input(data, crop=crop, crops=crops, window=window, periodic=periodic)
+    side = crop * window
+    out = np.empty(x.shape[:2] + (CONV_OUT,), np.float32)
+    with torch.no_grad():
+        for y in range(0, x.shape[0], side):
+            for x0 in range(0, x.shape[1], side):
+                out[y:y + side, x0:x0 + side] = hwc(F.conv2d(
+                    nchw(x[y:y + side, x0:x0 + side]), torch.from_numpy(data.weights["weight"]),
+                    torch.from_numpy(data.weights["bias"]), padding=1))
+    return _crop_outputs(out, crop=crop, crops=crops, window=window, periodic=periodic)
+
+
+def _crop_mirror(data: FixtureData, *, crop: int, crops: tuple, window: int = WINDOW,
+                 periodic: bool = False) -> dict:
+    from reference.conv_crop import conv3x3_crops
+
+    x = _crop_full_input(data, crop=crop, crops=crops, window=window, periodic=periodic)
+    out = conv3x3_crops(x, data.weights["weight"], data.weights["bias"], crop * window)
+    return {name: as_float32(value, name) for name, value in
+            _crop_outputs(out, crop=crop, crops=crops, window=window, periodic=periodic).items()}
+
+
+# ---------------------------------------------------------------------------
 # group_product: 4 input-channel groups, summed in double and rounded once (grouped_double)
 # ---------------------------------------------------------------------------
 GROUPS, GROUP_CHANNELS, GROUP_OUT = 4, 2, 4
@@ -1068,8 +1171,55 @@ P01_REGRESSION = ("window/relative_position_bias/w7", "window/attention/w7-s3", 
 single window at window 7."""
 
 
+def _crop() -> list[Fixture]:
+    """``conv3x3_window`` with ``crop``: crop 2 on a 2 x 2 grid of crops, and the Prithvi head's crop 32."""
+    from tensor_ee.blocks.window import conv as WC
+
+    layout = _layout()
+    constants = lambda data: {"conv3x3_window": _metadata("conv3x3_window").embedded_constants(  # noqa: E731
+        CONV_IN, CONV_OUT, k=3, bias=True, layout=layout)}
+    mirror_source = ("reference.conv_crop.conv3x3_crops: reference.upernet.ee_mirror_decoder.conv3x3 "
+                     "(window_im2col) on each crop alone")
+    small = {"crop": 2, "crops": (2, 2)}
+    large = {"crop": 32, "crops": (1, 2), "periodic": True}
+    side = CROP_READ * WINDOW
+    return [
+        Fixture(
+            id="window/conv3x3_window/k3-w7-crop2", lane=LANE, block="conv3x3_window",
+            settings={"k": 3, "window": WINDOW, "crop": 2}, policy=DRO,
+            shapes={"tokens": [28, 28], "crops": [2, 2], "in": CONV_IN, "out": CONV_OUT, "bias": True},
+            seed=17, data=partial(_crop_data, side=4 * WINDOW), build=partial(_crop_build, **small),
+            reference=partial(_crop_reference, **small),
+            reference_source="torch.nn.functional.conv2d(padding=1) on each 14 x 14 crop alone, random weights",
+            mirror=MirrorSpec(partial(_crop_mirror, **small), True, mirror_source),
+            requests=1, constants=constants,
+            history="docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json (passed; Earth Engine equal to the mirror)",
+            accepts=(WC.Conv3x3Constants, WC.conv3x3_window),
+            notes="A 2 x 2 grid of crops of 2 x 2 windows: every window touches a crop seam, the raster "
+                  "border or both, and the centre is a corner of four crops. Exact: as k3-w7, each crop "
+                  "alone (K = 36); the seam zeros are the raster-border zeros."),
+        Fixture(
+            id="window/conv3x3_window/k3-w7-crop32", lane=LANE, block="conv3x3_window",
+            settings={"k": 3, "window": WINDOW, "crop": 32}, policy=DRO,
+            shapes={"tokens": [224, 448], "crops": [1, 2], "seed": [CROP_SEED_SIDE, CROP_SEED_SIDE],
+                    "readout": [side, side], "in": CONV_IN, "out": CONV_OUT, "bias": True},
+            seed=18, data=partial(_crop_data, side=CROP_SEED_SIDE), build=partial(_crop_build, **large),
+            reference=partial(_crop_reference, **large),
+            reference_source="torch.nn.functional.conv2d(padding=1) on each 224 x 224 crop alone, random weights",
+            mirror=MirrorSpec(partial(_crop_mirror, **large), True, mirror_source),
+            requests=3, constants=constants,
+            history="docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json (passed; Earth Engine equal to the mirror)",
+            accepts=(WC.Conv3x3Constants, WC.conv3x3_window),
+            notes=f"The Prithvi head's setting: two 224 x 224 crops side by side at window 7 (32 x 32 "
+                  f"windows each). The input repeats a {CROP_SEED_SIDE} x {CROP_SEED_SIDE} seed (periodic "
+                  f"inline raster), so the crops differ. Two {side} x {side} readouts straddle the seam at "
+                  "the top and bottom raster edges; the seed is echoed."),
+    ]
+
+
 def fixtures() -> list[Fixture]:
-    return _calibration() + [_p01_single(WINDOW)] + [f for w in P01_WINDOWS for f in _p01_window(w)]
+    return (_calibration() + [_p01_single(WINDOW)] + [f for w in P01_WINDOWS for f in _p01_window(w)]
+            + _crop())
 
 
 def _p01a() -> tuple[str, ...]:
@@ -1086,6 +1236,7 @@ def _p01() -> tuple[str, ...]:
     return _p01a() + _p01b()
 
 
-SELECTIONS = {"p01": _p01, "p01a": _p01a, "p01b": _p01b}
+SELECTIONS = {"p01": _p01, "p01a": _p01a, "p01b": _p01b,
+              "conv3x3_crop": lambda: tuple(f.id for f in _crop())}
 """Named selections of this lane (``tools.fixtures.select``): name -> a callable returning the
 fixture ids. A run sends its fixtures in registry order."""

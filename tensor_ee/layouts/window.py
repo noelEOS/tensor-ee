@@ -21,16 +21,23 @@ Window, ring and kernel arguments default to today's values (7, 1, 3). Through t
 window blocks, windows 5, 7, 8 and 12 are validated with ring 1 and kernel 3;
 other values are not. Through the patch embedding, ``stride_samples`` is validated at
 patches 2, 4 and 8.
+
+``neighbours`` and ``halo`` take a keyword-only ``crop`` (default ``None``: the whole raster is
+one zero-padding domain, today's graph). ``crop=k`` makes every k x k block of windows an
+independent crop: a neighbour window in another crop reads as zeros, exactly as outside the
+raster, so a grid of crops gives each crop's halo as if it ran alone. Masks only; validated
+through ``conv3x3_window`` at window 7 with crops 2 and 32.
 """
 
 from __future__ import annotations
 
 import numpy as np
 
+from ..core.errors import reject
 from ..core.grid import TokenGrid
 from ..core.ops import image_reshape
 from ..core.tensor import WINDOW, band_names
-from .shift import domain_mask, materialize, translate
+from .shift import domain_mask, materialize, projection, translate
 
 RING = 1
 """Default halo ring width in tokens (3 x 3 kernels); the only one validated."""
@@ -153,18 +160,54 @@ def zero_outside(ee, x, coarse: TokenGrid, channels: int, *, window: int = WINDO
     return materialize(ee, inside.unmask(zeros(ee, window * window, channels), False), coarse)
 
 
-def neighbours(ee, x, coarse: TokenGrid, channels: int, *, window: int = WINDOW) -> dict:
-    """{(dy, dx): [w, w, C] window at (I + dy, J + dx)}, zeros outside the raster."""
+def check_crop(crop, coarse: TokenGrid):
+    """``crop`` is None or a positive integer number of windows dividing both extents of the
+    window grid ``coarse``; anything else is refused (client-side; the graph is unchanged)."""
+    if crop is None:
+        return None
+    if isinstance(crop, bool) or not isinstance(crop, (int, np.integer)) or crop < 1:
+        reject(f"crop must be None or a positive number of windows; received {crop!r}")
+    if coarse.height % crop or coarse.width % crop:
+        reject(f"crop {crop} does not divide the {coarse.height} x {coarse.width} window grid")
+    return int(crop)
+
+
+def same_crop(ee, coarse: TokenGrid, crop: int, dx: int, dy: int):
+    """1 where window (I + dy, J + dx) is in the crop of window (I, J): crops of crop x crop
+    windows from the grid origin. A mask only."""
+    coords = ee.Image.pixelCoordinates(projection(ee, coarse)).floor()
+    inside = None
+    for axis, step in (("x", dx), ("y", dy)):
+        if step:
+            edge = crop - 1 if step > 0 else 0
+            term = coords.select(axis).mod(crop).neq(edge)
+            inside = term if inside is None else inside.And(term)
+    return inside
+
+
+def neighbours(ee, x, coarse: TokenGrid, channels: int, *, window: int = WINDOW,
+               crop: int | None = None) -> dict:
+    """{(dy, dx): [w, w, C] window at (I + dy, J + dx)}, zeros outside the raster, and with
+    ``crop`` also zeros where the neighbour is in another crop of crop x crop windows."""
+    crop = check_crop(crop, coarse)
     base = reshape(ee, zero_outside(ee, x, coarse, channels, window=window),
                    [window, window, channels])
-    return {(dy, dx): base if dy == dx == 0 else translate(ee, base, coarse, dx, dy)
-            for dy in (-1, 0, 1) for dx in (-1, 0, 1)}
+    n = {(dy, dx): base if dy == dx == 0 else translate(ee, base, coarse, dx, dy)
+         for dy in (-1, 0, 1) for dx in (-1, 0, 1)}
+    if crop is None:
+        return n
+    empty = zeros(ee, window, window, channels)
+    return {(dy, dx): image if dy == dx == 0 else
+            image.updateMask(same_crop(ee, coarse, crop, dx, dy)).unmask(empty, False)
+            for (dy, dx), image in n.items()}
 
 
-def halo(ee, x, coarse: TokenGrid, channels: int, *, window: int = WINDOW, ring: int = RING):
+def halo(ee, x, coarse: TokenGrid, channels: int, *, window: int = WINDOW, ring: int = RING,
+         crop: int | None = None):
     """[w + 2r, w + 2r, C] per window: the window and its r-token ring (zeros outside
-    the raster). Ring 1 is validated at windows 5, 7, 8 and 12."""
-    n = neighbours(ee, x, coarse, channels, window=window)
+    the raster, and outside the window's crop when ``crop`` is given). Ring 1 is validated
+    at windows 5, 7, 8 and 12; ``crop`` at 2 and 32 at window 7."""
+    n = neighbours(ee, x, coarse, channels, window=window, crop=crop)
     last, first = (window - ring, window), (0, ring)
 
     def part(key, rows, cols):

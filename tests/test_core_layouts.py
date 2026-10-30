@@ -128,8 +128,8 @@ def test_defaults_equal_todays_values():
     assert _defaults(W.from_dense) == {"window": 7}
     assert _defaults(W.to_dense) == {"window": 7}
     assert _defaults(W.zero_outside) == {"window": 7}
-    assert _defaults(W.neighbours) == {"window": 7}
-    assert _defaults(W.halo) == {"window": 7, "ring": 1}
+    assert _defaults(W.neighbours) == {"window": 7, "crop": None}       # crop: one padding domain
+    assert _defaults(W.halo) == {"window": 7, "ring": 1, "crop": None}
     assert _defaults(W.taps) == {"k": 3, "window": 7}
     assert _defaults(W.im2col) == {"k": 3, "window": 7}
     assert _defaults(W.stride_samples) == {"materialize": True}
