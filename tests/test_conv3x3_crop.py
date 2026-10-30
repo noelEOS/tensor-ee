@@ -6,7 +6,8 @@
   halo with ``crop`` is each crop's own zero-padded neighbourhood (PyTorch's ``F.unfold`` on
   each crop alone), and both crop fixtures' graphs equal their mirror bit for bit and
   PyTorch within the tolerance.
-- The record names only ``crop=None``: ``crop=k`` is offline only.
+- The record names ``crop=None`` at every validated window, and crops 2 and 32 at window 7,
+  which ran live.
 """
 from __future__ import annotations
 
@@ -60,7 +61,7 @@ def test_the_selection_names_the_two_crop_fixtures():
     for fixture_id in CROP_FIXTURES:
         fixture = registry()[fixture_id]
         assert fixture.block == "conv3x3_window" and fixture.settings["crop"] in (2, 32)
-        assert "not yet run live" in fixture.history
+        assert fixture.history.startswith("docs/evidence/live-fixtures/") and "passed" in fixture.history
 
 
 def test_the_default_builds_todays_graph_and_a_crop_adds_masks_only(offline_ee):
@@ -168,12 +169,16 @@ def test_without_crop_the_seams_would_read_the_neighbouring_crop(fixture_id):
     assert all(np.abs(joint[name] - per_crop[name]).max() > 1e-3 for name in per_crop)
 
 
-def test_the_record_names_only_the_default_crop():
+def test_the_record_names_the_live_crops_at_window_7():
     from tensor_ee.blocks.window.conv import METADATA
     from tensor_ee.core.metadata import check_settings
 
     entry = METADATA["conv3x3_window"]
-    assert {"crop": (None,)} .items() <= entry.validated.mappings[0].items()
-    assert not check_settings(entry, {"window": 7, "crop": None}).outside
-    assert set(check_settings(entry, {"window": 7, "crop": 32}).outside) == {"crop"}
-    assert entry.status == "Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12"
+    for window in (5, 7, 8, 12):
+        assert not check_settings(entry, {"window": window, "crop": None}).outside
+    for crop in (2, 32):
+        assert not check_settings(entry, {"window": 7, "crop": crop}).outside
+        assert check_settings(entry, {"window": 12, "crop": crop}).outside        # not validated together
+    assert check_settings(entry, {"window": 7, "crop": 4}).outside
+    assert entry.status == "Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; crops of 2 and 32 windows at window 7"
+    assert "docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json" in entry.evidence

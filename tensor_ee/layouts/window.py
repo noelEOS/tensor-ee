@@ -25,8 +25,8 @@ patches 2, 4 and 8.
 ``neighbours`` and ``halo`` take a keyword-only ``crop`` (default ``None``: the whole raster is
 one zero-padding domain, today's graph). ``crop=k`` makes every k x k block of windows an
 independent crop: a neighbour window in another crop reads as zeros, exactly as outside the
-raster, so a grid of crops gives each crop's halo as if it ran alone. Masks only; it has not
-been validated live.
+raster, so a grid of crops gives each crop's halo as if it ran alone. Masks only; validated
+through ``conv3x3_window`` at window 7 with crops 2 and 32.
 """
 
 from __future__ import annotations
@@ -206,7 +206,7 @@ def halo(ee, x, coarse: TokenGrid, channels: int, *, window: int = WINDOW, ring:
          crop: int | None = None):
     """[w + 2r, w + 2r, C] per window: the window and its r-token ring (zeros outside
     the raster, and outside the window's crop when ``crop`` is given). Ring 1 is validated
-    at windows 5, 7, 8 and 12; ``crop`` is not validated live."""
+    at windows 5, 7, 8 and 12; ``crop`` at 2 and 32 at window 7."""
     n = neighbours(ee, x, coarse, channels, window=window, crop=crop)
     last, first = (window - ring, window), (0, ring)
 

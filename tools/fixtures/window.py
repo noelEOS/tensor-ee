@@ -1172,7 +1172,7 @@ single window at window 7."""
 
 
 def _crop() -> list[Fixture]:
-    """``conv3x3_window`` with ``crop``: offline only; the live run is the maintainer's."""
+    """``conv3x3_window`` with ``crop``: crop 2 on a 2 x 2 grid of crops, and the Prithvi head's crop 32."""
     from tensor_ee.blocks.window import conv as WC
 
     layout = _layout()
@@ -1193,7 +1193,7 @@ def _crop() -> list[Fixture]:
             reference_source="torch.nn.functional.conv2d(padding=1) on each 14 x 14 crop alone, random weights",
             mirror=MirrorSpec(partial(_crop_mirror, **small), True, mirror_source),
             requests=1, constants=constants,
-            history="New setting (region inference): not yet run live.",
+            history="docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json (passed; Earth Engine equal to the mirror)",
             accepts=(WC.Conv3x3Constants, WC.conv3x3_window),
             notes="A 2 x 2 grid of crops of 2 x 2 windows: every window touches a crop seam, the raster "
                   "border or both, and the centre is a corner of four crops. Exact: as k3-w7, each crop "
@@ -1208,7 +1208,7 @@ def _crop() -> list[Fixture]:
             reference_source="torch.nn.functional.conv2d(padding=1) on each 224 x 224 crop alone, random weights",
             mirror=MirrorSpec(partial(_crop_mirror, **large), True, mirror_source),
             requests=3, constants=constants,
-            history="New setting (region inference): not yet run live.",
+            history="docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json (passed; Earth Engine equal to the mirror)",
             accepts=(WC.Conv3x3Constants, WC.conv3x3_window),
             notes=f"The Prithvi head's setting: two 224 x 224 crops side by side at window 7 (32 x 32 "
                   f"windows each). The input repeats a {CROP_SEED_SIDE} x {CROP_SEED_SIDE} seed (periodic "

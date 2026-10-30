@@ -161,7 +161,6 @@ NEVER_VARIED = {
     "raster/batch_norm": {"eps", "clip_footprints"},
     "window/shifted_window_mask": {"value"},
     "window/group_product": {"k"},
-    "window/conv3x3_window": {"crop"},     # None, one padding domain; crop = k is offline only
     "window/patch_merge": {"bias"},
     "window/window_matrix_resize": {"out_size", "row0", "col0"},
     "window/fuse_head": {"eps"},
