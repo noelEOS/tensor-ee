@@ -374,6 +374,14 @@ EECU-seconds and 35 minutes ([record](evidence/prithvi_sen1floods11-trained-live
 `plan` measures every export request offline first. The input is synthetic:
 this checks the trained arithmetic, not flood-mapping accuracy.
 
+`--cuts` exports fewer boundaries, so one stage covers several blocks:
+`--cuts patch,block3,block7,block11,upsample56,logits` makes 11 exports, the
+input and then 6 stages, the largest request 3.23 MB (the inline input crop; a merged 4-block
+stage is 0.54 MB). `--start` and `--source-namespace` begin a run from another
+run's saved boundary, and `identity` compares each saved image with another
+run's. Request size is measured offline; server memory and runtime of merged
+stages have not been measured live.
+
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with
 independently checked NumPy spatial transports. Default tests compare every
