@@ -364,6 +364,16 @@ was checked live: Earth Engine equals the NumPy mirror at every probed logit,
 within 2.64e-07 of PyTorch. This checks the composition, not trained weights
 or accuracy.
 
+The released Sen1Floods11 fine-tune also runs at full width in Earth Engine.
+`tools/prithvi_trained_run.py` serves its 97,602,818 values as 217 table assets
+and exports each saved boundary of `planning.stage_rasters` in turn, 34 exports
+in 19 stages, each stage reading only its predecessor's assets. On one synthetic
+crop all 50,176 pixels' logits match the plain-torch reference within
+4.11e-06 (target 1e-4), with 0 argmax disagreements; the run took 926 batch
+EECU-seconds and 35 minutes ([record](evidence/prithvi_sen1floods11-trained-live.json)).
+`plan` measures every export request offline first. The input is synthetic:
+this checks the trained arithmetic, not flood-mapping accuracy.
+
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with
 independently checked NumPy spatial transports. Default tests compare every
@@ -371,4 +381,4 @@ logit of a reduced-width 224 crop. A separate opt-in checks full width. The
 `prithvi_model` harness selection probes every fourth output pixel of the
 complete reduced-width graph with structured random coefficients. It is a
 composition check that can be planned and run independently of block validation.
-No whole-model live or accuracy claim is made. The new blocks have offline evidence only.
+No accuracy claim is made.
