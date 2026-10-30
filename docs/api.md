@@ -433,8 +433,17 @@ containing a crop (`discover`), exports the prepared crop as a run's input
 (`prepare`, then `run --source-namespace`), checks the fetched input against the
 block's mirror and the source recipe (`check-input`, after
 `compare --real-input`), and maps the predicted water against a hand label
-(`map`: IoU on that crop only). The scene is given as arguments. It has not
-been run live.
+(`map`: IoU on that crop only). The scene is given as arguments.
+
+It ran live on one 224 × 224 crop of a hand-labelled Sen1Floods11 chip from the
+event held out of the model's training: one L1C image, 21 requests, 16 stage
+exports in 30 minutes and 1,071 batch EECU-seconds. The prepared input is bit for
+bit the source recipe's (0 of 301,056 values differ); the logits match the
+plain-torch reference on it within 1.41e-05, with 0 argmax flips; and the
+predicted water has an IoU of 0.911 with the hand label (pixel accuracy 0.944)
+([record](evidence/prithvi_sen1floods11-real-imagery-live.json)). That is one
+crop and one forward pass, not an accuracy score: the model card's numbers come
+from slide inference over whole chips.
 
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with

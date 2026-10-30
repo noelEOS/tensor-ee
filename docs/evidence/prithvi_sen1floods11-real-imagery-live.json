@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "kind": "prithvi_sen1floods11_real_imagery_live",
+  "target": 0.0001,
+  "accuracy_claim": "one crop, a single forward pass, no slide inference; not comparable with whole-chip or slide-inference scores",
+  "scene": {
+    "collection": "COPERNICUS/S2_HARMONIZED (Sentinel-2 L1C)",
+    "description": "one 224 x 224 crop of a hand-labelled Sen1Floods11 chip from the event held out of the model's training, on the chip's own EPSG:4326 10 m grid; the image is that day's single granule containing the crop",
+    "identifiers": "the image, chip and grid are given to the tool as arguments and kept outside the repository",
+    "crs": "EPSG:4326",
+    "granule_cloudy_pixel_percentage": 3.8723
+  },
+  "preparation": {
+    "bands": [
+      "B2",
+      "B3",
+      "B4",
+      "B8A",
+      "B11",
+      "B12"
+    ],
+    "missing_pixels": "zero-filled",
+    "blocks": "from_image, then raster standardize (scale 1e-4, the configuration's per-band means and stds)",
+    "resampling_20m": "nearest neighbour",
+    "input_export": {
+      "request_bytes": 8439,
+      "status": "COMPLETED",
+      "batch_eecu_seconds": 0.487
+    }
+  },
+  "namespace": "projects/YOUR_EE_PROJECT/assets/prithvi_sen1floods11/real1",
+  "runner_revision": "323a6cd",
+  "cuts": [
+    "patch",
+    "block1",
+    "block3",
+    "block5",
+    "block7",
+    "block9",
+    "block11",
+    "upsample56",
+    "logits"
+  ],
+  "stages": [
+    {
+      "stage": "patch",
+      "exports": [
+        {
+          "name": "patch_spatial",
+          "request_bytes": 847398,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 14.576,
+          "wall_seconds": 31.5
+        },
+        {
+          "name": "patch_class",
+          "request_bytes": 14390,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 0.945,
+          "wall_seconds": 31.4
+        }
+      ]
+    },
+    {
+      "stage": "block1",
+      "exports": [
+        {
+          "name": "block1_spatial",
+          "request_bytes": 331368,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 41.44,
+          "wall_seconds": 157.1
+        },
+        {
+          "name": "block1_class",
+          "request_bytes": 331070,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 18.21,
+          "wall_seconds": 63.7
+        }
+      ]
+    },
+    {
+      "stage": "block3",
+      "exports": [
+        {
+          "name": "block3_spatial",
+          "request_bytes": 331020,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 31.701,
+          "wall_seconds": 127.3
+        },
+        {
+          "name": "block3_class",
+          "request_bytes": 330722,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 17.306,
+          "wall_seconds": 94.4
+        }
+      ]
+    },
+    {
+      "stage": "block5",
+      "exports": [
+        {
+          "name": "block5_spatial",
+          "request_bytes": 331051,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 27.15,
+          "wall_seconds": 278.7
+        },
+        {
+          "name": "block5_class",
+          "request_bytes": 330753,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 24.253,
+          "wall_seconds": 155.0
+        }
+      ]
+    },
+    {
+      "stage": "block7",
+      "exports": [
+        {
+          "name": "block7_spatial",
+          "request_bytes": 331401,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 33.201,
+          "wall_seconds": 126.4
+        },
+        {
+          "name": "block7_class",
+          "request_bytes": 331103,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 23.946,
+          "wall_seconds": 125.1
+        }
+      ]
+    },
+    {
+      "stage": "block9",
+      "exports": [
+        {
+          "name": "block9_spatial",
+          "request_bytes": 330989,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 35.951,
+          "wall_seconds": 125.4
+        },
+        {
+          "name": "block9_class",
+          "request_bytes": 330691,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 22.078,
+          "wall_seconds": 153.5
+        }
+      ]
+    },
+    {
+      "stage": "block11",
+      "exports": [
+        {
+          "name": "block11_spatial",
+          "request_bytes": 331458,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 28.169,
+          "wall_seconds": 187.0
+        },
+        {
+          "name": "block11_class",
+          "request_bytes": 331160,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 27.894,
+          "wall_seconds": 92.9
+        }
+      ]
+    },
+    {
+      "stage": "upsample56",
+      "exports": [
+        {
+          "name": "upsample56",
+          "request_bytes": 183480,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 15.766,
+          "wall_seconds": 121.6
+        }
+      ]
+    },
+    {
+      "stage": "logits",
+      "exports": [
+        {
+          "name": "logits",
+          "request_bytes": 120325,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 708.24,
+          "wall_seconds": 608.9
+        }
+      ]
+    }
+  ],
+  "execution": {
+    "stage_exports": 16,
+    "failed": 0,
+    "batch_eecu_seconds": 1070.8,
+    "wall_seconds": 1817,
+    "requests": {
+      "discover": 1,
+      "input_export": 1,
+      "stage_exports": 16,
+      "compare_fetches": 2,
+      "raw_band_fetch": 1,
+      "total": 21
+    }
+  },
+  "input_check": {
+    "mirror": {
+      "bit_equal": true,
+      "values_differing": 0,
+      "max_abs": 0.0
+    },
+    "source_recipe": {
+      "bit_equal": true,
+      "values_differing": 0,
+      "max_abs": 0.0
+    },
+    "zero_filled_per_band": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "qa60_opaque_fraction": 0.0,
+    "qa60_cirrus_fraction": 0.0,
+    "pixels": 50176
+  },
+  "result": {
+    "max_abs": 1.4126300811767578e-05,
+    "over_1e-4": 0,
+    "argmax_flips": 0,
+    "pixels": 50176,
+    "logit_range": [
+      -3.0734570026397705,
+      3.010497570037842
+    ]
+  },
+  "label_agreement": {
+    "crop": [
+      224,
+      224
+    ],
+    "predicted_water": 0.6086375956632653,
+    "label": {
+      "water_iou": 0.9111280875986758,
+      "accuracy": 0.9443558673469388,
+      "labeled_pixels": 50176,
+      "predicted_water": 0.6086375956632653,
+      "labeled_water": 0.5879504145408163
+    },
+    "claim": "one 224 x 224 crop, a single forward pass, no slide inference"
+  }
+}
