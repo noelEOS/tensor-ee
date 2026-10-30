@@ -82,7 +82,7 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
 # theirs, and row concatenation, window depth-to-space and class-token attention
 # theirs; no offline-only block remains.
 OFFLINE_ONLY_FIXED: set[str] = set()
-COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits"}
+COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat_rows/prithvi-region-2x2"}
 """Runnable composition checks excluded from block coverage and evidence counts."""
 
 SEGFORMER_G3_BLOCKS = {"depthwise_conv3x3_window"}
@@ -694,7 +694,7 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
 
 
 def test_composition_fixture_does_not_claim_block_coverage():
-    fixtures = select(["prithvi_model"])
+    fixtures = select(["prithvi_model", "prithvi_region"])
     assert {fixture.id for fixture in fixtures} == COMPOSITION_FIXTURES
     assert all(not fixture.calibration and fixture.parts == () for fixture in fixtures)
 

@@ -341,8 +341,13 @@ bilinear resize are evaluation identities.
 The input must already be finite float32 with every pixel valid, in the
 Raster's declared band order. The interface checks shape and band count;
 it cannot inspect remote values or establish mask completeness. Scaling and
-per-band normalization stay outside this model. Each call covers one complete
-independent crop; region and slide inference are outside this interface.
+per-band normalization stay outside this model. An input of 224 R × 224 C
+pixels is a region of R × C whole crops, anchored at its top-left pixel
+(`region_grid(R, C)`). Each crop is computed as if it ran alone: the decoder's
+3 × 3 convolution pads every crop edge with zeros (`conv3x3_window`'s `crop`,
+used only when there is more than one crop, so one crop builds the same graph as
+before). Slide inference, with overlapping crops and averaged logits, is
+outside this interface.
 
 `compose` supports explicit saved boundaries: spatial/class pairs after the
 patch setup, each encoder block and final norm, then a spatial feature after
@@ -387,6 +392,17 @@ of 925, every saved image equal to the 19-stage run's, and the same logits
 time, 35 minutes, did not fall: two stages waited 8 to 9 minutes in the batch
 queue.
 
+`--crops RxC` runs a region through the same stages, so the queue time is shared
+by its crops. Its input is assembled first: each crop's seeded input is exported
+on its own (`--input-seeds`; `--reuse-input` reads one crop from an existing
+input asset), then one export places them side by side. Every region export sets
+`shardSize` to one crop's extent on its grid (`--shard-crops K` for K × K).
+`compare` checks each crop against the plain-torch reference on that crop alone
+and reports the largest absolute error per crop and on the seam ring, the pixels
+next to an interior crop edge; `identity --crop I,J` compares crop (I, J) with a
+single-crop run. A region of 2 × 2 crops plans 20 exports in 11 sequential
+stages; it has not been run live.
+
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with
 independently checked NumPy spatial transports. Default tests compare every
@@ -394,4 +410,7 @@ logit of a reduced-width 224 crop. A separate opt-in checks full width. The
 `prithvi_model` harness selection probes every fourth output pixel of the
 complete reduced-width graph with structured random coefficients. It is a
 composition check that can be planned and run independently of block validation.
+The `prithvi_region` selection runs the same reduced model on 2 × 2 crops and
+compares each crop with PyTorch on that crop alone, probing both sides of every
+crop seam (3 requests; not yet run live).
 No accuracy claim is made.
