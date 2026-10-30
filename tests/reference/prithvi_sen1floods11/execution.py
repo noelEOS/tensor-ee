@@ -188,7 +188,9 @@ class Columns:
         return Image(out)
 
 
-def halo(ee, x, coarse, channels, *, window):
+def halo(ee, x, coarse, channels, *, window, crop=None):
+    if crop is not None:
+        raise NotImplementedError('the eager transport pads the whole crop; crop grids are not modelled')
     return Halo(x, coarse, channels, window)
 
 
