@@ -5,19 +5,30 @@ Run from the checkout with ``PYTHONPATH=.``. The weights are read from a complet
 Each stage of ``planning.stage_rasters`` is exported to ``<namespace>_<name>`` and read back by
 the next stage, so a run is a sequence of batch exports, resumable from ``<run-dir>/state.json``.
 
-    python tools/prithvi_trained_run.py plan --manifest M
+    python tools/prithvi_trained_run.py plan --manifest M [--cuts C1,C2,..] [--start S]
     python tools/prithvi_trained_run.py run --manifest M --run-dir D --project P --namespace N \\
-        [--until STAGE]
+        [--cuts C1,C2,..] [--start S] [--source-namespace SN] [--until STAGE]
     python tools/prithvi_trained_run.py compare --weights W.npz --run-dir D --project P
+    python tools/prithvi_trained_run.py identity --run-dir D --project P --reference-namespace R
+
+``--cuts`` names the saved boundaries the run exports (``planning.stage_cuts``); by default
+every boundary, one stage each. A stage computes everything since the previous cut in one
+expression, so fewer cuts mean fewer, longer stages. ``--start`` names the boundary the first
+stage reads, from ``<source-namespace>_<start>`` when given (another run's saved assets),
+otherwise from ``<namespace>_<start>``.
 
 ``plan`` measures every stage's export request with the manifest's real table expressions and
 makes no cloud call. ``run`` first exports the input crop (a seeded dyadic crop, exact in
-float32), then each stage in order, at most two exports at a time (a stage's spatial and class
-images), waiting for each stage before building the next. It never overwrites an asset.
-``compare`` fetches the input and the logits once each and compares the logits with the
-plain-torch reference on the fetched input, with the given ``.npz`` state, and writes the
-record to ``<run-dir>/compare.json``. The input is synthetic: this checks the arithmetic, not
-accuracy.
+float32) unless it reads its start from a source namespace or starts after the input, then
+each stage in order, at most two exports at a time (a stage's spatial and class images),
+waiting for each stage before building the next. It never overwrites an asset, and refuses to
+resume a run directory with other cuts, start or source. ``compare`` fetches the input (from
+the source namespace when the run has one) and the logits once each and compares the logits
+with the plain-torch reference on the fetched input, with the given ``.npz`` state, and writes
+the record to ``<run-dir>/compare.json``. The input is synthetic: this checks the arithmetic,
+not accuracy. ``identity`` compares each image the run saved with the same-named image of
+another run, one ``reduceRegion`` request per image, and writes the largest absolute
+difference and the compared pixel count to ``<run-dir>/identity.json``.
 """
 from __future__ import annotations
 
@@ -87,25 +98,41 @@ def _request_bytes(ee, task) -> int:
     return len(json.dumps(request, separators=(",", ":")).encode())
 
 
-def _stages(ee, manifest, namespace):
+def _stages(ee, manifest, namespace, layout):
     from tensor_ee.models.prithvi_sen1floods11.model import constants
     from tensor_ee.models.prithvi_sen1floods11.planning import stage_rasters
 
     coefficients = constants(ee, _parameters(ee, manifest))
-    return stage_rasters(ee, coefficients, namespace=namespace)
+    return stage_rasters(ee, coefficients, namespace=namespace, cuts=layout["cuts"],
+                         start=layout["start"], source_namespace=layout["source_namespace"])
 
 
-def plan(manifest) -> dict:
+def layout(cuts=None, start: str = "input", source_namespace: str | None = None) -> dict:
+    """The run's validated cut list, start boundary and source namespace, as state records them."""
+    from tensor_ee.models.prithvi_sen1floods11.planning import stage_cuts
+
+    return {"cuts": list(stage_cuts(cuts, start=start)), "start": start,
+            "source_namespace": source_namespace}
+
+
+def exports_input(run_layout: dict) -> bool:
+    """A run exports its own input crop unless it reads its start from elsewhere."""
+    return run_layout["start"] == "input" and run_layout["source_namespace"] is None
+
+
+def plan(manifest, run_layout: dict | None = None) -> dict:
     """Every stage's export request size with the real table expressions; no cloud call."""
     import ee
     from tools.live_fixtures import offline_earth_engine
 
+    run_layout = layout() if run_layout is None else run_layout
     namespace = "projects/example/assets/prithvi"
     with offline_earth_engine() as attempts:
         stages = [{"stage": "input", "exports": [
             {"name": "input", "request_bytes": _request_bytes(ee, _export(
-                ee, _input_raster(ee), namespace + "_input", "prithvi_input"))}]}]
-        for stage, images in _stages(ee, manifest, namespace):
+                ee, _input_raster(ee), namespace + "_input", "prithvi_input"))}]}
+            ] if exports_input(run_layout) else []
+        for stage, images in _stages(ee, manifest, namespace, run_layout):
             stages.append({"stage": stage, "exports": [
                 {"name": name, "request_bytes": _request_bytes(ee, _export(
                     ee, raster, namespace + "_" + name, "prithvi_" + name))}
@@ -113,7 +140,8 @@ def plan(manifest) -> dict:
         if attempts:
             raise AssertionError(f"refused cloud attempts: {attempts}")
     sizes = [export["request_bytes"] for stage in stages for export in stage["exports"]]
-    return {"stages": stages, "exports": len(sizes), "largest_request_bytes": max(sizes),
+    return {**run_layout, "stages": stages, "sequential_stages": len(stages),
+            "exports": len(sizes), "largest_request_bytes": max(sizes),
             "within_limit": max(sizes) <= STAGE_LIMIT_BYTES, "calls_to_earth_engine": 0}
 
 
@@ -152,15 +180,35 @@ def _wait(ee, records: list[dict], state: dict, path: Path, poll: float = 30) ->
         time.sleep(poll)
 
 
-def run(manifest, run_dir: Path, project: str, namespace: str, until: str | None) -> dict:
-    """Export the input, then each stage in order; resume what ``state.json`` records."""
-    ee = _initialize(project)
-    run_dir.mkdir(parents=True, exist_ok=True)
-    path = run_dir / "state.json"
+def _recorded_layout(state: dict) -> dict:
+    """The layout a state records; runs recorded before cuts existed used every boundary."""
+    return {"cuts": state.get("cuts", list(layout()["cuts"])), "start": state.get("start", "input"),
+            "source_namespace": state.get("source_namespace")}
+
+
+def _open_state(path: Path, namespace: str, run_layout: dict) -> dict:
+    """The run directory's state, new or resumed; a resume must match namespace and layout."""
     state = json.loads(path.read_text()) if path.exists() else {
-        "namespace": namespace, "input_seed": INPUT_SEED, "stages": {}}
+        "namespace": namespace, "input_seed": INPUT_SEED, **run_layout, "stages": {}}
     if state["namespace"] != namespace:
         raise ValueError("the run directory records another namespace")
+    if _recorded_layout(state) != run_layout:
+        raise ValueError(f"the run directory records another layout: {_recorded_layout(state)}")
+    return state
+
+
+def run(manifest, run_dir: Path, project: str, namespace: str, until: str | None,
+        run_layout: dict | None = None) -> dict:
+    """Export the input, then each stage in order; resume what ``state.json`` records."""
+    run_layout = layout() if run_layout is None else run_layout
+    if until not in (None, "input", *run_layout["cuts"]):
+        raise ValueError(f"--until must name one of the cuts {run_layout['cuts']}")
+    if until == "input" and not exports_input(run_layout):
+        raise ValueError("this run does not export its input")
+    run_dir.mkdir(parents=True, exist_ok=True)
+    path = run_dir / "state.json"
+    state = _open_state(path, namespace, run_layout)
+    ee = _initialize(project)
 
     def stage_exports(stage, images):
         done = state["stages"].get(stage)
@@ -185,10 +233,11 @@ def run(manifest, run_dir: Path, project: str, namespace: str, until: str | None
         print(time.strftime("%H:%M:%S"), stage, "completed",
               [r["task_status"].get("batch_eecu_usage_seconds") for r in records], flush=True)
 
-    stage_exports("input", [("input", _input_raster(ee))])
-    if until == "input":
-        return state
-    for stage, images in _stages(ee, manifest, namespace):
+    if exports_input(run_layout):
+        stage_exports("input", [("input", _input_raster(ee))])
+        if until == "input":
+            return state
+    for stage, images in _stages(ee, manifest, namespace, run_layout):
         stage_exports(stage, images)
         if stage == until:
             break
@@ -214,7 +263,8 @@ def compare(weights: Path, run_dir: Path, project: str) -> dict:
         raise ValueError("the logits stage has not completed")
     ee = _initialize(project)
     namespace = state["namespace"]
-    fetched_input = _fetch(ee, namespace + "_input", BANDS, INPUT_GRID)
+    source = state.get("source_namespace") or namespace
+    fetched_input = _fetch(ee, source + "_input", BANDS, INPUT_GRID)
     logits = _fetch(ee, namespace + "_logits", band_names(2), INPUT_GRID)
     with np.load(weights, allow_pickle=False) as f:
         parameters = {name: np.asarray(f[name], np.float32) for name in parameter_shapes()}
@@ -234,6 +284,67 @@ def compare(weights: Path, run_dir: Path, project: str) -> dict:
     return record
 
 
+def boundary(name: str, config=None):
+    """A saved image's bands and grid, from its name (``block3_class``, ``upsample56``, ..)."""
+    from tensor_ee.core.tensor import band_names
+    from tensor_ee.models.prithvi_sen1floods11.configuration import PRITHVI
+    from tensor_ee.models.prithvi_sen1floods11.model import BANDS, INPUT_GRID, TOKEN_GRID
+
+    config = PRITHVI if config is None else config
+    if name == "input":
+        return BANDS, INPUT_GRID
+    if name == "logits":
+        return tuple(band_names(2)), INPUT_GRID
+    if name.endswith("_spatial"):
+        return tuple(band_names(config.width)), TOKEN_GRID
+    if name.endswith("_class"):
+        return tuple(band_names(config.width)), TOKEN_GRID.coarse(14)
+    if name.startswith("upsample"):
+        return tuple(band_names(config.width)), INPUT_GRID.coarse(224 // int(name[8:]))
+    raise ValueError(f"not a saved image: {name!r}")
+
+
+def difference(ee, asset_id: str, reference_id: str, bands, grid):
+    """One request's expression: the largest |a - b| over all bands and pixels, and the count."""
+    a = ee.Image(asset_id).select(list(bands))
+    b = ee.Image(reference_id).select(list(bands))
+    largest = a.subtract(b).abs().reduce(ee.Reducer.max()).rename("difference")
+    return largest.reduceRegion(
+        reducer=ee.Reducer.max().combine(ee.Reducer.count(), sharedInputs=True),
+        geometry=grid.region(ee), crs=grid.crs, crsTransform=list(grid.transform),
+        maxPixels=grid.width * grid.height)
+
+
+def identity(run_dir: Path, project: str, reference_namespace: str) -> dict:
+    """Compare every image the run saved with the reference run's same-named image."""
+    state = json.loads((run_dir / "state.json").read_text())
+    records = [r for stage, rs in state["stages"].items() if stage != "input" for r in rs]
+    if not records or not all(r["status"] == "COMPLETED" for r in records):
+        raise ValueError("the run has no completed stages, or some have not completed")
+    ee = _initialize(project)
+    images = {}
+    for record in records:
+        bands, grid = boundary(record["name"])
+        reference_id = reference_namespace + "_" + record["name"]
+        result = difference(ee, record["asset_id"], reference_id, bands, grid).getInfo()
+        images[record["name"]] = {
+            "asset_id": record["asset_id"], "reference_id": reference_id,
+            "max_abs": result["difference_max"], "pixels": result["difference_count"],
+            "expected_pixels": grid.width * grid.height,
+        }
+    report = {"images": images, "identical": all(
+        image["max_abs"] == 0 and image["pixels"] == image["expected_pixels"]
+        for image in images.values())}
+    _save(run_dir / "identity.json", report)
+    return report
+
+
+def _layout_arguments(parser) -> None:
+    parser.add_argument("--cuts", type=lambda text: tuple(text.split(",")),
+                        help="comma-separated saved boundaries to export (default: every one)")
+    parser.add_argument("--start", default="input", help="the boundary the first stage reads")
+
+
 def main(argv=None) -> None:
     from tensor_ee.converter.request import RECURSION_LIMIT
 
@@ -243,22 +354,32 @@ def main(argv=None) -> None:
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("plan")
     p.add_argument("--manifest", type=Path, required=True)
+    _layout_arguments(p)
     r = sub.add_parser("run")
     for name in ("--manifest", "--run-dir"):
         r.add_argument(name, type=Path, required=True)
     r.add_argument("--project", required=True)
     r.add_argument("--namespace", required=True)
+    _layout_arguments(r)
+    r.add_argument("--source-namespace", help="read the start boundary from this run's assets")
     r.add_argument("--until")
     c = sub.add_parser("compare")
     for name in ("--weights", "--run-dir"):
         c.add_argument(name, type=Path, required=True)
     c.add_argument("--project", required=True)
+    i = sub.add_parser("identity")
+    i.add_argument("--run-dir", type=Path, required=True)
+    i.add_argument("--project", required=True)
+    i.add_argument("--reference-namespace", required=True)
     args = parser.parse_args(argv)
     if args.command == "plan":
-        result = plan(json.loads(args.manifest.read_text()))
+        result = plan(json.loads(args.manifest.read_text()), layout(args.cuts, args.start))
     elif args.command == "run":
         result = run(json.loads(args.manifest.read_text()), args.run_dir, args.project,
-                     args.namespace, args.until)
+                     args.namespace, args.until,
+                     layout(args.cuts, args.start, args.source_namespace))
+    elif args.command == "identity":
+        result = identity(args.run_dir, args.project, args.reference_namespace)
     else:
         result = compare(args.weights, args.run_dir, args.project)
     print(json.dumps(result, indent=1))

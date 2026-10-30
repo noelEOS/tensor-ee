@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "kind": "prithvi_sen1floods11_fewer_stages_live",
+  "target": 0.0001,
+  "accuracy_claim": false,
+  "reference_run": "docs/evidence/prithvi_sen1floods11-trained-live.json (19 stages, the same weights and input)",
+  "namespace": "projects/YOUR_EE_PROJECT/assets/prithvi_sen1floods11/trained_run2",
+  "runner_revision": "fc21fb9",
+  "probes": [
+    {
+      "probe": "E2",
+      "start": "patch",
+      "cuts": [
+        "block1"
+      ],
+      "encoder_blocks_merged": 2,
+      "exports": [
+        {
+          "stage": "block1",
+          "name": "block1_spatial",
+          "request_bytes": 331397,
+          "status": "COMPLETED",
+          "error_message": null,
+          "batch_eecu_seconds": 23.451,
+          "wall_seconds": 64.4
+        },
+        {
+          "stage": "block1",
+          "name": "block1_class",
+          "request_bytes": 331099,
+          "status": "COMPLETED",
+          "error_message": null,
+          "batch_eecu_seconds": 20.504,
+          "wall_seconds": 62.9
+        }
+      ],
+      "identical_to_19_stage_run": true
+    },
+    {
+      "probe": "E4",
+      "start": "patch",
+      "cuts": [
+        "block3"
+      ],
+      "encoder_blocks_merged": 4,
+      "exports": [
+        {
+          "stage": "block3",
+          "name": "block3_spatial",
+          "request_bytes": 537228,
+          "status": "FAILED",
+          "error_message": "Encoded object too large.",
+          "batch_eecu_seconds": null,
+          "wall_seconds": 157.9
+        },
+        {
+          "stage": "block3",
+          "name": "block3_class",
+          "request_bytes": 536672,
+          "status": "FAILED",
+          "error_message": "Encoded object too large.",
+          "batch_eecu_seconds": null,
+          "wall_seconds": null
+        }
+      ],
+      "identical_to_19_stage_run": null
+    },
+    {
+      "probe": "E6",
+      "start": "patch",
+      "cuts": [
+        "block5"
+      ],
+      "encoder_blocks_merged": 6,
+      "exports": [
+        {
+          "stage": "block5",
+          "name": "block5_spatial",
+          "request_bytes": 743030,
+          "status": "FAILED",
+          "error_message": "Encoded object too large.",
+          "batch_eecu_seconds": null,
+          "wall_seconds": 131.0
+        },
+        {
+          "stage": "block5",
+          "name": "block5_class",
+          "request_bytes": 742215,
+          "status": "FAILED",
+          "error_message": "Encoded object too large.",
+          "batch_eecu_seconds": null,
+          "wall_seconds": null
+        }
+      ],
+      "identical_to_19_stage_run": null
+    },
+    {
+      "probe": "E12",
+      "start": "patch",
+      "cuts": [
+        "block11"
+      ],
+      "encoder_blocks_merged": 12,
+      "exports": [
+        {
+          "stage": "block11",
+          "name": "block11_spatial",
+          "request_bytes": 1363782,
+          "status": "FAILED",
+          "error_message": "Encoded object too large.",
+          "batch_eecu_seconds": null,
+          "wall_seconds": 383.4
+        },
+        {
+          "stage": "block11",
+          "name": "block11_class",
+          "request_bytes": 1362187,
+          "status": "FAILED",
+          "error_message": "Encoded object too large.",
+          "batch_eecu_seconds": null,
+          "wall_seconds": null
+        }
+      ],
+      "identical_to_19_stage_run": null
+    },
+    {
+      "probe": "D1",
+      "start": "block11",
+      "cuts": [
+        "upsample56"
+      ],
+      "encoder_blocks_merged": null,
+      "exports": [
+        {
+          "stage": "upsample56",
+          "name": "upsample56",
+          "request_bytes": 183502,
+          "status": "COMPLETED",
+          "error_message": null,
+          "batch_eecu_seconds": 13.936,
+          "wall_seconds": 60.9
+        }
+      ],
+      "identical_to_19_stage_run": true
+    },
+    {
+      "probe": "D2",
+      "start": "upsample56",
+      "cuts": [
+        "logits"
+      ],
+      "encoder_blocks_merged": null,
+      "exports": [
+        {
+          "stage": "logits",
+          "name": "logits",
+          "request_bytes": 120347,
+          "status": "COMPLETED",
+          "error_message": null,
+          "batch_eecu_seconds": 482.689,
+          "wall_seconds": 702.9
+        }
+      ],
+      "identical_to_19_stage_run": true
+    }
+  ],
+  "finding": "Earth Engine refused merged encoder stages of 4, 6 and 12 blocks with 'Encoded object too large.' at request sizes of 0.54 to 1.36 MB; 2 blocks ran. Merged decoder stages ran. Every completed probe output equals the 19-stage run's (max abs 0).",
+  "acceptance": {
+    "cuts": [
+      "patch",
+      "block1",
+      "block3",
+      "block5",
+      "block7",
+      "block9",
+      "block11",
+      "upsample56",
+      "logits"
+    ],
+    "start": "input",
+    "input_from": "the 19-stage run's saved input",
+    "stages": [
+      {
+        "stage": "patch",
+        "name": "patch_spatial",
+        "request_bytes": 847412,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 22.436,
+        "wall_seconds": 123.6
+      },
+      {
+        "stage": "patch",
+        "name": "patch_class",
+        "request_bytes": 14397,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 0.82,
+        "wall_seconds": 31.2
+      },
+      {
+        "stage": "block1",
+        "name": "block1_spatial",
+        "request_bytes": 331389,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 26.807,
+        "wall_seconds": 192.6
+      },
+      {
+        "stage": "block1",
+        "name": "block1_class",
+        "request_bytes": 331091,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 19.416,
+        "wall_seconds": 96.9
+      },
+      {
+        "stage": "block3",
+        "name": "block3_spatial",
+        "request_bytes": 331041,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 26.934,
+        "wall_seconds": 528.5
+      },
+      {
+        "stage": "block3",
+        "name": "block3_class",
+        "request_bytes": 330743,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 23.93,
+        "wall_seconds": 191.2
+      },
+      {
+        "stage": "block5",
+        "name": "block5_spatial",
+        "request_bytes": 331072,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 25.914,
+        "wall_seconds": 159.1
+      },
+      {
+        "stage": "block5",
+        "name": "block5_class",
+        "request_bytes": 330774,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 30.847,
+        "wall_seconds": 156.3
+      },
+      {
+        "stage": "block7",
+        "name": "block7_spatial",
+        "request_bytes": 331422,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 27.093,
+        "wall_seconds": 128.5
+      },
+      {
+        "stage": "block7",
+        "name": "block7_class",
+        "request_bytes": 331124,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 27.74,
+        "wall_seconds": 156.7
+      },
+      {
+        "stage": "block9",
+        "name": "block9_spatial",
+        "request_bytes": 331010,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 24.012,
+        "wall_seconds": 501.5
+      },
+      {
+        "stage": "block9",
+        "name": "block9_class",
+        "request_bytes": 330712,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 21.568,
+        "wall_seconds": 129.4
+      },
+      {
+        "stage": "block11",
+        "name": "block11_spatial",
+        "request_bytes": 331479,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 24.249,
+        "wall_seconds": 98.8
+      },
+      {
+        "stage": "block11",
+        "name": "block11_class",
+        "request_bytes": 331181,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 20.303,
+        "wall_seconds": 65.3
+      },
+      {
+        "stage": "upsample56",
+        "name": "upsample56",
+        "request_bytes": 183494,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 15.67,
+        "wall_seconds": 60.9
+      },
+      {
+        "stage": "logits",
+        "name": "logits",
+        "request_bytes": 120339,
+        "status": "COMPLETED",
+        "error_message": null,
+        "batch_eecu_seconds": 413.433,
+        "wall_seconds": 246.5
+      }
+    ],
+    "exports": 16,
+    "failed": 0,
+    "batch_eecu_seconds": 751.172,
+    "wall_seconds": 2090,
+    "identical_to_19_stage_run": {
+      "images": 16,
+      "identical": true,
+      "max_abs": 0
+    },
+    "result": {
+      "input_equals_local": true,
+      "max_abs": 4.112720489501953e-06,
+      "over_1e-4": 0,
+      "argmax_flips": 0,
+      "pixels": 50176,
+      "logit_range": [
+        -2.9332406520843506,
+        2.9259214401245117
+      ]
+    }
+  },
+  "comparison_with_19_stage_run": {
+    "exports": "16 against 33 (the input excluded)",
+    "batch_eecu_seconds": "751 against 925 (the input excluded)",
+    "wall_seconds": "2,090 against 2,081 (the input excluded): no reduction; two merged stages waited 8 to 9 minutes in the batch queue with ordinary compute"
+  }
+}
