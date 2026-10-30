@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "47db654f29645feb2bffe029f37222e35592f5e9",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 1,
+      "requests": 3,
+      "values": 25984,
+      "payload_bytes": 103936,
+      "request_bytes": 3818567,
+      "max_values": 9408,
+      "max_request_bytes": 1869360,
+      "max_bands": 7,
+      "embedded_constants": 1859716,
+      "inline_values": 18432,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/concat_rows/prithvi-region-2x2",
+        "lane": "window",
+        "block": "concat_rows",
+        "parts": [],
+        "settings": {
+          "window": 14,
+          "rows": [
+            1,
+            196
+          ],
+          "channels": 8,
+          "width": 24,
+          "heads": 3,
+          "depth": 12,
+          "decoder": 16
+        },
+        "policy": "none",
+        "shapes": {
+          "input": [
+            448,
+            448,
+            6
+          ],
+          "crops": [
+            2,
+            2
+          ],
+          "logits": [
+            448,
+            448,
+            2
+          ],
+          "readout": [
+            56,
+            56,
+            2
+          ]
+        },
+        "seed": 8218,
+        "tolerance": 0.0001,
+        "requests": 3,
+        "reference": "plain torch source-order Prithvi reference on each 224 x 224 crop alone",
+        "mirror": {
+          "source": "tests/reference/prithvi_sen1floods11/execution.py (per-crop halo)",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "New region case: not yet run live.",
+        "calibration": false,
+        "notes": "Reduced-width region composition check, not individual-block evidence: the crop fixture's model on a 2 x 2 grid of crops, each compared with PyTorch on that crop alone. The global pixel code makes every crop's input different. Two stride-8 probe lattices read both sides of every crop seam (rows and columns 223 and 224) and the region border."
+      },
+      "inputs_sha256": "69bff2fe0e040f829fc3bae86b84b34e62e4551324d065c57b5686a684c30b7e",
+      "weights_sha256": "9e68455c13bdd4c52b6364ea57be9b629f9dcafad272eacd7e7a0543a7516dc2",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 8.0,
+              "shearX": 0,
+              "translateX": 3.5,
+              "shearY": 0,
+              "scaleY": -8.0,
+              "translateY": -3.5
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "logits_last",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 1869357,
+          "graph_sha256": "03042088592d0e81851114f4eca1ac4c97e3db0f557b97709905487327b5e864",
+          "graph_bytes": 1869126,
+          "embedded_constants": 929858,
+          "inline_values": 6144
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 8.0,
+              "shearX": 0,
+              "translateX": -3.5,
+              "shearY": 0,
+              "scaleY": -8.0,
+              "translateY": 3.5
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "logits_first",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 1869360,
+          "graph_sha256": "d0c5565dd74977d1a5367d22c3b950669b2b2f876e30019c9132e2af937f3633",
+          "graph_bytes": 1869129,
+          "embedded_constants": 929858,
+          "inline_values": 6144
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 32,
+              "height": 32
+            },
+            "affineTransform": {
+              "scaleX": 1.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -1.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 32,
+          "height": 32,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 6
+            }
+          ],
+          "bands": 7,
+          "values": 7168,
+          "payload_bytes": 28672,
+          "request_bytes": 79850,
+          "graph_sha256": "4692b03f27d3d184485b3c0031b08bc882913a90c5dc22fa7ad5e139d5de753a",
+          "graph_bytes": 79624,
+          "embedded_constants": 0,
+          "inline_values": 6144
+        }
+      ],
+      "errors": [],
+      "seconds": 0.268,
+      "outputs": {
+        "logits_last": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.080334186553955e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 47,
+              "col": 32,
+              "channel": 0,
+              "actual": -0.018632009625434875,
+              "expected": -0.01863308995962143
+            }
+          }
+        },
+        "logits_first": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.0766088962554932e-06,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 48,
+              "col": 33,
+              "channel": 0,
+              "actual": 0.048044104129076004,
+              "expected": 0.04804518073797226
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}
