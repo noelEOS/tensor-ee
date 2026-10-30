@@ -28,7 +28,7 @@ from ...layouts.boundaries import boundary_raster, boundary_windows, saved_image
 from ...converter.plan import Limits
 from ...converter.request import request_size
 from .configuration import PRITHVI, stage_names, parameter_shapes
-from .model import INPUT_GRID, TOKEN_GRID, BANDS, compose, constants
+from .model import BANDS, compose, constants, region_grid
 
 
 def constant_costs(config=PRITHVI):
@@ -133,7 +133,7 @@ def stage_cuts(cuts=None, *, config=PRITHVI, start="input"):
 
 
 def stage_rasters(ee, coefficients, *, config=PRITHVI, namespace="projects/example/assets/prithvi",
-                  cuts=None, start="input", source_namespace=None):
+                  cuts=None, start="input", source_namespace=None, crops=(1, 1)):
     """Each explicit stage's exported images, built from the previous stage's saved assets.
 
     Yields ``(stage, [(name, raster), ...])`` in model order, one stage per cut of
@@ -145,9 +145,13 @@ def stage_rasters(ee, coefficients, *, config=PRITHVI, namespace="projects/examp
     stage. Stage inputs are read from ``<namespace>_<name>``; the first stage reads
     ``start``'s from ``<source_namespace>_<name>`` instead when one is given (the crop
     itself is ``_input``), so a stage can be built only once its predecessor's assets
-    exist. Builds expressions only.
+    exist. ``crops`` = (rows, cols) runs a region of whole crops on ``region_grid``: the
+    same stages, each boundary on that grid; (1, 1) is the single crop. Builds expressions
+    only.
     """
     cuts = stage_cuts(cuts, config=config, start=start)
+    input_grid = region_grid(*crops)
+    token_grid = input_grid.coarse(16)
     previous = start
     prefix = namespace if source_namespace is None else source_namespace
 
@@ -157,16 +161,16 @@ def stage_rasters(ee, coefficients, *, config=PRITHVI, namespace="projects/examp
 
     for stage in cuts:
         if previous == "input":
-            image = saved_image(ee, prefix + "_input", BANDS, INPUT_GRID)
-            incoming = Raster(image, BANDS, INPUT_GRID)
+            image = saved_image(ee, prefix + "_input", BANDS, input_grid)
+            incoming = Raster(image, BANDS, input_grid)
         elif previous == "patch" or previous.startswith("block") or previous == "norm":
             incoming = (
-                saved(previous + "_spatial", TOKEN_GRID, config.width, 14),
-                saved(previous + "_class", TOKEN_GRID.coarse(14), config.width, 1),
+                saved(previous + "_spatial", token_grid, config.width, 14),
+                saved(previous + "_class", token_grid.coarse(14), config.width, 1),
             )
         else:
             side = int(previous[8:])
-            grid = INPUT_GRID.coarse(224 // side)
+            grid = input_grid.coarse(224 // side)
             incoming = saved(previous, grid, config.width, 7)
         output = compose(
             coefficients.backend, incoming, config, start=previous, stop=stage,

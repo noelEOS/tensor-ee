@@ -83,7 +83,7 @@ def _server_state(config):
     return state
 
 
-def test_asset_backed_model_graph_has_correct_geometry_and_refuses_region():
+def test_asset_backed_model_graph_has_correct_geometry_and_refuses_partial_crops():
     with offline_earth_engine() as attempts:
         c=constants(ee,_server_state(REDUCED),config=REDUCED)
         grid=Grid('EPSG:3857',(10,0,100,0,-10,200),224,224)
@@ -97,9 +97,12 @@ def test_asset_backed_model_graph_has_correct_geometry_and_refuses_region():
         assert outputs['logits'].grid==grid
         assert outputs['logits'].bands==('c0','c1')
         assert all(key in c.backend.linears for key in [('backbone.blocks.0.attn.qkv',196),('backbone.blocks.0.attn.qkv',1)])
-        small=Raster(raster.image,raster.bands,Grid(grid.crs,grid.transform,224,448))
-        with pytest.raises(ValueError,match='complete 224'):
-            forward(ee,small,c)
+        region=Raster(raster.image,raster.bands,Grid(grid.crs,grid.transform,448,224))
+        assert forward(ee,region,c)['logits'].grid==region.grid      # two crops side by side
+        for width,height in ((300,224),(224,200),(112,112)):
+            partial=Raster(raster.image,raster.bands,Grid(grid.crs,grid.transform,width,height))
+            with pytest.raises(ValueError,match='complete 224'):
+                forward(ee,partial,c)
     assert not attempts
 
 

@@ -1,8 +1,8 @@
-"""One Prithvi Sen1Floods11 crop, composed only from library operations.
+"""Prithvi Sen1Floods11 crops, composed only from library operations.
 
 The six-band input is already scaled and normalized. Every input pixel must be
 finite float32 and fully valid; this graph-only interface cannot verify remote
-values or masks, and does not fill missing pixels. Output is two 224x224 logits;
+values or masks, and does not fill missing pixels. Output is two logits per pixel;
 slide inference is outside this interface. Position values are supplied parameters,
 never regenerated here. Both the 196 spatial queries and class query attend to all
 197 keys through all encoder blocks. Encoder arrays use W14; after the first
@@ -16,8 +16,13 @@ https://github.com/huggingface/pytorch-image-models/blob/7096b52a613eefb4f6d8107
 The encoder uses post-product score scaling, exact GELU, LayerNorm epsilon 1e-5; neck epsilon 1e-6.
 Parameter names follow those sources and the MMSegmentation FCNHead hierarchy.
 
-Region inference is refused: each call covers one complete independent crop and
-keeps its final convolution's zero-padding separate from neighboring crops.
+A region is a grid of whole crops: an input of 224 R x 224 C pixels is R x C independent,
+non-overlapping 224 x 224 crops anchored at its top-left pixel (``region_grid``). Each crop
+is computed exactly as if it ran alone: the encoder's one W14 window and W1 class row per
+crop never mix crops, and the decoder's 3 x 3 convolution is zero-padded at every crop edge
+(``conv3x3_window``'s ``crop``, passed only when there is more than one crop, so a single
+crop builds the same graph as before). Overlapping crops and their blending (MMSeg's slide
+inference) are not part of this interface.
 """
 from __future__ import annotations
 
@@ -46,10 +51,29 @@ from ...blocks.window.upernet import head_dense
 from .configuration import PRITHVI, PrithviConfig, parameter_shapes, stage_names
 
 
-INPUT_GRID = TokenGrid(224, 224, scale=1.0)
+CROP = 224
+"""Pixels per crop side: the model's fixed input."""
+
+INPUT_GRID = TokenGrid(CROP, CROP, scale=1.0)
 TOKEN_GRID = INPUT_GRID.coarse(16)
 BANDS = tuple(f"b{index}" for index in range(6))
 COUNTER = "decode_head.convs.0.bn.num_batches_tracked"
+
+
+def region_grid(rows: int = 1, cols: int = 1) -> TokenGrid:
+    """The abstract input grid of ``rows`` x ``cols`` crops; (1, 1) is ``INPUT_GRID``."""
+    for name, value in (("rows", rows), ("cols", cols)):
+        if isinstance(value, bool) or not isinstance(value, numbers.Integral) or value < 1:
+            raise ValueError(f"{name} must be a positive integer number of crops")
+    return TokenGrid(CROP * int(rows), CROP * int(cols), scale=1.0)
+
+
+def crops_of(grid) -> tuple[int, int]:
+    """(rows, cols) of whole crops in a grid of 224 R x 224 C pixels; anything else is refused."""
+    height, width = grid.height, grid.width
+    if height < CROP or width < CROP or height % CROP or width % CROP:
+        raise ValueError(f"input must be complete 224 by 224 crops; received {height} x {width}")
+    return height // CROP, width // CROP
 
 
 def validate_parameters(parameters, config=PRITHVI):
@@ -254,22 +278,18 @@ class LibraryBackend:
         projection("decode_head.conv_seg", 49, (2, config.decoder))
 
     def patch(self, raster):
-        valid = (
-            isinstance(raster, Raster)
-            and (raster.grid.height, raster.grid.width) == (224, 224)
-            and len(raster.bands) == 6
-        )
-        if not valid:
-            raise ValueError("input must be a complete 224 by 224 six-band Raster")
+        if not isinstance(raster, Raster) or len(raster.bands) != 6:
+            raise ValueError("input must be a six-band Raster of complete 224 by 224 crops")
+        grid = region_grid(*crops_of(raster.grid))
         source = to_grid(raster.grid)
         image = raster.image.select(list(raster.bands)).rename(BANDS).reproject(source.projection())
-        image = image.changeProj(source.projection(), INPUT_GRID.projection(self.ee))
-        image = image.updateMask(INPUT_GRID.domain(self.ee))
+        image = image.changeProj(source.projection(), grid.projection(self.ee))
+        image = image.updateMask(grid.domain(self.ee))
         output = patch_embed(
-            self.ops, image, INPUT_GRID, self.patch_constants,
+            self.ops, image, grid, self.patch_constants,
             patch=16, bands=BANDS, window=14, norm=False,
         )["x"]
-        return WindowTensor(output, TOKEN_GRID, self.config.width, 14)
+        return WindowTensor(output, grid.coarse(16), self.config.width, 14)
 
     def position(self, spatial):
         output = add(spatial, spatial.like(self.position_spatial))
@@ -321,9 +341,11 @@ class LibraryBackend:
         return WindowTensor(output, grid, self.config.width, 7)
 
     def conv3x3(self, tensor, prefix):
+        # Each crop is its own zero-padding domain; one crop keeps the single-crop graph.
+        crop = {} if crops_of(tensor.grid) == (1, 1) else {"crop": CROP // tensor.window}
         output = conv3x3_window(
             self.ops, tensor.image, self.conv_constants,
-            tensor.grid.coarse(tensor.window), window=tensor.window,
+            tensor.grid.coarse(tensor.window), window=tensor.window, **crop,
         )
         return tensor.like(output, self.config.decoder)
 
@@ -359,7 +381,8 @@ def constants(ee, parameters, *, config=PRITHVI):
 
 
 def forward(ee, raster, coefficients: PrithviConstants, *, stop="logits"):
-    """Build one complete-crop graph, preserving its georeferenced output grid."""
+    """Build the graph of a crop or a grid of whole crops, preserving its georeferenced
+    output grid."""
     if coefficients.backend.ee is not ee:
         raise ValueError("constants and forward must use the same Earth Engine module")
     result = compose(coefficients.backend, raster, coefficients.config, stop=stop)
