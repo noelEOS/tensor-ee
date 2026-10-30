@@ -3,7 +3,7 @@
 - ``conv``: ``conv2d``, ``grouped_conv2d``;
 - ``pooling``: ``pool2d``;
 - ``resample``: ``nearest_upsample``, ``BilinearConstants``, ``bilinear_upsample``;
-- ``normalization``: ``BatchNormConstants``, ``batch_norm``;
+- ``normalization``: ``BatchNormConstants``, ``batch_norm``, ``StandardizeConstants``, ``standardize``;
 - ``merge``: ``concatenate``, ``residual_add``;
 - ``activations``: ``relu``, ``sigmoid``, ``leaky_relu``, ``silu``, ``gelu``, ``tanh``,
   ``relu6``, ``hardsigmoid``, ``hardswish``, ``eval_dropout``, ``common_score_mask``,
@@ -27,7 +27,7 @@ converter (``compiler``, ``semantics``, ...) or the models.
 from .conv import conv2d, grouped_conv2d
 from .pooling import pool2d
 from .resample import BilinearConstants, bilinear_upsample, nearest_upsample
-from .normalization import BatchNormConstants, batch_norm
+from .normalization import BatchNormConstants, StandardizeConstants, batch_norm, standardize
 from .merge import concatenate, residual_add
 from .activations import (common_score_mask, eval_dropout, gelu, hardsigmoid, hardswish, leaky_relu,
                           relu, relu6, sigmoid, silu, softmax, tanh)
@@ -36,7 +36,7 @@ from .outputs import SegmentationOutputs, binary_threshold, segmentation_outputs
 __all__ = ["conv2d", "pool2d", "nearest_upsample", "concatenate", "residual_add",
            "grouped_conv2d",
            "BilinearConstants", "bilinear_upsample",
-           "BatchNormConstants", "batch_norm",
+           "BatchNormConstants", "batch_norm", "StandardizeConstants", "standardize",
            "relu", "sigmoid", "leaky_relu", "silu", "gelu", "tanh", "relu6", "hardsigmoid",
            "hardswish", "eval_dropout", "common_score_mask", "softmax",
            "SegmentationOutputs", "segmentation_outputs", "binary_threshold"]

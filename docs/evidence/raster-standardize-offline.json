@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "c963d322cbdba5dc3097dc28a63abee6b569e29c",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 2,
+      "requests": 2,
+      "values": 1408,
+      "payload_bytes": 5632,
+      "request_bytes": 29056,
+      "max_values": 896,
+      "max_request_bytes": 16757,
+      "max_bands": 14,
+      "embedded_constants": 19,
+      "inline_values": 576,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "raster/standardize/s2-6band-scale1e-4",
+        "lane": "raster",
+        "block": "standardize",
+        "parts": [],
+        "settings": {
+          "scale": 0.0001,
+          "clip_footprints": false
+        },
+        "policy": "round_each_op",
+        "shapes": {
+          "input": [
+            8,
+            8,
+            6
+          ],
+          "output": [
+            8,
+            8,
+            6
+          ]
+        },
+        "seed": 61,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "NumPy float32 x * scale, then tensor.sub_(mean).div_(std) (torchvision.transforms.functional.normalize)",
+        "mirror": {
+          "source": "reference.raster_standardize.standardize",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New block (input standardization): not yet run live.",
+        "calibration": false,
+        "notes": "Prithvi Sen1Floods11's input statistics on raw digital numbers 0 .. 16383, a zero row standing for replaced nodata."
+      },
+      "inputs_sha256": "8bf2ce457f02e895e2c0c83ff3f9ae38f9404ac27a5ab26579e4ec40a4d57e84",
+      "weights_sha256": "10e59a1c2f0eae96bef242148b8ac68f4e718b15b90004be68a8e2c8a32ab696",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 6
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 6
+            }
+          ],
+          "bands": 14,
+          "values": 896,
+          "payload_bytes": 3584,
+          "request_bytes": 16757,
+          "graph_sha256": "d7a5914eb26d4b3e34ba972e92416cd9eaf0e0e3640bb06dfab238a9fb900b79",
+          "graph_bytes": 16529,
+          "embedded_constants": 13,
+          "inline_values": 384
+        }
+      ],
+      "errors": [],
+      "seconds": 0.016,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 384,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": -3.529405355453491,
+              "expected": -3.529405355453491
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/standardize/3band-noscale",
+        "lane": "raster",
+        "block": "standardize",
+        "parts": [],
+        "settings": {
+          "scale": null,
+          "clip_footprints": false
+        },
+        "policy": "round_each_op",
+        "shapes": {
+          "input": [
+            8,
+            8,
+            3
+          ],
+          "output": [
+            8,
+            8,
+            3
+          ]
+        },
+        "seed": 62,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "NumPy float32 x * scale, then tensor.sub_(mean).div_(std) (torchvision.transforms.functional.normalize)",
+        "mirror": {
+          "source": "reference.raster_standardize.standardize",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New block (input standardization): not yet run live.",
+        "calibration": false,
+        "notes": "Nonlexical band order z,a,m; negative and non-dyadic statistics; no scale."
+      },
+      "inputs_sha256": "aaf708a20ea4057cfd762a7bbfddb5085f28076055dd3ea2a695c641c132a905",
+      "weights_sha256": "2ba2abf6fd1ae69b9e558f61e387b5f7fa463bebfb5fe96dc570565c1748fd5c",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 3
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 3
+            }
+          ],
+          "bands": 8,
+          "values": 512,
+          "payload_bytes": 2048,
+          "request_bytes": 12299,
+          "graph_sha256": "f1236d8cb108f86a99fd6a8252106833884f756f6c32732aa6b6f83a83730e37",
+          "graph_bytes": 12071,
+          "embedded_constants": 6,
+          "inline_values": 192
+        }
+      ],
+      "errors": [],
+      "seconds": 0.015,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 192,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 6.714646339416504,
+              "expected": 6.714646339416504
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

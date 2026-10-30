@@ -45,7 +45,7 @@ shown alongside it uses a separately deployed model endpoint.
 | SMP SegFormer-B0 or UPerNet with timm's Swin encoder | [Attention converter](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md) | Conversion examples use random weights; the report identifies settings outside the validated records |
 
 You can also compose a model from the [block catalogue](https://github.com/noelEOS/tensor-ee/blob/main/docs/building-blocks.md).
-It has 87 blocks: 22 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
+It has 88 blocks: 23 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
 The [browser demo](https://github.com/noelEOS/tensor-ee/blob/main/DEMO.md) runs either trained model with a local checkpoint;
 its `--offline` mode previews the interface without one.
 

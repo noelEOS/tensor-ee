@@ -1,6 +1,6 @@
 """X02b: every block's validated settings are machine-readable, and agree with its prose status.
 
-- **The record.** All 87 blocks carry ``BlockMetadata.validated``. Its setting names are real
+- **The record.** All 88 blocks carry ``BlockMetadata.validated``. Its setting names are real
   parameters (by signature) of the block function, its cost functions or the record's
   ``sources``, or ``window`` for a block with a W layout.
 - **The prose, setting by setting** (``settings_problems``). Where a status phrase names a
@@ -97,7 +97,7 @@ name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``
 
 
 def test_every_block_has_a_record():
-    assert len(BLOCKS) == 87
+    assert len(BLOCKS) == 88
     for key, entry in ENTRIES.items():
         assert isinstance(entry.validated, Validated), key
         offline = key in OFFLINE_ONLY
@@ -159,6 +159,7 @@ NEVER_VARIED = {
     "window/layer_norm": {"eps"},
     "window/batch_norm": {"eps"},
     "raster/batch_norm": {"eps", "clip_footprints"},
+    "raster/standardize": {"clip_footprints"},
     "window/shifted_window_mask": {"value"},
     "window/group_product": {"k"},
     "window/patch_merge": {"bias"},
