@@ -137,7 +137,7 @@ their own.
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/parity.json](history/cnn/results/parity.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 | [`batch_norm`](../tensor_ee/blocks/raster/normalization.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/raster-batch-norm-offline.json](evidence/raster-batch-norm-offline.json); [evidence/live-fixtures/20261029T070703Z-batch_norm.json](evidence/live-fixtures/20261029T070703Z-batch_norm.json) |
-| [`standardize`](../tensor_ee/blocks/raster/normalization.py) | R → R | pointwise | `round_each_op` | no | Fixed — offline only: 6 bands with scale 1e-4; 3 bands without scale; clip_footprints=False | `docs/evidence/raster-standardize-offline.json` (unresolved) |
+| [`standardize`](../tensor_ee/blocks/raster/normalization.py) | R → R | pointwise | `round_each_op` | no | Fixed — offline only: 6 bands with scale 1e-4; 3 bands without scale; clip_footprints=False | [evidence/raster-standardize-offline.json](evidence/raster-standardize-offline.json) |
 | [`segmentation_outputs`](../tensor_ee/blocks/raster/outputs.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`binary_threshold`](../tensor_ee/blocks/raster/outputs.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json) |
 | [`pool2d`](../tensor_ee/blocks/raster/pooling.py) | R → R | k×k, radius 3 | `float32_operands` | no | Ready — aligned avg/max k = 2, 3, 4; max 3×3 stride 1 or 2, padding 1; avg 3×3 stride 1 padding 1, both divisor rules | [evidence/live-fixtures/20261013T065257Z-p02.json](evidence/live-fixtures/20261013T065257Z-p02.json); [evidence/p02-raster-offline.json](evidence/p02-raster-offline.json); [cnn/results/parity.json](history/cnn/results/parity.json); [evidence/t05-primary.json](evidence/t05-primary.json); [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
@@ -218,7 +218,7 @@ their own.
 
 ### Evidence notes
 
-- 1 evidence entries name no existing file: `docs/evidence/raster-standardize-offline.json`.
+- Every evidence path names an existing file.
 - Entries in *italics* are notes in the metadata, not files.
 - Locality and chip edge hold over every validated setting; *(by setting)* marks a property whose exact value at a call's settings is `per_setting`'s (`metadata_at`).
 
