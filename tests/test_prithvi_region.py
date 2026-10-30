@@ -278,6 +278,18 @@ def test_identity_of_a_crop_relabels_the_single_crop_reference():
     assert not attempts
 
 
+def test_identity_does_not_request_an_image_already_found_identical(tmp_path):
+    reference = "projects/x/assets/run2"
+    good = {"max_abs": 0, "pixels": 196, "expected_pixels": 196}
+    RUN._save(tmp_path / "identity.json", {"reference_namespace": reference, "crop": [0, 0], "images": {
+        "patch_spatial": good, "patch_class": {"max_abs": 0, "pixels": 0, "expected_pixels": 1},
+        "block1_spatial": {"max_abs": 1e-7, "pixels": 196, "expected_pixels": 196}}})
+    assert set(RUN.checked_images(tmp_path, reference, (0, 0))) == {"patch_spatial"}
+    assert RUN.checked_images(tmp_path, reference, (1, 1)) == {}
+    assert RUN.checked_images(tmp_path, "projects/x/assets/run1", (0, 0)) == {}
+    assert RUN.checked_images(tmp_path / "none", reference, (0, 0)) == {}
+
+
 def test_the_twin_fixture_reads_both_sides_of_every_seam():
     from tools.fixtures import registry
     from tools.fixtures.prithvi_model import REGION_LATTICES

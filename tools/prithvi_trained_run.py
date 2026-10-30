@@ -499,22 +499,41 @@ def identity_requests(ee, state: dict, reference_namespace: str, crop=None) -> l
     return requests
 
 
+def checked_images(run_dir: Path, reference_namespace: str, crop=None) -> dict:
+    """The images an earlier ``identity`` of the same reference and crop found identical,
+    from ``<run-dir>/identity.json``; a later call does not request them again."""
+    path = run_dir / "identity.json"
+    if not path.exists():
+        return {}
+    previous = json.loads(path.read_text())
+    same = (previous.get("reference_namespace") == reference_namespace
+            and previous.get("crop") == (None if crop is None else list(crop)))
+    return {name: image for name, image in previous["images"].items()
+            if same and image["max_abs"] == 0 and image["pixels"] == image["expected_pixels"]}
+
+
 def identity(run_dir: Path, project: str, reference_namespace: str, crop=None) -> dict:
     """Compare every image the run saved with the reference run's same-named image, or,
-    with ``crop``, crop (I, J) of it with a single-crop run's image."""
+    with ``crop``, crop (I, J) of it with a single-crop run's image. Images an earlier call
+    found identical are kept, not requested again (a run checked stage by stage)."""
     state = json.loads((run_dir / "state.json").read_text())
     _identity_records(state, crop)                        # refusals before any sign-in
+    images = checked_images(run_dir, reference_namespace, crop)
     ee = _initialize(project)
-    images = {}
+    requested = 0
     for name, asset_id, reference_id, expression, expected in identity_requests(
             ee, state, reference_namespace, crop):
+        if name in images:
+            continue
+        requested += 1
         result = expression.getInfo()
         images[name] = {
             "asset_id": asset_id, "reference_id": reference_id,
             "max_abs": result["difference_max"], "pixels": result["difference_count"],
             "expected_pixels": expected,
         }
-    report = {"crop": None if crop is None else list(crop), "images": images, "identical": all(
+    report = {"reference_namespace": reference_namespace, "crop": None if crop is None else list(crop),
+              "requested": requested, "images": images, "identical": all(
         image["max_abs"] == 0 and image["pixels"] == image["expected_pixels"]
         for image in images.values())}
     _save(run_dir / "identity.json", report)
