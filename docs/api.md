@@ -408,8 +408,12 @@ images, and every crop's logits match the plain-torch reference within
 ([record](evidence/prithvi_sen1floods11-region-live.json)). Its stages took 54
 minutes for the 4 crops, 13 minutes a crop, against 35 for one crop alone, and
 3,154 batch EECU-seconds, against 751. The encoder stages cost about twice one
-crop's EECU; the logits stage cost about six times, and took 30 of the 54
-minutes.
+crop's EECU. The logits stage took 30 of the 54 minutes and 2,463 EECU-seconds,
+but repeats of that stage cost 1,627 to 1,776 for the 4 crops and 413 to 673
+for one crop alone: it scales about linearly with the crops, and its cost varies
+by about a quarter between identical runs. One-crop shards finished it in 12
+minutes, one shard for the whole region in 19
+([probes](evidence/prithvi_sen1floods11-logits-probes-live.json)).
 
 The plain-torch reference uses native convolutions and all 197 attention rows.
 The numerical executor runs the actual library backend and arithmetic, with

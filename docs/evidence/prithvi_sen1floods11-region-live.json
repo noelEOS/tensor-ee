@@ -294,6 +294,6 @@
     "single_crop_model_stages_wall_seconds": 2090,
     "single_crop_batch_eecu_seconds": 751.2,
     "per_crop_wall_seconds": 803,
-    "note": "encoder stages: about 2 x the single crop's EECU for 4 crops, similar wall time; logits stage: 2,463 EECU-s and 30 minutes against 413 and 4 minutes, about 6 x for 4 crops, cause not investigated"
+    "note": "encoder stages: about 2 x the single crop's EECU for 4 crops, similar wall time; logits stage: 2,463 EECU-s and 30 minutes against 413 and 4 minutes in this run. Repeat runs of the same stages (prithvi_sen1floods11-logits-probes-live.json) cost 1,627 to 1,776 for 2 x 2 and 413 to 673 for one crop: the stage scales about linearly with the crop count, and this run's 6 x was mostly run-to-run variance."
   }
 }
