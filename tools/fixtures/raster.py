@@ -17,6 +17,11 @@ The calibration and ``p02`` fixtures compare with PyTorch alone (``mirror=None``
 nearest upsampling select or copy values, so there Earth Engine must equal PyTorch exactly;
 the recorded runs found 0.
 
+Standardization (``standardize``) is compared with the source recipe it reproduces: NumPy's
+float32 ``x * 1e-4`` then ``tensor.sub_(mean).div_(std)`` on a float32 torch tensor (what
+``torchvision.transforms.functional.normalize`` does); its mirror is
+``reference.raster_standardize``.
+
 BatchNorm reuses ``reference.upernet.ee_mirror_decoder.batch_norm``: its channel-last
 formula and double constant square root fit both layouts, with one final float32 rounding.
 
@@ -691,6 +696,109 @@ def _batch_norm_fixtures(cost) -> list[Fixture]:
     ) for affine in (True, False)]
 
 
+STANDARDIZE_MEANS = (0.14245495, 0.13921481, 0.12434631, 0.31420089, 0.20743526, 0.12046503)
+STANDARDIZE_STDS = (0.04036231, 0.04186983, 0.05267646, 0.0822221, 0.06834774, 0.05294205)
+"""Prithvi-EO-1.0 Sen1Floods11's per-band input statistics (B2, B3, B4, B8A, B11, B12), as its
+configuration states them: Python floats, which the source normalizes with as float32."""
+
+
+@dataclass(frozen=True)
+class _StandardizeSpec:
+    name: str
+    bands: tuple
+    scale: float | None
+    mean: tuple
+    std: tuple
+
+
+_STANDARDIZE = (
+    _StandardizeSpec("s2-6band-scale1e-4", ("B2", "B3", "B4", "B8A", "B11", "B12"), 1e-4,
+                     STANDARDIZE_MEANS, STANDARDIZE_STDS),
+    # Nonlexical bands, negative and non-dyadic statistics, no scale.
+    _StandardizeSpec("3band-noscale", ("z", "a", "m"), None, (0.3, -1.7, 12.5), (0.07, 2.9, 0.011)),
+)
+
+
+def _standardize_data(spec: _StandardizeSpec):
+    def data(seed: int) -> FixtureData:
+        if spec.scale is not None:
+            # Raw digital numbers: integers 0 .. 16383 (UInt16 reflectance x 10,000), with zeros
+            # (the source's nodata replacement) in the first row.
+            x = dyadic(seed, "x", (8, 8, len(spec.bands)), scale=8192.0, offset=8192.0, bits=14)
+            x[0, :, :] = 0
+        else:
+            x = dyadic(seed, "x", (8, 8, len(spec.bands)), scale=16.0)
+        return FixtureData(inputs={"x": x}, weights={"mean": np.array(spec.mean, np.float32),
+                                                     "std": np.array(spec.std, np.float32)})
+    return data
+
+
+def _standardize_build(spec: _StandardizeSpec):
+    def build(ee, data: FixtureData) -> list:
+        from tensor_ee.blocks.raster.normalization import StandardizeConstants, standardize
+        from tensor_ee.core.tensor import Raster
+        from tensor_ee.layouts.raster import from_image
+
+        grid = _grid(10, 8)
+        raster = from_image(inline_raster(ee, grid.projection(), data.inputs["x"], spec.bands), spec.bands, grid)
+        # Keep the source band names rather than from_image's canonical c0.. names.
+        raster = Raster(raster.image.rename(list(spec.bands)), spec.bands, grid)
+        c = StandardizeConstants(data.weights["mean"], data.weights["std"], bands=spec.bands, scale=spec.scale)
+        out = standardize(raster, c)
+        return [Readout("out", out.image, len(spec.bands), raster_grid(grid)), _echo(raster)]
+    return build
+
+
+def _standardize_reference(spec: _StandardizeSpec):
+    def reference(data: FixtureData) -> dict:
+        """The source recipe: NumPy float32 ``x * scale`` (a Python float), then torchvision's
+        normalize, ``tensor.sub_(mean).div_(std)`` with float32 mean and std tensors."""
+        import torch
+
+        x = data.inputs["x"]
+        if spec.scale is not None:
+            x = x * spec.scale                       # float32 array times a Python float: float32
+        assert x.dtype == np.float32
+        tensor = torch.from_numpy(np.ascontiguousarray(x)).permute(2, 0, 1).clone()
+        mean = torch.as_tensor(spec.mean, dtype=torch.float32)[:, None, None]
+        std = torch.as_tensor(spec.std, dtype=torch.float32)[:, None, None]
+        with torch.no_grad():
+            tensor.sub_(mean).div_(std)
+        return {"out": tensor.permute(1, 2, 0).contiguous().numpy()}
+    return reference
+
+
+def _standardize_mirror(spec: _StandardizeSpec):
+    def mirror(data: FixtureData) -> dict:
+        from reference.raster_standardize import standardize
+
+        return {"out": standardize(data.inputs["x"], data.weights["mean"], data.weights["std"], spec.scale)}
+    return mirror
+
+
+def _standardize_fixtures(cost) -> list[Fixture]:
+    from tensor_ee.blocks.raster.normalization import StandardizeConstants, standardize
+
+    return [Fixture(
+        id=f"raster/standardize/{spec.name}", lane=LANE, block="standardize",
+        settings={"scale": spec.scale, "clip_footprints": False}, policy="round_each_op",
+        shapes={"input": [8, 8, len(spec.bands)], "output": [8, 8, len(spec.bands)]}, seed=61 + index,
+        data=_standardize_data(spec), build=_standardize_build(spec),
+        reference=_standardize_reference(spec),
+        reference_source="NumPy float32 x * scale, then tensor.sub_(mean).div_(std) "
+                         "(torchvision.transforms.functional.normalize)",
+        mirror=MirrorSpec(_standardize_mirror(spec), True, "reference.raster_standardize.standardize"),
+        requests=1,
+        constants=lambda data, spec=spec: {"standardize": _metadata("standardize").embedded_constants(
+            len(spec.bands), scale=spec.scale is not None)},
+        history="New block (input standardization): not yet run live.",
+        accepts=(StandardizeConstants, standardize),
+        notes=("Prithvi Sen1Floods11's input statistics on raw digital numbers 0 .. 16383, a zero "
+               "row standing for replaced nodata." if spec.scale is not None else
+               "Nonlexical band order z,a,m; negative and non-dyadic statistics; no scale.")
+    ) for index, spec in enumerate(_STANDARDIZE)]
+
+
 SELECTIONS = {
     # raster-setting validation: every new setting, plus today's pooling and nearest settings as regression checks
     # (three calibration fixtures).
@@ -703,6 +811,7 @@ SELECTIONS = {
     "bilinear": tuple(f"raster/bilinear_upsample/f{factor}-align{int(align)}"
                       for factor, align in _BILINEAR_SETTINGS),
     "grouped_conv": tuple(f"raster/grouped_conv2d/{spec.name}" for spec in _GROUPED),
+    "standardize": tuple(f"raster/standardize/{spec.name}" for spec in _STANDARDIZE),
 }
 """This lane's named selections (``tools.fixtures.select``)."""
 
@@ -777,4 +886,4 @@ def fixtures() -> list[Fixture]:
             notes="A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0)."),
     ]
     return (calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost)
-            + _bilinear_fixtures(cost) + _grouped_fixtures(cost))
+            + _bilinear_fixtures(cost) + _grouped_fixtures(cost) + _standardize_fixtures(cost))

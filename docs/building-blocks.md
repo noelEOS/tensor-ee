@@ -101,18 +101,18 @@ their own.
 ## Blocks
 
 <!-- BEGIN GENERATED: blocks (tools/block_catalogue.py; edit the code, then rerun) -->
-87 blocks: 22 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
+88 blocks: 23 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
 
 | Layout in → out | Ready | Fixed | Total |
 |---|---:|---:|---:|
-| R → R | 22 | 0 | 22 |
+| R → R | 22 | 1 | 23 |
 | R → W | 2 | 1 | 3 |
 | W → R | 0 | 1 | 1 |
 | W → W | 23 | 33 | 56 |
 | W → V | 2 | 0 | 2 |
 | V → W | 1 | 0 | 1 |
 | V → V | 1 | 1 | 2 |
-| **All** | **51** | **36** | **87** |
+| **All** | **51** | **37** | **88** |
 
 ### Raster-layout (R) blocks
 
@@ -137,6 +137,7 @@ their own.
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/parity.json](history/cnn/results/parity.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | pointwise | `float32_operands` | no | Ready | [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
 | [`batch_norm`](../tensor_ee/blocks/raster/normalization.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/raster-batch-norm-offline.json](evidence/raster-batch-norm-offline.json); [evidence/live-fixtures/20261029T070703Z-batch_norm.json](evidence/live-fixtures/20261029T070703Z-batch_norm.json) |
+| [`standardize`](../tensor_ee/blocks/raster/normalization.py) | R → R | pointwise | `round_each_op` | no | Fixed — offline only: 6 bands with scale 1e-4; 3 bands without scale; clip_footprints=False | `docs/evidence/raster-standardize-offline.json` (unresolved) |
 | [`segmentation_outputs`](../tensor_ee/blocks/raster/outputs.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json); [evidence/t05-primary.json](evidence/t05-primary.json) |
 | [`binary_threshold`](../tensor_ee/blocks/raster/outputs.py) | R → R | pointwise | `float32_operands` | no | Ready | [evidence/t03-outputs.json](evidence/t03-outputs.json) |
 | [`pool2d`](../tensor_ee/blocks/raster/pooling.py) | R → R | k×k, radius 3 | `float32_operands` | no | Ready — aligned avg/max k = 2, 3, 4; max 3×3 stride 1 or 2, padding 1; avg 3×3 stride 1 padding 1, both divisor rules | [evidence/live-fixtures/20261013T065257Z-p02.json](evidence/live-fixtures/20261013T065257Z-p02.json); [evidence/p02-raster-offline.json](evidence/p02-raster-offline.json); [cnn/results/parity.json](history/cnn/results/parity.json); [evidence/t05-primary.json](evidence/t05-primary.json); [cnn/results/resnet_primitives.json](history/cnn/results/resnet_primitives.json); [cnn/results/resnet18_full64_float32_policy.json](history/cnn/results/resnet18_full64_float32_policy.json); [cnn/results/segwater_js_parity_1x1.json](history/cnn/results/segwater_js_parity_1x1.json) |
@@ -217,13 +218,13 @@ their own.
 
 ### Evidence notes
 
-- Every evidence path names an existing file.
+- 1 evidence entries name no existing file: `docs/evidence/raster-standardize-offline.json`.
 - Entries in *italics* are notes in the metadata, not files.
 - Locality and chip edge hold over every validated setting; *(by setting)* marks a property whose exact value at a call's settings is `per_setting`'s (`metadata_at`).
 
 ### Validated settings
 
-Each block's `validated` record, the status in machine-readable form: 87 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
+Each block's `validated` record, the status in machine-readable form: 88 records. Each `{…}` is one configuration, whose values were validated together; a record is their union (∪). A setting no configuration names is not restricted. Names come from the block function, its cost functions and the sources listed.
 
 | Block | Layout | Validated settings | Names from |
 |---|---|---|---|
@@ -244,6 +245,7 @@ Each block's `validated` record, the status in machine-readable form: 87 records
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | {dim 1} | — |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | any accepted call | — |
 | [`batch_norm`](../tensor_ee/blocks/raster/normalization.py) | R → R | {clip_footprints False; eps 1e-05} | `BatchNormConstants` |
+| [`standardize`](../tensor_ee/blocks/raster/normalization.py) | R → R | none live | — |
 | [`segmentation_outputs`](../tensor_ee/blocks/raster/outputs.py) | R → R | any accepted call | — |
 | [`binary_threshold`](../tensor_ee/blocks/raster/outputs.py) | R → R | any accepted call | — |
 | [`pool2d`](../tensor_ee/blocks/raster/pooling.py) | R → R | {kernel 2; padding 0; reducer 'mean' or 'max'; stride 2} ∪ {kernel 3; padding 0; reducer 'mean' or 'max'; stride 3} ∪ {kernel 4; padding 0; reducer 'mean' or 'max'; stride 4} ∪ {kernel 3; padding 1; reducer 'max'; stride 1 or 2} ∪ {count_include_pad True or False; kernel 3; padding 1; reducer 'mean'; stride 1} | `PoolConfig` |

@@ -98,6 +98,13 @@ compare against the original model on your actual prepared inputs. Public
 primitives and compiler activations materialize float32. `clip_footprints=True`
 is the existing optional clipping experiment with the same finite padding rules.
 
+Input preparation for models trained on scaled, normalized imagery uses
+`tensor_ee.blocks.raster.standardize`: per band `(x * scale - mean) / std`, each
+operation rounded to float32 (`round_each_op`), so it reproduces a float32 pipeline
+such as `x * 1e-4` followed by torchvision's `normalize` bit for bit. Zero-fill missing
+pixels first (`from_image` does). It is not called by `compile_model`, and has offline
+evidence only.
+
 Local convolution coefficients at or above +2⁶³ or below −2⁶³ use parsed EE
 numbers inside the existing array constructor, avoiding observed integral-literal
 clipping. Ordinary coefficients and asset-provider arrays retain their existing
