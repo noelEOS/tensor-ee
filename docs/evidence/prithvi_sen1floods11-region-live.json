@@ -1,0 +1,299 @@
+{
+  "schema_version": 1,
+  "kind": "prithvi_sen1floods11_region_live",
+  "target": 0.0001,
+  "accuracy_claim": false,
+  "reference": "tests/reference/prithvi_sen1floods11 forward_torch (plain torch, eval float32), each crop alone on its fetched input",
+  "validation": "a 2 x 2 region of whole 224 x 224 crops (448 x 448 pixels) through the 9-cut staged layout, trained weights from table assets, one-crop export shards",
+  "namespace": "projects/YOUR_EE_PROJECT/assets/prithvi_sen1floods11/trained_region1",
+  "runner_revision": "8d737d6",
+  "layout": {
+    "crops": [
+      2,
+      2
+    ],
+    "cuts": [
+      "patch",
+      "block1",
+      "block3",
+      "block5",
+      "block7",
+      "block9",
+      "block11",
+      "upsample56",
+      "logits"
+    ],
+    "shard_crops": 1,
+    "input_seeds": [
+      2024,
+      2025,
+      2026,
+      2027
+    ]
+  },
+  "input": {
+    "synthetic": true,
+    "crop_0_0": "the single-crop runs' saved input (seed 2024)",
+    "other_crops": "seeded dyadic crops (tools/prithvi_trained_run.py input_crop)"
+  },
+  "gate": "step A (input assembly, patch, blocks 0-1) ran first; crop (0,0) of both stages was identical to the single-crop 2-block run before the rest was submitted",
+  "stages": [
+    {
+      "stage": "input_crops",
+      "exports": [
+        {
+          "name": "input_r0c1",
+          "request_bytes": 3228003,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 2.376,
+          "wall_seconds": 75.0
+        },
+        {
+          "name": "input_r1c0",
+          "request_bytes": 3227871,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 0.94,
+          "wall_seconds": 85.3
+        },
+        {
+          "name": "input_r1c1",
+          "request_bytes": 3227260,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 0.889,
+          "wall_seconds": 64.2
+        }
+      ]
+    },
+    {
+      "stage": "input",
+      "exports": [
+        {
+          "name": "input",
+          "request_bytes": 5907,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 2.601,
+          "wall_seconds": 61.8
+        }
+      ]
+    },
+    {
+      "stage": "patch",
+      "exports": [
+        {
+          "name": "patch_spatial",
+          "request_bytes": 847524,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 19.376,
+          "wall_seconds": 63.8
+        },
+        {
+          "name": "patch_class",
+          "request_bytes": 14534,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 3.363,
+          "wall_seconds": 63.5
+        }
+      ]
+    },
+    {
+      "stage": "block1",
+      "exports": [
+        {
+          "name": "block1_spatial",
+          "request_bytes": 331647,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 55.953,
+          "wall_seconds": 126.0
+        },
+        {
+          "name": "block1_class",
+          "request_bytes": 331235,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 42.246,
+          "wall_seconds": 337.9
+        }
+      ]
+    },
+    {
+      "stage": "block3",
+      "exports": [
+        {
+          "name": "block3_spatial",
+          "request_bytes": 331299,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 59.614,
+          "wall_seconds": 125.1
+        },
+        {
+          "name": "block3_class",
+          "request_bytes": 330887,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 44.693,
+          "wall_seconds": 92.4
+        }
+      ]
+    },
+    {
+      "stage": "block5",
+      "exports": [
+        {
+          "name": "block5_spatial",
+          "request_bytes": 331330,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 55.48,
+          "wall_seconds": 96.2
+        },
+        {
+          "name": "block5_class",
+          "request_bytes": 330918,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 51.727,
+          "wall_seconds": 125.4
+        }
+      ]
+    },
+    {
+      "stage": "block7",
+      "exports": [
+        {
+          "name": "block7_spatial",
+          "request_bytes": 331680,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 47.717,
+          "wall_seconds": 159.2
+        },
+        {
+          "name": "block7_class",
+          "request_bytes": 331268,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 34.299,
+          "wall_seconds": 126.5
+        }
+      ]
+    },
+    {
+      "stage": "block9",
+      "exports": [
+        {
+          "name": "block9_spatial",
+          "request_bytes": 331268,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 86.441,
+          "wall_seconds": 162.8
+        },
+        {
+          "name": "block9_class",
+          "request_bytes": 330856,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 62.973,
+          "wall_seconds": 251.8
+        }
+      ]
+    },
+    {
+      "stage": "block11",
+      "exports": [
+        {
+          "name": "block11_spatial",
+          "request_bytes": 331737,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 53.876,
+          "wall_seconds": 186.5
+        },
+        {
+          "name": "block11_class",
+          "request_bytes": 331325,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 37.782,
+          "wall_seconds": 93.4
+        }
+      ]
+    },
+    {
+      "stage": "upsample56",
+      "exports": [
+        {
+          "name": "upsample56",
+          "request_bytes": 183638,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 35.358,
+          "wall_seconds": 92.2
+        }
+      ]
+    },
+    {
+      "stage": "logits",
+      "exports": [
+        {
+          "name": "logits",
+          "request_bytes": 124476,
+          "status": "COMPLETED",
+          "batch_eecu_seconds": 2463.231,
+          "wall_seconds": 1803.1
+        }
+      ]
+    }
+  ],
+  "identity_crop_0_0": {
+    "reference": "the single-crop run with the same cuts (docs/evidence/prithvi_sen1floods11-fewer-stages-live.json)",
+    "images": 16,
+    "identical": true,
+    "max_abs": 0
+  },
+  "result": {
+    "input_equals_local": true,
+    "max_abs": 6.109476089477539e-06,
+    "over_1e-4": 0,
+    "argmax_flips": 0,
+    "pixels": 200704,
+    "logit_range": [
+      -2.972783088684082,
+      2.9259214401245117
+    ],
+    "crops": {
+      "0,0": {
+        "seed": 2024,
+        "input_equals_local": true,
+        "max_abs": 4.112720489501953e-06,
+        "argmax_flips": 0
+      },
+      "0,1": {
+        "seed": 2025,
+        "input_equals_local": true,
+        "max_abs": 4.291534423828125e-06,
+        "argmax_flips": 0
+      },
+      "1,0": {
+        "seed": 2026,
+        "input_equals_local": true,
+        "max_abs": 4.0531158447265625e-06,
+        "argmax_flips": 0
+      },
+      "1,1": {
+        "seed": 2027,
+        "input_equals_local": true,
+        "max_abs": 6.109476089477539e-06,
+        "argmax_flips": 0
+      }
+    },
+    "seam_max_abs": 2.5033950805664062e-06,
+    "seam_pixels": 1788,
+    "eecu_seconds": 3160.9344415068626,
+    "exports": 20
+  },
+  "execution": {
+    "exports": 20,
+    "failed": 0,
+    "identity_requests": 16,
+    "fetches": 2,
+    "model_stages_wall_seconds": 3212,
+    "with_input_assembly_wall_seconds": 3388,
+    "model_stages_batch_eecu_seconds": 3154.1
+  },
+  "comparison_with_single_crop_run": {
+    "single_crop_model_stages_wall_seconds": 2090,
+    "single_crop_batch_eecu_seconds": 751.2,
+    "per_crop_wall_seconds": 803,
+    "note": "encoder stages: about 2 x the single crop's EECU for 4 crops, similar wall time; logits stage: 2,463 EECU-s and 30 minutes against 413 and 4 minutes in this run. Repeat runs of the same stages (prithvi_sen1floods11-logits-probes-live.json) cost 1,627 to 1,776 for 2 x 2 and 413 to 673 for one crop: the stage scales about linearly with the crop count, and this run's 6 x was mostly run-to-run variance."
+  }
+}

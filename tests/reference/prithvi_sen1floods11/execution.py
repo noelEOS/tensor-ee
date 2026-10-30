@@ -1,7 +1,9 @@
 """Eager numerical execution of the actual LibraryBackend and arithmetic blocks.
 
 Only spatial transports are replaced: patch gather/partition, domain masks,
-projections, halo/im2col, depth-space re-windowing, and final dense readout.
+projections, halo/im2col, depth-space re-windowing, and final dense readout. A region
+of whole crops runs the same way; the halo pads each crop with zeros on its own
+(``crop``), independently of the library's masks.
 Arithmetic remains in the library's WindowOps and block functions. This is a
 bounded NumPy execution hypothesis, not an Earth Engine execution claim.
 """
@@ -160,8 +162,8 @@ def depth_space(ee, x, grid, channels, *, window, out_window=7, factor=2):
 
 
 class Halo:
-    def __init__(self, x, coarse, channels, window):
-        self.x, self.coarse, self.channels, self.window = x, coarse, channels, window
+    def __init__(self, x, coarse, channels, window, crop=None):
+        self.x, self.coarse, self.channels, self.window, self.crop = x, coarse, channels, window, crop
 
 
 class Columns:
@@ -170,9 +172,20 @@ class Columns:
         assert channels == halo.channels and window == halo.window and k == 3
         self.halo, self.channels, self.window = halo, channels, window
     def matrixMultiply(self, weight):
+        dense = unpartition(self.halo.x.values, self.window)
+        if self.halo.crop is None:
+            return Image(self._product(dense, weight))
+        # Each crop alone, zero-padded at its own edges, then put back in place.
+        side = self.halo.crop * self.window
+        h, w, _ = dense.shape
+        rows = [np.concatenate([self._product(dense[y:y + side, x:x + side], weight)
+                                for x in range(0, w, side)], axis=1)
+                for y in range(0, h, side)]
+        return Image(np.concatenate(rows, axis=0))
+
+    def _product(self, dense, weight):
         # The policy is still WindowOps.matmul_double; stream coarse rows solely
         # to avoid allocating the complete 224-pixel crop im2col in double at once.
-        dense = unpartition(self.halo.x.values, self.window)
         h, w, _ = dense.shape
         padded = np.pad(dense, ((1, 1), (1, 1), (0, 0)))
         kernel = weight.values.astype(np.float64)
@@ -185,13 +198,11 @@ class Columns:
             columns = columns.reshape(self.window, w // self.window, self.window, 9 * self.channels)
             columns = columns.transpose(1, 0, 2, 3).reshape(w // self.window, self.window ** 2, -1)
             out[y // self.window] = columns.astype(np.float64) @ kernel
-        return Image(out)
+        return out
 
 
 def halo(ee, x, coarse, channels, *, window, crop=None):
-    if crop is not None:
-        raise NotImplementedError('the eager transport pads the whole crop; crop grids are not modelled')
-    return Halo(x, coarse, channels, window)
+    return Halo(x, coarse, channels, window, crop)
 
 
 def im2col(ee, halo, channels, k, *, window):
@@ -239,11 +250,12 @@ def server_state(state, *, flatten=True):
 def execute(image, state, config, *, asset_shapes=False, stop='logits'):
     """Run actual constructors, LibraryBackend methods and arithmetic blocks."""
     from tensor_ee.core.tensor import Raster
-    from tensor_ee.models.prithvi_sen1floods11.model import INPUT_GRID, constants, compose
+    from tensor_ee.models.prithvi_sen1floods11.model import CROP, constants, compose, region_grid
     parameters = server_state(state) if asset_shapes else state
+    grid = region_grid(image.shape[0] // CROP, image.shape[1] // CROP)
     with spatial_transports():
         c = constants(EE, parameters, config=config)
-        raster = Raster(Image(image, dense=True), tuple(f'b{i}' for i in range(6)), INPUT_GRID)
+        raster = Raster(Image(image, dense=True), tuple(f'b{i}' for i in range(6)), grid)
         output = compose(c.backend, raster, config, stop=stop)
     return output
 

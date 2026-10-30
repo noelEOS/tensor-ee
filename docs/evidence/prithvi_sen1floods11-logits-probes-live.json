@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "prithvi_sen1floods11_logits_stage_probes_live",
+  "accuracy_claim": false,
+  "purpose": "why the 2 x 2 region's decoder tail (upsample112, upsample224, head) cost 2,463 batch EECU-seconds, about 6 x the single crop's 413",
+  "namespace": "projects/YOUR_EE_PROJECT/assets/prithvi_sen1floods11/trained_logitsprobe_<probe>",
+  "runner_revision": "c81c709",
+  "run": "the three probes concurrently, 2026-10-30",
+  "probes": [
+    {
+      "probe": "P1",
+      "run": "2 x 2 crops, one 448-pixel shard",
+      "layout": "--crops 2x2 --shard-crops 2",
+      "start": "upsample56",
+      "cuts": [
+        "logits"
+      ],
+      "reads": "the saved upsample56 of the 2 x 2 region run",
+      "request_bytes": 124483,
+      "status": "COMPLETED",
+      "batch_eecu_seconds": 1627.156,
+      "wall_seconds": 1164.2,
+      "identity": {
+        "reference": "the logits of the 2 x 2 region run",
+        "identical": true,
+        "max_abs": 0,
+        "pixels": 200704
+      }
+    },
+    {
+      "probe": "P2",
+      "run": "2 x 2 crops, one-crop shards (a repeat of the region run's stage)",
+      "layout": "--crops 2x2 --shard-crops 1",
+      "start": "upsample56",
+      "cuts": [
+        "logits"
+      ],
+      "reads": "the saved upsample56 of the 2 x 2 region run",
+      "request_bytes": 124483,
+      "status": "COMPLETED",
+      "batch_eecu_seconds": 1776.339,
+      "wall_seconds": 706.7,
+      "identity": {
+        "reference": "the logits of the 2 x 2 region run",
+        "identical": true,
+        "max_abs": 0,
+        "pixels": 200704
+      }
+    },
+    {
+      "probe": "P3",
+      "run": "1 crop, default shard (a repeat of the single-crop run's stage)",
+      "layout": "--crops 1x1",
+      "start": "upsample56",
+      "cuts": [
+        "logits"
+      ],
+      "reads": "the saved upsample56 of the single-crop 2-block run",
+      "request_bytes": 120349,
+      "status": "COMPLETED",
+      "batch_eecu_seconds": 672.771,
+      "wall_seconds": 530.9,
+      "identity": {
+        "reference": "the logits of the single-crop 2-block run",
+        "identical": true,
+        "max_abs": 0,
+        "pixels": 50176
+      }
+    }
+  ],
+  "earlier_measurements_of_the_same_graphs": {
+    "one_crop_batch_eecu_seconds": [
+      413.4,
+      482.7
+    ],
+    "note_one_crop": "413.4: the single-crop 2-block run; 482.7: the merged-decoder probe of the fewer-stages work (the 19-stage run measured the head alone, 409.4, a different graph)",
+    "two_by_two_batch_eecu_seconds": [
+      2463.2
+    ]
+  },
+  "finding": "The stage's cost varies by about +-25% between identical runs (one crop: 413 to 673 EECU-seconds). Per crop, the region costs 407 to 616, inside that range: the stage scales about linearly with the crop count, and the earlier 6 x was mostly that variance. One 448-pixel shard cost 8% less than one-crop shards but took 19.4 minutes against 11.8, so one-crop shards stay the default.",
+  "requests": 6
+}
