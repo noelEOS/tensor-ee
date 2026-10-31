@@ -333,7 +333,7 @@ use native tensor shapes; server arrays also accept the existing asset format's
 flattened matrices, and vector rows or columns. All constants are prepared
 before composition. Position values are supplied, never generated here.
 The unused auxiliary head and BatchNorm counter are ignored.
-State names follow the source model's module hierarchy; they have not been checked against a released checkpoint.
+State names follow the source model's module hierarchy, as in the released checkpoint below.
 
 The default configuration is width 768, 12 heads, 12 blocks, MLP width 3072,
 and decoder width 256. `PrithviConfig` also supplies a reduced twin for the
@@ -376,7 +376,12 @@ was checked live: Earth Engine equals the NumPy mirror at every probed logit,
 within 2.64e-07 of PyTorch. This checks the composition, not trained weights
 or accuracy.
 
-The released Sen1Floods11 fine-tune also runs at full width in Earth Engine.
+The released Sen1Floods11 fine-tune also runs at full width in Earth Engine. The checkpoint is
+`sen1floods11_Prithvi_100M.pth` from the Hugging Face repository
+`ibm-nasa-geospatial/Prithvi-EO-1.0-100M-sen1floods11` at revision
+`34fb751ac4a01eab332b97d0d2bec786d6f0a8b3`, SHA-256
+`c3b8af485ea03dab2a352c9269cb633a9f1550aa672733c1601306d4cd65b149`; later revisions
+keep the same file. Its backbone, neck and decode head supply `state`.
 `tools/prithvi_trained_run.py` serves its 97,602,818 values as 217 table assets
 and exports each saved boundary of `planning.stage_rasters` in turn, 34 exports
 in 19 stages, each stage reading only its predecessor's assets. On one synthetic
