@@ -223,8 +223,9 @@ and [floating-point evaluation order](https://docs.pytorch.org/docs/2.14/notes/n
 
 ## Continuous integration
 
-[GitHub Actions](.github/workflows/tests.yml) runs on every push and pull request,
-with no Earth Engine credentials:
+[GitHub Actions](.github/workflows/tests.yml) runs on every pull request and every push to
+`main`, with no Earth Engine credentials. A new push to a pull request cancels that pull
+request's run still in progress:
 - **core**, on Python 3.11 and 3.12: CPU-only PyTorch, `.[test]`, the offline suite,
   then a wheel built, installed and imported outside the checkout;
 - **optional-models**, on Python 3.11: CPU-only PyTorch and torchvision,
