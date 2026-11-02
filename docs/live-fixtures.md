@@ -252,7 +252,11 @@ Earth Engine matched PyTorch and the NumPy mirror bit for bit, maximum absolute
 error 0, with all pixels valid and exact input echoes, in two requests. This
 validates only `repeat_rows` plus `concat` at this four-channel, four-window W14
 fixture; it makes no Linear/GELU or full DPT numerical claim. Tests also check
-768-channel rows and signed zero offline. To inspect the small live plan offline:
+768-channel rows and signed zero offline.
+
+The live record's revision 80d8c85 is an unpublished commit whose tree (c3e4b22) is identical to 72a7a63 on this branch.
+
+To inspect the small live plan offline:
 
 ```sh
 PYTHONPATH=. python tools/live_fixtures.py --plan class_row_readout
