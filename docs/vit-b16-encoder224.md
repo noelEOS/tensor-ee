@@ -59,7 +59,10 @@ bit-for-bit, with flattened ServerArray coefficients. The reduced fixture also
 checks native NumPy coefficients and compact server coefficient reconstruction.
 This eager execution is an offline numerical hypothesis, not Earth Engine execution.
 
-Largest absolute mirror-versus-timm errors for each output:
+These random-weight model comparisons are separate from the structured,
+rank-at-most-4 projection weights used by the live fixture described below.
+
+Largest absolute mirror-versus-timm errors with random weights, for each output:
 
 | Boundary | Reduced spatial | Reduced class | Full spatial | Full class |
 |---|---:|---:|---:|---:|
@@ -126,10 +129,17 @@ was generated on clean commit `a15b793`; all six outputs pass, with largest
 absolute mirror-versus-timm error 5.7220458984375e-6 and zero cloud calls.
 
 `vit_encoder_reduced` selects `window/concat_rows/vit-encoder-reduced`.
-Integer-only dyadic coefficient seeds expand to distinct matrix rows and columns;
-position rows and the input's global pixel code distinguish tokens. All spatial
-and class channels after both blocks and final norm are read, plus the input echo.
-The fixture is composition evidence, excluded from individual-block coverage.
+To fit the 2 MB request budget, each patch, attention and MLP projection matrix
+uses four integer-only dyadic seed rows, repeated and scaled by per-row gains
+`1 + row * 2^-10`. Each projection matrix therefore has **rank at most 4**.
+Distinct rows and columns do not make these general weight matrices: a live run
+of this fixture tests **rank-4 projection weights, not general weights**.
+The random-weight reduced/full mirror-versus-timm comparisons in the preceding
+offline section use separate weights, without this four-row restriction.
+
+Position rows and the input's global pixel code distinguish tokens. All spatial
+and class channels after both blocks and final norm are read, plus the input
+echo. The fixture is composition evidence, excluded from individual-block coverage.
 
 ```sh
 PYTHONPATH=. python tools/live_fixtures.py --offline vit_encoder_reduced --output /tmp/vit-encoder-offline.json
@@ -159,7 +169,8 @@ live encoder agreement, even for the reduced twin. Full width has offline
 mirror-versus-timm and eager numerical evidence only. There is no model-accuracy
 claim. No full-width live selection or staged/export run is proposed. Any later
 successful reduced check would validate only that twin's recorded inputs and
-settings, not full-width execution or accuracy.
+settings with rank-at-most-4 projection weights, not general weights,
+full-width execution or accuracy.
 
 ## Verification
 

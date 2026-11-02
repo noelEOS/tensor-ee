@@ -3,6 +3,11 @@
 Integer-only dyadic seeds expand to distinct matrix rows/columns and positional
 rows. Two blocks, width 128, two heads of dimension 64, complete 14x14 grid.
 Every spatial and class output after each block and the final norm is read.
+
+Each projection weight matrix uses four seed rows scaled by per-row gains in
+steps of 2**-10, so its rank is at most 4. This keeps requests within the 2 MB
+budget. A live run of this fixture tests rank-4 projection weights, not general
+weights. The separate mirror-versus-timm model comparisons use random weights.
 """
 from __future__ import annotations
 
@@ -22,7 +27,7 @@ def _data(seed):
             offset = 1 if name.endswith('.weight') else 0
             weights[name] = dyadic(seed, name, shape, scale=2**-5, offset=offset, bits=12)
         else:
-            # Four seed rows plus dyadic row gains: distinct complete matrices.
+            # Four seed rows plus row gains: rank <= 4, to fit the 2 MB budget.
             columns = math.prod(shape[1:])
             weights[name] = dyadic(seed, name, (4, columns), scale=2**-6, bits=12)
     return FixtureData({'x': dyadic(seed, 'x', (32, 32, 6), scale=.5, bits=12)}, weights)
@@ -118,9 +123,11 @@ def fixtures():
         reference_source='timm 1.0.30 VisionTransformer pretrained=False, fused_attn=False',
         mirror=MirrorSpec(_mirror, False, 'tests/reference/vit_b16_encoder224/reference.py', bound=1e-4),
         requests=5, constants=_cost, window=14, accepts=(concat_rows, ViTConfig, WindowLayout),
-        history='Offline only; no live encoder evidence.',
+        history='docs/evidence/live-fixtures/20261102T191233Z-vit_encoder_reduced.json '
+                '(failed: client RecursionError before encoder transport; input echo exact)',
         notes='Composition check, excluded from individual-block evidence. Integer dyadic coefficients; '
-              'all block and final-norm spatial/class outputs; head dimension 64. No assets or tasks.',
+              'projection matrices have rank <= 4; general weights are not tested by this fixture. '
+              'All block and final-norm spatial/class outputs; head dimension 64. No assets or tasks.',
     )]
 
 

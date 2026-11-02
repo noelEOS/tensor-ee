@@ -18,7 +18,7 @@ import numpy as np
 
 from ...core.tensor import Raster, ServerArray
 from ..prithvi_sen1floods11.model import (
-    BANDS, INPUT_GRID, TOKEN_GRID, EncoderBackend, _reshape, compose as _compose,
+    BANDS, INPUT_GRID, TOKEN_GRID, EncoderBackend, reshape_parameter, compose as _compose,
 )
 from .configuration import PREFIX, VIT_B16, ViTConfig, parameter_shapes, stage_names
 
@@ -59,7 +59,7 @@ class LibraryBackend(EncoderBackend):
 
     def __init__(self, ee, parameters, config=VIT_B16):
         validate_parameters(parameters, config)
-        state = {name: _reshape(parameters[name], shape) for name, shape in parameter_shapes(config).items()}
+        state = {name: reshape_parameter(parameters[name], shape) for name, shape in parameter_shapes(config).items()}
         super().__init__(ee, state, config, prefix=PREFIX, scale_query=True)
 
     def patch(self, raster):

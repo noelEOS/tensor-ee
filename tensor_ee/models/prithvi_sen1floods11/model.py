@@ -122,10 +122,15 @@ def validate_parameters(parameters, config=PRITHVI):
         raise ValueError("BatchNorm running variance must be nonnegative")
 
 
-def _reshape(value, shape):
+def reshape_parameter(value, shape):
+    """Reshape a NumPy or ServerArray parameter without reading server values."""
     if isinstance(value, ServerArray):
         return ServerArray(value.array.reshape(list(shape)), tuple(shape))
     return value.reshape(shape)
+
+
+# Retain the private name for existing Prithvi callers.
+_reshape = reshape_parameter
 
 
 def _upsampling_parameters(weight, bias):
