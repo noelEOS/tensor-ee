@@ -66,6 +66,11 @@ composites promoted from the models when the converter was built: SegFormer-B0's
 
 ## Reading the columns
 
+`window_resize` at factor 2 with `align_corners=True` has an
+[offline fixture and live plan](evidence/window-resize-x2-live-plan.md) for
+DPT's 7 → 14 → 28 → 56 → 112 → 224 maps, using W7 throughout. This setting
+has no new live claim and is outside the validated record pending an approved run.
+
 **Layouts** ([contract §3](library-contract.md#3-tensor-types)):
 - **R**, raster: an `ee.Image` with one band per channel on a georeferenced `Grid`
   (`Raster`). The CNN path's layout.

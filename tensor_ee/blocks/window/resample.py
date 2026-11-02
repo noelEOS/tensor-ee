@@ -41,7 +41,10 @@ Window 7 is the default. Validated at windows 7 and 8: ``window_resize`` at fact
 and 8 with align_corners=False and factor 4 with align_corners=True (window 7: the Swin-T224
 decoder's FPN, fusion and head; window 8: the window-8 Swin-UPerNet validation model's, on its token extents),
 ``window_matrix_resize`` from 1 x 1, 2 x 2, 3 x 3 and 6 x 6 sources (the PSP's bins) onto one
-window with align_corners=False. Other windows, factors and sources are not validated.
+window with align_corners=False. Factor 2 with align_corners=True at window 7 has offline-only evidence on
+7 -> 14 -> 28 -> 56 -> 112 -> 224 maps; it is not yet validated live. Window 7
+divides every map and is preserved by each resize, so no new window size is needed.
+Other windows, factors and sources are not validated.
 
 The no-arithmetic window_depth_to_space moves projected columns
 (dy,dx,c) at source token (y,x) to (2*y+dy,2*x+dx,c).
@@ -187,7 +190,8 @@ def window_resize(ee, x, tokens: TokenGrid, channels: int, factor: int, align_co
     [w, w + 2] x [w + 2, (w + 2) C] product), then x ([w, w + 2] x [w + 2, w C]), one
     float32 rounding.
     Returns (image, fine token grid). Validated at windows 7 and 8, factors 2, 4 and 8 with
-    align_corners=False and factor 4 with align_corners=True (validated at window 8)."""
+    align_corners=False and factor 4 with align_corners=True. Factor 2 with
+    align_corners=True at window 7 has offline-only evidence; see the module docstring."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     coarse = tokens.coarse(window)
     fine_tokens = TokenGrid(tokens.height * factor, tokens.width * factor,
