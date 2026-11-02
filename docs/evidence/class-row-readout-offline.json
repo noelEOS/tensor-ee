@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "0bc9a0d843a0c887351dc1331b082294d816de1d",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.3",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 1,
+      "requests": 2,
+      "values": 10996,
+      "payload_bytes": 43984,
+      "request_bytes": 204096,
+      "max_values": 10976,
+      "max_request_bytes": 198828,
+      "max_bands": 14,
+      "embedded_constants": 0,
+      "inline_values": 6304,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/concat/class-row-readout-w14",
+        "lane": "window",
+        "block": "concat",
+        "parts": [],
+        "settings": {
+          "window": 14
+        },
+        "policy": "none",
+        "shapes": {
+          "spatial": [
+            28,
+            28,
+            4
+          ],
+          "class": [
+            2,
+            2,
+            4
+          ],
+          "window": 14,
+          "readout": "cat"
+        },
+        "seed": 226,
+        "tolerance": 0,
+        "requests": 2,
+        "reference": "torch.cat([spatial, class.expand(...)], dim=-1)",
+        "mirror": {
+          "source": "reference.class_row_readout.cat_readout",
+          "exact": true,
+          "bound": null
+        },
+        "history": "Offline only; repeat_rows + concat recipe, no new block or live claim.",
+        "calibration": false,
+        "notes": "Four distinct class rows, each repeated across its matching 196 spatial rows. No arithmetic or casts."
+      },
+      "inputs_sha256": "cffc5fca5d54e03558b4d66a921e20ff27179199ad9c7f667860c97e9e1cfdb8",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "output",
+              "kind": "output",
+              "channels": 8
+            },
+            {
+              "name": "x",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 14,
+          "values": 10976,
+          "payload_bytes": 43904,
+          "request_bytes": 198828,
+          "graph_sha256": "780630cfdef62e219b04254199ee7fb8514b4af14d133f5cdcf85ca5d61b0683",
+          "graph_bytes": 198600,
+          "embedded_constants": 0,
+          "inline_values": 3152
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 2,
+              "height": 2
+            },
+            "affineTransform": {
+              "scaleX": 140.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -140.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 2,
+          "height": 2,
+          "readouts": [
+            {
+              "name": "cls",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 20,
+          "payload_bytes": 80,
+          "request_bytes": 5268,
+          "graph_sha256": "ab7ecb3ddeca8df3f5b5307ea72261513b15da8e1bb4e8c6b0f281ff3d221ebe",
+          "graph_bytes": 5040,
+          "embedded_constants": 0,
+          "inline_values": 3152
+        }
+      ],
+      "errors": [],
+      "seconds": 0.058,
+      "outputs": {
+        "output": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 6272,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.5330812931060791,
+              "expected": 0.5330812931060791
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

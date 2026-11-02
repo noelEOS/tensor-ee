@@ -207,3 +207,57 @@ with `reference.activations` as well. Max pooling and nearest upsampling select 
 values, so they must equal PyTorch bit for bit (tolerance 0); the recorded runs found 0
 difference there. The max pool's inputs are all negative, so a padding that
 contributed (a zero) would change every border window.
+
+## DPT cat readout: reuse the row-repeat primitive
+
+The class-row move already exists as `WindowOps.repeat_rows`, implemented by
+`Image.arrayRepeat(0, copies)` (and `ValueOps.repeat_rows` by `Array.repeat`).
+No new block, constants builder, precision policy or catalogue entry is needed.
+For W14 spatial tokens and a matching W1 class token, the class grid is
+`spatial.grid.coarse(14)`: both images already have one array per physical window.
+Prithvi's `position()` pins and masks the class image on this coarse grid; it does
+not repeat its array rows. Reprojecting the class onto the fine grid is unnecessary
+for this move and does not change a one-row array into a 196-row array.
+
+The checked checkout recipe in `tools/fixtures/class_row_readout.py` uses only
+`readout="cat"`; `"ignore"` and `"add"` are refused. Its essential move is:
+
+```python
+from tensor_ee.blocks.window.merge import concat
+from tensor_ee.core.errors import reject
+
+if readout != "cat":
+    reject('only readout="cat" is supported')
+if cls.window != 1 or cls.grid != spatial.grid.coarse(spatial.window):
+    reject("class rows must be W1 on the spatial window grid")
+if cls.channels != spatial.channels:
+    reject("class and spatial channels must match")
+repeated = spatial.like(ops.repeat_rows(cls.image, spatial.rows))
+joined = concat([spatial, repeated])
+```
+
+At 768 channels this produces `[196, 1536]`, with each spatial row first and its
+own window's class row second. Existing `LinearConstants`/`linear` (1536 → 768,
+constants built for 196 rows) and `gelu` can follow it. The move itself has no
+arithmetic, casts, per-row loop or coefficient constants; it depends only on its
+matching window. This recipe adds no model or converter support.
+
+Selection `class_row_readout` contains `window/concat/class-row-readout-w14`:
+four adjacent W14 windows with distinct class rows, four channels, exact-bit
+comparison with PyTorch expand/concat and a NumPy mirror. It plans two interactive
+requests and zero assets or tasks. The repeat/concat composition has
+[offline evidence](evidence/class-row-readout-offline.json) and
+[live evidence](evidence/live-fixtures/20261102T202433Z-class_row_readout.json):
+Earth Engine matched PyTorch and the NumPy mirror bit for bit, maximum absolute
+error 0, with all pixels valid and exact input echoes, in two requests. This
+validates only `repeat_rows` plus `concat` at this four-channel, four-window W14
+fixture; it makes no Linear/GELU or full DPT numerical claim. Tests also check
+768-channel rows and signed zero offline.
+
+The live record's revision 80d8c85 is an unpublished commit whose tree (c3e4b22) is identical to 72a7a63 on this branch.
+
+To inspect the small live plan offline:
+
+```sh
+PYTHONPATH=. python tools/live_fixtures.py --plan class_row_readout
+```
