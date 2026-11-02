@@ -632,7 +632,12 @@ class Guard:
             self.refused.append("computePixels")
             raise BudgetExceeded(f"more than the {self.max_compute} planned requests")
         self.requests += 1
-        return ee.data.computePixels(params)
+        # computePixels encodes the Image again after the offline/live graph build.
+        # Keep this second serialization scoped too; restore the caller's limit.
+        from tensor_ee.converter.request import deep_recursion
+
+        with deep_recursion():
+            return ee.data.computePixels(params)
 
     @contextlib.contextmanager
     def transport(self) -> Iterator["Guard"]:

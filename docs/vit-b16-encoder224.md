@@ -147,6 +147,12 @@ exactly, with zero differing values and maximum absolute error zero. The harness
 attempted five requests; transport recorded one `computePixels` and one
 `algorithms.list`, with no refused calls. No retry was made.
 
+The client request path now uses scoped `deep_recursion()` around its second
+serialization. An offline regression reproduces the old failure at recursion
+limit 1000, then verifies one fake-HTTP request with bytes identical to the plan
+and restoration of that limit. This fixes the client failure only; no live retry
+was made and no post-fix Earth Engine result is claimed.
+
 None of the six encoder outputs were returned, so their EE-versus-mirror
 comparisons and maximum errors are **unavailable**. This run establishes no
 live encoder agreement, even for the reduced twin. Full width has offline

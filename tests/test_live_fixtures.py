@@ -659,6 +659,40 @@ def test_compute_pixels_passes_the_guard_once_with_the_planned_request(plan):
     assert guard.record() == {"requests": 1, "computePixels": 1, "algorithms_list": 0, "refused": ["computePixels"]}
 
 
+def test_deep_composition_uses_scoped_recursion_during_client_serialization():
+    """The real client re-encodes the image; a fake HTTP endpoint receives its body."""
+    from tensor_ee.converter.request import deep_recursion
+
+    fixture = registry()["window/concat_rows/vit-encoder-reduced"]
+    with deep_recursion():
+        planned = LF.make_plan([fixture])
+    assert not planned.violations
+    request = planned.requests[fixture.id][0]
+    expected = {readout.name: np.ones(readout.shape, np.float32) for readout in request.readouts}
+    buffer = io.BytesIO()
+    np.save(buffer, LF.simulate_response(request, expected), allow_pickle=False)
+    http = FakeHttp(buffer.getvalue())
+    previous_limit = sys.getrecursionlimit()
+    try:
+        # Reproduce a fresh client's limit: graph building must restore this limit,
+        # and the guarded client call must raise it again just for serialization.
+        sys.setrecursionlimit(1000)
+        with document_resource(http):
+            live = LF.build_requests(fixture, planned.data[fixture.id])[0]
+            assert sys.getrecursionlimit() == 1000
+            guard = LF.Guard(max_compute=1)
+            with guard.transport(), guard.functions():
+                pixels = guard.compute_pixels(live.params())
+            assert sys.getrecursionlimit() == 1000
+    finally:
+        sys.setrecursionlimit(previous_limit)
+    assert live.graph_sha256 == request.graph_sha256
+    assert len(http.requests) == 1
+    assert len(http.requests[0]["body"].encode()) == request.request_bytes
+    assert pixels.dtype.names == tuple(request.bands)
+    assert guard.record() == {"requests": 1, "computePixels": 1, "algorithms_list": 0, "refused": []}
+
+
 # ---------------------------------------------------------------------------
 # R7: every fixture names a catalogue block and settings that block accepts
 # ---------------------------------------------------------------------------
