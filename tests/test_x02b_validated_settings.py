@@ -314,10 +314,11 @@ PHRASES = (
     (r"\b(avg/max|avg|max)\b", ("reducer",)),
     (r"\b(both) divisor rules", ("count_include_pad",)),
     (r"\balign_corners=(True|False)", ("align_corners",)),
+    (rf"\bout_window=(None|{_N}{_MORE})", ("out_window",)),
     (r"\bbins ((?:\([\d, ]+\)(?:, | and | or )?)+)", ("sizes",)),
 )
 _WORD_VALUES = {"aligned": {0}, "avg/max": {"mean", "max"}, "avg": {"mean"}, "max": {"max"},
-                "both": {True, False}, "True": {True}, "False": {False}}
+                "both": {True, False}, "True": {True}, "False": {False}, "None": {None}}
 
 
 def _phrase_values(groups) -> set:
@@ -404,7 +405,11 @@ def test_the_status_phrases_name_settings():
                                             {"window": {5, 7, 8, 12}},      # widths name no setting
                                             {"window": {14}, "patch": {16}, "channels": {6}}]
     assert parsed("window/head_forward") == [{"classes": {2, 3}}]           # "256 → 2 and 64 → 3 classes"
-    assert parsed("window/window_resize") == [{"window": {7, 8}}, {"factor": {2, 4, 8}, "align_corners": {False, True}}]
+    assert parsed("window/window_resize") == [
+        {"window": {7, 8}}, {"factor": {2, 4, 8}, "align_corners": {False, True}},
+        {"factor": {2}, "align_corners": {True}, "window": {7}}, {"out_window": {None}},
+        {"factor": {2}, "align_corners": {True}, "window": {7}, "out_window": {14}},
+        {"factor": {2}, "align_corners": {True}, "window": {14}, "out_window": {7}}]
     assert parsed("window/window_pool") == [
         {"height": {5, 7, 8, 12, 14}, "width": {5, 7, 8, 12, 14}, "sizes": {(1, 2, 3, 6)}},
         {"height": {8, 12}, "width": {8, 12}, "sizes": {(1, 2, 4, 8)}}]

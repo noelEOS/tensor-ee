@@ -27,13 +27,11 @@ Negative controls (Phase 4 / 5, numerical characterization only):
 
 from __future__ import annotations
 
-from fractions import Fraction
-
 import numpy as np
-import torch
 
 from tensor_ee.blocks.window import resample as RS
 from reference.upernet import ee_mirror_decoder as M
+from reference.window_resample import _pairs, _exact_fma  # historical helper aliases
 
 HEAD = "segmentation_head.0"
 WEIGHT = f"{HEAD}.weight"
@@ -48,52 +46,17 @@ def head_conv(x, weight, bias, exact: bool = False) -> np.ndarray:
     return M.linear(x, w, bias, exact)
 
 
-def _pairs(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Per output row the (first, second) non-zero columns and weights of a 1-D weight
-    matrix (second weight 0 and column = first when the row has one non-zero entry)."""
-    n_out = matrix.shape[0]
-    i0 = np.zeros(n_out, int)
-    i1 = np.zeros(n_out, int)
-    w0 = np.zeros(n_out)
-    w1 = np.zeros(n_out)
-    for o in range(n_out):
-        nz = np.flatnonzero(matrix[o])
-        if not 1 <= len(nz) <= 2:
-            raise AssertionError(f"row {o} has {len(nz)} non-zero weights")
-        i0[o], w0[o] = nz[0], matrix[o, nz[0]]
-        i1[o], w1[o] = nz[-1], (matrix[o, nz[-1]] if len(nz) == 2 else 0.0)
-    return i0, i1, w0, w1
-
-
-def _exact_fma(w: np.ndarray, a: np.ndarray, acc: np.ndarray) -> np.ndarray:
-    """round_double(w * a + acc) with one rounding (an FMA), elementwise, in rationals."""
-    flat = [float(Fraction(float(wi)) * Fraction(float(ai)) + Fraction(float(ci)))
-            for wi, ai, ci in zip(np.ravel(w), np.ravel(a), np.ravel(acc))]
-    return np.asarray(flat).reshape(np.shape(acc))
-
-
 def upsample(x, size=None, factor: int = FACTOR, align_corners: bool = True, exact: bool = False,
              fma: bool = False, weights=None) -> np.ndarray:
-    """EE's window_resize(align_corners) on x [H, W, C] (float32 values): y then x.
-    weights: optional (My, Mx) to use instead of PyTorch's float32 ones."""
-    x64 = np.asarray(x, np.float64)
-    h, w, c = x64.shape
+    """Historical head mirror API; the separable arithmetic lives in window_resample."""
+    from reference.window_resample import upsample as resize
+
+    h, w, _ = np.shape(x)
     size = (h * factor, w * factor) if size is None else tuple(size)
-    my, mx = weights if weights is not None else (
-        RS.model_bilinear_weights(h, size[0], align_corners=align_corners),
-        RS.model_bilinear_weights(w, size[1], align_corners=align_corners))
-    # stage 1 (y): every product exact in double, <= 2 non-zero terms: any order and FMA agree
-    a = (torch.from_numpy(np.ascontiguousarray(my)) @ torch.from_numpy(x64.reshape(h, w * c))).numpy()
-    a = a.reshape(size[0], w, c)
-    # stage 2 (x): float32 coefficient x double: two rounded products, one rounded sum
-    i0, i1, w0, w1 = _pairs(mx)
-    p0 = a[:, i0, :] * w0[None, :, None]
-    if fma:
-        b = _exact_fma(np.broadcast_to(w1[None, :, None], a[:, i1, :].shape), a[:, i1, :], p0)
-    else:
-        p1 = a[:, i1, :] * w1[None, :, None]
-        b = p0 + p1
-    return b if exact else b.astype(np.float32).astype(np.float64)
+    if weights is None:
+        weights = (RS.model_bilinear_weights(h, size[0], align_corners=align_corners),
+                   RS.model_bilinear_weights(w, size[1], align_corners=align_corners))
+    return resize(x, size, factor, align_corners, exact, fma, weights)
 
 
 def matrix_upsample(x, size, align_corners: bool = True, exact: bool = False) -> np.ndarray:

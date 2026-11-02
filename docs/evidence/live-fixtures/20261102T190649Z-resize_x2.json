@@ -1,0 +1,1616 @@
+{
+  "schema_version": 1,
+  "kind": "live_fixture_run",
+  "status": "passed",
+  "command": "python tools/live_fixtures.py --run resize_x2 --project tensor-ee --budget requests=17",
+  "selection": [
+    "window/window_resize/ac-f2-e7-w7",
+    "window/window_resize/ac-f2-e14-w7",
+    "window/window_resize/ac-f2-e28-w7",
+    "window/window_resize/ac-f2-e56-w7",
+    "window/window_resize/ac-f2-e112-w7"
+  ],
+  "project": "tensor-ee",
+  "credentials": "adc",
+  "revision": "e0a39a2cc4d7b8f528e0d659946e3b4c329407e6",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.3",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "started_utc": "2026-11-02T19:06:49+00:00",
+  "budget": {
+    "requests": 17,
+    "raster_side": 64,
+    "window_side": 8,
+    "values": 1000000,
+    "request_bytes": 2000000,
+    "in_flight": 4,
+    "assets": 0,
+    "tasks": 0
+  },
+  "plan": {
+    "fixtures": 5,
+    "requests": 17,
+    "values": 118923,
+    "payload_bytes": 475692,
+    "request_bytes": 3373248,
+    "max_values": 9408,
+    "max_request_bytes": 379671,
+    "max_bands": 3,
+    "embedded_constants": 22272,
+    "inline_values": 223636,
+    "assets": 0,
+    "tasks": 0,
+    "in_flight": 1
+  },
+  "max_in_flight": 1,
+  "errors": [],
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/window_resize/ac-f2-e7-w7",
+        "lane": "window",
+        "block": "window_resize",
+        "parts": [],
+        "settings": {
+          "factor": 2,
+          "align_corners": true,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            7,
+            7
+          ],
+          "out": [
+            14,
+            14
+          ],
+          "channels": 2
+        },
+        "seed": 9607,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
+        "mirror": {
+          "source": "reference.window_resample.upsample: y then x, double, one float32 rounding",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "W7 divides every DPT map. Diagonal output blocks cover every row/column coefficient pattern; all inputs echoed. Exact mirror assumes non-fused double x products/sum, as measured in Milestone 11; offline graph evaluation checks this arithmetic, not Earth Engine itself."
+      },
+      "inputs_sha256": "f706b8c5815175fb97fdefbf5a94aec36c191365702ca442e3b4e4131134ec44",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 0.379,
+      "failures": [],
+      "offline": {
+        "out_0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 1,
+              "channel": 0,
+              "actual": -0.8533522486686707,
+              "expected": -0.8533523082733154
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out_0",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 588,
+          "payload_bytes": 2352,
+          "request_bytes": 62926,
+          "graph_sha256": "5a56d1f2ff1daa7bc434d26d572f057138dec7d55b4ee7fd7cc14faf3360ac22",
+          "graph_bytes": 62696,
+          "embedded_constants": 256,
+          "inline_values": 98,
+          "status": "ok",
+          "wall_seconds": 0.222
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_0_0",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 147,
+          "payload_bytes": 588,
+          "request_bytes": 5072,
+          "graph_sha256": "bbfe941cf6d8d40c00c0b68b8e132583c26c25e3e0997107c0143d6f62a0fe32",
+          "graph_bytes": 4842,
+          "embedded_constants": 0,
+          "inline_values": 98,
+          "status": "ok",
+          "wall_seconds": 0.156
+        }
+      ],
+      "outputs": {
+        "out_0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 1,
+              "channel": 0,
+              "actual": -0.8533522486686707,
+              "expected": -0.8533523082733154
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0_0": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            7,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/window_resize/ac-f2-e14-w7",
+        "lane": "window",
+        "block": "window_resize",
+        "parts": [],
+        "settings": {
+          "factor": 2,
+          "align_corners": true,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "out": [
+            28,
+            28
+          ],
+          "channels": 2
+        },
+        "seed": 9614,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
+        "mirror": {
+          "source": "reference.window_resample.upsample: y then x, double, one float32 rounding",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "W7 divides every DPT map. Diagonal output blocks cover every row/column coefficient pattern; all inputs echoed. Exact mirror assumes non-fused double x products/sum, as measured in Milestone 11; offline graph evaluation checks this arithmetic, not Earth Engine itself."
+      },
+      "inputs_sha256": "4bb1d31219214b6ea430bb8db29dd53e873e9c824ed84cd200461a1c98c6f634",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 0.473,
+      "failures": [],
+      "offline": {
+        "out_0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 4,
+              "channel": 0,
+              "actual": -0.635934054851532,
+              "expected": -0.6359339952468872
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "out_0",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 2352,
+          "payload_bytes": 9408,
+          "request_bytes": 67494,
+          "graph_sha256": "7914b62d6787055ea742056ce354abacceba99ee48b50d77f21e8c41474c1cc2",
+          "graph_bytes": 67264,
+          "embedded_constants": 512,
+          "inline_values": 392,
+          "status": "ok",
+          "wall_seconds": 0.23
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input_0_0",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 588,
+          "payload_bytes": 2352,
+          "request_bytes": 8668,
+          "graph_sha256": "9ae48e1637a3ed3775eb73066e03fdb84e0a936edb48001467fd33140eeda505",
+          "graph_bytes": 8436,
+          "embedded_constants": 0,
+          "inline_values": 392,
+          "status": "ok",
+          "wall_seconds": 0.243
+        }
+      ],
+      "outputs": {
+        "out_0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            28,
+            28,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 4,
+              "channel": 0,
+              "actual": -0.635934054851532,
+              "expected": -0.6359339952468872
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 1568,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0_0": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/window_resize/ac-f2-e28-w7",
+        "lane": "window",
+        "block": "window_resize",
+        "parts": [],
+        "settings": {
+          "factor": 2,
+          "align_corners": true,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            28,
+            28
+          ],
+          "out": [
+            56,
+            56
+          ],
+          "channels": 2
+        },
+        "seed": 9628,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
+        "mirror": {
+          "source": "reference.window_resample.upsample: y then x, double, one float32 rounding",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "W7 divides every DPT map. Diagonal output blocks cover every row/column coefficient pattern; all inputs echoed. Exact mirror assumes non-fused double x products/sum, as measured in Milestone 11; offline graph evaluation checks this arithmetic, not Earth Engine itself."
+      },
+      "inputs_sha256": "a9fae2b56e8e16ac7c75d3308b3ffcfed2624de5733de569ea811bf802c242c2",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 0.499,
+      "failures": [],
+      "offline": {
+        "out_0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 35,
+              "col": 14,
+              "channel": 0,
+              "actual": 0.6790724992752075,
+              "expected": 0.679072380065918
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "out_0",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 83471,
+          "graph_sha256": "d8eef4a5bb98aec308ccd1739985c4ead6b7b442eb560ee7ba4371a41cf33cbe",
+          "graph_bytes": 83241,
+          "embedded_constants": 1024,
+          "inline_values": 1568,
+          "status": "ok",
+          "wall_seconds": 0.33
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "input_0_0",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 2352,
+          "payload_bytes": 9408,
+          "request_bytes": 22958,
+          "graph_sha256": "0a0476cb81a58930524d9c71ff5972f5bcc5e5a6654fe952d794ba56e9342be6",
+          "graph_bytes": 22726,
+          "embedded_constants": 0,
+          "inline_values": 1568,
+          "status": "ok",
+          "wall_seconds": 0.169
+        }
+      ],
+      "outputs": {
+        "out_0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 35,
+              "col": 14,
+              "channel": 0,
+              "actual": 0.6790724992752075,
+              "expected": 0.679072380065918
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0_0": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            28,
+            28,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 1568,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/window_resize/ac-f2-e56-w7",
+        "lane": "window",
+        "block": "window_resize",
+        "parts": [],
+        "settings": {
+          "factor": 2,
+          "align_corners": true,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            56,
+            56
+          ],
+          "out": [
+            112,
+            112
+          ],
+          "channels": 2
+        },
+        "seed": 9656,
+        "tolerance": 0.0001,
+        "requests": 3,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
+        "mirror": {
+          "source": "reference.window_resample.upsample: y then x, double, one float32 rounding",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "W7 divides every DPT map. Diagonal output blocks cover every row/column coefficient pattern; all inputs echoed. Exact mirror assumes non-fused double x products/sum, as measured in Milestone 11; offline graph evaluation checks this arithmetic, not Earth Engine itself."
+      },
+      "inputs_sha256": "b5cbc271ae51b75f4a7e42c649d33e73bbf6f6f77a8f29e5ca2f9cb79d99d75f",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 0.975,
+      "failures": [],
+      "offline": {
+        "out_0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 6,
+              "channel": 1,
+              "actual": -0.6159093379974365,
+              "expected": -0.6159094572067261
+            }
+          }
+        },
+        "out_56": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 15,
+              "channel": 0,
+              "actual": -0.5610125660896301,
+              "expected": -0.5610125064849854
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "out_0",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 144161,
+          "graph_sha256": "79f754d532fdf0a0998eb00d6daea676b5fc71d472f117084828dda84c08921f",
+          "graph_bytes": 143931,
+          "embedded_constants": 2048,
+          "inline_values": 6272,
+          "status": "ok",
+          "wall_seconds": 0.327
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 280.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": -280.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "out_56",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 144169,
+          "graph_sha256": "41089ce071aa7d2831687a4a3b56bd7068d020a3e417397a2f334c10e3f0fa9f",
+          "graph_bytes": 143934,
+          "embedded_constants": 2048,
+          "inline_values": 6272,
+          "status": "ok",
+          "wall_seconds": 0.338
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input_0_0",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 80205,
+          "graph_sha256": "8c444ec146f0f526107af394b4d2de633be38ba084fd9755f079515e1759866d",
+          "graph_bytes": 79973,
+          "embedded_constants": 0,
+          "inline_values": 6272,
+          "status": "ok",
+          "wall_seconds": 0.309
+        }
+      ],
+      "outputs": {
+        "out_0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 6,
+              "channel": 1,
+              "actual": -0.6159093379974365,
+              "expected": -0.6159094572067261
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_56": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 15,
+              "channel": 0,
+              "actual": -0.5610125660896301,
+              "expected": -0.5610125064849854
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0_0": {
+          "kind": "input",
+          "request": 2,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/window_resize/ac-f2-e112-w7",
+        "lane": "window",
+        "block": "window_resize",
+        "parts": [],
+        "settings": {
+          "factor": 2,
+          "align_corners": true,
+          "window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            112,
+            112
+          ],
+          "out": [
+            224,
+            224
+          ],
+          "channels": 2
+        },
+        "seed": 9712,
+        "tolerance": 0.0001,
+        "requests": 8,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
+        "mirror": {
+          "source": "reference.window_resample.upsample: y then x, double, one float32 rounding",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "W7 divides every DPT map. Diagonal output blocks cover every row/column coefficient pattern; all inputs echoed. Exact mirror assumes non-fused double x products/sum, as measured in Milestone 11; offline graph evaluation checks this arithmetic, not Earth Engine itself."
+      },
+      "inputs_sha256": "427dc9fcee48f6bf22ebe3155b45daac58cdb7a23deebcd23132d6fd3b711697",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 5.528,
+      "failures": [],
+      "offline": {
+        "out_0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 20,
+              "channel": 1,
+              "actual": -0.7239810824394226,
+              "expected": -0.7239812016487122
+            }
+          }
+        },
+        "out_56": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 16,
+              "col": 24,
+              "channel": 0,
+              "actual": 0.6604193449020386,
+              "expected": 0.6604194641113281
+            }
+          }
+        },
+        "out_112": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 0,
+              "actual": 0.5137929916381836,
+              "expected": 0.5137929320335388
+            }
+          }
+        },
+        "out_168": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 3,
+              "channel": 0,
+              "actual": -0.7113645672798157,
+              "expected": -0.7113645076751709
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "out_0",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 379660,
+          "graph_sha256": "c578b040f233c43d11e418e4d292d3f94bd6e822a005ad79b28eda154628a2c2",
+          "graph_bytes": 379430,
+          "embedded_constants": 4096,
+          "inline_values": 25088,
+          "status": "ok",
+          "wall_seconds": 1.122
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 280.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": -280.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "out_56",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 379668,
+          "graph_sha256": "8f978092c343d753601c0f276db24a1a2e46b425545b3065ff9fb622213a0e09",
+          "graph_bytes": 379433,
+          "embedded_constants": 4096,
+          "inline_values": 25088,
+          "status": "ok",
+          "wall_seconds": 0.66
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 560.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": -560.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "out_112",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 379671,
+          "graph_sha256": "d7c31e576b8c8060abe0ab6cd8cad01752dfae6a994203f0c8d03cf9933610ef",
+          "graph_bytes": 379436,
+          "embedded_constants": 4096,
+          "inline_values": 25088,
+          "status": "ok",
+          "wall_seconds": 0.786
+        },
+        {
+          "index": 3,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 840.0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": -840.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "out_168",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 379671,
+          "graph_sha256": "0ed5be45b418ac2b99e4bfc4473f874a040ec9c429651167ea6887b558c3777c",
+          "graph_bytes": 379436,
+          "embedded_constants": 4096,
+          "inline_values": 25088,
+          "status": "ok",
+          "wall_seconds": 0.842
+        },
+        {
+          "index": 4,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input_0_0",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 308858,
+          "graph_sha256": "d22cfecc6a296934586c0605f24ea0c12a509462989da847e20bd9573b57922e",
+          "graph_bytes": 308626,
+          "embedded_constants": 0,
+          "inline_values": 25088,
+          "status": "ok",
+          "wall_seconds": 0.449
+        },
+        {
+          "index": 5,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 560.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input_0_56",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 308863,
+          "graph_sha256": "b9b6205ac7f1d3c29748b61d3471f15db9b60077f47a6d45d9d533db32e6aaf0",
+          "graph_bytes": 308629,
+          "embedded_constants": 0,
+          "inline_values": 25088,
+          "status": "ok",
+          "wall_seconds": 0.591
+        },
+        {
+          "index": 6,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": -560.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input_56_0",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 308864,
+          "graph_sha256": "2bf3b037bcb034441c341cf815933f844b31762c7093ab2b9d5a481949831025",
+          "graph_bytes": 308629,
+          "embedded_constants": 0,
+          "inline_values": 25088,
+          "status": "ok",
+          "wall_seconds": 0.474
+        },
+        {
+          "index": 7,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 560.0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": -560.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "input_56_56",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 308869,
+          "graph_sha256": "656ec861e69d1f6e0ac4a3f2d1928afe8e0b57e4898d57db2229fb7db1c845f1",
+          "graph_bytes": 308632,
+          "embedded_constants": 0,
+          "inline_values": 25088,
+          "status": "ok",
+          "wall_seconds": 0.601
+        }
+      ],
+      "outputs": {
+        "out_0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 10,
+              "col": 20,
+              "channel": 1,
+              "actual": -0.7239810824394226,
+              "expected": -0.7239812016487122
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_56": {
+          "kind": "output",
+          "request": 1,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 16,
+              "col": 24,
+              "channel": 0,
+              "actual": 0.6604193449020386,
+              "expected": 0.6604194641113281
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_112": {
+          "kind": "output",
+          "request": 2,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 0,
+              "actual": 0.5137929916381836,
+              "expected": 0.5137929320335388
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "out_168": {
+          "kind": "output",
+          "request": 3,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 3,
+              "channel": 0,
+              "actual": -0.7113645672798157,
+              "expected": -0.7113645076751709
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0_0": {
+          "kind": "input",
+          "request": 4,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0_56": {
+          "kind": "input",
+          "request": 5,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_56_0": {
+          "kind": "input",
+          "request": 6,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_56_56": {
+          "kind": "input",
+          "request": 7,
+          "shape": [
+            56,
+            56,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 6272,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    }
+  ],
+  "cloud_calls": {
+    "requests": 17,
+    "computePixels": 17,
+    "algorithms_list": 1,
+    "refused": []
+  },
+  "finished_utc": "2026-11-02T19:07:15+00:00",
+  "wall_seconds": 26.287
+}
