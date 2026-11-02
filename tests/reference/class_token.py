@@ -25,9 +25,11 @@ def expand_qkv(base, heads: int, head_dim: int):
         for s in range(3)], axis=1)
 
 
-def _attention(q, k, v, scale):
+def _attention(q, k, v, scale, *, scale_query=False):
+    if scale_query:
+        q = (q.astype(np.float64) * np.float32(scale)).astype(np.float32)
     scores = (q.astype(np.float64) @ k.astype(np.float64).T).astype(np.float32)
-    scaled = (scores.astype(np.float64) * np.float32(scale)).astype(np.float32)
+    scaled = scores if scale_query else (scores.astype(np.float64) * np.float32(scale)).astype(np.float32)
     shifted = scaled - np.max(scaled, axis=1, keepdims=True)
     exp = np.exp(shifted.astype(np.float64)).astype(np.float32)
     total = np.cumsum(exp.astype(np.float64), axis=1)[:, -1:].astype(np.float32)
@@ -35,7 +37,7 @@ def _attention(q, k, v, scale):
     return (probability.astype(np.float64) @ v.astype(np.float64)).astype(np.float32)
 
 
-def class_token_attention(patch_qkv, cls_qkv, *, dim: int, heads: int):
+def class_token_attention(patch_qkv, cls_qkv, *, dim: int, heads: int, scale_query: bool = False):
     """Both query partitions attend to `[class; spatial]` keys and values."""
     d = dim // heads
     patch, cls = [], []
@@ -43,6 +45,6 @@ def class_token_attention(patch_qkv, cls_qkv, *, dim: int, heads: int):
         p = [patch_qkv[:, s * dim + h * d:s * dim + (h + 1) * d] for s in range(3)]
         c = [cls_qkv[:, s * dim + h * d:s * dim + (h + 1) * d] for s in range(3)]
         k, v = [concat_rows([c[s], p[s]]) for s in (1, 2)]
-        patch.append(_attention(p[0], k, v, d ** -0.5))
-        cls.append(_attention(c[0], k, v, d ** -0.5))
+        patch.append(_attention(p[0], k, v, d ** -0.5, scale_query=scale_query))
+        cls.append(_attention(c[0], k, v, d ** -0.5, scale_query=scale_query))
     return {"patch": np.concatenate(patch, axis=1), "cls": np.concatenate(cls, axis=1)}

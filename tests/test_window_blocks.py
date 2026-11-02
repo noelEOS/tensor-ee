@@ -477,7 +477,9 @@ def test_constants_built_for_one_layout_are_refused_by_another(offline_ee):
 DRO, REO = P.DOUBLE_ROUND_ONCE, P.ROUND_EACH_OP
 EXPECTED_METADATA = {
     "class_token_attention": (Locality.WINDOW, None, False, M.COMPOSITE,
-        "Ready — window 3, heads 3, dim 12; window 14, heads 12, dim 768", "window"),
+        ("Ready — window 3, heads 3, dim 12; window 14, heads 12, dim 768; "
+         "scale_query=True: window 14, heads 12, dim 768; "
+         "scale_query=True: window 3, heads 3, dim 18"), "window"),
     "window_depth_to_space": (Locality.WINDOW, None, False, M.NO_ARITHMETIC,
         "Ready — factor 2; windows 14, 7 to window 7", "window"),
     "concat_rows": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC,
