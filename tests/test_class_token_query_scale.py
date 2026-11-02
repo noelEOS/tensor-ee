@@ -7,6 +7,7 @@ from reference.class_token import expand_qkv
 from reference.segformer_b0.blocks import NUMPY_EE, Operand
 from tensor_ee.blocks.window.attention import class_token_attention
 from tensor_ee.core.ops import ValueOps
+from tensor_ee.converter.request import deep_recursion
 from tools.fixtures import select
 from tools.fixtures import class_token_query_scale as fixtures
 from tools import live_fixtures as LF
@@ -14,6 +15,7 @@ from tools import live_fixtures as LF
 
 @pytest.mark.parametrize("fixture", select(["class_token_query_scale"]), ids=lambda f: f.id)
 def test_full_width_query_scaling_and_timm_order(fixture):
+    pytest.importorskip("timm", reason="the query-scaling reference needs timm")
     data = fixture.data(fixture.seed)
     args = dict(window=fixture.window, heads=fixture.settings["heads"],
                 head_dim=fixture.shapes["head_dim"])
@@ -57,7 +59,8 @@ def test_query_scale_plan_uses_requested_setting_and_two_requests(monkeypatch):
         calls.append(kwargs)
         return original(*args, **kwargs)
     monkeypatch.setattr(attention, "class_token_attention", observed)
-    plan = LF.make_plan(select(["class_token_query_scale"]))
+    with deep_recursion():
+        plan = LF.make_plan(select(["class_token_query_scale"]))
     assert not plan.violations
     assert plan.totals()["requests"] == 2
     assert [(c["window"], c["heads"], c["dim"], c["scale_query"]) for c in calls] == [
