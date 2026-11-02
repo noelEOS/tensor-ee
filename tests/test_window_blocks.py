@@ -511,7 +511,9 @@ EXPECTED_METADATA = {
     # (per_setting), whose weights depend on the map's size.
     "window_resize": (Locality.WINDOW_RING, 1, True, DRO,
                       "Ready — windows 7, 8; factors 2, 4, 8 (align_corners=False), 4 (align_corners=True); "
-                      "factor 2 (align_corners=True), window 7",
+                      "factor 2 (align_corners=True), window 7; out_window=None for preceding settings; "
+                      "factor 2 (align_corners=True), window 7, out_window=14; "
+                      "factor 2 (align_corners=True), window 14, out_window=7",
                       "window+ring"),
     "window_matrix_resize": (Locality.EXTENT, None, False, DRO,
                              "Ready — windows 7, 8; sources 1, 2, 3, 6 onto one window (align_corners=False)",

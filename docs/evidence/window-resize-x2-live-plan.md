@@ -14,7 +14,7 @@ factor-2 reassemble output is W7 at 28 tokens. Later maps can retain W7.
 `window_resize(..., out_window=14)` maps the seven-token W7 map directly to
 W14, and `window_resize(..., window=14, out_window=7)` maps the 14-token W14
 map directly to W7 at 28 tokens. These mixed-window settings have
-[separate offline evidence and a pending live plan](window-resize-x2-out-window-live-plan.md).
+[separate offline and live evidence](window-resize-x2-out-window-live-plan.md).
 The default `out_window=None` retains the same-window graphs that ran live
 in this document's historical W7 selection; that selection is never rerun.
 

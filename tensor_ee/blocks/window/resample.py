@@ -44,8 +44,8 @@ decoder's FPN, fusion and head; window 8: the window-8 Swin-UPerNet validation m
 window with align_corners=False. Factor 2 with align_corners=True at window 7 is
 validated live on 7 -> 14 -> 28 -> 56 -> 112 -> 224 maps, keeping window 7.
 The keyword-only out_window=None retains that same-window graph. Explicit output
-windows 14 (source 7) and 7 (source 14) at factor 2, align_corners=True have
-offline-only evidence for DPT's 7 -> 14 and 14 -> 28 maps; they are not validated live.
+windows 14 (source 7) and 7 (source 14) at factor 2, align_corners=True are validated
+live for DPT's 7 -> 14 and 14 -> 28 maps, respectively.
 Other windows, factors and sources are not validated.
 
 The no-arithmetic window_depth_to_space moves projected columns
@@ -211,7 +211,7 @@ def window_resize(ee, x, tokens: TokenGrid, channels: int, factor: int, align_co
     out_window=None preserves window and today's graph. An explicit output window
     must divide factor*window. It changes only coefficient slices and output rows;
     the source halo and the two products, with one final cast, stay the same.
-    Mixed-window settings have offline evidence only."""
+    Mixed windows 7->14 and 14->7 are validated live at factor 2 with aligned corners."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     output_window = _resize_output_window(window, factor, out_window)
     coarse = tokens.coarse(window)
@@ -365,16 +365,21 @@ METADATA = validate_metadata({
         policy=DOUBLE_ROUND_ONCE, embedded_constants=window_resize_values, asset_arrays=no_constants,
         chip_edge_dependent=True,
         status=("Ready — windows 7, 8; factors 2, 4, 8 (align_corners=False), 4 (align_corners=True); "
-                "factor 2 (align_corners=True), window 7"),
+                "factor 2 (align_corners=True), window 7; out_window=None for preceding settings; "
+                "factor 2 (align_corners=True), window 7, out_window=14; "
+                "factor 2 (align_corners=True), window 14, out_window=7"),
         evidence=("docs/history/building-blocks-2026-10-11.md#37-resampling", "docs/history/upernet/notes/milestone7_findings.md",
                   "docs/history/upernet/notes/milestone11_findings.md", "docs/evidence/c0b-offline.json",
                   "docs/evidence/live-fixtures/20261013T154410Z-c0b.json",
                   "docs/evidence/window-resize-x2-offline.json",
                   "docs/evidence/live-fixtures/20261102T190649Z-resize_x2.json",
-                  "docs/evidence/window-resize-x2-out-window-offline.json"),
+                  "docs/evidence/window-resize-x2-out-window-offline.json",
+                  "docs/evidence/live-fixtures/20261102T193505Z-resize_x2_out_window.json"),
         validated=Validated(({"window": (7, 8), "factor": (2, 4, 8), "align_corners": (False,), "out_window": (None,)},
                              {"window": (7, 8), "factor": (4,), "align_corners": (True,), "out_window": (None,)},
-                             {"window": (7,), "factor": (2,), "align_corners": (True,), "out_window": (None,)})),
+                             {"window": (7,), "factor": (2,), "align_corners": (True,), "out_window": (None,)},
+                             {"window": (7,), "factor": (2,), "align_corners": (True,), "out_window": (14,)},
+                             {"window": (14,), "factor": (2,), "align_corners": (True,), "out_window": (7,)})),
         per_setting=window_resize_edge),
     # One window of output tokens (height = width = window), not a tile of a larger grid
     # (out_size None, row0 = col0 = 0: never varied).

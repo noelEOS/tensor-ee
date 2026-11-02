@@ -1,4 +1,4 @@
-"""DPT fusion resizes with differing input/output windows, offline until approved.
+"""DPT fusion resizes with differing input/output windows, validated live.
 
 No dense re-window composition: one parent halo, the same bilinear coefficients,
 two double matrix products, and one final float32 rounding. Whole outputs read.
@@ -51,7 +51,7 @@ def fixtures():
         reference_source="torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
         mirror=MirrorSpec(R._mirror, True, "reference.window_resample.upsample: y then x, double, one float32 rounding"),
         requests=2, constants=partial(_constants, window=window, out_window=out_window),
-        history="New output-window setting; no live evidence recorded.", accepts=(window_resize,), window=window,
+        history="docs/evidence/live-fixtures/20261102T193505Z-resize_x2_out_window.json", accepts=(window_resize,), window=window,
         notes="Whole input/output read. The float32 global coefficients are sliced for the output window; "
               "source halo and cast unchanged. Exact mirror assumes the historical non-fused double x stage.",
     ) for index, (extent, window, out_window) in enumerate(CASES)]

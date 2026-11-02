@@ -51,10 +51,16 @@ multi-parent rectangular graphs against it bit for bit. They also
 reconstruct every global coefficient row, check costs, compare default
 graphs at historical settings, and refuse invalid output windows.
 
-Mixed-window settings are **offline only**: the existing status is
-unchanged, and every live configuration restricts `out_window` to None.
-Historical records predate that parameter and now report it as unstated;
-they are not edited or reinterpreted as validation of explicit output windows.
+The [approved live run](live-fixtures/20261102T193505Z-resize_x2_out_window.json)
+passed both complete-output fixtures at clean `f0c464f`, using four
+computePixels calls and one algorithms-list call, with zero refused calls.
+Every output was bit-identical to the NumPy mirror; the largest absolute
+EE-vs-PyTorch difference was 5.960464477539063e-8 for each fixture.
+The record was committed exactly as written before appending these two
+window/output-window pairs to the existing status (verbatim prefix) and
+`validated` record. Earlier configurations retain `out_window=None`.
+Historical records are unchanged and report the new parameter as unstated.
+This is numerical agreement on deterministic inputs, not model accuracy.
 
 ## Commands and budget
 
@@ -68,8 +74,9 @@ PYTHONPATH=. python tools/live_fixtures.py --plan resize_x2_out_window
 
 The plan needs **four interactive computePixels requests**, zero assets,
 zero tasks and one request at a time. No EECU estimate is available.
-The new selection requires separate live approval; the completed W7 run
-does not authorize it. A failure or abort is recorded and never retried.
+This selection received separate approval and ran exactly once. The completed
+W7 run was never rerun. No assets or tasks were created, and no retry or
+harness change was needed.
 
 The offline record was generated at clean `0daae63`. Both fixtures have maximum
 absolute mirror-vs-PyTorch error 5.960464477539063e-8, with zero values over

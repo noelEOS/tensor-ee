@@ -102,26 +102,56 @@ def test_four_request_plan_and_default_graph_shape_use_two_products_one_float32_
             assert graph.count('"Image.toFloat"') == 1
 
 
-def test_new_output_windows_are_outside_live_coverage_and_historical_default_is_retained():
+def test_live_output_windows_hold_only_the_validated_pairs_and_retain_historical_default():
     entry = R.METADATA["window_resize"]
     assert check_settings(entry, {"window": 7, "factor": 2, "align_corners": True, "out_window": None}).inside
     for fixture in F.fixtures():
-        assert not check_settings(entry, fixture.settings).inside
+        assert check_settings(entry, fixture.settings).inside
+    for window, output in ((7, 7), (14, 14), (8, 8), (14, None)):
+        assert not check_settings(entry, {"window": window, "factor": 2, "align_corners": True,
+                                          "out_window": output}).inside
     historical = check_settings(entry, {"window": 7, "factor": 2, "align_corners": True})
     assert not historical.outside and historical.unstated == ("out_window",)
 
 
-def test_completed_same_window_live_graphs_and_inputs_are_unchanged():
+@pytest.mark.parametrize("selection,filename", [
+    ("resize_x2", "20261102T190649Z-resize_x2.json"),
+    ("resize_x2_out_window", "20261102T193505Z-resize_x2_out_window.json"),
+])
+def test_completed_live_graphs_and_inputs_are_unchanged(selection, filename):
     import json
     from pathlib import Path
 
     record = json.loads((Path(__file__).resolve().parents[1] /
-                         "docs/evidence/live-fixtures/20261102T190649Z-resize_x2.json").read_text())
+                         "docs/evidence/live-fixtures" / filename).read_text())
     with deep_recursion():
-        plan = make_plan(select(["resize_x2"]))
+        plan = make_plan(select([selection]))
     for saved in record["fixtures"]:
         fid = saved["spec"]["id"]
         assert plan.data[fid].inputs_sha256 == saved["inputs_sha256"]
         assert plan.data[fid].weights_sha256 == saved["weights_sha256"]
         assert [request.graph_sha256 for request in plan.requests[fid]] == [
             request["graph_sha256"] for request in saved["requests"]]
+
+
+def test_mixed_window_live_record_is_clean_exact_and_covers_the_four_planned_requests():
+    import json
+    from pathlib import Path
+
+    path = "docs/evidence/live-fixtures/20261102T193505Z-resize_x2_out_window.json"
+    assert path in R.METADATA["window_resize"].evidence
+    record = json.loads((Path(__file__).resolve().parents[1] / path).read_text())
+    assert record["status"] == "passed" and record["dirty"] is False and record["errors"] == []
+    assert record["revision"] == "f0c464f93cb595c3301bd9733daac6c5b6dcc1ea"
+    assert record["credentials"] == "adc"
+    assert record["plan"]["requests"] == record["cloud_calls"]["computePixels"] == 4
+    assert record["plan"]["assets"] == record["plan"]["tasks"] == 0
+    assert record["cloud_calls"]["refused"] == []
+    assert record["selection"] == list(F.SELECTIONS["resize_x2_out_window"])
+    for fixture, saved in zip(F.fixtures(), record["fixtures"]):
+        assert saved["status"] == "passed" and saved["failures"] == []
+        assert saved["spec"]["settings"] == fixture.settings
+        for output in saved["outputs"].values():
+            if output["kind"] == "output":
+                assert output["mirror"]["differing"] == 0
+                assert output["pytorch"]["max_abs"] <= 1e-4
