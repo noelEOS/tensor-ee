@@ -70,3 +70,20 @@ The plan needs **four interactive computePixels requests**, zero assets,
 zero tasks and one request at a time. No EECU estimate is available.
 The new selection requires separate live approval; the completed W7 run
 does not authorize it. A failure or abort is recorded and never retried.
+
+The offline record was generated at clean `0daae63`. Both fixtures have maximum
+absolute mirror-vs-PyTorch error 5.960464477539063e-8, with zero values over
+1e-4 and zero cloud calls. This is offline agreement only.
+
+## Full offline plan output
+
+```text
+window/window_resize/ac-f2-e7-w7-out14 (window_resize, double_round_once); inputs 54930c12aa87, weights e3b0c44298fc
+  request 0: 14 x 14 grid (rows x columns), 3 bands (out_0[2]); 588 values, 2,352 bytes expected; request 61,412 bytes; graph a46201225899; embedded constants 254 (METADATA) + 98 input values; NPY header 182 bytes
+  request 1: 7 x 7 grid (rows x columns), 3 bands (input_0_0[2]); 147 values, 588 bytes expected; request 5,083 bytes; graph 1b60952f2018; embedded constants 0 (METADATA) + 98 input values; NPY header 182 bytes
+window/window_resize/ac-f2-e14-w14-out7 (window_resize, double_round_once); inputs 38d76abfc03b, weights e3b0c44298fc
+  request 0: 28 x 28 grid (rows x columns), 3 bands (out_0[2]); 2,352 values, 9,408 bytes expected; request 177,018 bytes; graph 83c476e56beb; embedded constants 904 (METADATA) + 392 input values; NPY header 182 bytes
+  request 1: 14 x 14 grid (rows x columns), 3 bands (input_0_0[2]); 588 values, 2,352 bytes expected; request 8,667 bytes; graph 85e314dda8b4; embedded constants 0 (METADATA) + 392 input values; NPY header 182 bytes
+Totals: 4 requests (budget 40); largest request 2,352 values (budget 1,000,000) and 177,018 bytes (budget 2,000,000); largest NPY header 182 bytes (limit 9,000); 3,675 values and 14,700 bytes expected in all; 252,180 request bytes in all; assets 0, tasks 0, in flight 1 (limit 4)
+Within budget.
+```
