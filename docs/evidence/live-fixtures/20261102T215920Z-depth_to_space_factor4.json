@@ -1,0 +1,471 @@
+{
+  "schema_version": 1,
+  "kind": "live_fixture_run",
+  "status": "passed",
+  "command": "python tools/live_fixtures.py --run depth_to_space_factor4 --project tensor-ee --budget requests=4",
+  "selection": [
+    "window/window_depth_to_space/f4-w14-to-w7-c4",
+    "window/window_depth_to_space/f4-w14-to-w7-convtranspose-c3-c4"
+  ],
+  "project": "tensor-ee",
+  "credentials": "adc",
+  "revision": "2d66e9ca220526287cd1812e36a2f104f84305fd",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.3",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "started_utc": "2026-11-02T21:59:20+00:00",
+  "budget": {
+    "requests": 4,
+    "raster_side": 64,
+    "window_side": 8,
+    "values": 1000000,
+    "request_bytes": 2000000,
+    "in_flight": 4,
+    "assets": 0,
+    "tasks": 0
+  },
+  "plan": {
+    "fixtures": 2,
+    "requests": 4,
+    "values": 44884,
+    "payload_bytes": 179536,
+    "request_bytes": 635949,
+    "max_values": 15680,
+    "max_request_bytes": 305553,
+    "max_bands": 65,
+    "embedded_constants": 12736,
+    "inline_values": 26264,
+    "assets": 0,
+    "tasks": 0,
+    "in_flight": 1
+  },
+  "max_in_flight": 1,
+  "errors": [],
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/window_depth_to_space/f4-w14-to-w7-c4",
+        "lane": "window",
+        "block": "window_depth_to_space",
+        "parts": [],
+        "settings": {
+          "window": 14,
+          "out_window": 7,
+          "factor": 4,
+          "channels": 4
+        },
+        "policy": "none",
+        "shapes": {
+          "input": [
+            14,
+            14,
+            64
+          ],
+          "output": [
+            56,
+            56,
+            4
+          ]
+        },
+        "seed": 10104,
+        "tolerance": 0,
+        "requests": 2,
+        "reference": "torch.nn.functional.pixel_shuffle (channel-major input)",
+        "mirror": {
+          "source": "reference.window_depth_to_space.window_depth_to_space",
+          "exact": true,
+          "bound": null
+        },
+        "history": "Offline only; factor 4 has not yet been validated live.",
+        "calibration": false,
+        "notes": "Whole input/output read; W7 matches the DPT decoder chain. Small channels; no full DPT model claim. Unique integer IDs."
+      },
+      "inputs_sha256": "4460cc9860e679aec54c942b522327d66cfdbabf5f8471d3be9a44a13aa77998",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 2.02,
+      "failures": [],
+      "offline": {
+        "output": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 12544,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 0.625,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -0.625,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "output",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 15680,
+          "payload_bytes": 62720,
+          "request_bytes": 305553,
+          "graph_sha256": "f718012e3d19b41644342104e4cb829ea263d5a8ad85a9048936cfd02a05e6b3",
+          "graph_bytes": 305323,
+          "embedded_constants": 0,
+          "inline_values": 12544,
+          "status": "ok",
+          "wall_seconds": 1.157
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 64
+            }
+          ],
+          "bands": 65,
+          "values": 12740,
+          "payload_bytes": 50960,
+          "request_bytes": 148885,
+          "graph_sha256": "9fb68400f33384be3b5b4a041d8ce3b0a2076929c6f4cae0b18ab4e7d4478f36",
+          "graph_bytes": 148659,
+          "embedded_constants": 0,
+          "inline_values": 12544,
+          "status": "ok",
+          "wall_seconds": 0.862
+        }
+      ],
+      "outputs": {
+        "output": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0,
+            "comparison": "bits",
+            "values": 12544,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.0,
+              "expected": 0.0
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 12544,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            64
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 12544,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/window_depth_to_space/f4-w14-to-w7-convtranspose-c3-c4",
+        "lane": "window",
+        "block": "window_depth_to_space",
+        "parts": [
+          "linear"
+        ],
+        "settings": {
+          "window": 14,
+          "out_window": 7,
+          "factor": 4,
+          "channels": 4
+        },
+        "policy": "none",
+        "shapes": {
+          "input": [
+            14,
+            14,
+            3
+          ],
+          "output": [
+            56,
+            56,
+            4
+          ]
+        },
+        "seed": 10104,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.functional.conv_transpose2d(kernel=4, stride=4, bias=True)",
+        "mirror": {
+          "source": "reference.prithvi_settings.linear + reference.window_depth_to_space.window_depth_to_space",
+          "exact": true,
+          "bound": null
+        },
+        "history": "Offline only; factor 4 has not yet been validated live.",
+        "calibration": false,
+        "notes": "Whole input/output read; W7 matches the DPT decoder chain. Small channels; no full DPT model claim. Linear uses double_round_once; shuffle moves values."
+      },
+      "inputs_sha256": "e1eb60bd85e96ca7ea660470f571ec21563c05849daa9747f27182b297d6fbd8",
+      "weights_sha256": "8b579cfd3129a1ec864ccd1df1143aaa42c772b88aa3ad1c5b6ba9219abf79a1",
+      "status": "passed",
+      "wall_seconds": 0.431,
+      "failures": [],
+      "offline": {
+        "output": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.06512451171875,
+              "expected": 0.06512451171875
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 0.625,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -0.625,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "output",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 15680,
+          "payload_bytes": 62720,
+          "request_bytes": 170789,
+          "graph_sha256": "e8ae170361d1973b04cfcfb030b188973514cef1bf5ace9e120e0631d0a4109f",
+          "graph_bytes": 170559,
+          "embedded_constants": 12736,
+          "inline_values": 588,
+          "status": "ok",
+          "wall_seconds": 0.293
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 2.5,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -2.5,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 3
+            }
+          ],
+          "bands": 4,
+          "values": 784,
+          "payload_bytes": 3136,
+          "request_bytes": 10722,
+          "graph_sha256": "2ed192834c25b7f97497a992659ac0f091b3f2a5ffb7bb78a333fef63b14529d",
+          "graph_bytes": 10496,
+          "embedded_constants": 0,
+          "inline_values": 588,
+          "status": "ok",
+          "wall_seconds": 0.137
+        }
+      ],
+      "outputs": {
+        "output": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            56,
+            56,
+            4
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 0.0,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.06512451171875,
+              "expected": 0.06512451171875
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 12544,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            3
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 588,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    }
+  ],
+  "cloud_calls": {
+    "requests": 4,
+    "computePixels": 4,
+    "algorithms_list": 1,
+    "refused": []
+  },
+  "finished_utc": "2026-11-02T21:59:26+00:00",
+  "wall_seconds": 5.921
+}

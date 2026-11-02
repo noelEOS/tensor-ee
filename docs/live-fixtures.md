@@ -261,3 +261,40 @@ To inspect the small live plan offline:
 ```sh
 PYTHONPATH=. python tools/live_fixtures.py --plan class_row_readout
 ```
+
+## DPT reassemble: factor-4 depth-to-space
+
+`window_depth_to_space(..., factor=4, window=14, out_window=7)` moves position-major
+columns `(dy, dx, c)` to token `(4*y+dy, 4*x+dx, c)`, without arithmetic or casts.
+The existing factor-2 default and its graphs stay unchanged. W7 is chosen for the
+56 × 56 output so it shares the DPT decoder chain's layout: factor-2 depth-to-space
+already produces the 28-token map in W7, and `window_resize` keeps W7 through
+224 tokens. W8 would require a layout change in that chain.
+
+Selection `depth_to_space_factor4` contains two W14 → W7 fixtures:
+
+- `window/window_depth_to_space/f4-w14-to-w7-c4`: unique integer IDs in all
+  64 packed columns, compared bit for bit with PyTorch pixel shuffle and the mirror;
+- `window/window_depth_to_space/f4-w14-to-w7-convtranspose-c3-c4`: the existing
+  linear block to 16 × 4 columns followed by depth-to-space, compared with biased
+  PyTorch `ConvTranspose2d(3, 4, kernel_size=4, stride=4)` and the NumPy mirror.
+  Transpose-convolution weights `[Cin, Cout, dy, dx]` become linear rows
+  `[dy, dx, Cout, Cin]`; the bias repeats once per position.
+
+The [offline record](evidence/window-depth-to-space-factor4-offline.json) reports
+maximum absolute error 0 for both fixtures, with zero cloud calls.
+Both read the whole 14 × 14 input and 56 × 56 output. The plan is four interactive
+requests, zero assets and zero tasks. The approved
+[live run](evidence/live-fixtures/20261102T215920Z-depth_to_space_factor4.json)
+passed exactly those four requests: both outputs matched PyTorch and the NumPy
+mirror bit for bit, maximum absolute error 0, with all pixels valid and exact
+input echoes. The factor-4 W14 → W7 setting is appended to the existing status
+and validated record; the factor-2 coverage is unchanged. Factor 4 with W7 input
+has offline coverage only.
+The tests also compare the unchanged linear block at 256 → 4096 columns followed
+by the mirror with PyTorch k4/s4 at DPT's 14 → 56 extent. This full-width check is
+offline only; the live plan uses small channels and makes no full DPT model claim.
+
+```sh
+PYTHONPATH=. python tools/live_fixtures.py --plan depth_to_space_factor4
+```

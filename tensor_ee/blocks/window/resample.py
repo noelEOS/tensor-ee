@@ -49,12 +49,17 @@ live for DPT's 7 -> 14 and 14 -> 28 maps, respectively.
 Other windows, factors and sources are not validated.
 
 The no-arithmetic window_depth_to_space moves projected columns
-(dy,dx,c) at source token (y,x) to (2*y+dy,2*x+dx,c).
-Input arrays are [w*w,4*C]; output arrays are [49,C], with w=7 or14.
+(dy,dx,c) at source token (y,x) to (factor*y+dy,factor*x+dx,c).
+Input arrays are [w*w,factor*factor*C]; output arrays are [49,C], with w=7 or14.
 Child windows are sliced directly from the expanded parent array, without
 interpolation, tensor-value casts, dense channel bands or a halo.
 Validated live at factor 2 from windows 14 and 7 to window 7 (Earth Engine equal to the
-NumPy mirror in every value).
+NumPy mirror in every value). Factor 4 is validated live from W14 -> W7
+on a 14 -> 56 token grid with 4 output channels, both alone and after the existing
+linear (3 -> 64) against biased ConvTranspose2d k4/s4 (maximum absolute error 0).
+W7 is chosen for DPT: its 56-token output uses the same W7 layout as the decoder
+chain (the factor-2 28-token map and window_resize through 224 tokens).
+Other factor-4 windows have offline coverage only.
 """
 
 from __future__ import annotations
@@ -302,12 +307,13 @@ def window_resize_edge(*, align_corners: bool = False) -> dict:
 
 def window_depth_to_space(ee, x, grid: TokenGrid, channels: int, *, window: int = 7,
                           out_window: int = 7, factor: int = 2):
-    """[window², 4*C] on grid.coarse(window) -> [out_window², C] on a finer grid.
+    """[window², factor²*C] on grid.coarse(window) -> [out_window², C] on a finer grid.
 
     ``grid`` is the input token grid, ``channels`` the output channel count.
-    Source column ``(dy*2+dx)*C+c`` moves to fine token ``(2*y+dy,2*x+dx,c)``.
+    Source column ``(dy*factor+dx)*C+c`` moves to fine token
+    ``(factor*y+dy,factor*x+dx,c)``.
     Returns ``(image, fine_tokens)``. Positive integral channel/window dimensions,
-    factor 2, window pairs (7,7)/(14,7), TokenGrid origin (0,0), and complete
+    factor 2 or 4, window pairs (7,7)/(14,7), TokenGrid origin (0,0), and complete
     input and output windows are required. The operation
     only reindexes values, including their signed zeros.
     """
@@ -316,8 +322,8 @@ def window_depth_to_space(ee, x, grid: TokenGrid, channels: int, *, window: int 
     for name, value in (("channels", channels), ("window", window), ("out_window", out_window)):
         if isinstance(value, bool) or not isinstance(value, numbers.Integral) or value < 1:
             reject(f"{name} must be a positive integer; received {value!r}")
-    if isinstance(factor, bool) or not isinstance(factor, numbers.Integral) or factor != 2:
-        reject(f"factor must be 2; received {factor!r}")
+    if isinstance(factor, bool) or not isinstance(factor, numbers.Integral) or factor not in (2, 4):
+        reject(f"factor must be 2 or 4; received {factor!r}")
     if (window, out_window) not in ((7, 7), (14, 7)):
         reject("supported window pairs are (7, 7) and (14, 7)")
     if grid.height % window or grid.width % window:
@@ -360,9 +366,12 @@ METADATA = validate_metadata({
         name="window_depth_to_space", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=NO_ARITHMETIC, embedded_constants=window_depth_to_space_values,
         asset_arrays=window_depth_to_space_arrays, chip_edge_dependent=False,
-        status="Ready — factor 2; windows 14, 7 to window 7",
-        evidence=("docs/evidence/prithvi-depth-to-space-offline.json", "docs/evidence/live-fixtures/20261029T185116Z-prithvi_depth_to_space.json"),
-        validated=Validated(({"factor": (2,), "window": (14, 7), "out_window": (7,)},))),
+        status="Ready — factor 2; windows 14, 7 to window 7; factor 4, window 14, out_window=7",
+        evidence=("docs/evidence/prithvi-depth-to-space-offline.json", "docs/evidence/live-fixtures/20261029T185116Z-prithvi_depth_to_space.json",
+                  "docs/evidence/window-depth-to-space-factor4-offline.json",
+                  "docs/evidence/live-fixtures/20261102T215920Z-depth_to_space_factor4.json"),
+        validated=Validated(({"factor": (2,), "window": (14, 7), "out_window": (7,)},
+                             {"factor": (4,), "window": (14,), "out_window": (7,)}))),
 
     # Chip-edge dependent over its validated settings (align_corners=True is one), and exactly
     # by setting through window_resize_edge.
