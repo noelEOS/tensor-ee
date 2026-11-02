@@ -296,6 +296,14 @@ def _pack(group: list, height: int, width: int) -> list[list]:
 
 
 def build_requests(fixture: Fixture, data: FixtureData) -> list[Request]:
+    """Build and serialize possibly deep composition graphs with a scoped stack limit."""
+    from tensor_ee.converter.request import deep_recursion
+
+    with deep_recursion():
+        return _build_requests(fixture, data)
+
+
+def _build_requests(fixture: Fixture, data: FixtureData) -> list[Request]:
     """The fixture's readouts as computePixels requests: readouts on the same grid share one
     request, unless together their response's NPY header would exceed ``NPY_HEADER_LIMIT``;
     then they are split, in order, over more requests (``_pack``). Each readout contributes

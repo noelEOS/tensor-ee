@@ -10,6 +10,7 @@ documentation; the records after them hold the evidence the guides cite.
 | [Getting started](getting-started.md) | Install, the offline example, both demos and a first conversion, with expected output |
 | [Code Editor demo](../CODE_EDITOR.md) | The trained U-Net in the Earth Engine Code Editor: no install, no checkpoint |
 | [Browser demo](../DEMO.md) | A local web app that runs either trained model in Earth Engine, with an offline mode |
+| [ViT-B/16 encoder target](vit-b16-encoder224.md) | Hand-composed DPT encoder target, offline evidence and reduced live plan |
 | [Models and their evidence](model.md) | The four models built from the blocks, what each was checked against, and the trained checkpoints |
 | [U-Net single-chip walkthrough](water-chip.md) | The trained U-Net from Python: upload its weights, export one chip, check it against PyTorch |
 | [Release validation](validation.md) | The walkthrough's verified run, which the README figure was rendered from |

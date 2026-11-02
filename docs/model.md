@@ -177,3 +177,11 @@ fixture measured logit/probability errors below 1e-4 with zero valid-pixel class
 disagreements. [Exact evidence](evidence/t05-primary.json) separates this small
 execution demonstration from trained-model measurements. It is not a water model
 or an accuracy benchmark.
+
+## ViT-B/16 encoder target, 224 × 224
+
+The [hand-composed ViT encoder target](vit-b16-encoder224.md) exposes every raw
+block's spatial/class pair and the final norm, with SMP DPT encoder parameter
+names. Reduced and full-width random-weight timm comparisons pass offline; the
+reduced interactive live plan awaits approval. No encoder live execution, converter
+equivalence, DPT decoder, or model accuracy is claimed.
