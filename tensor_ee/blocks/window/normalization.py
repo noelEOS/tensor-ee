@@ -12,7 +12,7 @@ build ahead) call ``layer_norm2d``: the single LayerNorm2d entry point (the grap
 
     mean = sum_i x_i / C
     var  = sum_i (x_i - mean)^2 / C          biased (population) variance
-    y    = (x - mean) / sqrt(var + eps) * gamma + beta      eps = 1e-5
+    y    = (x - mean) / sqrt(var + eps) * gamma + beta      eps = 1e-5 (timm's Swin), 1e-6 (timm's ViT)
 
 The statistics and the normalization run in double; the result is rounded to
 float32 once (policy ``double_round_once``). Two passes (mean, then centered
@@ -71,7 +71,8 @@ def layer_norm(ops, x, gamma, beta, *, dim: int, eps: float = LN_EPS, policy: st
                layout=None):
     """x: float32 [N, dim]; gamma, beta: float32 [N, dim] (rows repeated), as values or
     ``RowConstant``s. ``layout``, when given, refuses ``RowConstant``s built for another
-    row count. eps defaults to timm's 1e-5; other values are not validated."""
+    row count. eps defaults to timm's 1e-5; 1e-5 and 1e-6 (timm's ViT, validated on window 14
+    and on one row) are validated, other values are not."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     gamma, beta = _row_value(gamma, layout), _row_value(beta, layout)
     mean = ops.row_total(x).divide(dim)                         # [N, 1] double
@@ -170,14 +171,16 @@ def batch_norm_arrays() -> int:
 
 
 METADATA = validate_metadata({
-    # Validated: eps 1e-5 only, never varied (timm's Swin norms; SegFormer's 1e-5 norms).
-    # The 1e-6 norms run through layer_norm2d.
+    # Validated: eps 1e-5 (timm's Swin norms; SegFormer's 1e-5 norms) and 1e-6 (timm's ViT
+    # norms, on window 14 and on one row). The decoders' 1e-6 norms run through layer_norm2d.
     "layer_norm": BlockMetadata(
         name="layer_norm", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=layer_norm_values, asset_arrays=layer_norm_arrays,
-        status="Ready",
-        evidence=("docs/history/building-blocks-2026-10-11.md#34-normalization", "docs/history/swin_block/notes/findings.md"),
-        validated=Validated(({"eps": (LN_EPS,)},))),
+        status="Ready — eps 1e-5, 1e-6",
+        evidence=("docs/history/building-blocks-2026-10-11.md#34-normalization", "docs/history/swin_block/notes/findings.md",
+                  "docs/evidence/window-layer-norm-eps1e-6-offline.json",
+                  "docs/evidence/live-fixtures/20261102T051145Z-vit_layer_norm.json"),
+        validated=Validated(({"eps": (LN_EPS, 1e-6)},))),
     "layer_norm2d": BlockMetadata(
         name="layer_norm2d", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=layer_norm_values, asset_arrays=layer_norm_arrays,

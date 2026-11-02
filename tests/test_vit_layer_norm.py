@@ -1,11 +1,10 @@
 """Offline evidence and epsilon sensitivity of the width-768 LayerNorm fixtures."""
-from dataclasses import replace
 
 import numpy as np
 import pytest
 
 from tensor_ee.blocks.window.normalization import METADATA
-from tensor_ee.core.metadata import Validated, check_settings
+from tensor_ee.core.metadata import check_settings
 from tools.fixtures import select
 from tools.fixtures import vit_layer_norm as fixtures
 from tools import live_fixtures as LF
@@ -29,13 +28,9 @@ def test_epsilon_is_observable_and_the_requested_mirror_agrees(fixture):
 
 
 @pytest.mark.parametrize("fixture", select(["vit_layer_norm"]), ids=lambda fixture: fixture.id)
-def test_settings_remain_outside_the_current_record(fixture):
-    metadata = METADATA["layer_norm"]
-    current = check_settings(metadata, fixture.settings)
-    assert not current.inside and current.outside == ("eps",) and current.unstated == ()
-    extended = replace(metadata, validated=Validated(({"eps": (1e-5, 1e-6)},)))
-    hypothetical = check_settings(extended, fixture.settings)
-    assert hypothetical.inside and hypothetical.outside == hypothetical.unstated == ()
+def test_settings_are_inside_the_record(fixture):
+    result = check_settings(METADATA["layer_norm"], fixture.settings)
+    assert result.inside and result.outside == result.unstated == ()
 
 
 def test_plan_calls_layer_norm_directly_with_layout_constants_and_fits_the_budget(monkeypatch):

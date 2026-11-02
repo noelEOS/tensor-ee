@@ -839,7 +839,7 @@ that positional construction is unchanged:
   them.
 - **What a record holds.** It follows the status: a setting the status names holds exactly its
   values, joined as the status joins them; a setting the status does not name holds its one
-  value when the evidence never varied it (`layer_norm`'s eps 1e-5, `clip_footprints=False` for
+  value when the evidence never varied it (`batch_norm`'s eps 1e-5, `clip_footprints=False` for
   the R blocks only the T02–T05 sweeps cover); a setting the evidence varied is left out, which
   an unqualified "Ready" covers. Composites record the settings of the models they ran in,
   joined per stage (SegFormer-B0's widths with their heads and ratios; Swin-T224's and the
