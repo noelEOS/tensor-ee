@@ -220,8 +220,9 @@ def conv3x3_window(ops, x, c: Conv3x3Constants, coarse, *, window: int = WINDOW,
     padding remains one source token, including at crop edges. Locality is
     WINDOW_RING, radius 1, without chip-edge dependence. Stride 2 is validated
     live with bias at window 14 (Cin/Cout 4/4, crop None) and window 4
-    (Cin/Cout 2/3, crop 2). Full Cin/Cout 1024 has offline evidence only;
-    other stride-2 windows, widths, crops and bias-free forms are not validated.
+    (Cin/Cout 2/3, crop 2). Full Cin/Cout 1024 has NumPy-mirror-vs-PyTorch
+    agreement only: no EE graph was built or evaluated at that width. Other
+    stride-2 windows, widths, crops and bias-free forms are not validated.
     """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     _check_kernel(c)
@@ -340,10 +341,10 @@ METADATA = validate_metadata({
     "conv3x3_window": BlockMetadata(
         name="conv3x3_window", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=1,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=conv3x3_values, asset_arrays=conv3x3_arrays,
-        status=("Fixed — 3 × 3 kernel, stride 1, windows 5, 7, 8, 12; "
-                "stride 1, crops of 2 and 32 windows at window 7; "
-                "stride 2, window 14, Cin/Cout 4/4, bias, crop None; "
-                "stride 2, window 4, Cin/Cout 2/3, bias, crop 2"),
+        status=("Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; "
+                "crops of 2 and 32 windows at window 7; "
+                "stride 2: window 14, Cin/Cout 4/4, bias, crop None; "
+                "stride 2: window 4, Cin/Cout 2/3, bias, crop 2"),
         evidence=("docs/history/building-blocks-2026-10-11.md#33-convolution", "docs/history/upernet/notes/milestone7_findings.md",
                   "docs/evidence/p01-offline.json",
                   "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json",

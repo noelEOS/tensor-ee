@@ -457,6 +457,7 @@ stays "Fixed" at today's setting, and the docstring says so.
 | Shift | 3 | `configuration.py:3`, `shifted_swin_block.py:36`, `shift.py:164,170`, `shifted_mask.py:46` | cyclic shift, `shifted_window_mask` | L01, L04 |
 | Ring / halo | 1 | implicit in `layout.HALO = WINDOW + 2`; periodic `halo=1` | `halo`, `periodic_extension` | L01 |
 | W conv kernel | 3 | `taps`/`im2col` `k=3` | `conv3x3_window` (kernel argument) | L04 |
+| W conv stride | 1 (default); accepts 1 or 2 dividing the window | `tensor_ee/blocks/window/conv.py` | `conv3x3_window`, keyword-only `stride=1`; default graph unchanged | Window blocks |
 | Patch | 4 | `patch_embed.py:41` | `patch_embed` | L04 |
 | Input channel names | `("VV", "VH")` | `patch_embed.py:42`; the names reach the graph | `patch_embed` | L04 (recipe-facing; section 11) |
 | Embedding width | 96 | `patch_embed.py:45` | `patch_embed` (from weight shapes) | L04 |
@@ -975,3 +976,18 @@ function would change what `from tensor_ee.converter import build, plan` returns
 - **X08.** `request_size` is the planner's default measurement and the sizing tool's: the request
   the runner prepares, to `f"{namespace}_{name}"` described as `f"{graph.name}_{name}"`, a
   module-path name sized under its same-length asset name (`asset_name`). The exports above.
+
+
+## As built (window convolution stride, 2026-11-02)
+
+`conv3x3_window` takes keyword-only `stride=1`; the default preserves the existing
+serialized graph. Stride 2 selects phase-zero im2col rows before the same single
+matrix product, mapping W(window) to W(window // 2), with output-row bias constants.
+It retains source-token radius 1, WINDOW_RING locality and independent crop-edge
+zero padding, without chip-edge dependence.
+
+The [live stride-2 run](evidence/live-fixtures/20261102T171117Z-conv3x3_stride2.json)
+validated biased window 14 (Cin/Cout 4/4, crop None) and window 4 (Cin/Cout 2/3,
+crop 2). Existing stride-1 coverage is unchanged. Width 1024 has NumPy-mirror-vs-PyTorch
+agreement only; no EE graph was built or evaluated at that width. Other settings
+have no new live claim. The [catalogue](building-blocks.md) records these scopes.

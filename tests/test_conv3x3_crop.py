@@ -180,5 +180,9 @@ def test_the_record_names_the_live_crops_at_window_7():
         assert not check_settings(entry, {"window": 7, "crop": crop}).outside
         assert check_settings(entry, {"window": 12, "crop": crop}).outside        # not validated together
     assert check_settings(entry, {"window": 7, "crop": 4}).outside
-    assert entry.status == "Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; crops of 2 and 32 windows at window 7"
+    assert entry.status == (
+        "Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; "
+        "crops of 2 and 32 windows at window 7; "
+        "stride 2: window 14, Cin/Cout 4/4, bias, crop None; "
+        "stride 2: window 4, Cin/Cout 2/3, bias, crop 2")
     assert "docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json" in entry.evidence
