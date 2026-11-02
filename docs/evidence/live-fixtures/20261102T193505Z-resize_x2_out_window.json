@@ -1,0 +1,467 @@
+{
+  "schema_version": 1,
+  "kind": "live_fixture_run",
+  "status": "passed",
+  "command": "python tools/live_fixtures.py --run resize_x2_out_window --project tensor-ee --budget requests=4",
+  "selection": [
+    "window/window_resize/ac-f2-e7-w7-out14",
+    "window/window_resize/ac-f2-e14-w14-out7"
+  ],
+  "project": "tensor-ee",
+  "credentials": "adc",
+  "revision": "f0c464f93cb595c3301bd9733daac6c5b6dcc1ea",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.3",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "started_utc": "2026-11-02T19:35:05+00:00",
+  "budget": {
+    "requests": 4,
+    "raster_side": 64,
+    "window_side": 8,
+    "values": 1000000,
+    "request_bytes": 2000000,
+    "in_flight": 4,
+    "assets": 0,
+    "tasks": 0
+  },
+  "plan": {
+    "fixtures": 2,
+    "requests": 4,
+    "values": 3675,
+    "payload_bytes": 14700,
+    "request_bytes": 252180,
+    "max_values": 2352,
+    "max_request_bytes": 177018,
+    "max_bands": 3,
+    "embedded_constants": 1158,
+    "inline_values": 980,
+    "assets": 0,
+    "tasks": 0,
+    "in_flight": 1
+  },
+  "max_in_flight": 1,
+  "errors": [],
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/window_resize/ac-f2-e7-w7-out14",
+        "lane": "window",
+        "block": "window_resize",
+        "parts": [],
+        "settings": {
+          "factor": 2,
+          "align_corners": true,
+          "window": 7,
+          "out_window": 14
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            7,
+            7
+          ],
+          "out": [
+            14,
+            14
+          ],
+          "channels": 2
+        },
+        "seed": 9801,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
+        "mirror": {
+          "source": "reference.window_resample.upsample: y then x, double, one float32 rounding",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New output-window setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "Whole input/output read. The float32 global coefficients are sliced for the output window; source halo and cast unchanged. Exact mirror assumes the historical non-fused double x stage."
+      },
+      "inputs_sha256": "54930c12aa87e4220333ebfb91ed061ad495cf00107925e02ebd64f3b75c9984",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 0.474,
+      "failures": [],
+      "offline": {
+        "out_0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 6,
+              "channel": 0,
+              "actual": -0.8017938733100891,
+              "expected": -0.8017938137054443
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "out_0",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 588,
+          "payload_bytes": 2352,
+          "request_bytes": 61412,
+          "graph_sha256": "a4620122589943431e7438a49728cd7aaa518012277e7a9ce96830f355238a56",
+          "graph_bytes": 61186,
+          "embedded_constants": 254,
+          "inline_values": 98,
+          "status": "ok",
+          "wall_seconds": 0.264
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input_0_0",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 147,
+          "payload_bytes": 588,
+          "request_bytes": 5083,
+          "graph_sha256": "1b60952f2018b02164764af5d8568bb8a8a0da8850701e62edfaa42568a86630",
+          "graph_bytes": 4857,
+          "embedded_constants": 0,
+          "inline_values": 98,
+          "status": "ok",
+          "wall_seconds": 0.21
+        }
+      ],
+      "outputs": {
+        "out_0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            14,
+            14,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 392,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 6,
+              "channel": 0,
+              "actual": -0.8017938733100891,
+              "expected": -0.8017938137054443
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0_0": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            7,
+            7,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 98,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    {
+      "spec": {
+        "id": "window/window_resize/ac-f2-e14-w14-out7",
+        "lane": "window",
+        "block": "window_resize",
+        "parts": [],
+        "settings": {
+          "factor": 2,
+          "align_corners": true,
+          "window": 14,
+          "out_window": 7
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "tokens": [
+            14,
+            14
+          ],
+          "out": [
+            28,
+            28
+          ],
+          "channels": 2
+        },
+        "seed": 9802,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
+        "mirror": {
+          "source": "reference.window_resample.upsample: y then x, double, one float32 rounding",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New output-window setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "Whole input/output read. The float32 global coefficients are sliced for the output window; source halo and cast unchanged. Exact mirror assumes the historical non-fused double x stage."
+      },
+      "inputs_sha256": "38d76abfc03ba578ff48d0f3611fb4eea76a6a7b795cbe0f42d8974aeec8dc99",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "passed",
+      "wall_seconds": 0.752,
+      "failures": [],
+      "offline": {
+        "out_0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 0,
+              "actual": -0.9615421295166016,
+              "expected": -0.9615421891212463
+            }
+          }
+        }
+      },
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 5.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -5.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "out_0",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 2352,
+          "payload_bytes": 9408,
+          "request_bytes": 177018,
+          "graph_sha256": "83c476e56beb66de12c557dbf9dc0f9dea15701ca01a4a6e47bd2a72da3d4022",
+          "graph_bytes": 176792,
+          "embedded_constants": 904,
+          "inline_values": 392,
+          "status": "ok",
+          "wall_seconds": 0.535
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input_0_0",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 588,
+          "payload_bytes": 2352,
+          "request_bytes": 8667,
+          "graph_sha256": "85e314dda8b4f3c0ff79753c9a8fd9808e45519a9bd4300ac8a0fb14d8e682be",
+          "graph_bytes": 8439,
+          "embedded_constants": 0,
+          "inline_values": 392,
+          "status": "ok",
+          "wall_seconds": 0.216
+        }
+      ],
+      "outputs": {
+        "out_0": {
+          "kind": "output",
+          "request": 0,
+          "shape": [
+            28,
+            28,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 1568,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 2,
+              "channel": 0,
+              "actual": -0.9615421295166016,
+              "expected": -0.9615421891212463
+            }
+          },
+          "mirror": {
+            "exact": true,
+            "bound": null,
+            "values": 1568,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        },
+        "input_0_0": {
+          "kind": "input",
+          "request": 1,
+          "shape": [
+            14,
+            14,
+            2
+          ],
+          "dtypes": [
+            "float32"
+          ],
+          "float32": true,
+          "invalid_pixels": 0,
+          "input": {
+            "exact": true,
+            "bound": null,
+            "values": 392,
+            "differing": 0,
+            "max_abs": 0.0,
+            "first": [],
+            "pass": true
+          }
+        }
+      }
+    }
+  ],
+  "cloud_calls": {
+    "requests": 4,
+    "computePixels": 4,
+    "algorithms_list": 1,
+    "refused": []
+  },
+  "finished_utc": "2026-11-02T19:35:09+00:00",
+  "wall_seconds": 3.944
+}
