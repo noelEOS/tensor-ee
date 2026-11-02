@@ -823,3 +823,19 @@ def test_query_scale_fixture_ids_and_data_are_stable():
             assert data.inputs_sha256 == expected[f.id]
             assert data.weights_sha256 == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         assert f.data(f.seed + 1).inputs_sha256 != expected[f.id]
+
+
+def test_conv3x3_stride2_fixture_ids_and_data_are_stable():
+    expected = {
+        "window/conv3x3_window/w14-s2-bias": (
+            "f0f9c3e0b000e39ae83917d265d1a5bd1b5514fc88db55b56813ed6046537b6f",
+            "b625e78dcb2d5272163a3e2f0caffc1ca4b16059109a225e00bec17c0a319e2b"),
+        "window/conv3x3_window/w4-s2-bias-crop2": (
+            "670c50a34eb27367f053eaf480737083e45e28973211b72ffd9379f180f80d0c",
+            "b7aa3bb03b58ee884215cf4e473df2ec2e54bf3c373dbb630ddec720f57b6cce"),
+    }
+    fixtures = select(["conv3x3_stride2"])
+    assert {fixture.id for fixture in fixtures} == set(expected)
+    for fixture in fixtures:
+        data = fixture.data(fixture.seed)
+        assert (data.inputs_sha256, data.weights_sha256) == expected[fixture.id]

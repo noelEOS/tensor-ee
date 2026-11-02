@@ -1,0 +1,307 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "1171bc36f30ce2566cdea0e7506576932444574d",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.3",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 2,
+      "requests": 4,
+      "values": 2249,
+      "payload_bytes": 8996,
+      "request_bytes": 256533,
+      "max_values": 980,
+      "max_request_bytes": 182900,
+      "max_bands": 5,
+      "embedded_constants": 406,
+      "inline_values": 2592,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/conv3x3_window/w14-s2-bias",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "window": 14,
+          "stride": 2,
+          "k": 3,
+          "bias": true,
+          "crop": null
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            14,
+            14,
+            4
+          ],
+          "output_window": 7,
+          "cout": 4
+        },
+        "seed": 9514,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.Conv2d(kernel_size=3, stride=2, padding=1, bias=True)",
+        "mirror": {
+          "source": "reference.conv_stride.conv3x3_stride",
+          "exact": true,
+          "bound": null
+        },
+        "history": "Stride 2: offline evidence only; not validated live.",
+        "calibration": false,
+        "notes": ""
+      },
+      "inputs_sha256": "f0f9c3e0b000e39ae83917d265d1a5bd1b5514fc88db55b56813ed6046537b6f",
+      "weights_sha256": "b625e78dcb2d5272163a3e2f0caffc1ca4b16059109a225e00bec17c0a319e2b",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 245,
+          "payload_bytes": 980,
+          "request_bytes": 182900,
+          "graph_sha256": "8e9015b1bdc47f4a4d861e37972ee82d62dd61a8381e581a4e7c981dadbed6e5",
+          "graph_bytes": 182674,
+          "embedded_constants": 340,
+          "inline_values": 784
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 980,
+          "payload_bytes": 3920,
+          "request_bytes": 14691,
+          "graph_sha256": "2de17614f60a73f06f843c3d82b92ee3b5514b073b1d545a35aa1cf52784ff06",
+          "graph_bytes": 14463,
+          "embedded_constants": 0,
+          "inline_values": 784
+        }
+      ],
+      "errors": [],
+      "seconds": 0.045,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 1.7881393432617188e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 2,
+              "channel": 0,
+              "actual": 0.6169375777244568,
+              "expected": 0.6169377565383911
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/conv3x3_window/w4-s2-bias-crop2",
+        "lane": "window",
+        "block": "conv3x3_window",
+        "parts": [],
+        "settings": {
+          "window": 4,
+          "stride": 2,
+          "k": 3,
+          "bias": true,
+          "crop": 2
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            16,
+            16,
+            2
+          ],
+          "output_window": 2,
+          "cout": 3
+        },
+        "seed": 9504,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "torch.nn.Conv2d(kernel_size=3, stride=2, padding=1, bias=True)",
+        "mirror": {
+          "source": "reference.conv_stride.conv3x3_stride",
+          "exact": true,
+          "bound": null
+        },
+        "history": "Stride 2: offline evidence only; not validated live.",
+        "calibration": false,
+        "notes": ""
+      },
+      "inputs_sha256": "670c50a34eb27367f053eaf480737083e45e28973211b72ffd9379f180f80d0c",
+      "weights_sha256": "b7aa3bb03b58ee884215cf4e473df2ec2e54bf3c373dbb630ddec720f57b6cce",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 8,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 20.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -20.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 8,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 3
+            }
+          ],
+          "bands": 4,
+          "values": 256,
+          "payload_bytes": 1024,
+          "request_bytes": 48801,
+          "graph_sha256": "45cb03463cb5aa9e9c08cce99c496818da674873f6e37c8f5d4379ca003b2b14",
+          "graph_bytes": 48575,
+          "embedded_constants": 66,
+          "inline_values": 512
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 768,
+          "payload_bytes": 3072,
+          "request_bytes": 10141,
+          "graph_sha256": "f6ce042ed2d103327391fdc47448e67a550b9988e488898537197d9f05e1637a",
+          "graph_bytes": 9913,
+          "embedded_constants": 0,
+          "inline_values": 512
+        }
+      ],
+      "errors": [],
+      "seconds": 0.044,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 192,
+            "max_abs": 8.940696716308594e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 5,
+              "channel": 1,
+              "actual": -0.34863391518592834,
+              "expected": -0.3486338257789612
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}
