@@ -281,6 +281,8 @@ Selection `depth_to_space_factor4` contains two W14 → W7 fixtures:
   Transpose-convolution weights `[Cin, Cout, dy, dx]` become linear rows
   `[dy, dx, Cout, Cin]`; the bias repeats once per position.
 
+The [offline record](evidence/window-depth-to-space-factor4-offline.json) reports
+maximum absolute error 0 for both fixtures, with zero cloud calls.
 Both read the whole 14 × 14 input and 56 × 56 output. The plan is four interactive
 requests, zero assets and zero tasks. Factor 4 is offline-only pending an approved
 live run; the existing factor-2 status and validated record remain unchanged.

@@ -365,7 +365,8 @@ METADATA = validate_metadata({
         policy=NO_ARITHMETIC, embedded_constants=window_depth_to_space_values,
         asset_arrays=window_depth_to_space_arrays, chip_edge_dependent=False,
         status="Ready — factor 2; windows 14, 7 to window 7",
-        evidence=("docs/evidence/prithvi-depth-to-space-offline.json", "docs/evidence/live-fixtures/20261029T185116Z-prithvi_depth_to_space.json"),
+        evidence=("docs/evidence/prithvi-depth-to-space-offline.json", "docs/evidence/live-fixtures/20261029T185116Z-prithvi_depth_to_space.json",
+                  "docs/evidence/window-depth-to-space-factor4-offline.json"),
         validated=Validated(({"factor": (2,), "window": (14, 7), "out_window": (7,)},))),
 
     # Chip-edge dependent over its validated settings (align_corners=True is one), and exactly
