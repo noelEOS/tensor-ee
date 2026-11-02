@@ -1,0 +1,336 @@
+{
+  "kind": "vit_encoder_offline_comparison",
+  "base_revision": "924a7c2c7f7619118a9eb87bc8088f61db277eee",
+  "cloud_calls": 0,
+  "tolerance": 0.0001,
+  "reference": {
+    "timm": "1.0.30",
+    "torch": "2.14.0+cpu",
+    "pretrained": false,
+    "fused_attn": false,
+    "torch_seed": 9316,
+    "input": "dyadic(9317, random-weight-input, (224,224,6), scale=.5, bits=16)"
+  },
+  "reproduce": "PYTHONPATH=. python -m pytest -q -s tests/test_vit_b16_encoder224.py",
+  "outputs": {
+    "reduced": {
+      "patch_spatial": 9.5367431640625e-07,
+      "patch_class": 0.0,
+      "block0_spatial": 1.0132789611816406e-06,
+      "block0_class": 5.960464477539063e-08,
+      "block1_spatial": 1.043081283569336e-06,
+      "block1_class": 9.499490261077881e-08,
+      "norm_spatial": 5.4836273193359375e-06,
+      "norm_class": 1.2814998626708984e-06
+    },
+    "full": {
+      "patch_spatial": 1.0132789611816406e-06,
+      "patch_class": 0.0,
+      "block0_spatial": 1.6093254089355469e-06,
+      "block0_class": 7.748603820800781e-07,
+      "block1_spatial": 2.5033950805664062e-06,
+      "block1_class": 1.0728836059570312e-06,
+      "block2_spatial": 3.0994415283203125e-06,
+      "block2_class": 1.430511474609375e-06,
+      "block3_spatial": 3.1739473342895508e-06,
+      "block3_class": 1.6689300537109375e-06,
+      "block4_spatial": 4.0978193283081055e-06,
+      "block4_class": 1.817941665649414e-06,
+      "block5_spatial": 4.1425228118896484e-06,
+      "block5_class": 2.1457672119140625e-06,
+      "block6_spatial": 4.492700099945068e-06,
+      "block6_class": 2.2649765014648438e-06,
+      "block7_spatial": 4.589557647705078e-06,
+      "block7_class": 2.86102294921875e-06,
+      "block8_spatial": 5.364418029785156e-06,
+      "block8_class": 2.9802322387695312e-06,
+      "block9_spatial": 5.4836273193359375e-06,
+      "block9_class": 3.337860107421875e-06,
+      "block10_spatial": 5.841255187988281e-06,
+      "block10_class": 3.874301910400391e-06,
+      "block11_spatial": 6.258487701416016e-06,
+      "block11_class": 4.0531158447265625e-06,
+      "norm_spatial": 4.410743713378906e-06,
+      "norm_class": 2.8014183044433594e-06
+    }
+  },
+  "actual_library_execution_equals_mirror_bits": true,
+  "request_sizing": {
+    "transport": "synthetic one-table-per-parameter aggregate_array(values) reads; no real tables or manifest",
+    "measurements": {
+      "kind": "explicit_measured_encoder_cuts",
+      "limits": {
+        "constants": 24000000,
+        "request_bytes": 10000000,
+        "bands": 1024,
+        "extent": 2
+      },
+      "state_values": 86388480,
+      "logical_constants": 110321664,
+      "stages": [
+        {
+          "start": "input",
+          "stop": "patch",
+          "constants": 1482240,
+          "conservative_constants": 1482240,
+          "request_bytes": {
+            "patch_spatial": 904540,
+            "patch_class": 13968
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 0,
+          "tileable": true,
+          "within_limits": true
+        },
+        {
+          "start": "patch",
+          "stop": "block0",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block0_spatial": 230125,
+            "block0_class": 229998
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block0",
+          "stop": "block1",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block1_spatial": 230127,
+            "block1_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block1",
+          "stop": "block2",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block2_spatial": 230127,
+            "block2_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block2",
+          "stop": "block3",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block3_spatial": 230127,
+            "block3_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block3",
+          "stop": "block4",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block4_spatial": 230127,
+            "block4_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block4",
+          "stop": "block5",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block5_spatial": 230127,
+            "block5_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block5",
+          "stop": "block6",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block6_spatial": 230127,
+            "block6_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block6",
+          "stop": "block7",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block7_spatial": 230127,
+            "block7_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block7",
+          "stop": "block8",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block8_spatial": 230127,
+            "block8_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block8",
+          "stop": "block9",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block9_spatial": 230127,
+            "block9_class": 230000
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block9",
+          "stop": "block10",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block10_spatial": 230141,
+            "block10_class": 230014
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block10",
+          "stop": "block11",
+          "constants": 9044736,
+          "conservative_constants": 16122624,
+          "request_bytes": {
+            "block11_spatial": 230143,
+            "block11_class": 230016
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 1,
+          "tileable": false,
+          "within_limits": true
+        },
+        {
+          "start": "block11",
+          "stop": "norm",
+          "constants": 302592,
+          "conservative_constants": 302592,
+          "request_bytes": {
+            "norm_spatial": 163065,
+            "norm_class": 18357
+          },
+          "exports": 2,
+          "boundary_bands": [
+            768,
+            768
+          ],
+          "extent_nodes": 0,
+          "tileable": true,
+          "within_limits": true
+        }
+      ],
+      "within_limits": true,
+      "submitted": false,
+      "runtime_measured": false,
+      "eecu_seconds": null
+    }
+  },
+  "limitations": [
+    "No Earth Engine encoder execution",
+    "No model accuracy claim",
+    "No converter recognizer",
+    "Actual manifest requests must be measured again"
+  ]
+}

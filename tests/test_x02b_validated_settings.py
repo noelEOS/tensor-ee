@@ -473,7 +473,8 @@ def test_the_defaults_are_inside_the_record(name):
 # ---------------------------------------------------------------------------
 # Every live fixture is inside the records of its block and parts
 # ---------------------------------------------------------------------------
-COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat_rows/prithvi-region-2x2"}
+COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat_rows/prithvi-region-2x2",
+                        "window/concat_rows/vit-encoder-reduced"}
 """Whole-model checks whose compatibility block field does not identify block evidence."""
 
 
