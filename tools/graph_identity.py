@@ -291,15 +291,40 @@ def _fixed_weights(model, scale: float = 128.0):
     return model.eval()
 
 
+T04_WEIGHTS = ROOT / "tools" / "t04_weights.json"
+
+
+def t04_pinned_weights(model, name: str):
+    """Copy T04's seeded convolution parameters for ``name``, as recorded in tools/t04_weights.json, into
+    ``model``. The recorded bytes are what ``initialize_fixture`` gave in the golden environment; torch's CPU
+    normal generator gives other bytes elsewhere, which made these fixtures unjudgeable off that platform."""
+    import base64
+    import numpy as np
+    import torch
+    from torch import nn
+    recorded = json.loads(T04_WEIGHTS.read_text())["models"][name]["parameters"]
+    parameters = {f"{key}.{field}": getattr(module, field) for key, module in model.named_modules()
+                  if isinstance(module, nn.Conv2d) for field in ("weight", "bias") if getattr(module, field) is not None}
+    if set(parameters) != set(recorded):
+        raise AssertionError(f"{name}: recorded parameters {sorted(recorded)} are not the model's {sorted(parameters)}")
+    with torch.no_grad():
+        for key, parameter in parameters.items():
+            value = np.frombuffer(base64.b64decode(recorded[key]["float32_le_base64"]), dtype="<f4")
+            parameter.copy_(torch.from_numpy(value.reshape(recorded[key]["shape"]).copy()))
+    return model.eval()
+
+
 # ---------------------------------------------------------------------------
 # Fixture entry points (no checkpoints; run in CI)
 # ---------------------------------------------------------------------------
 def _t04_models():
-    """The three CNN fixtures of the graph-regression check (re-run for trained-model preservation), verbatim."""
+    """The three CNN fixtures of the graph-regression check (re-run for trained-model preservation). NonWater
+    is verbatim; TinyUNet and conv+BN read T04's seeded parameters from tools/t04_weights.json
+    (``t04_pinned_weights``), so their raw inputs are the golden ones on every platform."""
     import torch
     from torch import nn
     from torch.nn import functional as F
-    from tensor_ee.models import TinyUNet, initialize_fixture
+    from tensor_ee.models import TinyUNet
 
     class NonWater(nn.Module):
         def __init__(self):
@@ -317,9 +342,10 @@ def _t04_models():
     with torch.no_grad():
         for p in nonwater.parameters():
             p.copy_((((17 * torch.arange(p.numel()) + 3) % 31 - 15) / 128).reshape(p.shape))
-    tiny = initialize_fixture(TinyUNet(base_channels=4, levels=2), seed=404)
-    convbn = initialize_fixture(nn.Sequential(nn.Conv2d(2, 3, 3, padding=1, bias=False),
-                                              nn.BatchNorm2d(3), nn.LeakyReLU(.2), nn.Softmax(dim=1)), seed=405)
+    tiny = t04_pinned_weights(TinyUNet(base_channels=4, levels=2), "tiny_unet")
+    convbn = t04_pinned_weights(nn.Sequential(nn.Conv2d(2, 3, 3, padding=1, bias=False),
+                                              nn.BatchNorm2d(3), nn.LeakyReLU(.2), nn.Softmax(dim=1)),
+                                "conv_bn_pointwise_softmax")
     with torch.no_grad():
         convbn[1].running_mean.copy_(torch.tensor([.1, -.2, .5]))
         convbn[1].running_var.copy_(torch.tensor([.7, 1.2, 2.1]))
@@ -957,7 +983,11 @@ def judge(name: str, expected: dict[str, Any], actual: dict[str, Any] | None, go
     * Raw inputs differ (the fixture's pre-folding parameters and buffers, for
       example after torch RNG drift): graph identity cannot be judged. Named skip
       when earthengine-api, torch, NumPy or Python differ from the golden
-      environment; fail otherwise.
+      environment; fail otherwise. One exception: a graph of a group whose
+      weights are read from assets (``ASSET_READ_GROUPS``) whose record is equal
+      passes under a version difference, with a message saying its raw inputs
+      differ. Its weight values reach the graph only through the weight-shard
+      plan, which is part of the record, so an equal record is the golden graph.
     * Effective (folded) coefficients differ with equal raw inputs: fail, always
       (a folding change; allow_env_drift does not excuse it).
     * Graph fields differ with equal raw inputs and coefficients: fail. The
@@ -976,6 +1006,9 @@ def judge(name: str, expected: dict[str, Any], actual: dict[str, Any] | None, go
     if not inputs_equal:
         message = (f"{name}: raw fixture inputs (pre-folding parameters and buffers) differ from the golden "
                    f"fixture ({where}).")
+        if drift and not fields and expected.get("group") in ASSET_READ_GROUPS:
+            return "pass", (message + " Its weights are read from assets and its graph, weight-shard plan "
+                            "included, equals the golden graph.")
         if drift:
             return "skip", (message + " Graph identity needs identical inputs; this fixture is judged in the golden "
                             "environment by tools/graph_identity.py --check.")
@@ -1038,6 +1071,11 @@ EXT_RUNTIME_PATHS = ("tensor_ee", "tools/graph_identity.py", "tools/segformer_b0
 # SegFormer-B0: the monolithic graph and the six cuts of the approved split-stage-1 plan, with
 # weights and boundaries both read from assets (tools/segformer_b0_request_plan.py).
 SEGFORMER_CUTS = ("monolithic", "stage1a", "stage1b", "stage2", "stage3", "stage4", "decoder")
+# G1-ext groups whose weights the graphs read from assets, not as inline constants. Under a version
+# difference, an equal graph of these passes although its raw inputs (the seeded state) differ
+# (``judge``, ``check_ext``); in the golden environment their inputs must equal the golden ones, which
+# x00-g1ext-link.json ties to the live run's state.
+ASSET_READ_GROUPS = ("segformer_b0",)
 SEGFORMER_SMP = "0.5.0"
 # The approved run's records, read only from a git-ignored release_runs/ (--link-ext): its
 # preparation, and the sizing record it approved (SHA-256 pinned).
@@ -1231,10 +1269,16 @@ def check_ext(golden: dict[str, Any], records: dict[str, dict], skipped: dict[st
               g1_golden: dict[str, Any] | None = None) -> tuple[bool, str]:
     """Compare a G1-ext build with its golden file, as G1 compares (graph, bytes, bands, grid and
     raw inputs), excusing only the graphs of skipped groups; and check that the stage graph of
-    every Swin target is G1's golden graph of that stage. Returns (passed, report)."""
+    every Swin target is G1's golden graph of that stage. Under a version difference, an equal graph
+    of ``ASSET_READ_GROUPS`` passes with its raw inputs changed, and the report names it. Returns
+    (passed, report)."""
     g1_golden = json.loads(GOLDEN.read_text()) if g1_golden is None else g1_golden
     result = compare(golden["graphs"], records, kinds=("fixture",))
     result["missing"] = [name for name in result["missing"] if golden["graphs"][name]["group"] not in skipped]
+    drift = environment_differences(golden["environment"])
+    asset_read = sorted(name for name in result["input_changes"] if drift and name not in result["changed"]
+                        and golden["graphs"][name]["group"] in ASSET_READ_GROUPS)
+    result["input_changes"] = [name for name in result["input_changes"] if name not in asset_read]
     result["identical"] = not (result["changed"] or result["missing"] or result["unexpected"]
                                or result["input_changes"])
     stages = sorted(name for name, record in records.items()
@@ -1244,6 +1288,9 @@ def check_ext(golden: dict[str, Any], records: dict[str, dict], skipped: dict[st
     report = ["G1-ext " + explain(result, golden["environment"]),
               f"G1-ext: {len(equal)} of {len(golden['graphs'])} graphs equal"
               + (f"; groups NOT built (named skips): {skipped}" if skipped else "")]
+    if asset_read:
+        report.append(f"G1-ext: raw inputs differ for {asset_read} ({'; '.join(drift)}); their weights are read "
+                      "from assets and their graphs, weight-shard plans included, equal the golden graphs")
     if stages:
         report.append(f"G1-ext FAILED: the stage graphs of {stages} are not G1's golden swin_adapter stages")
     elif any("stage" in record for record in records.values()):

@@ -99,6 +99,13 @@ tag `research-archive-2026-10-12` ([history](docs/history/README.md)).
    with the [live fixture harness](docs/live-fixtures.md): add a fixture at that setting,
    record its `--offline` comparison of mirror and PyTorch, and its `--run` evidence.
 
+**Fixture inputs and weights use integer arithmetic only**, never a seeded RNG: torch's CPU
+generators take platform SIMD paths, so a seeded fixture is not bit-identical on every platform.
+Use `dyadic()` in [`tools/fixtures/core.py`](tools/fixtures/core.py) for arrays and
+`_fixed_weights(model)` in [`tools/graph_identity.py`](tools/graph_identity.py) for a PyTorch
+model. [`tests/test_graph_identity.py`](tests/test_graph_identity.py) refuses torch's normal
+generators while the G1 fixtures build.
+
 ## Add a recognizer
 
 The converter (`tensor_ee.converter.convert`, [guide](docs/converter.md)) turns a PyTorch
@@ -189,6 +196,10 @@ name without them):
 ```sh
 PYTHONPATH=. python tools/graph_identity.py --check-ext docs/evidence/x00-g1ext-golden-graphs.json
 ```
+
+The SegFormer-B0 graphs keep the seeded weights of their live run, which they read from assets.
+Off the golden platform the seeded state's raw inputs differ, and the check judges those graphs
+on the serialized graph alone and says so.
 
 ## Test markers and switches
 

@@ -61,7 +61,7 @@ PYTHONPATH=. python -m pytest -q -ra                    # offline suite, incl. t
 | Group | Graphs | Entry point | Needs |
 |---|---:|---|---|
 | `trained` | 9 | **The 8 T05 graphs, built as T05 built them:** U-Net raw, prepared and prediction (`predict_segwater` + `MatchedWeightProvider`); Swin prepared, validity and stages A, B, C (`SwinT224Adapter` + manifest-bound parameters). Checkpoint and manifest SHA-256 values are asserted. Both manifests are read from this checkout, where they are tracked; the T05 script read byte-identical copies from the resource checkout. **Plus `trained/unet/prediction_448`,** added at L00: the trained recipe on 448 × 448, i.e. 4 chips through `plan_segwater_tiles` and the mosaic. | Checkpoints |
-| `t04` | 6 | T04's CNN regression (NonWater, TinyUNet, conv+BN+softmax), each with and without unfused diagnostic nodes, built verbatim from `downloads/t05_integration/t04-graph-regression.py` | — |
+| `t04` | 6 | T04's CNN regression (NonWater, TinyUNet, conv+BN+softmax), each with and without unfused diagnostic nodes, built as `downloads/t05_integration/t04-graph-regression.py` builds them, with its seeded parameters read from `tools/t04_weights.json` | — |
 | `inline_transport` | 2 | Inline coefficients: ordinary literals, and the `Number.parse` route for values beyond signed int64 (`tests/test_inline_coefficients.py`) | — |
 | `public_examples` | 7 | `examples.building_blocks` (manual form asserted equal to the compiled form); the skip/pool/residual composition with `clip_footprints` False and True (manual form asserted equal); `examples.water_chip` prediction, its retained inputs and the export payload (`Export.image.toAsset` mocked) | — |
 | `segwater_recipe` | 1 | `predict_segwater` on 448 × 448 (4 chips) with a fixed-weight 1 × 1 model: CI coverage of the SegWater tiler and mosaic without a checkpoint | — |
@@ -82,8 +82,11 @@ The ResNet18, tiling, `segwater_recipe`, `outputs` and water-chip fixtures use
 integer-arithmetic weights and BatchNorm statistics (`_fixed_weights`). torch's
 CPU normal generator can take a platform-specific SIMD path, so a seeded `randn`
 fixture need not be bit-identical across machines. The `t04` fixtures keep
-T04's seeded initialization verbatim so that their continuity with T05 can be
-checked.
+T04's seeded initialization so that their continuity with T05 can be
+checked: TinyUNet and conv+BN read the parameters `initialize_fixture` gave
+in the golden environment from `tools/t04_weights.json`, so their raw inputs
+are the golden ones on every platform. In the golden environment a test
+confirms that `initialize_fixture` still gives those bytes.
 
 ### 1.2 Continuity (required by L00)
 
@@ -146,7 +149,11 @@ earthengine-api 1.7.47, torch 2.14.1+cpu, NumPy 2.4.6/2.5.4 and Python 3.11 and
 2. **Raw inputs differ:** the pre-folding parameters and buffers differ, for
    example after seeded `randn` on another CPU.
    - With a version difference: named skip, because graph identity can only be
-     judged with the golden inputs.
+     judged with the golden inputs. The exception is a G1-ext group whose weights
+     are read from assets (`ASSET_READ_GROUPS`: SegFormer-B0). There, an equal
+     record passes and the message says the raw inputs differ. The weight values
+     reach those graphs only through the weight-shard plan, which the record
+     covers.
    - In the golden environment: fail, because changed fixture inputs are a code
      change.
 3. **Effective coefficients differ with identical raw inputs:** always fail.
@@ -181,7 +188,8 @@ jobs (lead decision on Q3).
   initialization), `resnet18_unet/*` and `swin_adapter/*`.
 
 The raw-input fingerprint was introduced after that run. The drift it measures
-is the same: the `t04` seeded `randn` weights.
+is the same: the `t04` seeded `randn` weights. Since those fixtures read their
+parameters from `tools/t04_weights.json`, their raw inputs no longer drift.
 
 ### 1.5 Why `tools/`
 

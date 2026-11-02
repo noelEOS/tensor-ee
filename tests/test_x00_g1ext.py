@@ -10,8 +10,10 @@ Offline only: graphs are built against ee.apitestcase signatures with every clou
 refusing to run. The SegFormer-B0 targets need SMP 0.5.0 and timm; without them they are
 skipped by name. Each record is judged by G1's version policy (tools/graph_identity.judge), and
 so is the whole check (X09): where the only graphs that are not equal are judge's named skips
-(raw inputs that differ under a version difference, as the seeded SegFormer-B0 state's do on the
-hosted CI), it is a named skip; in the golden environment it is exactly ``--check-ext``.
+(raw inputs that differ under a version difference), it is a named skip; in the golden environment
+it is exactly ``--check-ext``. The SegFormer-B0 targets read their weights from assets, so under a
+version difference an equal graph passes although the seeded state's raw inputs differ, as they do
+on Linux.
 
 The link to the live run (R2) reads private, git-ignored records and is lead-run
 (``tools/graph_identity.py --link-ext``); here only its committed record is checked.
@@ -163,6 +165,34 @@ def test_the_whole_check_is_a_named_skip_only_for_drifted_inputs(monkeypatch):
     assert drifted_inputs_only(moved, skipped) is None
     monkeypatch.setattr(GI, "environment", lambda: GOLDEN["environment"])  # the golden environment
     assert drifted_inputs_only(drifted, skipped) is None
+
+
+def test_asset_read_targets_are_judged_on_their_graphs_under_drift(monkeypatch):
+    """The SegFormer-B0 targets read their weights from assets: under a version difference an equal
+    graph passes with its seeded state's raw inputs changed, and the report says so. A changed graph
+    still fails, and so do changed raw inputs in the golden environment."""
+    records, skipped = build_all()
+    if "segformer_b0" in skipped:
+        pytest.skip(f"SegFormer-B0 targets not built: {skipped['segformer_b0']}")
+    names = [f"segformer_b0/{cut}" for cut in GI.SEGFORMER_CUTS]
+    drifted = copy.deepcopy(records)
+    for name in names:
+        drifted[name]["inputs"] = {"sha256": "0" * 64, "tensors": 192}
+    other = copy.deepcopy(GOLDEN["environment"])
+    other["packages"]["torch"] += "+other"
+    monkeypatch.setattr(GI, "environment", lambda: other)                  # outside the golden environment
+    passed, report = GI.check_ext(GOLDEN, drifted, skipped, G1)
+    assert passed, report
+    assert f"{len(NAMES)} of {len(NAMES)} graphs equal" in report and f"raw inputs differ for {sorted(names)}" in report
+    assert all(GI.judge(n, GOLDEN["graphs"][n], drifted[n], GOLDEN["environment"])[0] == "pass" for n in names)
+    changed = copy.deepcopy(drifted)
+    changed["segformer_b0/stage2"]["sha256"] = "0" * 64                    # and a graph changed: fails
+    assert not GI.check_ext(GOLDEN, changed, skipped, G1)[0]
+    assert GI.judge("segformer_b0/stage2", GOLDEN["graphs"]["segformer_b0/stage2"], changed["segformer_b0/stage2"],
+                    GOLDEN["environment"])[0] != "pass"
+    monkeypatch.setattr(GI, "environment", lambda: GOLDEN["environment"])  # the golden environment
+    assert not GI.check_ext(GOLDEN, drifted, skipped, G1)[0]
+    assert GI.judge(names[0], GOLDEN["graphs"][names[0]], drifted[names[0]], GOLDEN["environment"])[0] == "fail"
 
 
 def test_segformer_targets_are_skipped_by_name_without_smp(monkeypatch, capsys):

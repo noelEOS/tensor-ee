@@ -86,6 +86,8 @@ output.
     settings validated live (`NOT_LIVE` with an offline-only status), and a `per_setting`
     function where a radius or chip-edge dependence depends on a setting;
   - unsupported forms refused with `reject` or `UnsupportedOperation`, never approximated;
+  - fixture inputs and weights from integer arithmetic only (`dyadic()`, `_fixed_weights`), never
+    a seeded RNG, so every gate graph is bit-identical on every platform;
   - a NumPy mirror in `tests/reference/`, a fixture in `tools/fixtures/`, its entry in the lane
     test's `EXPECTED` or `EXPECTED_METADATA`, and the catalogue regenerated.
 - **Status.** Never write "Ready"; the maintainer promotes a block after G3-live. A new block's
