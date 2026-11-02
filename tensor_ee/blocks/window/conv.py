@@ -26,8 +26,9 @@ rounding, so ``group_product`` accepts both ``double_round_once`` and
 ``grouped_double``.
 
 Stride 2 selects phase-zero centers before this same matrix product and maps
-W(window) to W(window // 2); only stride 1 has live evidence. Bias constants serve
-the output rows. Crop padding and source-token radius 1 are unchanged.
+W(window) to W(window // 2). Live stride-2 coverage is biased W14 -> W7
+(Cin/Cout 4/4, whole raster) and W4 -> W2 (Cin/Cout 2/3, crop 2). Bias
+constants serve the output rows. Crop padding and source-token radius 1 are unchanged.
 
 The research ``window_taps`` method (nine [N, Cin] x [Cin, Cout] products summed in
 double, with per-tap constants) was removed when the research code was archived; the im2col product is the only form.
@@ -217,8 +218,10 @@ def conv3x3_window(ops, x, c: Conv3x3Constants, coarse, *, window: int = WINDOW,
     Constants, including the optional bias, must serve the OUTPUT window rows.
     Even input token centers are selected before the single matrix product;
     padding remains one source token, including at crop edges. Locality is
-    WINDOW_RING, radius 1, without chip-edge dependence. Stride 2 has offline
-    evidence only and has not been validated live.
+    WINDOW_RING, radius 1, without chip-edge dependence. Stride 2 is validated
+    live with bias at window 14 (Cin/Cout 4/4, crop None) and window 4
+    (Cin/Cout 2/3, crop 2). Full Cin/Cout 1024 has offline evidence only;
+    other stride-2 windows, widths, crops and bias-free forms are not validated.
     """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     _check_kernel(c)
@@ -337,17 +340,25 @@ METADATA = validate_metadata({
     "conv3x3_window": BlockMetadata(
         name="conv3x3_window", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=1,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=conv3x3_values, asset_arrays=conv3x3_arrays,
-        status="Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; crops of 2 and 32 windows at window 7",
+        status=("Fixed — 3 × 3 kernel, stride 1, windows 5, 7, 8, 12; "
+                "stride 1, crops of 2 and 32 windows at window 7; "
+                "stride 2, window 14, Cin/Cout 4/4, bias, crop None; "
+                "stride 2, window 4, Cin/Cout 2/3, bias, crop 2"),
         evidence=("docs/history/building-blocks-2026-10-11.md#33-convolution", "docs/history/upernet/notes/milestone7_findings.md",
                   "docs/evidence/p01-offline.json",
                   "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json",
                   "docs/evidence/live-fixtures/20261013T115558Z-p04.json",   # decoder-setting validation live record
                   "docs/evidence/window-conv3x3-crop-offline.json", "docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json",
-                  "docs/evidence/window-conv3x3-stride2-offline.json"),
-        # The 3 x 3 kernel is the block's identity; every existing live combination ran at stride 1.
+                  "docs/evidence/window-conv3x3-stride2-offline.json",
+                  "docs/evidence/live-fixtures/20261102T171117Z-conv3x3_stride2.json"),
+        # The 3 x 3 kernel is the block's identity; preserve every stride-1 live combination.
         # crop None: the whole raster is one padding domain; crops 2 and 32 ran live at window 7.
         validated=Validated(({"k": (KERNEL,), "window": (5, 7, 8, 12), "crop": (None,), "stride": (1,)},
-                             {"k": (KERNEL,), "window": (7,), "crop": (2, 32), "stride": (1,)}),
+                             {"k": (KERNEL,), "window": (7,), "crop": (2, 32), "stride": (1,)},
+                             {"k": (KERNEL,), "window": (14,), "crop": (None,), "stride": (2,),
+                              "cin": (4,), "cout": (4,), "bias": (True,)},
+                             {"k": (KERNEL,), "window": (4,), "crop": (2,), "stride": (2,),
+                              "cin": (2,), "cout": (3,), "bias": (True,)}),
                             sources=(Conv3x3Constants,))),
     "group_product": BlockMetadata(
         name="group_product", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=1,

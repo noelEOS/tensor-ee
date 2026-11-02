@@ -511,6 +511,9 @@ def _fixture_settings(spec: dict) -> dict:
         # The recorded stride is the composition's: overlap_embedding calls the
         # stride-1 conv3x3_window, then decimate(..., 2). No record is rewritten.
         settings["stride"] = 1
+    if spec["block"] == "conv3x3_window" and settings.get("stride") == 2:
+        # The stride-2 live record stores widths in shapes; retain its exact bytes.
+        settings["cin"], settings["cout"] = shapes["input"][-1], shapes["cout"]
     if "bands" in settings:
         settings["channels"] = len(settings["bands"])
     if "tokens" in shapes:

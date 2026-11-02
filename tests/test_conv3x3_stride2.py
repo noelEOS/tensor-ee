@@ -102,7 +102,7 @@ def test_constants_serve_output_rows_and_default_graph_is_unchanged():
             conv3x3_window(ops, x, output_constants, coarse, window=14, stride=2, crop=3)
 
 
-def test_stride2_is_outside_record_and_existing_coverage_is_preserved():
+def test_live_stride2_record_and_existing_coverage_are_preserved():
     entry = METADATA["conv3x3_window"]
     assert (entry.layout_in, entry.layout_out, entry.locality, entry.radius, entry.chip_edge_dependent) == (
         "W", "W", Locality.WINDOW_RING, 1, False)
@@ -111,7 +111,11 @@ def test_stride2_is_outside_record_and_existing_coverage_is_preserved():
         assert check_settings(entry, settings).inside
         settings["stride"] = 2
         check = check_settings(entry, settings)
-        assert not check.inside and check.outside == ("stride",) and check.unstated == ()
+        assert not check.inside and "stride" in check.outside
+    for fixture in F.fixtures():
+        assert check_settings(entry, fixture.settings).inside
+        for name, value in (("bias", False), ("cin", 1024), ("cout", 1024)):
+            assert not check_settings(entry, {**fixture.settings, name: value}).inside
 
 
 def test_full_dpt_width_1024_offline():

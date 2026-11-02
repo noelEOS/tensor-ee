@@ -76,11 +76,11 @@ def _constants(data, *, window, cin, cout):
 
 
 def fixtures():
-    from tensor_ee.blocks.window.conv import Conv3x3Constants, conv3x3_window
+    from tensor_ee.blocks.window.conv import Conv3x3Constants, conv3x3_values, conv3x3_window
 
     return [Fixture(
         id=f"window/conv3x3_window/{name}", lane="window", block="conv3x3_window",
-        settings={"window": window, "stride": 2, "k": 3, "bias": True, "crop": crop},
+        settings={"window": window, "stride": 2, "k": 3, "bias": True, "crop": crop, "cin": cin, "cout": cout},
         policy="double_round_once", shapes={"input": [window * windows, window * windows, cin],
                                              "output_window": window // 2, "cout": cout},
         seed=9500 + window,
@@ -90,8 +90,8 @@ def fixtures():
         reference_source="torch.nn.Conv2d(kernel_size=3, stride=2, padding=1, bias=True)",
         mirror=MirrorSpec(partial(_mirror, window=window, crop=crop), True, "reference.conv_stride.conv3x3_stride"),
         requests=2, constants=partial(_constants, window=window, cin=cin, cout=cout),
-        history="Stride 2: offline evidence only; not validated live.",
-        accepts=(conv3x3_window, Conv3x3Constants), window=window,
+        history="docs/evidence/live-fixtures/20261102T171117Z-conv3x3_stride2.json",
+        accepts=(conv3x3_window, Conv3x3Constants, conv3x3_values), window=window,
     ) for name, window, windows, crop, cin, cout in CASES]
 
 

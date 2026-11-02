@@ -500,7 +500,10 @@ EXPECTED_METADATA = {
     "window_attention": (Locality.WINDOW, None, False, M.COMPOSITE, "Ready — windows 5, 7, 8, 12", "window"),
     "shifted_window_mask": (Locality.WINDOW, None, True, DRO, "Ready — windows 5, 7, 8, 12; shift ⌊w/2⌋",
                             "window; depends on chip edge"),
-    "conv3x3_window": (Locality.WINDOW_RING, 1, False, DRO, "Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; crops of 2 and 32 windows at window 7",
+    "conv3x3_window": (Locality.WINDOW_RING, 1, False, DRO, ("Fixed — 3 × 3 kernel, stride 1, windows 5, 7, 8, 12; "
+                        "stride 1, crops of 2 and 32 windows at window 7; "
+                        "stride 2, window 14, Cin/Cout 4/4, bias, crop None; "
+                        "stride 2, window 4, Cin/Cout 2/3, bias, crop 2"),
                        "3x3 (halo)"),
     "group_product": (Locality.WINDOW_RING, 1, False, DRO,
                       "Ready — 1, 2, 4, 8 groups at windows 7, 12; 4 groups at window 8", "3x3 (halo)"),
