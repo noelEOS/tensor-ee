@@ -6,10 +6,10 @@ and its helper ``_finish``) and ``upernet/earth_engine/fusion.py`` (``group_weig
 (docs/history/README.md). The dense formulations (``dense_im2col``, ``conv3x3_dense``,
 ``conv_convolve``) were research only; the fusion composites are with the model.
 
-Inference Conv2d (stride 1, dilation 1, groups 1, zero padding k // 2), PyTorch
+Inference Conv2d (stride 1 by default, or 2, dilation 1, groups 1, zero padding k // 2), PyTorch
 semantics (weight [Cout, Cin, kh, kw], padding p = k // 2):
 
-    y[o, i, j] = b[o] + sum_{c, ky, kx} W[o, c, ky, kx] * x_pad[c, i + ky, j + kx]
+    y[o, i, j] = b[o] + sum_{c, ky, kx} W[o, c, ky, kx] * x_pad[c, stride*i + ky, stride*j + kx]
 
 i.e. an im2col matrix product: the zero-padded k x k neighbourhood of each token as a
 row in (ky, kx, c) order times W^T [k*k*Cin, Cout] in the same row order (the weight
@@ -24,6 +24,11 @@ once. ``group_product`` leaves its partial in double (no rounding): the fusion's
 ``grouped_double`` variant sums the four group partials in double before its one
 rounding, so ``group_product`` accepts both ``double_round_once`` and
 ``grouped_double``.
+
+Stride 2 selects phase-zero centers before this same matrix product and maps
+W(window) to W(window // 2). Live stride-2 coverage is biased W14 -> W7
+(Cin/Cout 4/4, whole raster) and W4 -> W2 (Cin/Cout 2/3, crop 2). Bias
+constants serve the output rows. Crop padding and source-token radius 1 are unchanged.
 
 The research ``window_taps`` method (nine [N, Cin] x [Cin, Cout] products summed in
 double, with per-tap constants) was removed when the research code was archived; the im2col product is the only form.
@@ -158,7 +163,7 @@ class Conv3x3Constants:
 
     weight: NumPy [Cout, Cin, k, k] or a ServerArray [Cout, Cin * k * k] in PyTorch's
     flatten order (c, ky, kx) (the asset format); the permutation runs on the server.
-    ``rows``: the layout the bias serves (default ``WindowLayout(7)``: 49 rows) or its
+    ``rows``: the output layout the bias serves (default ``WindowLayout(7)``: 49 rows) or its
     row count; recorded as ``rows``."""
 
     def __init__(self, ops, weight, bias=None, rows=WINDOW_LAYOUT, k: int = KERNEL):
@@ -198,20 +203,45 @@ def _check_kernel(c: Conv3x3Constants) -> None:
 
 
 def conv3x3_window(ops, x, c: Conv3x3Constants, coarse, *, window: int = WINDOW,
-                   policy: str = DOUBLE_ROUND_ONCE, crop: int | None = None):
-    """Window layout [w^2, Cin] on the window grid `coarse` -> [w^2, Cout] (zero padding at
+                   policy: str = DOUBLE_ROUND_ONCE, crop: int | None = None, stride: int = 1):
+    """Window layout [w^2, Cin] on the window grid `coarse` -> [(w/stride)^2, Cout] (zero padding at
     the raster edge, exactly PyTorch's). Constants built for another row count than
-    ``window ** 2`` are refused, and so are constants for another kernel than 3 x 3, the
+    ``(window // stride) ** 2`` are refused, and so are constants for another kernel than 3 x 3, the
     block's identity. Validated at windows 5, 7, 8 and 12. ``crop=k``: zero padding at
     the edge of every k x k block of windows as well, validated at crops 2 and 32 at
     window 7 (a ``crop`` that is not a positive integer dividing the window grid is
-    refused)."""
+    refused).
+
+    ``stride`` is 1 (the default, today's exact graph) or 2 and must divide
+    ``window``. Stride 2 maps W(window) to W(window // 2), on the same coarse
+    grid; its token grid has twice the input spacing and half each extent.
+    Constants, including the optional bias, must serve the OUTPUT window rows.
+    Even input token centers are selected before the single matrix product;
+    padding remains one source token, including at crop edges. Locality is
+    WINDOW_RING, radius 1, without chip-edge dependence. Stride 2 is validated
+    live with bias at window 14 (Cin/Cout 4/4, crop None) and window 4
+    (Cin/Cout 2/3, crop 2). Full Cin/Cout 1024 has NumPy-mirror-vs-PyTorch
+    agreement only: no EE graph was built or evaluated at that width. Other
+    stride-2 windows, widths, crops and bias-free forms are not validated.
+    """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     _check_kernel(c)
-    check_rows(c, WindowLayout(window))
+    if isinstance(stride, bool) or not isinstance(stride, (int, np.integer)) or stride not in (1, 2):
+        reject(f"conv3x3_window requires stride 1 or 2; received {stride!r}")
+    if isinstance(window, bool) or not isinstance(window, (int, np.integer)) or window < 1 or window % stride:
+        reject(f"window must be a positive integer divisible by stride {stride}; received {window!r}")
+    output_window = window // stride
+    check_rows(c, WindowLayout(output_window))
     ee = ops.ee
     halo3 = halo(ee, x, coarse, c.cin, window=window, crop=crop)
-    return _finish(ops, ops.matmul_double(im2col(ee, halo3, c.cin, c.k, window=window), c.weight_t), c)
+    if stride == 1:
+        return _finish(ops, ops.matmul_double(im2col(ee, halo3, c.cin, c.k, window=window), c.weight_t), c)
+    columns = im2col(ee, halo3, c.cin, c.k, window=window)
+    # Split each spatial axis into (output, stride), keeping phase zero on both.
+    columns = ops.reshape(columns, [output_window, stride, output_window, stride, c.k * c.k * c.cin])
+    columns = ops.slice(ops.slice(columns, 1, 0, 1), 3, 0, 1)
+    columns = ops.reshape(columns, [output_window * output_window, c.k * c.k * c.cin])
+    return _finish(ops, ops.matmul_double(columns, c.weight_t), c)
 
 
 def group_weight(weight, g: int, groups: int = GROUPS):
@@ -311,16 +341,25 @@ METADATA = validate_metadata({
     "conv3x3_window": BlockMetadata(
         name="conv3x3_window", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=1,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=conv3x3_values, asset_arrays=conv3x3_arrays,
-        status="Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; crops of 2 and 32 windows at window 7",
+        status=("Ready — 3 × 3 kernel, stride 1; windows 5, 7, 8, 12; "
+                "crops of 2 and 32 windows at window 7; "
+                "stride 2: window 14, Cin/Cout 4/4, bias, crop None; "
+                "stride 2: window 4, Cin/Cout 2/3, bias, crop 2"),
         evidence=("docs/history/building-blocks-2026-10-11.md#33-convolution", "docs/history/upernet/notes/milestone7_findings.md",
                   "docs/evidence/p01-offline.json",
                   "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json",
                   "docs/evidence/live-fixtures/20261013T115558Z-p04.json",   # decoder-setting validation live record
-                  "docs/evidence/window-conv3x3-crop-offline.json", "docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json"),
-        # The 3 x 3 kernel is the block's identity (k, refused otherwise); stride 1 is its only stride.
+                  "docs/evidence/window-conv3x3-crop-offline.json", "docs/evidence/live-fixtures/20261030T110318Z-conv3x3_crop.json",
+                  "docs/evidence/window-conv3x3-stride2-offline.json",
+                  "docs/evidence/live-fixtures/20261102T171117Z-conv3x3_stride2.json"),
+        # The 3 x 3 kernel is the block's identity; preserve every stride-1 live combination.
         # crop None: the whole raster is one padding domain; crops 2 and 32 ran live at window 7.
-        validated=Validated(({"k": (KERNEL,), "window": (5, 7, 8, 12), "crop": (None,)},
-                             {"k": (KERNEL,), "window": (7,), "crop": (2, 32)}),
+        validated=Validated(({"k": (KERNEL,), "window": (5, 7, 8, 12), "crop": (None,), "stride": (1,)},
+                             {"k": (KERNEL,), "window": (7,), "crop": (2, 32), "stride": (1,)},
+                             {"k": (KERNEL,), "window": (14,), "crop": (None,), "stride": (2,),
+                              "cin": (4,), "cout": (4,), "bias": (True,)},
+                             {"k": (KERNEL,), "window": (4,), "crop": (2,), "stride": (2,),
+                              "cin": (2,), "cout": (3,), "bias": (True,)}),
                             sources=(Conv3x3Constants,))),
     "group_product": BlockMetadata(
         name="group_product", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=1,
