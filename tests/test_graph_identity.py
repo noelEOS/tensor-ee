@@ -16,6 +16,7 @@ version difference as a named skip (a lead decision; not set in CI). A fixture w
 bytes) differ is a named skip only when versions differ, because then its graph
 inputs are not the golden inputs.
 """
+import contextlib
 import importlib.util
 import json
 import os
@@ -37,15 +38,42 @@ FIXTURES = sorted(name for name, g in GOLDEN["graphs"].items() if g["kind"] == "
 _BUILT = {}
 
 
+@contextlib.contextmanager
+def no_normal_generator(group):
+    """Refuse torch's normal generators while a fixture group builds: they take platform SIMD paths, so
+    weights drawn from them, seeded or not, are not bit-identical across platforms."""
+    import torch
+    targets = [(torch, "randn"), (torch, "randn_like"), (torch, "normal"), (torch.Tensor, "normal_"),
+               *((torch.nn.init, name) for name in ("normal_", "trunc_normal_", "kaiming_normal_", "xavier_normal_"))]
+    saved = [(owner, name, getattr(owner, name)) for owner, name in targets]
+
+    def refuse(name):
+        def call(*args, **kwargs):
+            raise AssertionError(
+                f"fixture group {group!r} calls {name}: torch's normal generator gives other bytes on other "
+                "platforms, so its graph could not be judged there. Generate the weights with integer arithmetic: "
+                "_fixed_weights(model) in tools/graph_identity.py, or dyadic() in tools/fixtures/core.py.")
+        return call
+
+    try:
+        for owner, name, _ in saved:
+            setattr(owner, name, refuse(name))
+        yield
+    finally:
+        for owner, name, original in saved:
+            setattr(owner, name, original)
+
+
 def built(group):
-    """Build one fixture group once per session; a list means missing optional modules."""
+    """Build one fixture group once per session, with torch's normal generators refused; a list means
+    missing optional modules."""
     if group not in _BUILT:
         builder, requires = BUILDERS[group]
         missing = GI.missing_requirements(requires)
         if missing:
             _BUILT[group] = missing
         else:
-            with GI.offline_earth_engine() as attempts:
+            with GI.offline_earth_engine() as attempts, no_normal_generator(group):
                 GI._import_path()
                 records = builder()
                 GI.check_sources()
@@ -107,6 +135,37 @@ def test_fixture_graph_equals_golden_hash(name):
         pytest.skip(message)
     if verdict == "fail":
         pytest.fail(message, pytrace=False)
+
+
+def test_t04_pinned_weights_are_t04s_seeded_initialization():
+    """tools/t04_weights.json holds what T04's initialize_fixture gave in the golden environment. Elsewhere
+    torch's CPU normal generator may give other bytes, so only the golden environment can confirm the record."""
+    from torch import nn
+    from tensor_ee.models import TinyUNet, initialize_fixture
+    seeded = {"tiny_unet": initialize_fixture(TinyUNet(base_channels=4, levels=2), seed=404),
+              "conv_bn_pointwise_softmax": initialize_fixture(
+                  nn.Sequential(nn.Conv2d(2, 3, 3, padding=1, bias=False), nn.BatchNorm2d(3)), seed=405)}
+    differing = []
+    for name, model in seeded.items():
+        state = {key: value.clone() for key, value in model.state_dict().items()}
+        pinned = GI.t04_pinned_weights(model, name).state_dict()
+        differing += [f"{name}.{key}" for key in state if not state[key].numpy().tobytes() == pinned[key].numpy().tobytes()]
+    if differing:
+        drift = GI.environment_differences(GOLDEN["environment"])
+        here = GI.environment()["platform"]
+        if drift or here != GOLDEN["environment"]["platform"]:
+            pytest.skip(f"initialize_fixture gives other bytes here ({here}; {'; '.join(drift) or 'same versions'}) "
+                        f"for {differing[:3]}; the record is confirmed in the golden environment")
+        pytest.fail(f"initialize_fixture no longer gives tools/t04_weights.json in the golden environment: {differing}")
+
+
+def test_a_fixture_drawing_from_the_normal_generator_is_refused():
+    from torch import nn
+    from tensor_ee.models import initialize_fixture
+    with pytest.raises(AssertionError, match=r"calls randn: .*_fixed_weights\(model\) in tools/graph_identity.py"):
+        with no_normal_generator("example"):
+            initialize_fixture(nn.Conv2d(2, 2, 1))
+    initialize_fixture(nn.Conv2d(2, 2, 1))                                 # restored afterwards
 
 
 def test_module_map_covers_every_inventory_entry_once():
