@@ -122,10 +122,15 @@ def validate_parameters(parameters, config=PRITHVI):
         raise ValueError("BatchNorm running variance must be nonnegative")
 
 
-def _reshape(value, shape):
+def reshape_parameter(value, shape):
+    """Reshape a NumPy or ServerArray parameter without reading server values."""
     if isinstance(value, ServerArray):
         return ServerArray(value.array.reshape(list(shape)), tuple(shape))
     return value.reshape(shape)
+
+
+# Retain the private name for existing Prithvi callers.
+_reshape = reshape_parameter
 
 
 def _upsampling_parameters(weight, bias):
@@ -145,13 +150,16 @@ def _upsampling_parameters(weight, bias):
     return weight, bias
 
 
-def compose(backend, inputs, config=PRITHVI, *, start="input", stop="logits"):
+def compose(backend, inputs, config=PRITHVI, *, start="input", stop="logits",
+            encoder_prefix="backbone", norm_eps=1e-5):
     """Execute the same model wiring with a library or numerical backend.
 
     ``start`` names the saved boundary supplied by ``inputs``. Encoder boundaries
     are pairs (spatial,class); neck boundaries are spatial values. ``stop`` is
     returned in a dictionary alongside every intermediate boundary traversed.
     The backend supplies primitives, coefficients, and layout representations.
+    ``encoder_prefix`` and ``norm_eps`` permit a ViT encoder target while their
+    defaults keep Prithvi graphs unchanged; attention scaling belongs to the backend.
     """
     names = stage_names(config)
     if start not in names or stop not in names or names.index(stop) < names.index(start):
@@ -162,11 +170,11 @@ def compose(backend, inputs, config=PRITHVI, *, start="input", stop="logits"):
         if name == "patch":
             current = backend.position(backend.patch(current))
         elif name.startswith("block"):
-            prefix = f"backbone.blocks.{int(name[5:])}"
+            prefix = f"{encoder_prefix}.blocks.{int(name[5:])}"
             spatial, cls = current
             qkv = []
             for value in (spatial, cls):
-                normalized = backend.norm(value, prefix + ".norm1", 1e-5)
+                normalized = backend.norm(value, prefix + ".norm1", norm_eps)
                 qkv.append(backend.linear(normalized, prefix + ".attn.qkv"))
             attention = backend.attention(qkv[0], qkv[1], config.heads)
             first = [
@@ -175,14 +183,14 @@ def compose(backend, inputs, config=PRITHVI, *, start="input", stop="logits"):
             ]
             outputs = []
             for value in first:
-                normalized = backend.norm(value, prefix + ".norm2", 1e-5)
+                normalized = backend.norm(value, prefix + ".norm2", norm_eps)
                 hidden = backend.linear(normalized, prefix + ".mlp.fc1")
                 activated = backend.gelu(hidden)
                 projected = backend.linear(activated, prefix + ".mlp.fc2")
                 outputs.append(backend.add(value, projected))
             current = tuple(outputs)
         elif name == "norm":
-            current = tuple(backend.norm(value, "backbone.norm", 1e-5) for value in current)
+            current = tuple(backend.norm(value, encoder_prefix + ".norm", norm_eps) for value in current)
         elif name.startswith("upsample"):
             side = int(name[8:])
             if side == 28:
@@ -200,27 +208,27 @@ def compose(backend, inputs, config=PRITHVI, *, start="input", stop="logits"):
     return result
 
 
-class LibraryBackend:
-    """Coefficients are all built here, before any spatial forward is composed."""
+class EncoderBackend:
+    """Shared patch-16/class-token encoder; callers validate the state schema first.
 
-    def __init__(self, ee, parameters, config=PRITHVI):
-        validate_parameters(parameters, config)
+    Defaults preserve Prithvi's names and post-product attention scaling.
+    Coefficients are built before spatial composition, for both W14 and W1.
+    """
+
+    def __init__(self, ee, state, config, *, prefix="backbone", scale_query=False):
         self.ee, self.ops, self.config = ee, WindowOps(ee), config
         self.norms = {}
         self.linears = {}
         dim = config.width
-        state = {
-            name: _reshape(parameters[name], shape)
-            for name, shape in parameter_shapes(config).items()
-        }
+        self.scale_query = scale_query
         patch = {
-            "proj.weight": _reshape(state["backbone.patch_embed.proj.weight"], (dim, 1536)),
-            "proj.bias": state["backbone.patch_embed.proj.bias"],
+            "proj.weight": _reshape(state[prefix + ".patch_embed.proj.weight"], (dim, 1536)),
+            "proj.bias": state[prefix + ".patch_embed.proj.bias"],
         }
         self.patch_constants = patch_embed_constants(
             self.ops, patch, rows=WindowLayout(14), norm=False,
         )
-        position = state["backbone.pos_embed"]
+        position = state[prefix + ".pos_embed"]
         if isinstance(position, ServerArray):
             spatial = ServerArray(position.array.slice(1, 1, 197).reshape([196, dim]), (196, dim))
             first = ServerArray(position.array.slice(1, 0, 1).reshape([1, dim]), (1, dim))
@@ -229,53 +237,33 @@ class LibraryBackend:
         self.position_spatial = self.ops.constant(spatial)
         class_grid = TOKEN_GRID.coarse(14)
         cls = WindowTensor(
-            self.ops.constant(_reshape(state["backbone.cls_token"], (1, dim))),
+            self.ops.constant(_reshape(state[prefix + ".cls_token"], (1, dim))),
             class_grid, dim, 1,
         )
         self.position_class = add(cls, cls.like(self.ops.constant(first))).image
 
-        def norm(prefix, rows):
-            gamma = row_constant(self.ops, state[prefix + ".weight"], ValueLayout(rows))
-            beta = row_constant(self.ops, state[prefix + ".bias"], ValueLayout(rows))
-            self.norms[prefix, rows] = gamma, beta
-
-        def projection(prefix, rows, shape=None):
-            weight = state[prefix + ".weight"]
-            if shape is not None:
-                weight = _reshape(weight, shape)
-            self.linears[prefix, rows] = LinearConstants(
-                self.ops, weight, state[prefix + ".bias"], rows,
-            )
-
         for index in range(config.depth):
-            prefix = f"backbone.blocks.{index}"
+            block = f"{prefix}.blocks.{index}"
             for rows in (196, 1):
-                norm(prefix + ".norm1", rows)
-                norm(prefix + ".norm2", rows)
+                self._norm_constants(state, block + ".norm1", rows)
+                self._norm_constants(state, block + ".norm2", rows)
                 for suffix in ("attn.qkv", "attn.proj", "mlp.fc1", "mlp.fc2"):
-                    projection(prefix + "." + suffix, rows)
-        norm("backbone.norm", 196)
-        norm("backbone.norm", 1)
-        for prefix in ("neck.fpn1", "neck.fpn2"):
-            norm(prefix + ".1.ln", 49)
-            for index in (0, 3):
-                rows = 196 if prefix == "neck.fpn1" and index == 0 else 49
-                name = f"{prefix}.{index}"
-                weight, bias = _upsampling_parameters(
-                    state[name + ".weight"], state[name + ".bias"],
-                )
-                self.linears[name, rows] = LinearConstants(self.ops, weight, bias, rows)
-        weight = state["decode_head.convs.0.conv.weight"]
-        if isinstance(weight, ServerArray):
-            weight = _reshape(weight, (config.decoder, 9 * dim))
-        self.conv_constants = Conv3x3Constants(self.ops, weight, rows=49)
-        prefix = "decode_head.convs.0.bn"
-        self.bn_constants = BatchNormConstants(
-            self.ops, state[prefix + ".weight"], state[prefix + ".bias"],
-            state[prefix + ".running_mean"], state[prefix + ".running_var"],
-            rows=49, eps=1e-5,
+                    self._linear_constants(state, block + "." + suffix, rows)
+        self._norm_constants(state, prefix + ".norm", 196)
+        self._norm_constants(state, prefix + ".norm", 1)
+
+    def _norm_constants(self, state, prefix, rows):
+        gamma = row_constant(self.ops, state[prefix + ".weight"], ValueLayout(rows))
+        beta = row_constant(self.ops, state[prefix + ".bias"], ValueLayout(rows))
+        self.norms[prefix, rows] = gamma, beta
+
+    def _linear_constants(self, state, prefix, rows, shape=None):
+        weight = state[prefix + ".weight"]
+        if shape is not None:
+            weight = _reshape(weight, shape)
+        self.linears[prefix, rows] = LinearConstants(
+            self.ops, weight, state[prefix + ".bias"], rows,
         )
-        projection("decode_head.conv_seg", 49, (2, config.decoder))
 
     def patch(self, raster):
         if not isinstance(raster, Raster) or len(raster.bands) != 6:
@@ -329,8 +317,48 @@ class LibraryBackend:
             raise ValueError("attention requires W14 spatial and W1 class rows on the same crop grid")
         spatial_output, class_output = class_token_attention(
             self.ops, spatial.image, cls.image, dim=dim, heads=heads, window=14,
+            scale_query=self.scale_query,
         )
         return spatial.like(spatial_output, dim), cls.like(class_output, dim)
+
+    def add(self, first, second):
+        return add(first, second)
+
+    def gelu(self, tensor):
+        return tensor.like(gelu(self.ops, tensor.image))
+
+
+class LibraryBackend(EncoderBackend):
+    """Prithvi's encoder plus neck/head coefficients, built before composition."""
+
+    def __init__(self, ee, parameters, config=PRITHVI):
+        validate_parameters(parameters, config)
+        state = {
+            name: _reshape(parameters[name], shape)
+            for name, shape in parameter_shapes(config).items()
+        }
+        super().__init__(ee, state, config)
+        dim = config.width
+        for prefix in ("neck.fpn1", "neck.fpn2"):
+            self._norm_constants(state, prefix + ".1.ln", 49)
+            for index in (0, 3):
+                rows = 196 if prefix == "neck.fpn1" and index == 0 else 49
+                name = f"{prefix}.{index}"
+                weight, bias = _upsampling_parameters(
+                    state[name + ".weight"], state[name + ".bias"],
+                )
+                self.linears[name, rows] = LinearConstants(self.ops, weight, bias, rows)
+        weight = state["decode_head.convs.0.conv.weight"]
+        if isinstance(weight, ServerArray):
+            weight = _reshape(weight, (config.decoder, 9 * dim))
+        self.conv_constants = Conv3x3Constants(self.ops, weight, rows=49)
+        prefix = "decode_head.convs.0.bn"
+        self.bn_constants = BatchNormConstants(
+            self.ops, state[prefix + ".weight"], state[prefix + ".bias"],
+            state[prefix + ".running_mean"], state[prefix + ".running_var"],
+            rows=49, eps=1e-5,
+        )
+        self._linear_constants(state, "decode_head.conv_seg", 49, (2, config.decoder))
 
     def upsample(self, tensor, prefix):
         projected = self.linear(tensor, prefix)
@@ -354,12 +382,6 @@ class LibraryBackend:
             self.ops, tensor.image, self.bn_constants, layout=WindowLayout(tensor.window),
         )
         return tensor.like(output)
-
-    def add(self, first, second):
-        return add(first, second)
-
-    def gelu(self, tensor):
-        return tensor.like(gelu(self.ops, tensor.image))
 
     def relu(self, tensor):
         return tensor.like(relu(self.ops, tensor.image))
