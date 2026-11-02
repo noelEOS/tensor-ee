@@ -71,6 +71,13 @@ DATA_SHA256 = {
                                        "bcaa6fde6eb0a232427f46d94940da17519f2f48620dda473aca8bd3c0a228a4"),
 }
 
+VIT_LAYER_NORM_DATA_SHA256 = {
+    "window/layer_norm/vit-w14-eps1e-6": ("d0d51e988e8538e7c45c9a89c749256bb4302c5b7db8b136591686de42a2626e",
+                                         "b225005d75568507a5ad108feb41731b72705179c504cbe4b736d3b5082730b7"),
+    "window/layer_norm/vit-w1-eps1e-6": ("c20f8bf6882c1dcf6db7b42bcd06ce97ebacd10b716d5da375ab1cc4312ca163",
+                                        "195ed27bb946759dc8b94f0111aa6bb9a9ec1b78f4ccda884c6ca49d73c38397"),
+}
+
 # The 14 Fixed blocks Phase 2 promotes (plan, Phase 2 task board).
 PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_mask", "layer_norm2d",
                 "patch_merge", "gather_windows", "merge_windows", "conv3x3_window", "nearest_upsample",
@@ -242,6 +249,18 @@ def test_graphs_are_stable_across_builds(plan):
     again = LF.make_plan(select(["calibration"]))
     assert [r.graph_sha256 for r in plan.all_requests] == [r.graph_sha256 for r in again.all_requests]
     assert [r.request_bytes for r in plan.all_requests] == [r.request_bytes for r in again.all_requests]
+
+
+def test_vit_layer_norm_fixture_ids_and_data_are_stable():
+    fixtures = select(["vit_layer_norm"])
+    assert {fixture.id for fixture in fixtures} == set(VIT_LAYER_NORM_DATA_SHA256)
+    for fixture in fixtures:
+        first, second = fixture.data(fixture.seed), fixture.data(fixture.seed)
+        expected = VIT_LAYER_NORM_DATA_SHA256[fixture.id]
+        assert (first.inputs_sha256, first.weights_sha256) == expected
+        assert (second.inputs_sha256, second.weights_sha256) == expected
+        other = fixture.data(fixture.seed + 1)
+        assert (other.inputs_sha256, other.weights_sha256) != expected
 
 
 def test_dyadic_values_are_exact_and_inline_values_are_checked():
@@ -681,7 +700,7 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
     offline = {name for (_, name), entry in catalogue.items()
                if entry.status.startswith("Fixed — offline only:")}
     assert offline == OFFLINE_ONLY_FIXED
-    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model", "standardize"])
+    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model", "standardize", "vit_layer_norm"])
                    if f.id not in COMPOSITION_FIXTURES and f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert (SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | BILINEAR_G3_BLOCKS

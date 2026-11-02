@@ -156,7 +156,6 @@ NEVER_VARIED = {
     "raster/concatenate": {"dim"},
     "raster/bilinear_upsample": {"clip_footprints"},
     "raster/grouped_conv2d": {"clip_footprints"},
-    "window/layer_norm": {"eps"},
     "window/batch_norm": {"eps"},
     "raster/batch_norm": {"eps", "clip_footprints"},
     "raster/standardize": {"clip_footprints"},
