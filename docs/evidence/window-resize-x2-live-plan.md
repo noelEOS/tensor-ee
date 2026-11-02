@@ -10,8 +10,16 @@ Use W7 for every map in **7 → 14 → 28 → 56 → 112 → 224**. Each map is 
 by seven, and `window_resize` preserves its input window size at the output.
 The coarsest 7×7 map rules out W14 as one common layout for this chain. W7
 therefore needs no new window size and no changes of window size between
-resizes. The future hand-composed DPT target must explicitly convert any
-backbone W14 features to its decoder layout; this change adds no model.
+resizes. For the 14-token identity-reassemble branch, a DPT target brings the
+W14 backbone map to W7 with the existing no-arithmetic functions
+`tensor_ee.layouts.boundaries.relabel_from_windows` followed by
+`relabel_to_windows(..., window=7)`. The intermediate raster uses the same
+14×14 token grid, so this moves the existing float32 values without interpolation.
+It runs once at that boundary: the W7 gather has 49 stride samples independent
+of channel width and yields four W7 arrays; there are no weights, arithmetic
+constants, matrix products or per-channel sample calls. The resized 7→14 W7
+map can then be added directly, and 14→28 starts from W7. The other reassemble
+outputs already use W7. This change adds no model.
 
 The block keeps WINDOW_RING locality with radius one in source tokens.
 With aligned corners, coefficients use absolute output positions and the
@@ -34,7 +42,12 @@ cover every row/column pair. All source pixels are echoed: the 112×112
 input uses four 56×56 tiles. Offline graph evaluation checks every planned
 readout against the mirror bit for bit; full-output mirror comparisons
 against PyTorch and wrong-corner/per-window negative controls run offline.
-These checks establish no live agreement or model accuracy.
+The approved [live record](live-fixtures/20261102T190649Z-resize_x2.json)
+passes all five fixtures: 17 computePixels calls, one algorithms-list call,
+zero refused calls, and every output bit-identical to the mirror. The largest
+absolute EE-vs-PyTorch differences per source extent are 5.960464477539063e-8
+at 7 and 14, and 1.1920928955078125e-7 at 28, 56 and 112. This is numerical
+agreement on the recorded readbacks, not DPT model accuracy.
 
 The exact-mirror flag follows the historical non-fused double x-stage
 products and sum. A live failure would be recorded and investigated;
@@ -66,9 +79,11 @@ After explicit approval of selection and request count, the harness runs
 exactly once using ADC and `--budget requests=17`. It allows only the
 planned computePixels calls and at most two algorithms-list calls for
 initialization. No EECU estimate is available for this interactive plan.
-The exact live record is committed before any settings are added to the
-`validated` record or appended to the existing status text. Until then,
-the x2 aligned-corners setting is outside that record.
+The plan ran once at clean revision `e0a39a2` with 17 requests, zero assets
+and zero tasks. The live record was committed exactly as written, before
+appending W7, factor 2, aligned corners to `validated` and the existing status
+text (whose previous prefix is unchanged). W8 at factor 2 with aligned corners
+has no new validation claim.
 
 Full-output mirror-vs-PyTorch maximum absolute errors on the fixture inputs:
 7→14 and 14→28: 5.960464477539063e-8; 28→56, 56→112 and 112→224:

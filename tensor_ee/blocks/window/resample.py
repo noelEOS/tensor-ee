@@ -41,8 +41,8 @@ Window 7 is the default. Validated at windows 7 and 8: ``window_resize`` at fact
 and 8 with align_corners=False and factor 4 with align_corners=True (window 7: the Swin-T224
 decoder's FPN, fusion and head; window 8: the window-8 Swin-UPerNet validation model's, on its token extents),
 ``window_matrix_resize`` from 1 x 1, 2 x 2, 3 x 3 and 6 x 6 sources (the PSP's bins) onto one
-window with align_corners=False. Factor 2 with align_corners=True at window 7 has offline-only evidence on
-7 -> 14 -> 28 -> 56 -> 112 -> 224 maps; it is not yet validated live. Window 7
+window with align_corners=False. Factor 2 with align_corners=True at window 7 is
+validated live on 7 -> 14 -> 28 -> 56 -> 112 -> 224 maps. Window 7
 divides every map and is preserved by each resize, so no new window size is needed.
 Other windows, factors and sources are not validated.
 
@@ -191,7 +191,7 @@ def window_resize(ee, x, tokens: TokenGrid, channels: int, factor: int, align_co
     float32 rounding.
     Returns (image, fine token grid). Validated at windows 7 and 8, factors 2, 4 and 8 with
     align_corners=False and factor 4 with align_corners=True. Factor 2 with
-    align_corners=True at window 7 has offline-only evidence; see the module docstring."""
+    align_corners=True is also validated live at window 7; see the module docstring."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     coarse = tokens.coarse(window)
     fine_tokens = TokenGrid(tokens.height * factor, tokens.width * factor,
@@ -342,13 +342,16 @@ METADATA = validate_metadata({
         name="window_resize", layout_in="W", layout_out="W", locality=Locality.WINDOW_RING, radius=1,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=window_resize_values, asset_arrays=no_constants,
         chip_edge_dependent=True,
-        status="Ready — windows 7, 8; factors 2, 4, 8 (align_corners=False), 4 (align_corners=True)",
+        status=("Ready — windows 7, 8; factors 2, 4, 8 (align_corners=False), 4 (align_corners=True); "
+                "factor 2 (align_corners=True), window 7"),
         evidence=("docs/history/building-blocks-2026-10-11.md#37-resampling", "docs/history/upernet/notes/milestone7_findings.md",
                   "docs/history/upernet/notes/milestone11_findings.md", "docs/evidence/c0b-offline.json",
                   "docs/evidence/live-fixtures/20261013T154410Z-c0b.json",
-                  "docs/evidence/window-resize-x2-offline.json"),
+                  "docs/evidence/window-resize-x2-offline.json",
+                  "docs/evidence/live-fixtures/20261102T190649Z-resize_x2.json"),
         validated=Validated(({"window": (7, 8), "factor": (2, 4, 8), "align_corners": (False,)},
-                             {"window": (7, 8), "factor": (4,), "align_corners": (True,)})),
+                             {"window": (7, 8), "factor": (4,), "align_corners": (True,)},
+                             {"window": (7,), "factor": (2,), "align_corners": (True,)})),
         per_setting=window_resize_edge),
     # One window of output tokens (height = width = window), not a tile of a larger grid
     # (out_size None, row0 = col0 = 0: never varied).

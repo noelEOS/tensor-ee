@@ -404,7 +404,9 @@ def test_the_status_phrases_name_settings():
                                             {"window": {5, 7, 8, 12}},      # widths name no setting
                                             {"window": {14}, "patch": {16}, "channels": {6}}]
     assert parsed("window/head_forward") == [{"classes": {2, 3}}]           # "256 → 2 and 64 → 3 classes"
-    assert parsed("window/window_resize") == [{"window": {7, 8}}, {"factor": {2, 4, 8}, "align_corners": {False, True}}]
+    assert parsed("window/window_resize") == [
+        {"window": {7, 8}}, {"factor": {2, 4, 8}, "align_corners": {False, True}},
+        {"factor": {2}, "align_corners": {True}, "window": {7}}]
     assert parsed("window/window_pool") == [
         {"height": {5, 7, 8, 12, 14}, "width": {5, 7, 8, 12, 14}, "sizes": {(1, 2, 3, 6)}},
         {"height": {8, 12}, "width": {8, 12}, "sizes": {(1, 2, 4, 8)}}]

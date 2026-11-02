@@ -82,14 +82,46 @@ def test_plan_covers_all_global_axis_patterns_and_full_inputs_within_budget():
             assert request.width <= 56 and request.height <= 56
 
 
-def test_new_setting_is_outside_live_record_and_existing_settings_stay_inside():
+def test_live_setting_and_existing_settings_stay_inside_the_record():
     entry = METADATA["window_resize"]
     for window in (7, 8):
         for factor, corners in ((2, False), (4, False), (8, False), (4, True)):
             assert check_settings(entry, {"window": window, "factor": factor, "align_corners": corners}).inside
-    assert not check_settings(entry, {"window": 7, "factor": 2, "align_corners": True}).inside
+    assert check_settings(entry, {"window": 7, "factor": 2, "align_corners": True}).inside
+    assert not check_settings(entry, {"window": 8, "factor": 2, "align_corners": True}).inside
+    assert entry.status.startswith(
+        "Ready — windows 7, 8; factors 2, 4, 8 (align_corners=False), 4 (align_corners=True)")
     at = metadata_at(entry, {"align_corners": True})
     assert (at.locality, at.radius, at.chip_edge_dependent) == (Locality.WINDOW_RING, 1, True)
+
+
+def test_backbone_w14_relabels_to_w7_exactly_with_49_stride_samples():
+    import test_p01_window_settings as P01
+    from tensor_ee.core.grid import TokenGrid
+    from tensor_ee.core.tensor import WindowTensor
+    from tensor_ee.layouts.boundaries import relabel_from_windows, relabel_to_windows
+    from tensor_ee.layouts.window import from_dense, to_dense
+    from tools.fixtures.core import inline_raster
+
+    tokens = TokenGrid(14, 14)
+    values = np.arange(14 * 14 * 2, dtype=np.float32).reshape(14, 14, 2)
+    bands = ("c0", "c1")
+    with offline_earth_engine(), deep_recursion():
+        dense = inline_raster(ee, tokens.projection(ee), values, bands)
+        x = WindowTensor(from_dense(ee, tokens, dense, 2, window=14), tokens, 2, 14)
+        common = relabel_to_windows(ee, relabel_from_windows(ee, x, tokens, bands), tokens, window=7)
+        assert common.window == 7 and common.grid == tokens and common.channels == 2
+        got, valid = P01.read_grid(P01.GraphEvaluator()(
+            to_dense(ee, tokens, common.image, 2, window=7)), tokens.pixel_grid())
+        assert valid.all()
+        np.testing.assert_array_equal(np.stack(got, axis=-1).view(np.uint32), values.view(np.uint32))
+
+        # Count only the conversion, excluding construction of the artificial source.
+        source = WindowTensor(ee.Image("resize/backbone"), tokens, 2, 14)
+        converted = relabel_to_windows(ee, relabel_from_windows(ee, source, tokens, bands), tokens, window=7)
+        graph = converted.image.serialize()
+        assert graph.count('"Image.changeProj"') == 49 + 2  # gather plus the two relabels
+        assert '"Image.matrixMultiply"' not in graph
 
 
 @pytest.mark.parametrize("factor,corners", [(2, False), (4, False), (2, True), (4, True)])
@@ -111,3 +143,25 @@ def test_historical_head_mirror_keeps_its_previous_numerics(factor, corners):
     for exact in (True, False):
         expected = old if exact else old.astype(np.float32).astype(np.float64)
         np.testing.assert_array_equal(historical(x, factor=factor, align_corners=corners, exact=exact), expected)
+
+
+def test_live_record_covers_the_selection_with_exact_mirrors_and_no_assets_or_tasks():
+    import json
+    from pathlib import Path
+
+    path = "docs/evidence/live-fixtures/20261102T190649Z-resize_x2.json"
+    assert path in METADATA["window_resize"].evidence
+    record = json.loads((Path(__file__).resolve().parents[1] / path).read_text())
+    assert record["status"] == "passed" and record["dirty"] is False
+    assert record["revision"] == "e0a39a2cc4d7b8f528e0d659946e3b4c329407e6"
+    assert record["credentials"] == "adc" and record["errors"] == []
+    assert record["selection"] == list(F.SELECTIONS["resize_x2"])
+    assert record["plan"]["requests"] == record["cloud_calls"]["computePixels"] == 17
+    assert record["plan"]["assets"] == record["plan"]["tasks"] == 0
+    assert record["cloud_calls"]["refused"] == []
+    for fixture in record["fixtures"]:
+        assert fixture["status"] == "passed" and fixture["failures"] == []
+        for output in fixture["outputs"].values():
+            if output["kind"] == "output":
+                assert output["mirror"]["differing"] == 0
+                assert output["pytorch"]["max_abs"] <= 1e-4

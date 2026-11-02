@@ -101,7 +101,7 @@ def fixtures():
         reference_source="torch.nn.functional.interpolate(scale_factor=2, mode=bilinear, align_corners=True)",
         mirror=MirrorSpec(_mirror, True, "reference.window_resample.upsample: y then x, double, one float32 rounding"),
         requests=len(output_slices(extent)) + max(1, extent // SIDE)**2, constants=_constants,
-        history="New setting; no live evidence recorded.", accepts=(window_resize,), window=WINDOW,
+        history="docs/evidence/live-fixtures/20261102T190649Z-resize_x2.json", accepts=(window_resize,), window=WINDOW,
         notes="W7 divides every DPT map. Diagonal output blocks cover every row/column coefficient pattern; "
               "all inputs echoed. Exact mirror assumes non-fused double x products/sum, as measured in "
               "Milestone 11; offline graph evaluation checks this arithmetic, not Earth Engine itself.",
