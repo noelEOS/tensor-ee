@@ -1,7 +1,7 @@
 """DPT cat readout transport using existing repeat_rows and channel concat.
 
 This is a checkout recipe, not a new block or converter recognizer. The move
-has offline evidence only; Linear and GELU are deliberately outside this fixture.
+has live evidence at this fixture; Linear and GELU are deliberately outside it.
 """
 from __future__ import annotations
 
@@ -80,7 +80,7 @@ def fixtures():
         reference_source="torch.cat([spatial, class.expand(...)], dim=-1)",
         mirror=MirrorSpec(_mirror, True, "reference.class_row_readout.cat_readout"),
         requests=2, constants=lambda data: {"concat": METADATA["concat"].embedded_constants()},
-        history="Offline only; repeat_rows + concat recipe, no new block or live claim.",
+        history="docs/evidence/live-fixtures/20261102T202433Z-class_row_readout.json (passed; repeat_rows + concat only, no Linear/GELU or DPT claim)",
         tolerance=0, window=14, accepts=(WindowLayout,),
         notes="Four distinct class rows, each repeated across its matching 196 spatial rows. No arithmetic or casts.",
     )]

@@ -245,10 +245,14 @@ matching window. This recipe adds no model or converter support.
 Selection `class_row_readout` contains `window/concat/class-row-readout-w14`:
 four adjacent W14 windows with distinct class rows, four channels, exact-bit
 comparison with PyTorch expand/concat and a NumPy mirror. It plans two interactive
-requests and zero assets or tasks. The repeat/concat composition has offline
-evidence only ([record](evidence/class-row-readout-offline.json), largest absolute
-error 0); it makes no new live or full DPT numerical claim. Tests also check
-768-channel rows and signed zero. To inspect the small live plan offline:
+requests and zero assets or tasks. The repeat/concat composition has
+[offline evidence](evidence/class-row-readout-offline.json) and
+[live evidence](evidence/live-fixtures/20261102T202433Z-class_row_readout.json):
+Earth Engine matched PyTorch and the NumPy mirror bit for bit, maximum absolute
+error 0, with all pixels valid and exact input echoes, in two requests. This
+validates only `repeat_rows` plus `concat` at this four-channel, four-window W14
+fixture; it makes no Linear/GELU or full DPT numerical claim. Tests also check
+768-channel rows and signed zero offline. To inspect the small live plan offline:
 
 ```sh
 PYTHONPATH=. python tools/live_fixtures.py --plan class_row_readout
