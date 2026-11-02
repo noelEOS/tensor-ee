@@ -119,13 +119,15 @@ def test_class_attention_refuses_invalid_dimensions(window, dim, heads):
         class_token_attention(None, None, None, dim=dim, heads=heads, window=window)
 
 
-def test_class_attention_preserves_the_two_query_graphs():
+@pytest.mark.parametrize("scale_query", [False, True])
+def test_class_attention_preserves_the_two_query_graphs(scale_query):
     case = ApiTestCase()
     case.setUp()
     try:
         ops = WindowOps(ee)
         spatial, cls = ee.Image("spatial_qkv"), ee.Image("class_qkv")
-        actual = class_token_attention(ops, spatial, cls, dim=12, heads=3, window=3)
+        actual = class_token_attention(ops, spatial, cls, dim=12, heads=3, window=3,
+                                       scale_query=scale_query)
         spatial_heads = split_heads(ops, spatial, 12, 3)
         class_heads = split_heads(ops, cls, 12, 3)
         expected = [[], []]
@@ -137,7 +139,8 @@ def test_class_attention_preserves_the_two_query_graphs():
             ]
             for index, part in enumerate((spatial_heads, class_heads)):
                 result = naive_attention(ops, part[f"q_h{head}"], keys, values,
-                                         tokens=10, dim=4, score_scale=0.5)
+                                         tokens=10, dim=4, **({"query_scale": 0.5} if scale_query
+                                                            else {"score_scale": 0.5}))
                 expected[index].append(result["output"])
         assert [value.serialize() for value in actual] == [
             ops.cat_cols(parts).serialize() for parts in expected]
@@ -172,3 +175,9 @@ def test_model_norm_dispatch_uses_module_path(monkeypatch, prefix, eps, expected
     monkeypatch.setattr(model, "layer_norm2d", spatial)
     assert backend.norm(tensor, prefix, eps).image == expected
     assert calls == [(expected, eps)]
+
+
+@pytest.mark.parametrize("value", [None, 1, 0, "query", 0.5])
+def test_class_attention_refuses_non_boolean_scale_query(value):
+    with pytest.raises(ValueError, match="scale_query must be a boolean"):
+        class_token_attention(None, None, None, dim=12, heads=3, scale_query=value)

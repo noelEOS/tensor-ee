@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "d0ee0e4f48ef4827d3dfdd1e0d360bbb2dd781be",
+  "dirty": true,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.3",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 2,
+      "requests": 2,
+      "values": 47925,
+      "payload_bytes": 191700,
+      "request_bytes": 952131,
+      "max_values": 47628,
+      "max_request_bytes": 892019,
+      "max_bands": 243,
+      "embedded_constants": 0,
+      "inline_values": 37794,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/class_token_attention/query-scale-w14-h12-d64",
+        "lane": "window",
+        "block": "class_token_attention",
+        "parts": [
+          "naive_attention",
+          "split_heads",
+          "concat_rows"
+        ],
+        "settings": {
+          "window": 14,
+          "dim": 768,
+          "heads": 12,
+          "scale_query": true
+        },
+        "policy": "composite",
+        "shapes": {
+          "keys": 197,
+          "heads": 12,
+          "head_dim": 64
+        },
+        "seed": 9364,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm 1.0.30 vision_transformer.Attention (fused_attn=False; fixed 0/1 QKV and identity proj)",
+        "mirror": {
+          "source": "reference.class_token.class_token_attention",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "New setting; offline evidence only, not validated live.",
+        "calibration": false,
+        "notes": "First/last channel per head, all spatial queries; class output repeated on spatial grid. Class input is first spatial row; full output checked offline."
+      },
+      "inputs_sha256": "d2626fd0937820e84b1841bb45d05ae2c77bc8683b274cd94583c7c3731d7a63",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "patch",
+              "kind": "output",
+              "channels": 24
+            },
+            {
+              "name": "class",
+              "kind": "output",
+              "channels": 24
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 192
+            }
+          ],
+          "bands": 243,
+          "values": 47628,
+          "payload_bytes": 190512,
+          "request_bytes": 892019,
+          "graph_sha256": "962ae7b2dc725c723222f9b7a01ce00054b0bc9ef7bc2ba27407c3d6ac415f10",
+          "graph_bytes": 891791,
+          "embedded_constants": 0,
+          "inline_values": 37632
+        }
+      ],
+      "errors": [],
+      "seconds": 1.965,
+      "outputs": {
+        "patch": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4704,
+            "max_abs": 2.2351741790771484e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 6,
+              "col": 3,
+              "channel": 6,
+              "actual": 0.03734290599822998,
+              "expected": 0.03734288364648819
+            }
+          }
+        },
+        "class": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 4704,
+            "max_abs": 7.450580596923828e-09,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 14,
+              "actual": 0.015688074752688408,
+              "expected": 0.015688082203269005
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/class_token_attention/query-scale-w3-h3-d6",
+        "lane": "window",
+        "block": "class_token_attention",
+        "parts": [
+          "naive_attention",
+          "split_heads",
+          "concat_rows"
+        ],
+        "settings": {
+          "window": 3,
+          "dim": 18,
+          "heads": 3,
+          "scale_query": true
+        },
+        "policy": "composite",
+        "shapes": {
+          "keys": 10,
+          "heads": 3,
+          "head_dim": 6
+        },
+        "seed": 9306,
+        "tolerance": 0.0001,
+        "requests": 1,
+        "reference": "timm 1.0.30 vision_transformer.Attention (fused_attn=False; fixed 0/1 QKV and identity proj)",
+        "mirror": {
+          "source": "reference.class_token.class_token_attention",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "New setting; offline evidence only, not validated live.",
+        "calibration": false,
+        "notes": "First/last channel per head, all spatial queries; class output repeated on spatial grid. Class input is first spatial row; full output checked offline."
+      },
+      "inputs_sha256": "b68d386a71eb531da7d7edd489dc1a3d203bcd3d88f0a731e9c83dec9827eab8",
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 3,
+              "height": 3
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 3,
+          "height": 3,
+          "readouts": [
+            {
+              "name": "patch",
+              "kind": "output",
+              "channels": 6
+            },
+            {
+              "name": "class",
+              "kind": "output",
+              "channels": 6
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 18
+            }
+          ],
+          "bands": 33,
+          "values": 297,
+          "payload_bytes": 1188,
+          "request_bytes": 60112,
+          "graph_sha256": "f75774277e9dface159ab7353edd73c686b8c92c98a5f9529edf0c2930990adc",
+          "graph_bytes": 59886,
+          "embedded_constants": 0,
+          "inline_values": 162
+        }
+      ],
+      "errors": [],
+      "seconds": 0.079,
+      "outputs": {
+        "patch": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 54,
+            "max_abs": 2.9802322387695312e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 1,
+              "channel": 4,
+              "actual": 0.17863285541534424,
+              "expected": 0.17863282561302185
+            }
+          }
+        },
+        "class": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 54,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 1,
+              "actual": 0.1314406543970108,
+              "expected": 0.131440669298172
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}

@@ -700,7 +700,7 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
     offline = {name for (_, name), entry in catalogue.items()
                if entry.status.startswith("Fixed — offline only:")}
     assert offline == OFFLINE_ONLY_FIXED
-    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model", "standardize", "vit_layer_norm"])
+    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model", "standardize", "vit_layer_norm", "class_token_query_scale"])
                    if f.id not in COMPOSITION_FIXTURES and f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert (SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | BILINEAR_G3_BLOCKS
@@ -806,3 +806,20 @@ def test_the_offline_guard_leaves_a_later_live_initialize_working():
     finally:
         ee.data._install_cloud_api_resource = original
         ee.Reset()
+
+
+def test_query_scale_fixture_ids_and_data_are_stable():
+    expected = {
+        "window/class_token_attention/query-scale-w14-h12-d64":
+            "d2626fd0937820e84b1841bb45d05ae2c77bc8683b274cd94583c7c3731d7a63",
+        "window/class_token_attention/query-scale-w3-h3-d6":
+            "b68d386a71eb531da7d7edd489dc1a3d203bcd3d88f0a731e9c83dec9827eab8",
+    }
+    fixtures = select(["class_token_query_scale"])
+    assert {f.id for f in fixtures} == set(expected)
+    for f in fixtures:
+        for _ in range(2):
+            data = f.data(f.seed)
+            assert data.inputs_sha256 == expected[f.id]
+            assert data.weights_sha256 == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        assert f.data(f.seed + 1).inputs_sha256 != expected[f.id]
