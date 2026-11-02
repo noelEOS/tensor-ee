@@ -69,4 +69,3 @@ def upsample(x, size=None, factor: int = 4, align_corners: bool = True, exact: b
         p1 = a[:, i1, :] * w1[None, :, None]
         b = p0 + p1
     return b if exact else b.astype(np.float32).astype(np.float64)
-
