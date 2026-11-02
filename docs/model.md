@@ -183,5 +183,6 @@ or an accuracy benchmark.
 The [hand-composed ViT encoder target](vit-b16-encoder224.md) exposes every raw
 block's spatial/class pair and the final norm, with SMP DPT encoder parameter
 names. Reduced and full-width random-weight timm comparisons pass offline; the
-reduced interactive live plan awaits approval. No encoder live execution, converter
+reduced interactive live attempt failed before encoder readback (client recursion).
+Only the input echo returned exactly. No encoder live agreement, converter
 equivalence, DPT decoder, or model accuracy is claimed.

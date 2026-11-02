@@ -119,7 +119,7 @@ proposal, not an optimized schedule or measured runtime. Global attention spans
 the whole 224-pixel chip; attention stages cannot be tiled with halos. Peak memory
 and EECU cost are unknown. No runner or exports are included or approved.
 
-## Reduced live plan (approval pending)
+## Reduced live attempt (failed)
 
 The [reduced fixture offline record](evidence/vit-encoder-reduced-offline.json)
 was generated on clean commit `a15b793`; all six outputs pass, with largest
@@ -139,9 +139,21 @@ PYTHONPATH=. python tools/live_fixtures.py --plan vit_encoder_reduced
 The plan is **5 requests, 0 assets, 0 tasks**, largest request **1,637,391 bytes**,
 maximum 50,568 output values and NPY header 7,862 bytes, within the unchanged
 interactive budget. Spatial readouts use 14×14; class readouts 1×1; the input echo
-32×32. The full plan must be reviewed and approved before a live run. No
-full-width live selection or staged/export run is proposed. A reduced live result
-would validate only that reduced composition, not full ViT-B/16 execution or accuracy.
+32×32. The approved once-only run on clean `c587d84` wrote the unmodified
+[failed live record](evidence/live-fixtures/20261102T191233Z-vit_encoder_reduced.json).
+All four encoder-output requests failed with client-side `RecursionError` before
+transport. Only the input echo reached `computePixels`: all 6,144 values matched
+exactly, with zero differing values and maximum absolute error zero. The harness
+attempted five requests; transport recorded one `computePixels` and one
+`algorithms.list`, with no refused calls. No retry was made.
+
+None of the six encoder outputs were returned, so their EE-versus-mirror
+comparisons and maximum errors are **unavailable**. This run establishes no
+live encoder agreement, even for the reduced twin. Full width has offline
+mirror-versus-timm and eager numerical evidence only. There is no model-accuracy
+claim. No full-width live selection or staged/export run is proposed. Any later
+successful reduced check would validate only that twin's recorded inputs and
+settings, not full-width execution or accuracy.
 
 ## Verification
 
