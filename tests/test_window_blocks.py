@@ -481,7 +481,7 @@ EXPECTED_METADATA = {
          "scale_query=True: window 14, heads 12, dim 768; "
          "scale_query=True: window 3, heads 3, dim 18"), "window"),
     "window_depth_to_space": (Locality.WINDOW, None, False, M.NO_ARITHMETIC,
-        "Ready — factor 2; windows 14, 7 to window 7", "window"),
+        "Ready — factor 2; windows 14, 7 to window 7; factor 4, window 14, out_window=7", "window"),
     "concat_rows": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC,
                     "Ready", "per crop pixel"),
     "depthwise_conv3x3_window": (Locality.WINDOW_RING, 1, False, DRO,

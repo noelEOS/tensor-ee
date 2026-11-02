@@ -176,7 +176,7 @@ FACTOR4_FIXTURES = tuple(Fixture(
                       "reference.prithvi_settings.linear + reference.window_depth_to_space.window_depth_to_space"
                       if projected else "reference.window_depth_to_space.window_depth_to_space"),
     requests=2, constants=partial(_factor4_constants, projected=projected), accepts=(window_depth_to_space,),
-    history="Offline only; factor 4 has not yet been validated live.", tolerance=1e-4 if projected else 0,
+    history="docs/evidence/live-fixtures/20261102T215920Z-depth_to_space_factor4.json (passed; max_abs 0)", tolerance=1e-4 if projected else 0,
     window=14, notes="Whole input/output read; W7 matches the DPT decoder chain. "
                      "Small channels; no full DPT model claim. "
                      + ("Linear uses double_round_once; shuffle moves values." if projected else "Unique integer IDs."),

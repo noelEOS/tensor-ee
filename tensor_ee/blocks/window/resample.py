@@ -54,10 +54,12 @@ Input arrays are [w*w,factor*factor*C]; output arrays are [49,C], with w=7 or14.
 Child windows are sliced directly from the expanded parent array, without
 interpolation, tensor-value casts, dense channel bands or a halo.
 Validated live at factor 2 from windows 14 and 7 to window 7 (Earth Engine equal to the
-NumPy mirror in every value). Factor 4 is supported offline, with W14 -> W7
-chosen for DPT: its 56-token output uses the same W7 layout as the decoder
+NumPy mirror in every value). Factor 4 is validated live from W14 -> W7
+on a 14 -> 56 token grid with 4 output channels, both alone and after the existing
+linear (3 -> 64) against biased ConvTranspose2d k4/s4 (maximum absolute error 0).
+W7 is chosen for DPT: its 56-token output uses the same W7 layout as the decoder
 chain (the factor-2 28-token map and window_resize through 224 tokens).
-Factor 4 has not yet been validated live.
+Other factor-4 windows have offline coverage only.
 """
 
 from __future__ import annotations
@@ -364,10 +366,12 @@ METADATA = validate_metadata({
         name="window_depth_to_space", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=NO_ARITHMETIC, embedded_constants=window_depth_to_space_values,
         asset_arrays=window_depth_to_space_arrays, chip_edge_dependent=False,
-        status="Ready — factor 2; windows 14, 7 to window 7",
+        status="Ready — factor 2; windows 14, 7 to window 7; factor 4, window 14, out_window=7",
         evidence=("docs/evidence/prithvi-depth-to-space-offline.json", "docs/evidence/live-fixtures/20261029T185116Z-prithvi_depth_to_space.json",
-                  "docs/evidence/window-depth-to-space-factor4-offline.json"),
-        validated=Validated(({"factor": (2,), "window": (14, 7), "out_window": (7,)},))),
+                  "docs/evidence/window-depth-to-space-factor4-offline.json",
+                  "docs/evidence/live-fixtures/20261102T215920Z-depth_to_space_factor4.json"),
+        validated=Validated(({"factor": (2,), "window": (14, 7), "out_window": (7,)},
+                             {"factor": (4,), "window": (14,), "out_window": (7,)}))),
 
     # Chip-edge dependent over its validated settings (align_corners=True is one), and exactly
     # by setting through window_resize_edge.

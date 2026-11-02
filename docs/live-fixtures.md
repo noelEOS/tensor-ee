@@ -284,8 +284,13 @@ Selection `depth_to_space_factor4` contains two W14 → W7 fixtures:
 The [offline record](evidence/window-depth-to-space-factor4-offline.json) reports
 maximum absolute error 0 for both fixtures, with zero cloud calls.
 Both read the whole 14 × 14 input and 56 × 56 output. The plan is four interactive
-requests, zero assets and zero tasks. Factor 4 is offline-only pending an approved
-live run; the existing factor-2 status and validated record remain unchanged.
+requests, zero assets and zero tasks. The approved
+[live run](evidence/live-fixtures/20261102T215920Z-depth_to_space_factor4.json)
+passed exactly those four requests: both outputs matched PyTorch and the NumPy
+mirror bit for bit, maximum absolute error 0, with all pixels valid and exact
+input echoes. The factor-4 W14 → W7 setting is appended to the existing status
+and validated record; the factor-2 coverage is unchanged. Factor 4 with W7 input
+has offline coverage only.
 The tests also compare the unchanged linear block at 256 → 4096 columns followed
 by the mirror with PyTorch k4/s4 at DPT's 14 → 56 extent. This full-width check is
 offline only; the live plan uses small channels and makes no full DPT model claim.

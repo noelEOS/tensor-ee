@@ -209,3 +209,16 @@ def test_factor2_graphs_keep_the_base_revision_hashes(window, digest):
     with offline_earth_engine(), deep_recursion():
         result, _ = WR.window_depth_to_space(ee, ee.Image('source'), TokenGrid(14,14,2.5), 4, window=window)
         assert hashlib.sha256(result.serialize().encode()).hexdigest() == digest
+
+
+@pytest.mark.parametrize('factor,window,out_window,inside', [
+    (2,7,7,True), (2,14,7,True), (4,14,7,True),
+    (4,7,7,False), (4,14,8,False), (3,14,7,False),
+])
+def test_validated_record_adds_only_the_live_factor4_window(factor, window, out_window, inside):
+    from tensor_ee.core.metadata import check_settings
+
+    metadata = WR.METADATA['window_depth_to_space']
+    assert metadata.status.startswith('Ready — factor 2; windows 14, 7 to window 7; ')
+    check = check_settings(metadata, dict(factor=factor, window=window, out_window=out_window))
+    assert check.inside is inside
