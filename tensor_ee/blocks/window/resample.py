@@ -49,12 +49,15 @@ live for DPT's 7 -> 14 and 14 -> 28 maps, respectively.
 Other windows, factors and sources are not validated.
 
 The no-arithmetic window_depth_to_space moves projected columns
-(dy,dx,c) at source token (y,x) to (2*y+dy,2*x+dx,c).
-Input arrays are [w*w,4*C]; output arrays are [49,C], with w=7 or14.
+(dy,dx,c) at source token (y,x) to (factor*y+dy,factor*x+dx,c).
+Input arrays are [w*w,factor*factor*C]; output arrays are [49,C], with w=7 or14.
 Child windows are sliced directly from the expanded parent array, without
 interpolation, tensor-value casts, dense channel bands or a halo.
 Validated live at factor 2 from windows 14 and 7 to window 7 (Earth Engine equal to the
-NumPy mirror in every value).
+NumPy mirror in every value). Factor 4 is supported offline, with W14 -> W7
+chosen for DPT: its 56-token output uses the same W7 layout as the decoder
+chain (the factor-2 28-token map and window_resize through 224 tokens).
+Factor 4 has not yet been validated live.
 """
 
 from __future__ import annotations
@@ -302,12 +305,13 @@ def window_resize_edge(*, align_corners: bool = False) -> dict:
 
 def window_depth_to_space(ee, x, grid: TokenGrid, channels: int, *, window: int = 7,
                           out_window: int = 7, factor: int = 2):
-    """[window², 4*C] on grid.coarse(window) -> [out_window², C] on a finer grid.
+    """[window², factor²*C] on grid.coarse(window) -> [out_window², C] on a finer grid.
 
     ``grid`` is the input token grid, ``channels`` the output channel count.
-    Source column ``(dy*2+dx)*C+c`` moves to fine token ``(2*y+dy,2*x+dx,c)``.
+    Source column ``(dy*factor+dx)*C+c`` moves to fine token
+    ``(factor*y+dy,factor*x+dx,c)``.
     Returns ``(image, fine_tokens)``. Positive integral channel/window dimensions,
-    factor 2, window pairs (7,7)/(14,7), TokenGrid origin (0,0), and complete
+    factor 2 or 4, window pairs (7,7)/(14,7), TokenGrid origin (0,0), and complete
     input and output windows are required. The operation
     only reindexes values, including their signed zeros.
     """
@@ -316,8 +320,8 @@ def window_depth_to_space(ee, x, grid: TokenGrid, channels: int, *, window: int 
     for name, value in (("channels", channels), ("window", window), ("out_window", out_window)):
         if isinstance(value, bool) or not isinstance(value, numbers.Integral) or value < 1:
             reject(f"{name} must be a positive integer; received {value!r}")
-    if isinstance(factor, bool) or not isinstance(factor, numbers.Integral) or factor != 2:
-        reject(f"factor must be 2; received {factor!r}")
+    if isinstance(factor, bool) or not isinstance(factor, numbers.Integral) or factor not in (2, 4):
+        reject(f"factor must be 2 or 4; received {factor!r}")
     if (window, out_window) not in ((7, 7), (14, 7)):
         reject("supported window pairs are (7, 7) and (14, 7)")
     if grid.height % window or grid.width % window:

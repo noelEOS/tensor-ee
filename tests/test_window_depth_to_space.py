@@ -66,21 +66,22 @@ def _windows(x, w):
     return x.reshape(h//w,w,width//w,w,c).transpose(0,2,1,3,4).reshape(h//w,width//w,w*w,c)
 
 
-def _torch_reference(x):
+def _torch_reference(x, factor=2):
     torch.set_num_threads(2)
     h,w,packed = x.shape
-    tx = torch.from_numpy(x).reshape(h,w,2,2,packed//4).permute(4,2,3,0,1).reshape(1,packed,h,w)
-    return F.pixel_shuffle(tx,2)[0].permute(1,2,0).numpy()
+    tx = torch.from_numpy(x).reshape(h,w,factor,factor,packed//(factor*factor)).permute(4,2,3,0,1).reshape(1,packed,h,w)
+    return F.pixel_shuffle(tx,factor)[0].permute(1,2,0).numpy()
 
 
+@pytest.mark.parametrize('factor', [2, 4])
 @pytest.mark.parametrize('gh,gw,w', [(1,1,14),(2,3,14),(1,1,7),(2,3,7),(3,2,7)])
-def test_direct_window_selection_and_mirror_preserve_coordinate_order_and_zero_bits(monkeypatch,gh,gw,w):
+def test_direct_window_selection_and_mirror_preserve_coordinate_order_and_zero_bits(monkeypatch,gh,gw,w,factor):
     channels = 4
-    x = np.arange(gh*gw*w*w*4*channels,dtype=np.float32).reshape(gh*w,gw*w,4*channels)
+    x = np.arange(gh*gw*w*w*factor*factor*channels,dtype=np.float32).reshape(gh*w,gw*w,factor*factor*channels)
     x[0,0,0] = -0.0
     x[0,0,1] = 0.0
     local = LocalArray(_windows(x,w),w*2.5)
-    subdivisions = 2*w//7
+    subdivisions = factor*w//7
 
     class Coordinates:
         def floor(self):
@@ -98,15 +99,15 @@ def test_direct_window_selection_and_mirror_preserve_coordinate_order_and_zero_b
 
     monkeypatch.setattr(WR,'reshape',reshape)
     monkeypatch.setattr(WR,'domain_mask',lambda ee,grid:np.ones((grid.height,grid.width),dtype=bool))
-    actual,fine = WR.window_depth_to_space(fake,local,TokenGrid(gh*w,gw*w,2.5),channels,window=w)
-    assert fine == TokenGrid(gh*w*2,gw*w*2,1.25)
-    expected = _torch_reference(x)
+    actual,fine = WR.window_depth_to_space(fake,local,TokenGrid(gh*w,gw*w,2.5),channels,window=w,factor=factor)
+    assert fine == TokenGrid(gh*w*factor,gw*w*factor,2.5/factor)
+    expected = _torch_reference(x,factor)
     np.testing.assert_array_equal(actual.values.view(np.uint32),_windows(expected,7).view(np.uint32))
-    np.testing.assert_array_equal(mirror(x).view(np.uint32),expected.view(np.uint32))
+    np.testing.assert_array_equal(mirror(x,factor).view(np.uint32),expected.view(np.uint32))
 
 
 @pytest.mark.parametrize('options', [dict(channels=0),dict(channels=True),dict(window=0),
-    dict(window=2.5),dict(out_window=False),dict(factor=3),dict(factor=True),dict(window=8),
+    dict(window=2.5),dict(out_window=False),dict(factor=3),dict(factor=True),dict(factor=4.0),dict(factor=0),dict(window=8),
     dict(out_window=3),dict(out_window=1),dict(window=1),dict(out_window=14)])
 def test_unsupported_dimensions_are_refused_before_graph_construction(options):
     kwargs = dict(channels=4,window=7,out_window=7,factor=2)
@@ -119,10 +120,12 @@ def test_graph_constructs_without_tensor_value_arithmetic_or_dense_bands():
     case = ApiTestCase()
     case.setUp()
     try:
-        for w in (7,14):
-            result,fine = WR.window_depth_to_space(ee,ee.Image('source'),TokenGrid(14,14,2.5),4,window=w)
-            text = result.serialize()
-            assert fine == TokenGrid(28,28,1.25)
+        for w, factor in ((7,2),(14,2),(7,4),(14,4)):
+            result,fine = WR.window_depth_to_space(ee,ee.Image('source'),TokenGrid(14,14,2.5),4,window=w,factor=factor)
+            from tensor_ee.converter.request import deep_recursion
+            with deep_recursion():
+                text = result.serialize()
+            assert fine == TokenGrid(14*factor,14*factor,2.5/factor)
             assert 'Image.arrayTranspose' in text
             for forbidden in ('Image.toFloat','Image.toDouble','Image.matrixMultiply',
                               'Image.arrayFlatten','Image.toArray','Image.changeProj'):
@@ -137,3 +140,72 @@ def test_graph_constructs_without_tensor_value_arithmetic_or_dense_bands():
 def test_non_origin_grids_are_refused(grid):
     with pytest.raises(ValueError,match='TokenGrid'):
         WR.window_depth_to_space(None,None,grid,4)
+
+
+@pytest.mark.parametrize('factor', [0, 1, 3, True, 4.0])
+def test_mirror_refuses_unsupported_factors(factor):
+    with pytest.raises(ValueError, match='factor'):
+        mirror(np.zeros((14, 14, 64), np.float32), factor=factor)
+
+
+@pytest.mark.parametrize('cin,cout,bias', [(3,4,True), (3,5,False), (256,256,True)])
+def test_linear_and_factor4_match_convtranspose_k4_s4(cin, cout, bias):
+    from tensor_ee.blocks.window.linear import LinearConstants, linear
+    from tensor_ee.core.ops import ValueOps
+    from tensor_ee.weights.constants import WindowLayout
+    from reference.segformer_b0.blocks import NUMPY_EE, Operand
+    from tools.fixtures.core import dyadic, hwc, nchw
+
+    # Full DPT width and token extent; deterministic dyadic inputs and weights.
+    x = dyadic(104, 'x', (14, 14, cin), bits=10)
+    weight = dyadic(104, 'weight', (cin, cout, 4, 4), scale=0.03125, bits=10)
+    b = dyadic(104, 'bias', (cout,), scale=0.25, bits=10) if bias else None
+    matrix = weight.transpose(2, 3, 1, 0).reshape(16*cout, cin)
+    packed_bias = None if b is None else np.tile(b, 16)
+    layout = WindowLayout(14)
+    ops = ValueOps(NUMPY_EE)
+    constants = LinearConstants(ops, matrix, packed_bias, layout)
+    projected = linear(ops, Operand(x.reshape(196, cin)), constants, layout=layout).values
+    assert projected.shape == (196, 16*cout)
+    actual = mirror(projected.reshape(14, 14, 16*cout), factor=4)
+    expected = hwc(F.conv_transpose2d(nchw(x), torch.from_numpy(weight),
+                   None if b is None else torch.from_numpy(b), stride=4))
+    max_abs = float(np.max(np.abs(actual.astype(np.float64) - expected)))
+    assert max_abs <= 1e-4, max_abs
+
+
+def test_factor4_fixtures_compare_whole_outputs_and_fit_the_live_budget():
+    from tensor_ee.converter.request import deep_recursion
+    from tools.fixtures import select
+    from tools.live_fixtures import make_plan
+
+    fixtures = select(['depth_to_space_factor4'])
+    assert len(fixtures) == 2
+    for fixture in fixtures:
+        data = fixture.data(fixture.seed)
+        actual = fixture.mirror.fn(data)['output']
+        expected = fixture.reference(data)['output']
+        assert actual.shape == expected.shape == (56, 56, 4)
+        if fixture.tolerance == 0:
+            np.testing.assert_array_equal(actual.view(np.uint32), expected.view(np.uint32))
+        else:
+            assert np.max(np.abs(actual.astype(np.float64) - expected)) <= 1e-4
+    with deep_recursion():
+        plan = make_plan(fixtures)
+    assert sum(len(requests) for requests in plan.requests.values()) == 4
+    assert not plan.violations
+
+
+@pytest.mark.parametrize('window,digest', [
+    (7, '63192fef677018a4f2a1c8e473bff071dfcf3f408aa679b7ae61bf612e904a4c'),
+    (14, '227dfec0eae9993eb4c484eb19717840378ddf46022fd96576259915ed200bbf'),
+])
+def test_factor2_graphs_keep_the_base_revision_hashes(window, digest):
+    import hashlib
+    from tensor_ee.converter.request import deep_recursion
+    from tools.live_fixtures import offline_earth_engine
+
+    # Captured from 9c3de78, before allowing factor 4. G1 predates this block.
+    with offline_earth_engine(), deep_recursion():
+        result, _ = WR.window_depth_to_space(ee, ee.Image('source'), TokenGrid(14,14,2.5), 4, window=window)
+        assert hashlib.sha256(result.serialize().encode()).hexdigest() == digest
