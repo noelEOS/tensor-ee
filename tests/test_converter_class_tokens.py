@@ -126,8 +126,13 @@ def test_pair_cannot_be_saved_as_one_image():
 
 
 @pytest.mark.parametrize("server", [False, True])
-def test_position_build_matches_prithvi_constant_preparation_byte_for_byte(server):
+@pytest.mark.parametrize("grid", [GRID, FeatureGrid("EPSG:3857", 100., 200., 2.5, 14, 14)])
+def test_position_build_matches_prithvi_constant_preparation_byte_for_byte(server, grid):
+    from tensor_ee.models.prithvi_sen1floods11 import model as prithvi
+
+    config = prithvi.PrithviConfig(width=4, heads=1, depth=1, decoder=2)
     model, exporter = exported()
+    exporter.edges["spatial"] = Edge("W", grid, 4, 14)
     outputs = exporter.forward_intermediates()[0]
     graph = BlockGraph("position", ("spatial",), outputs, exporter.edges, tuple(exporter.nodes))
     state = {name: value.detach().numpy() for name, value in model.state_dict().items()}
@@ -135,27 +140,23 @@ def test_position_build_matches_prithvi_constant_preparation_byte_for_byte(serve
         if server:
             state = {name: ServerArray(ee.Array(value.tolist()).float(), value.shape) for name, value in state.items()}
         ops = WindowOps(ee)
-        spatial = WindowTensor(ops.constant(values((196, 4), 64)), GRID, 4, 14)
-        actual = build(graph, state, {"spatial": spatial})
-        pos, cls = state["pos_embed"], state["cls_token"]
-        if server:
-            spatial_pos = ServerArray(pos.array.slice(1, 1, 197).reshape([196, 4]), (196, 4))
-            first = ServerArray(pos.array.slice(1, 0, 1).reshape([1, 4]), (1, 4))
-            cls = ServerArray(cls.array.reshape([1, 4]), (1, 4))
-        else:
-            spatial_pos, first, cls = pos[0, 1:], pos[0, :1], cls.reshape(1, 4)
-        cls = WindowTensor(ops.constant(cls), GRID.coarse(14), 4, 1)
-        cls_image = merge.add(cls, cls.like(ops.constant(first))).image
-        expected_spatial = merge.add(spatial, spatial.like(ops.constant(spatial_pos)))
-        class_grid = GRID.coarse(14)
-        cls_image = cls_image.reproject(class_grid.projection(ee)).updateMask(class_grid.domain(ee))
-        expected = (expected_spatial, WindowTensor(cls_image, class_grid, 4, 1))
+        spatial = WindowTensor(ops.constant(values((196, 4), 64)), grid, 4, 14)
+        # Exercise Prithvi's real constant preparation and forward, not a copy.
+        # Small integer-arithmetic weights keep unrelated coefficient setup cheap.
+        reference_state = {name: values(shape) for name, shape in prithvi.parameter_shapes(config).items()}
+        reference_state.update({"backbone.pos_embed": state["pos_embed"], "backbone.cls_token": state["cls_token"]})
+        backend = prithvi.LibraryBackend(ee, reference_state, config)
+        # Prithvi normalizes every incoming state tensor to its native shape.
+        # Start the adapter from those same bindings, including server reshape nodes.
+        adapter_state = {name: prithvi._reshape(value, value.shape) for name, value in state.items()}
+        actual = build(graph, adapter_state, {"spatial": spatial})
+        expected = backend.position(spatial)
         for key, tensor in zip(outputs, expected):
             assert actual[key].image.serialize() == boundary_raster(ee, tensor).image.serialize()
         # Atomic graph outputs also remain ordered (spatial, prefix).
-        pair_result = build(graph, state, {"spatial": spatial}, outputs=("add.position",))["add.position"]
+        pair_result = build(graph, adapter_state, {"spatial": spatial}, outputs=("add.position",))["add.position"]
         assert len(pair_result) == 2
-        assert pair_result[0].grid == GRID and pair_result[1].grid == GRID.coarse(14)
+        assert pair_result[0].grid == grid and pair_result[1].grid == grid.coarse(14)
 
 
 def test_timm_forward_intermediates_uses_explicit_components():

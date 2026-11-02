@@ -14,6 +14,7 @@ import operator
 from ..blocks.window import activations, linear, merge, normalization
 from ..core.errors import GridMismatch, reject
 from ..core.tensor import ServerArray, WindowTensor
+from ..layouts.boundaries import pin_boundary
 from ..weights.constants import WindowLayout, row_constant
 
 
@@ -77,7 +78,7 @@ def _position_call(ops, tensors, constants, s):
     position, cls = constants
     spatial = merge.add(spatial, spatial.like(position))
     grid = spatial.grid.coarse(14)
-    cls = cls.reproject(grid.projection(ops.ee)).updateMask(grid.domain(ops.ee))
+    cls = pin_boundary(ops.ee, cls, grid)
     return spatial, WindowTensor(cls, grid, spatial.channels, 1)
 
 
