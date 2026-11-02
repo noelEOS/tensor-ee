@@ -29,7 +29,7 @@ def test_full_width_query_scaling_and_timm_order(fixture):
     actual = class_token_attention(ValueOps(NUMPY_EE), Operand(patch), Operand(cls),
                                    dim=dim, heads=heads, window=fixture.window, scale_query=True)
     for value, expected, timm in zip(actual, query, reference):
-        np.testing.assert_allclose(value.values, expected, rtol=0, atol=1e-7)
+        np.testing.assert_array_equal(value.values.view(np.uint32), expected.view(np.uint32))
         np.testing.assert_allclose(expected, timm, rtol=0, atol=1e-4)
 
     # Independent torch expression: the real timm forward must use query scaling.

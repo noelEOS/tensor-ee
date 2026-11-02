@@ -549,6 +549,8 @@ def test_every_live_fixture_is_inside_its_records(spec):
     """No setting a fixture states is outside the record; where the fixture states every setting
     the record names, the call is inside it. A setting the fixture does not state (a part's
     eps, say) is unstated, so that check shows only that nothing stated is outside."""
+    # Older class_token records predate scale_query and ran default score scaling;
+    # that missing setting now checks as "unstated", rather than "inside".
     settings = _fixture_settings(spec)
     for block in (spec["block"], *spec["parts"]):
         result = check_settings(ENTRIES[f"{spec['lane']}/{block}"], settings)
