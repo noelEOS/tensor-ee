@@ -168,7 +168,6 @@ NEVER_VARIED = {
 
 STATUS_ONLY = {
     # block -> (status numbers that name no setting of the block, the reason).
-    "window/conv3x3_window": ({1}, "stride 1, the block's only stride (no stride setting)"),
     "raster/grouped_conv2d": ({1, 2, 3, 5}, "kernel, stride, channels per group and multiplier are settings "
                                             "of the PyTorch module, not parameters of the block"),
     "window/decimate": ({32, 64, 160, 256}, "decimate takes no width: the widths say where the model ran each factor"),
@@ -508,6 +507,10 @@ def _fixture_settings(spec: dict) -> dict:
     if spec["block"] == "pool2d":
         settings["kernel"] = settings.pop("kernel_size")
         settings["reducer"] = "mean" if "/avg-" in spec["id"] else "max"
+    if spec["id"] == "window/conv3x3_window/segformer-overlap-k3-s2":
+        # The recorded stride is the composition's: overlap_embedding calls the
+        # stride-1 conv3x3_window, then decimate(..., 2). No record is rewritten.
+        settings["stride"] = 1
     if "bands" in settings:
         settings["channels"] = len(settings["bands"])
     if "tokens" in shapes:
@@ -549,6 +552,7 @@ def test_every_live_fixture_is_inside_its_records(spec):
     """No setting a fixture states is outside the record; where the fixture states every setting
     the record names, the call is inside it. A setting the fixture does not state (a part's
     eps, say) is unstated, so that check shows only that nothing stated is outside."""
+    # Older conv3x3 records predate stride and ran stride 1; it is now unstated.
     # Older class_token records predate scale_query and ran default score scaling;
     # that missing setting now checks as "unstated", rather than "inside".
     settings = _fixture_settings(spec)
