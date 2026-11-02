@@ -1,0 +1,593 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "aa431988a1b2b1e920316acd4204c58c5af1dc9a",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.14",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 2,
+      "requests": 6,
+      "values": 154251,
+      "payload_bytes": 617004,
+      "request_bytes": 833590,
+      "max_values": 52332,
+      "max_request_bytes": 221161,
+      "max_bands": 267,
+      "embedded_constants": 907776,
+      "inline_values": 4728,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/layer_norm/vit-w14-eps1e-6",
+        "lane": "window",
+        "block": "layer_norm",
+        "parts": [],
+        "settings": {
+          "window": 14,
+          "dim": 768,
+          "eps": 1e-06
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            14,
+            14,
+            768
+          ],
+          "seed_input": [
+            14,
+            14,
+            8
+          ],
+          "rows": 196,
+          "channels": 768
+        },
+        "seed": 9214,
+        "tolerance": 0.0001,
+        "requests": 3,
+        "reference": "torch.nn.functional.layer_norm (eps=1e-6)",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.layer_norm2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "Near-constant rows distinguish eps 1e-6 from 1e-5; compact dyadic seeds and channel codes; all 768 outputs are read."
+      },
+      "inputs_sha256": "d0d51e988e8538e7c45c9a89c749256bb4302c5b7db8b136591686de42a2626e",
+      "weights_sha256": "b225005d75568507a5ad108feb41731b72705179c504cbe4b736d3b5082730b7",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "output0",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "output1",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 50568,
+          "payload_bytes": 202272,
+          "request_bytes": 220741,
+          "graph_sha256": "7e2b774913210c62ff52759ed0ad05820cea2e9b90a1ed7ce2f1284cb9f8f2e4",
+          "graph_bytes": 220513,
+          "embedded_constants": 301056,
+          "inline_values": 1568
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "output2",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "output3",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 50568,
+          "payload_bytes": 202272,
+          "request_bytes": 220827,
+          "graph_sha256": "7782fd574b8a43dd44b16b20913c2388f718c60ef33d9aa87d651d1693708380",
+          "graph_bytes": 220599,
+          "embedded_constants": 301056,
+          "inline_values": 1568
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "output4",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "output5",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 267,
+          "values": 52332,
+          "payload_bytes": 209328,
+          "request_bytes": 221161,
+          "graph_sha256": "3dba0c64bd30d7c3122948d9b8af41cb74c5c5b750fa8c2d413e1443be4ca30f",
+          "graph_bytes": 220933,
+          "embedded_constants": 301056,
+          "inline_values": 1568
+        }
+      ],
+      "errors": [],
+      "seconds": 0.033,
+      "outputs": {
+        "output0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 1.811981201171875e-05,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 4,
+              "channel": 24,
+              "actual": -0.5861473083496094,
+              "expected": -0.5861654281616211
+            }
+          }
+        },
+        "output1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 1.7911195755004883e-05,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 4,
+              "channel": 112,
+              "actual": -0.24621835350990295,
+              "expected": -0.24623626470565796
+            }
+          }
+        },
+        "output2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 1.806020736694336e-05,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 8,
+              "channel": 11,
+              "actual": 0.3476335406303406,
+              "expected": 0.3476516008377075
+            }
+          }
+        },
+        "output3": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 1.7970800399780273e-05,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 4,
+              "channel": 82,
+              "actual": -0.24250218272209167,
+              "expected": -0.24252015352249146
+            }
+          }
+        },
+        "output4": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 1.823902130126953e-05,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 3,
+              "col": 8,
+              "channel": 100,
+              "actual": 0.43710774183273315,
+              "expected": 0.4371259808540344
+            }
+          }
+        },
+        "output5": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 25088,
+            "max_abs": 1.8477439880371094e-05,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 6,
+              "channel": 81,
+              "actual": 0.9132112860679626,
+              "expected": 0.913229763507843
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "window/layer_norm/vit-w1-eps1e-6",
+        "lane": "window",
+        "block": "layer_norm",
+        "parts": [],
+        "settings": {
+          "window": 1,
+          "dim": 768,
+          "eps": 1e-06
+        },
+        "policy": "double_round_once",
+        "shapes": {
+          "input": [
+            1,
+            1,
+            768
+          ],
+          "seed_input": [
+            1,
+            1,
+            8
+          ],
+          "rows": 1,
+          "channels": 768
+        },
+        "seed": 9201,
+        "tolerance": 0.0001,
+        "requests": 3,
+        "reference": "torch.nn.functional.layer_norm (eps=1e-6)",
+        "mirror": {
+          "source": "reference.upernet.ee_mirror_decoder.layer_norm2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New setting; no live evidence recorded.",
+        "calibration": false,
+        "notes": "Near-constant rows distinguish eps 1e-6 from 1e-5; compact dyadic seeds and channel codes; all 768 outputs are read."
+      },
+      "inputs_sha256": "c20f8bf6882c1dcf6db7b42bcd06ce97ebacd10b716d5da375ab1cc4312ca163",
+      "weights_sha256": "195ed27bb946759dc8b94f0111aa6bb9a9ec1b78f4ccda884c6ca49d73c38397",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 1
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 1,
+          "readouts": [
+            {
+              "name": "output0",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "output1",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 258,
+          "payload_bytes": 1032,
+          "request_bytes": 56562,
+          "graph_sha256": "497c5ac1d315aad68787f7f05b3cae84137fdcb2648c02ee2ad1f1392c84d5f1",
+          "graph_bytes": 56336,
+          "embedded_constants": 1536,
+          "inline_values": 8
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 1
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 1,
+          "readouts": [
+            {
+              "name": "output2",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "output3",
+              "kind": "output",
+              "channels": 128
+            }
+          ],
+          "bands": 258,
+          "values": 258,
+          "payload_bytes": 1032,
+          "request_bytes": 56649,
+          "graph_sha256": "cfe918f5e8996f9a350dfeb556fbad4d66830bd95ad717e8ce18b8a55222217f",
+          "graph_bytes": 56423,
+          "embedded_constants": 1536,
+          "inline_values": 8
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 1,
+              "height": 1
+            },
+            "affineTransform": {
+              "scaleX": 10.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -10.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 1,
+          "height": 1,
+          "readouts": [
+            {
+              "name": "output4",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "output5",
+              "kind": "output",
+              "channels": 128
+            },
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 8
+            }
+          ],
+          "bands": 267,
+          "values": 267,
+          "payload_bytes": 1068,
+          "request_bytes": 57650,
+          "graph_sha256": "c15d65326a5a233787e1e0de3445f19a0811ac1a43353dd3ec03d80a1ca381d9",
+          "graph_bytes": 57424,
+          "embedded_constants": 1536,
+          "inline_values": 8
+        }
+      ],
+      "errors": [],
+      "seconds": 0.026,
+      "outputs": {
+        "output0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 2.384185791015625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 28,
+              "actual": -1.053989291191101,
+              "expected": -1.0539895296096802
+            }
+          }
+        },
+        "output1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 2.384185791015625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 92,
+              "actual": -0.7345765829086304,
+              "expected": -0.7345768213272095
+            }
+          }
+        },
+        "output2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.7881393432617188e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 4,
+              "actual": -0.5225239396095276,
+              "expected": -0.5225241184234619
+            }
+          }
+        },
+        "output3": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.1920928955078125e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 13,
+              "actual": 0.3151557445526123,
+              "expected": 0.31515586376190186
+            }
+          }
+        },
+        "output4": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 1.7881393432617188e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 65,
+              "actual": 0.550765872001648,
+              "expected": 0.5507660508155823
+            }
+          }
+        },
+        "output5": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 128,
+            "max_abs": 2.384185791015625e-07,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 77,
+              "actual": 0.6768020391464233,
+              "expected": 0.6768022775650024
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}
