@@ -63,8 +63,10 @@ attention-core probes also ran 25 and 64 tokens).
 For each head, keys and values are concatenated in class-first order and both
 query partitions attend to all ``window**2 + 1`` keys. Scores are multiplied by
 ``head_dim**-0.5`` after their product by default. ``scale_query=True`` instead
-scales Q before the product (timm 1.x order); this setting has offline evidence
-only and has not been validated live. The composite reuses ``split_heads``,
+scales Q before the product (timm 1.x order), validated live at window 14 /
+heads 12 / dim 768 and window 3 / heads 3 / dim 18. The first and last output
+channels of every head matched the mirror bit for bit for every spatial query
+and the class query. The composite reuses ``split_heads``,
 ``concat_rows`` and ``naive_attention`` with its ``round_each_op`` policy;
 head concatenation only moves values. It has no coefficient constants.
 Validated live at window 3 with 3 heads of width 4 and at window 14 with 12 heads
@@ -260,7 +262,9 @@ def class_token_attention(ops, spatial_qkv, cls_qkv, *, dim: int, heads: int,
     rows. Head splitting and concatenation move values; the existing attention
     core uses ``round_each_op`` and post-product score scaling by default.
     ``scale_query=True`` multiplies Q before Q K^T instead (timm 1.x order).
-    The new setting has offline evidence only and has not been validated live.
+    Query scaling is validated live at window 14 / heads 12 / dim 768 and
+    window 3 / heads 3 / dim 18, reading the first and last channels of each
+    head for every spatial query and the class query.
 
     There are no coefficients to prepare, so no constants class or builder is
     required. Positive integral dimensions and a width divisible by heads are
@@ -394,11 +398,16 @@ METADATA = validate_metadata({
         name="class_token_attention", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=COMPOSITE, embedded_constants=class_token_attention_values,
         asset_arrays=class_token_attention_arrays, chip_edge_dependent=False,
-        status="Ready — window 3, heads 3, dim 12; window 14, heads 12, dim 768",
+        status=("Ready — window 3, heads 3, dim 12; window 14, heads 12, dim 768; "
+                "scale_query=True: window 14, heads 12, dim 768; "
+                "scale_query=True: window 3, heads 3, dim 18"),
         evidence=("docs/evidence/class-token-offline.json", "docs/evidence/live-fixtures/20261029T174042Z-class_token.json",
-                  "docs/evidence/class-token-query-scale-offline.json"),
-        validated=Validated(({"window": (3,), "heads": (3,), "dim": (12,)},
-                             {"window": (14,), "heads": (12,), "dim": (768,)}))),
+                  "docs/evidence/class-token-query-scale-offline.json",
+                  "docs/evidence/live-fixtures/20261102T122934Z-class_token_query_scale.json"),
+        validated=Validated(({"window": (3,), "heads": (3,), "dim": (12,), "scale_query": (False,)},
+                             {"window": (14,), "heads": (12,), "dim": (768,), "scale_query": (False,)},
+                             {"window": (14,), "heads": (12,), "dim": (768,), "scale_query": (True,)},
+                             {"window": (3,), "heads": (3,), "dim": (18,), "scale_query": (True,)}))),
     # Validated: any accepted call (token counts, widths, biases, masks and both scales varied).
     "naive_attention": BlockMetadata(
         name="naive_attention", layout_in="W", layout_out="W", locality=Locality.WINDOW,

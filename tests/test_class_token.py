@@ -105,8 +105,10 @@ def test_compact_heads_rotate_every_qkv_component():
 def test_class_attention_has_no_coefficients_and_its_live_record():
     entry = ATTENTION_METADATA["class_token_attention"]
     assert entry.validated.configurations == (
-        (("dim", (12,)), ("heads", (3,)), ("window", (3,))),
-        (("dim", (768,)), ("heads", (12,)), ("window", (14,))))
+        (("dim", (12,)), ("heads", (3,)), ("scale_query", (False,)), ("window", (3,))),
+        (("dim", (768,)), ("heads", (12,)), ("scale_query", (False,)), ("window", (14,))),
+        (("dim", (768,)), ("heads", (12,)), ("scale_query", (True,)), ("window", (14,))),
+        (("dim", (18,)), ("heads", (3,)), ("scale_query", (True,)), ("window", (3,))))
     assert class_token_attention_values() == class_token_attention_arrays() == 0
 
 

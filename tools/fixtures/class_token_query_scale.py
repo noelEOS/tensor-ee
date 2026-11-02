@@ -127,7 +127,7 @@ def fixtures():
             mirror=MirrorSpec(partial(_mirror, **args), False,
                               "reference.class_token.class_token_attention", bound=1e-4),
             requests=1, constants=lambda data: {"class_token_attention": class_token_attention_values()},
-            history="New setting; offline evidence only, not validated live.",
+            history="docs/evidence/live-fixtures/20261102T122934Z-class_token_query_scale.json (passed; Earth Engine equal to the mirror on every sampled output)",
             accepts=(class_token_attention,), window=window,
             notes="First/last channel per head, all spatial queries; class output repeated on spatial grid. Class input is first spatial row; full output checked offline.",
         ))

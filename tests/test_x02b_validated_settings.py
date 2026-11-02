@@ -772,3 +772,15 @@ def test_stage_four_never_ran_shifted():
 def test_patch_locality_is_the_patch_blocks_rule():
     assert WP.METADATA["patch_embed"].per_setting is WP.patch_locality
     assert WSW.METADATA["swin_patch_embedding"].per_setting is WP.patch_locality
+
+
+@pytest.mark.parametrize("window,heads,dim,scale_query,inside", [
+    (3, 3, 12, False, True), (14, 12, 768, False, True),
+    (3, 3, 18, True, True), (14, 12, 768, True, True),
+    (3, 3, 12, True, False), (3, 3, 18, False, False),
+    (3, 3, 6, True, False),
+])
+def test_class_token_attention_records_the_live_scaling_combinations(window, heads, dim, scale_query, inside):
+    entry = ENTRIES["window/class_token_attention"]
+    result = check_settings(entry, dict(window=window, heads=heads, dim=dim, scale_query=scale_query))
+    assert result.inside is inside
