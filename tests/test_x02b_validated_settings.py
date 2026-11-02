@@ -163,6 +163,8 @@ NEVER_VARIED = {
     "window/group_product": {"k"},
     "window/patch_merge": {"bias"},
     "window/window_matrix_resize": {"out_size", "row0", "col0"},
+    # Before out_window existed, only the same-window form now named None ran live.
+    "window/window_resize": {"out_window"},
     "window/fuse_head": {"eps"},
 }
 

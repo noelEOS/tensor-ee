@@ -42,8 +42,10 @@ and 8 with align_corners=False and factor 4 with align_corners=True (window 7: t
 decoder's FPN, fusion and head; window 8: the window-8 Swin-UPerNet validation model's, on its token extents),
 ``window_matrix_resize`` from 1 x 1, 2 x 2, 3 x 3 and 6 x 6 sources (the PSP's bins) onto one
 window with align_corners=False. Factor 2 with align_corners=True at window 7 is
-validated live on 7 -> 14 -> 28 -> 56 -> 112 -> 224 maps. Window 7
-divides every map and is preserved by each resize, so no new window size is needed.
+validated live on 7 -> 14 -> 28 -> 56 -> 112 -> 224 maps, keeping window 7.
+The keyword-only out_window=None retains that same-window graph. Explicit output
+windows 14 (source 7) and 7 (source 14) at factor 2, align_corners=True have
+offline-only evidence for DPT's 7 -> 14 and 14 -> 28 maps; they are not validated live.
 Other windows, factors and sources are not validated.
 
 The no-arithmetic window_depth_to_space moves projected columns
@@ -107,24 +109,38 @@ def float32_exact(matrix: np.ndarray) -> np.ndarray:
     return m32
 
 
+def _resize_output_window(window: int, factor: int, out_window: int | None) -> int:
+    """One output window must fit inside the factor-expanded parent window."""
+    if out_window is None:
+        return window
+    for name, value in (("window", window), ("factor", factor), ("out_window", out_window)):
+        if isinstance(value, bool) or not isinstance(value, numbers.Integral) or value < 1:
+            reject(f"{name} must be a positive integer; received {value!r}")
+    if (factor * window) % out_window:
+        reject("out_window must divide factor * window so each output window reads one parent halo")
+    return int(out_window)
+
+
 def local_matrices(n_in: int, factor: int, align_corners: bool = False, *,
-                   window: int = WINDOW) -> tuple[np.ndarray, list[int]]:
+                   window: int = WINDOW, out_window: int | None = None) -> tuple[np.ndarray, list[int]]:
     """Window-local weights of an n_in -> factor * n_in axis.
 
-    Returns (stack [K * w, w + 2] float32, index): child window row I' (0 .. factor * n_in
-    / w - 1) uses rows w k .. w k + w - 1 of the stack, k = index[I'], to map its parent
-    window's w + 2 halo tokens (parent tokens w I - 1 .. w I + w) to its w output tokens.
+    Returns (stack [K * o, w + 2] float32, index), with input window w and output
+    window o (out_window=None means o=w). Child I' uses rows o*k .. o*(k+1)
+    of the stack, k=index[I'], mapping parent I=floor(I'*o/(factor*w)) and its
+    w+2 halo tokens (w*I-1 .. w*I+w) to o output tokens. Require o | factor*w.
     The rows are slices of the GLOBAL weight matrix (absolute output positions): with
     align_corners=True nearly every child window has its own matrix (K = factor * n_in /
-    w). Windows 7 and 8 are validated (see the module docstring)."""
+    o). Same-window settings are validated as the module docstring states."""
+    output_window = _resize_output_window(window, factor, out_window)
     if n_in % window:
         raise ValueError(f"window layout needs a multiple of {window} tokens")
     m = model_bilinear_weights(n_in, factor * n_in, align_corners=align_corners)
     mats, keys, index = [], {}, []
-    for child in range(factor * n_in // window):
-        parent = child // factor
-        rows = m[window * child: window * (child + 1)]
-        local = np.zeros((window, window + 2))
+    for child in range(factor * n_in // output_window):
+        parent = child * output_window // (factor * window)
+        rows = m[output_window * child: output_window * (child + 1)]
+        local = np.zeros((output_window, window + 2))
         for h in range(window + 2):
             i = window * parent - 1 + h
             if 0 <= i < n_in:
@@ -176,42 +192,47 @@ def window_matrix_weights(in_size, out_size, height: int | None = None, width: i
 # window: integer factor, window layout -> window layout
 # ---------------------------------------------------------------------------
 def _per_pixel_rows(ee, stack: np.ndarray, index: list[int], position, *, window: int = WINDOW):
-    """[w, w + 2] rows w k .. w k + w - 1 of `stack` at each pixel, k = index[position]."""
+    """Select ``window`` rows from stack (its width is the input window plus two)."""
     k = ee.Image(ee.Array([float(v) for v in index])).arrayGet(position.toInt()).toInt()
     start = k.multiply(window)
     return ee.Image(constant_value(ee, stack)).arraySlice(0, start, start.add(window))
 
 
 def window_resize(ee, x, tokens: TokenGrid, channels: int, factor: int, align_corners: bool = False, *,
-                  window: int = WINDOW, policy: str = DOUBLE_ROUND_ONCE):
-    """Window layout [w^2, C] on tokens.coarse(w) -> window layout on the factor-times finer
-    token grid's window grid (masked outside the raster).  Bilinear, align_corners as given
-    (False: the decoder's resizes; True: the segmentation head's), the y axis first (one
-    [w, w + 2] x [w + 2, (w + 2) C] product), then x ([w, w + 2] x [w + 2, w C]), one
-    float32 rounding.
+                  window: int = WINDOW, policy: str = DOUBLE_ROUND_ONCE, out_window: int | None = None):
+    """[w^2, C] on tokens.coarse(w) -> [o^2, C] on the factor-times finer grid's
+    coarse(o), masked outside the raster. w=window; o=out_window or w.
+    Bilinear, align_corners as given, the y axis first (one
+    [o, w + 2] x [w + 2, (w + 2) C] product), then x ([o, w + 2] x [w + 2, o C]),
+    one float32 rounding.
     Returns (image, fine token grid). Validated at windows 7 and 8, factors 2, 4 and 8 with
     align_corners=False and factor 4 with align_corners=True. Factor 2 with
-    align_corners=True is also validated live at window 7; see the module docstring."""
+    align_corners=True is also validated live at window 7; see the module docstring.
+    out_window=None preserves window and today's graph. An explicit output window
+    must divide factor*window. It changes only coefficient slices and output rows;
+    the source halo and the two products, with one final cast, stay the same.
+    Mixed-window settings have offline evidence only."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
+    output_window = _resize_output_window(window, factor, out_window)
     coarse = tokens.coarse(window)
     fine_tokens = TokenGrid(tokens.height * factor, tokens.width * factor,
                             tokens.scale / factor, tokens.crs)
-    fine = fine_tokens.coarse(window)
-    stack_y, index_y = local_matrices(tokens.height, factor, align_corners, window=window)
-    stack_x, index_x = local_matrices(tokens.width, factor, align_corners, window=window)
+    fine = fine_tokens.coarse(output_window)
+    stack_y, index_y = local_matrices(tokens.height, factor, align_corners, window=window, out_window=out_window)
+    stack_x, index_x = local_matrices(tokens.width, factor, align_corners, window=window, out_window=out_window)
     projection = ee.Projection(fine.crs, fine.transform)
     coords = ee.Image.pixelCoordinates(projection).floor()
     rows = coords.select("y").clamp(0, fine.height - 1)
     cols = coords.select("x").clamp(0, fine.width - 1)
-    my = _per_pixel_rows(ee, stack_y, index_y, rows, window=window)            # [w, w + 2]
-    mx = _per_pixel_rows(ee, stack_x, index_x, cols, window=window)            # [w, w + 2]
+    my = _per_pixel_rows(ee, stack_y, index_y, rows, window=output_window)     # [o, w + 2]
+    mx = _per_pixel_rows(ee, stack_x, index_x, cols, window=output_window)     # [o, w + 2]
     halo3 = halo(ee, x, coarse, channels, window=window).reproject(ee.Projection(coarse.crs, coarse.transform))
     halo3 = halo3.reproject(projection)                               # parent's halo, nearest
     a = my.matrixMultiply(reshape(ee, halo3, [window + 2, (window + 2) * channels]))
-    a = reshape(ee, a, [window, window + 2, channels]).arrayTranspose(0, 1)    # [w + 2, w, C]
-    b = mx.matrixMultiply(reshape(ee, a, [window + 2, window * channels]))     # [w (s), w C]
-    b = reshape(ee, b, [window, window, channels]).arrayTranspose(0, 1)       # [r, s, C]
-    out = reshape(ee, b, [window * window, channels]).toFloat()
+    a = reshape(ee, a, [output_window, window + 2, channels]).arrayTranspose(0, 1)  # [w+2, o, C]
+    b = mx.matrixMultiply(reshape(ee, a, [window + 2, output_window * channels]))  # [o, o*C]
+    b = reshape(ee, b, [output_window, output_window, channels]).arrayTranspose(0, 1)
+    out = reshape(ee, b, [output_window * output_window, channels]).toFloat()
     return out.updateMask(domain_mask(ee, fine)), fine_tokens
 
 
@@ -248,12 +269,13 @@ def window_matrix_resize(ee, source_array, in_size, tokens: TokenGrid, out_size=
 # Cost functions (contract section 9)
 # ---------------------------------------------------------------------------
 def window_resize_values(height: int, width: int, factor: int, *, align_corners: bool = False,
-                         window: int = WINDOW) -> int:
+                         window: int = WINDOW, out_window: int | None = None) -> int:
     """Values embedded for a resize of an height x width token map: per axis the
-    [K w, w + 2] coefficient stack and the child-window index (``_per_pixel_rows``)."""
+    [K out_window, window + 2] coefficient stack and the child-window index.
+    out_window=None means window (the historical graph and cost)."""
     total = 0
     for n in (height, width):
-        stack, index = local_matrices(n, factor, align_corners, window=window)
+        stack, index = local_matrices(n, factor, align_corners, window=window, out_window=out_window)
         total += stack.size + len(index)
     return total
 
@@ -349,9 +371,9 @@ METADATA = validate_metadata({
                   "docs/evidence/live-fixtures/20261013T154410Z-c0b.json",
                   "docs/evidence/window-resize-x2-offline.json",
                   "docs/evidence/live-fixtures/20261102T190649Z-resize_x2.json"),
-        validated=Validated(({"window": (7, 8), "factor": (2, 4, 8), "align_corners": (False,)},
-                             {"window": (7, 8), "factor": (4,), "align_corners": (True,)},
-                             {"window": (7,), "factor": (2,), "align_corners": (True,)})),
+        validated=Validated(({"window": (7, 8), "factor": (2, 4, 8), "align_corners": (False,), "out_window": (None,)},
+                             {"window": (7, 8), "factor": (4,), "align_corners": (True,), "out_window": (None,)},
+                             {"window": (7,), "factor": (2,), "align_corners": (True,), "out_window": (None,)})),
         per_setting=window_resize_edge),
     # One window of output tokens (height = width = window), not a tile of a larger grid
     # (out_size None, row0 = col0 = 0: never varied).

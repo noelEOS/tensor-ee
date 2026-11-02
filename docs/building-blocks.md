@@ -68,11 +68,11 @@ composites promoted from the models when the converter was built: SegFormer-B0's
 
 `window_resize` at factor 2 with `align_corners=True` has an
 [offline record](evidence/window-resize-x2-offline.json) and a
-[live plan](evidence/window-resize-x2-live-plan.md) for
-DPT's 7 → 14 → 28 → 56 → 112 → 224 maps, using W7 throughout. This setting
-is now validated live at W7; its status keeps the previous coverage verbatim and
-appends this setting. The plan names the no-arithmetic relabel functions that bring
-the 14-token W14 backbone map to the common W7 decoder layout.
+[completed live plan](evidence/window-resize-x2-live-plan.md) at W7 on
+7 → 14 → 28 → 56 → 112 → 224 maps. The separate
+[output-window plan](evidence/window-resize-x2-out-window-live-plan.md) covers
+DPT's W7(7) → W14(14) → W7(28) bridge offline, pending live approval.
+The `out_window=None` default retains the validated same-window graphs.
 
 **Layouts** ([contract §3](library-contract.md#3-tensor-types)):
 - **R**, raster: an `ee.Image` with one band per channel on a georeferenced `Grid`
@@ -286,7 +286,7 @@ Each block's `validated` record, the status in machine-readable form: 88 records
 | [`window_pool`](../tensor_ee/blocks/window/pooling.py) | W → V | {height 5; sizes (1, 2, 3, 6); width 5} ∪ {height 7; sizes (1, 2, 3, 6); width 7} ∪ {height 8; sizes (1, 2, 3, 6); width 8} ∪ {height 12; sizes (1, 2, 3, 6); width 12} ∪ {height 14; sizes (1, 2, 3, 6); width 14} ∪ {height 8; sizes (1, 2, 4, 8); width 8} ∪ {height 12; sizes (1, 2, 4, 8); width 12} | — |
 | [`gather`](../tensor_ee/blocks/window/pooling.py) | W → V | any accepted call | — |
 | [`window_depth_to_space`](../tensor_ee/blocks/window/resample.py) | W → W | {factor 2; out_window 7; window 14 or 7} | — |
-| [`window_resize`](../tensor_ee/blocks/window/resample.py) | W → W | {align_corners False; factor 2 or 4 or 8; window 7 or 8} ∪ {align_corners True; factor 4; window 7 or 8} ∪ {align_corners True; factor 2; window 7} | — |
+| [`window_resize`](../tensor_ee/blocks/window/resample.py) | W → W | {align_corners False; factor 2 or 4 or 8; out_window None; window 7 or 8} ∪ {align_corners True; factor 4; out_window None; window 7 or 8} ∪ {align_corners True; factor 2; out_window None; window 7} | — |
 | [`window_matrix_resize`](../tensor_ee/blocks/window/resample.py) | V → W | {align_corners False; col0 0; height 7; in_size (1, 1) or (2, 2) or (3, 3) or (6, 6); out_size None; row0 0; width 7; window 7} ∪ {align_corners False; col0 0; height 8; in_size (1, 1) or (2, 2) or (3, 3) or (6, 6); out_size None; row0 0; width 8; window 8} | — |
 | [`channel_norm`](../tensor_ee/blocks/window/segformer.py) | W → W | {channels 32 or 64 or 160 or 256; eps 1e-05 or 1e-06; window 7} | `norm_constants` |
 | [`decimate`](../tensor_ee/blocks/window/segformer.py) | W → W | {factor 2 or 4; window 7} | — |

@@ -6,20 +6,22 @@ arithmetic, casts and defaults are unchanged. The base is `924a7c2`.
 
 ## Layout choice
 
-Use W7 for every map in **7 → 14 → 28 → 56 → 112 → 224**. Each map is divisible
-by seven, and `window_resize` preserves its input window size at the output.
-The coarsest 7×7 map rules out W14 as one common layout for this chain. W7
-therefore needs no new window size and no changes of window size between
-resizes. For the 14-token identity-reassemble branch, a DPT target brings the
-W14 backbone map to W7 with the existing no-arithmetic functions
-`tensor_ee.layouts.boundaries.relabel_from_windows` followed by
-`relabel_to_windows(..., window=7)`. The intermediate raster uses the same
-14×14 token grid, so this moves the existing float32 values without interpolation.
-It runs once at that boundary: the W7 gather has 49 stride samples independent
-of channel width and yields four W7 arrays; there are no weights, arithmetic
-constants, matrix products or per-channel sample calls. The resized 7→14 W7
-map can then be added directly, and 14→28 starts from W7. The other reassemble
-outputs already use W7. This change adds no model.
+The DPT fusion chain needs **W7(7) → W14(14) → W7(28) → W7(56) →
+W7(112) → W7(224)**. The 14-token identity-reassemble map stays W14 to match
+the backbone; stride-2 convolution produces W7 at seven tokens, and the
+factor-2 reassemble output is W7 at 28 tokens. Later maps can retain W7.
+
+`window_resize(..., out_window=14)` maps the seven-token W7 map directly to
+W14, and `window_resize(..., window=14, out_window=7)` maps the 14-token W14
+map directly to W7 at 28 tokens. These mixed-window settings have
+[separate offline evidence and a pending live plan](window-resize-x2-out-window-live-plan.md).
+The default `out_window=None` retains the same-window graphs that ran live
+in this document's historical W7 selection; that selection is never rerun.
+
+`layouts.boundaries.relabel_from_windows`/`relabel_to_windows` do not fit
+this bridge because their dense round trip multiplies the graph with a
+49- or 196-sample gather instead of slicing the resize's existing coefficient table.
+No model is added by this change.
 
 The block keeps WINDOW_RING locality with radius one in source tokens.
 With aligned corners, coefficients use absolute output positions and the

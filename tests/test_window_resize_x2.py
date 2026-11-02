@@ -86,42 +86,13 @@ def test_live_setting_and_existing_settings_stay_inside_the_record():
     entry = METADATA["window_resize"]
     for window in (7, 8):
         for factor, corners in ((2, False), (4, False), (8, False), (4, True)):
-            assert check_settings(entry, {"window": window, "factor": factor, "align_corners": corners}).inside
-    assert check_settings(entry, {"window": 7, "factor": 2, "align_corners": True}).inside
-    assert not check_settings(entry, {"window": 8, "factor": 2, "align_corners": True}).inside
+            assert check_settings(entry, {"window": window, "factor": factor, "align_corners": corners, "out_window": None}).inside
+    assert check_settings(entry, {"window": 7, "factor": 2, "align_corners": True, "out_window": None}).inside
+    assert not check_settings(entry, {"window": 8, "factor": 2, "align_corners": True, "out_window": None}).inside
     assert entry.status.startswith(
         "Ready — windows 7, 8; factors 2, 4, 8 (align_corners=False), 4 (align_corners=True)")
     at = metadata_at(entry, {"align_corners": True})
     assert (at.locality, at.radius, at.chip_edge_dependent) == (Locality.WINDOW_RING, 1, True)
-
-
-def test_backbone_w14_relabels_to_w7_exactly_with_49_stride_samples():
-    import test_p01_window_settings as P01
-    from tensor_ee.core.grid import TokenGrid
-    from tensor_ee.core.tensor import WindowTensor
-    from tensor_ee.layouts.boundaries import relabel_from_windows, relabel_to_windows
-    from tensor_ee.layouts.window import from_dense, to_dense
-    from tools.fixtures.core import inline_raster
-
-    tokens = TokenGrid(14, 14)
-    values = np.arange(14 * 14 * 2, dtype=np.float32).reshape(14, 14, 2)
-    bands = ("c0", "c1")
-    with offline_earth_engine(), deep_recursion():
-        dense = inline_raster(ee, tokens.projection(ee), values, bands)
-        x = WindowTensor(from_dense(ee, tokens, dense, 2, window=14), tokens, 2, 14)
-        common = relabel_to_windows(ee, relabel_from_windows(ee, x, tokens, bands), tokens, window=7)
-        assert common.window == 7 and common.grid == tokens and common.channels == 2
-        got, valid = P01.read_grid(P01.GraphEvaluator()(
-            to_dense(ee, tokens, common.image, 2, window=7)), tokens.pixel_grid())
-        assert valid.all()
-        np.testing.assert_array_equal(np.stack(got, axis=-1).view(np.uint32), values.view(np.uint32))
-
-        # Count only the conversion, excluding construction of the artificial source.
-        source = WindowTensor(ee.Image("resize/backbone"), tokens, 2, 14)
-        converted = relabel_to_windows(ee, relabel_from_windows(ee, source, tokens, bands), tokens, window=7)
-        graph = converted.image.serialize()
-        assert graph.count('"Image.changeProj"') == 49 + 2  # gather plus the two relabels
-        assert '"Image.matrixMultiply"' not in graph
 
 
 @pytest.mark.parametrize("factor,corners", [(2, False), (4, False), (2, True), (4, True)])
