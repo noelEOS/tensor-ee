@@ -121,6 +121,10 @@ and EECU cost are unknown. No runner or exports are included or approved.
 
 ## Reduced live plan (approval pending)
 
+The [reduced fixture offline record](evidence/vit-encoder-reduced-offline.json)
+was generated on clean commit `a15b793`; all six outputs pass, with largest
+absolute mirror-versus-timm error 5.7220458984375e-6 and zero cloud calls.
+
 `vit_encoder_reduced` selects `window/concat_rows/vit-encoder-reduced`.
 Integer-only dyadic coefficient seeds expand to distinct matrix rows and columns;
 position rows and the input's global pixel code distinguish tokens. All spatial
