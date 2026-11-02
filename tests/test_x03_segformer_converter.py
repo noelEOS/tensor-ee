@@ -223,8 +223,9 @@ def test_a_10m_source_gives_the_validated_interior_stage_graphs(b0, b0_10m, x00_
     the validated ones whatever the source; the three that do read or write it on the source grid
     (its saved input's pinning and the relabels' projections), so they differ. Judged against the
     hand-written graph's stages (``b0``) built here from the same inputs, in any environment; and
-    against the G1-ext targets, which judge names skips where the seeded state's raw inputs differ
-    under a version difference (the hosted CI's versions), and judges exactly elsewhere."""
+    against the G1-ext targets. Where the seeded state's raw inputs differ under a version
+    difference (the hosted CI's versions), judge passes an equal stage and names a differing one
+    a skip, never a failure; elsewhere it judges exactly."""
     server, inputs = x00_parameters
     verdicts, here = {}, {}
     with GI.offline_earth_engine() as attempts:
@@ -239,7 +240,9 @@ def test_a_10m_source_gives_the_validated_interior_stage_graphs(b0, b0_10m, x00_
     assert attempts == []
     assert here == TEN_METRE
     if "skip" in verdicts.values():
-        assert set(verdicts.values()) == {"skip"} and inputs != GOLDEN["graphs"]["segformer_b0/stage1b"]["inputs"]
+        assert inputs != GOLDEN["graphs"]["segformer_b0/stage1b"]["inputs"]
+        for stage, expected in TEN_METRE.items():
+            assert verdicts[stage] in ({"pass", "skip"} if expected == "pass" else {"skip"}), (stage, verdicts)
     else:
         assert verdicts == TEN_METRE
 
