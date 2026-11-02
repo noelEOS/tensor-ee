@@ -114,7 +114,7 @@ from ..core.metadata import Locality
 from ..core.tensor import ServerArray
 from .build import build_stage
 from .graph import BlockGraph, Edge, Stage, _Canonical, canonical
-from .operations import OPERATIONS
+from .operations import get_operation
 from .request import ASSET_ID, DESCRIPTION, request_size
 
 FORMAT = "native_ee.plan"            # a format identifier: historical, never renamed (CONTRIBUTING)
@@ -184,6 +184,8 @@ class Limits:
 
 def boundary_refusal(edge: Edge, limits: Limits) -> str | None:
     """None when ``edge`` can be a saved boundary, an image within ``limits``; else why it cannot."""
+    if edge.layout == "P":
+        return "an atomic pair is two images; select spatial and prefix components before saving"
     if edge.layout == "V":
         return "a V edge is not an image"
     if edge.channels > limits.bands:
@@ -368,7 +370,7 @@ class _Search:
         self.readers = {edge: [k for k, node in enumerate(self.order) if edge in node.inputs] for edge in graph.edges}
         self.required = {self.producer[edge] + 1: edge for edge in cuts}
         self.node_costs = [graph.node_cost(node) for node in self.order]
-        self.metadata = [OPERATIONS[node.op].metadata for node in self.order]
+        self.metadata = [get_operation(node.op).metadata for node in self.order]
         self.candidates: dict[tuple[int, int], _Candidate] = {}
         self.measured: dict[tuple[int, int], dict[str, int]] = {}
         self.over: list[tuple[int, int]] = []

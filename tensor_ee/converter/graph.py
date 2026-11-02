@@ -9,6 +9,9 @@ and its hash do not depend on the weights.
 - ``Edge``: one tensor: its ``layout`` (R, W or V); its ``grid`` (a ``TokenGrid``,
   ``FeatureGrid`` or ``Grid``; none for V); its ``channels``; its ``window`` (W only); its
   ``bands`` (R only: the band names that reach the graph).
+- A ``P`` edge is one atomic (spatial W14, prefix W1) pair. Its component grids
+  align on the same physical pixel; sequence order is class first. Ordinary edge
+  JSON is unchanged. Explicit ``pair_select`` nodes expose ordinary W edges.
 - ``Node``: one call: its ``id``; ``op``, a name in ``OPERATIONS``; ``inputs``, the edges it
   reads, in the function's order; ``output``, the edge it writes; ``settings``, the function's
   parameters (JSON scalars, tuples and grids); ``parameters``, each role (the library's name
@@ -46,11 +49,11 @@ from typing import Mapping
 
 from ..core.errors import GridMismatch, UnsupportedOperation, reject
 from ..core.grid import FeatureGrid, Grid, TokenGrid
-from .operations import OPERATIONS
+from .operations import OPERATIONS, get_operation
 
 FORMAT = "native_ee.block_graph"     # a format identifier: historical, never renamed (CONTRIBUTING)
 VERSION = 1
-LAYOUTS = ("R", "W", "V")
+LAYOUTS = ("R", "W", "V", "P")
 GRID_KINDS = {"token": TokenGrid, "feature": FeatureGrid, "grid": Grid}
 
 
@@ -127,14 +130,42 @@ class _Canonical:
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True, eq=False)
 class Edge(_Canonical):
-    """One tensor between operations. ``bands`` is required for R (the names that reach the
-    graph) and absent otherwise; ``window`` is required for W only; V has no grid."""
+    """One tensor, or an atomic P pair (spatial W14, aligned W1 prefix).
+
+    ``bands`` is required for R only; ``window`` is required for W and P;
+    V has no grid. P's grid/channels/window describe its spatial component.
+    Ordinary edge JSON is unchanged; P serializes both component descriptions.
+    """
 
     layout: str
     grid: object
     channels: int
     window: int | None = None
     bands: tuple[str, ...] | None = None
+
+    @classmethod
+    def pair(cls, spatial: "Edge", prefix: "Edge") -> "Edge":
+        """An atomic class-token sequence: spatial rows, then the separate prefix carrier.
+
+        Sequence row order is prefix first; tuple/carrier order is (spatial, prefix),
+        as in Prithvi. Only one complete 14 x 14 spatial window is supported.
+        """
+        pair = cls("P", spatial.grid, spatial.channels, spatial.window)
+        if pair.spatial != spatial or pair.prefix != prefix:
+            raise GridMismatch("a pair requires W14 spatial and aligned W1 prefix with equal channels")
+        return pair
+
+    @property
+    def spatial(self) -> "Edge":
+        if self.layout != "P":
+            raise ValueError("only a P edge has components")
+        return Edge("W", self.grid, self.channels, self.window)
+
+    @property
+    def prefix(self) -> "Edge":
+        if self.layout != "P":
+            raise ValueError("only a P edge has components")
+        return Edge("W", self.grid.coarse(self.window), self.channels, 1)
 
     def __post_init__(self):
         if self.layout not in LAYOUTS:
@@ -143,11 +174,13 @@ class Edge(_Canonical):
             raise ValueError(f"edge channels must be a positive integer; received {self.channels!r}")
         if self.bands is not None:
             object.__setattr__(self, "bands", tuple(self.bands))
-        if self.layout == "W":
+        if self.layout in ("W", "P"):
             if not isinstance(self.grid, (TokenGrid, FeatureGrid)):
                 raise ValueError("a W edge lies on a TokenGrid or FeatureGrid")
             if isinstance(self.window, bool) or not isinstance(self.window, int) or self.window < 1:
                 raise ValueError(f"a W edge has a positive integer window; received {self.window!r}")
+            if self.layout == "P" and (self.window != 14 or (self.grid.height, self.grid.width) != (14, 14)):
+                raise ValueError("a P edge requires exactly one complete W14 spatial window")
         elif self.window is not None:
             raise ValueError(f"only a W edge has a window; this {self.layout} edge has {self.window!r}")
         if self.layout == "R":
@@ -162,12 +195,16 @@ class Edge(_Canonical):
             raise ValueError("a V edge has no grid")
 
     def to_json(self) -> dict:
+        if self.layout == "P":
+            return {"layout": "P", "spatial": self.spatial.to_json(), "prefix": self.prefix.to_json()}
         return {"layout": self.layout, "grid": None if self.grid is None else grid_to_json(self.grid),
                 "channels": self.channels, "window": self.window,
                 "bands": None if self.bands is None else list(self.bands)}
 
     @classmethod
     def from_json(cls, data: Mapping) -> "Edge":
+        if data["layout"] == "P":
+            return cls.pair(cls.from_json(data["spatial"]), cls.from_json(data["prefix"]))
         return cls(data["layout"], None if data["grid"] is None else grid_from_json(data["grid"]), data["channels"],
                    data["window"], data["bands"])
 
@@ -315,7 +352,7 @@ class BlockGraph(_Canonical):
             raise ValueError(f"edges {unread} are never read and are not graph outputs")
 
     def _check_node(self, node: Node) -> None:
-        op = OPERATIONS.get(node.op)
+        op = get_operation(node.op)
         if op is None:
             reject(f"node {node.id!r}: unknown operation {node.op!r}; known: {sorted(OPERATIONS)}",
                    code="unknown_operation")
@@ -407,7 +444,7 @@ class BlockGraph(_Canonical):
     def node_cost(self, node: Node) -> dict:
         """``{"values", "asset_arrays"}`` of one node, from its block's METADATA cost functions:
         values embedded with NumPy weights, server arrays read with ``ServerArray`` weights."""
-        values, arrays = OPERATIONS[node.op].cost(node.settings, tuple(self.edges[e] for e in node.inputs))
+        values, arrays = get_operation(node.op).cost(node.settings, tuple(self.edges[e] for e in node.inputs))
         return {"values": values, "asset_arrays": arrays}
 
     def cost(self, stage: Stage | None = None) -> dict:

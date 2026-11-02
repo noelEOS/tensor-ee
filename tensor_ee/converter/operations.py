@@ -788,3 +788,14 @@ OPERATIONS: dict[str, Operation] = {
         infer=_dense_infer, cost=_dense_cost, call=_dense_call),
 }
 """Operation name (the library function's name) -> its entry. Explicit: nothing is discovered."""
+
+# Pair adapters hold the same library functions by reference; ordinary entries are unchanged.
+from .pair_operations import pair_operations  # noqa: E402
+
+PAIR_OPERATIONS: dict[str, Operation] = pair_operations(Operation)
+"""Atomic-pair adapters. Kept separate from the ordinary one-block-name registry."""
+
+
+def get_operation(name: str) -> Operation | None:
+    """Look up an ordinary block or an explicit pair adapter, without runtime discovery."""
+    return OPERATIONS.get(name) or PAIR_OPERATIONS.get(name)

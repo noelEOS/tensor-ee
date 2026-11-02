@@ -390,6 +390,63 @@ composites, and a block the library lacks is a new block, never converter arithm
 [CONTRIBUTING, "Add a recognizer"](../CONTRIBUTING.md#add-a-recognizer) gives the steps and when a
 new block is needed instead.
 
+### Class-token edges (graph/export infrastructure)
+
+`Edge.pair(spatial, prefix)` describes one **atomic logical edge**, layout `P`, whose
+runtime value is `(spatial, prefix)`, in Prithvi's carrier order. The spatial component
+is one complete W14 window on a 14 × 14 token or feature grid; the prefix is W1 on
+`spatial.grid.coarse(14)`, with the same channels. In timm's sequence order the prefix
+is **row 0**, followed by the 196 row-major spatial rows. A 197-row array is never
+reinterpreted as a square window. `edge.spatial` and `edge.prefix` expose the ordinary
+W descriptions, and pair JSON explicitly stores both. Ordinary R/W/V edge JSON,
+graph versions, and the SegFormer/Swin graph hashes are unchanged.
+
+The atomic representation lets one node bind each `state_dict` parameter exactly
+once while serving both components. Two independent physical edges would require
+shared parameter bindings; that alternative was rejected because the graph's
+existing shared-parameter prohibition remains in force, including for pair nodes.
+
+`operations.PAIR_OPERATIONS`, looked up alongside the ordinary `OPERATIONS` through
+`get_operation`, contains explicit adapters. `pair_linear`, `pair_layer_norm`,
+`pair_gelu`, and `pair_add` apply the **same existing library block** separately to
+both components. Linear and norm constants are built with their existing library
+builders for 196 rows and one row. Cost adapters count shared parameter arrays once
+and account for both sets of repeated constants. These are adapters, not new blocks
+or new numerical evidence.
+
+`class_token_position` reads one W14 edge and binds `cls_token` of shape `[1,1,C]`
+and `pos_embed` of shape `[1,197,C]` once. Its constant preparation follows Prithvi:
+slice `pos_embed[0,1:]` for the spatial addition and `pos_embed[0,:1]` for the class
+row; prepare `cls_token + pos_embed[0,:1]` as a constant with the library's `add`;
+then call that same `add` for the spatial part. NumPy and `ServerArray` weights
+follow the same split. The class image is pinned and masked to the coarse grid as
+Prithvi does. No host arithmetic pre-sums the class weights.
+
+The exporter helper `export.ClassTokenExport` maps traced sequence edges once a
+caller has bound recognized patch/block outputs to graph edges. `bind(node, edge_id)`
+checks the traced shape; `resolve(node)` accepts class-first `cat(..., dim=1)`
+followed by unit-alpha position addition, and exact `1:197` spatial or `0:1` prefix
+slices. Reversed concatenation, extra prefixes, partial spatial selections, strided
+slices, unbound computation and unsupported axis moves are refused. Recognized
+block outputs are explicit bindings; this helper does not discover modules or
+validate their forward arithmetic.
+
+For `forward_intermediates`, use `trace(..., multiple_outputs=True)` and
+`ClassTokenExport.forward_intermediates()`. It returns the exported output tree
+with edge ids as leaves, preserving each `(spatial, prefix)` tuple and the block
+order for DPT. Each selected component is an explicit `pair_select` node; a
+spatial reshape to NCHW is checked as row-major layout bookkeeping. The helper's
+`edges` and `nodes` are the accumulated graph fragment for the later recognizers.
+The ordinary `group`/`convert` interface still requires one output and supports
+only its existing architecture families: this infrastructure adds no recognizer.
+
+`build` accepts an atomic pair input as two `WindowTensor`s and returns an atomic
+pair output as two boundary `Raster`s, in `(spatial, prefix)` order. A pair is not
+one saved image: the planner refuses a raw P boundary, and `saved_inputs` refuses
+a single asset for it. Select its spatial and prefix components explicitly before
+planning saved boundaries or passing features into a DPT decoder. No runner or
+live-fixture selection is added by this graph-only change.
+
 ## Limits
 
 - Two families: SMP SegFormer (keys and values one 7 × 7 window after the spatial reduction, so
