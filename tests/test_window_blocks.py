@@ -488,7 +488,7 @@ EXPECTED_METADATA = {
     "conv1x1": (Locality.POINTWISE, None, False, DRO, "Ready", "pointwise"),
     "gelu": (Locality.POINTWISE, None, False, DRO, "Ready", "pointwise"),
     "relu": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC, "Ready", "pointwise"),
-    "layer_norm": (Locality.POINTWISE, None, False, DRO, "Ready", "per token"),
+    "layer_norm": (Locality.POINTWISE, None, False, DRO, "Ready — eps 1e-5, 1e-6", "per token"),
     "layer_norm2d": (Locality.POINTWISE, None, False, DRO, "Ready — windows 5, 7, 8, 12; eps 1e-6", "per token"),
     "batch_norm": (Locality.POINTWISE, None, False, DRO, "Ready", "pointwise"),
     "naive_attention": (Locality.WINDOW, None, False, REO, "Ready", "window"),
