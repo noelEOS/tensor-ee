@@ -5,6 +5,8 @@ after the existing parameters. None keeps the input window and emits the
 historical graph. The default has live W7 evidence in
 [the completed resize_x2 run](live-fixtures/20261102T190649Z-resize_x2.json),
 which is retained exactly and is never rerun.
+An explicit `out_window` equal to `window` builds the same graph as `None`,
+but that explicit setting is outside the validated record.
 
 ## DPT layouts and arithmetic
 
@@ -13,6 +15,11 @@ The 14-token identity-reassemble branch uses the backbone's W14, and its
 fusion add needs a matching W14 resized map. The 28-token factor-2
 reassemble branch uses W7, as do the later maps. The two new fixtures cover
 the first two arrows; the existing W7 evidence covers the remaining three.
+Live evidence for those distinct-window arrows is single-parent only:
+W7(7) → W14(14) and W14(14) → W7(28), for the planned DPT at 224 × 224.
+The multi-parent inputs 14 × 28 and 28 × 14 are offline-only: their graph
+outputs are bit-exact to the NumPy mirror, but they have not run live.
+The `validated` record has no extent field and does not express this live scope.
 
 `layouts.boundaries.relabel_from_windows`/`relabel_to_windows` do not fit
 the bridge because the dense round trip multiplies the graph with a 49- or

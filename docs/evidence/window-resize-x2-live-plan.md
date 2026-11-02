@@ -17,6 +17,8 @@ map directly to W7 at 28 tokens. These mixed-window settings have
 [separate offline and live evidence](window-resize-x2-out-window-live-plan.md).
 The default `out_window=None` retains the same-window graphs that ran live
 in this document's historical W7 selection; that selection is never rerun.
+An explicit `out_window` equal to `window` builds the same graph as `None`,
+but that explicit setting is outside the validated record.
 
 `layouts.boundaries.relabel_from_windows`/`relabel_to_windows` do not fit
 this bridge because their dense round trip multiplies the graph with a
@@ -30,6 +32,13 @@ are PyTorch's float32 one-hot interpolation coefficients, applied y then x
 in double with one float32 rounding at the operation boundary.
 
 ## Evidence and scope
+
+Live coverage of distinct output windows is single-parent only:
+W7(7) → W14(14) and W14(14) → W7(28), for the planned 224 × 224 DPT layout.
+The multi-parent 14 × 28 and 28 × 14 inputs have bit-exact offline
+graph-vs-NumPy-mirror agreement only; they have not run live. The
+`validated` record has no extent field, so this distinction must be read
+with its window/output-window entries.
 
 `tools/fixtures/resize_x2.py` registers one deterministic two-channel fixture
 per arrow, under selection `resize_x2`. References call

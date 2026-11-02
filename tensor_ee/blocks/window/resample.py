@@ -208,10 +208,16 @@ def window_resize(ee, x, tokens: TokenGrid, channels: int, factor: int, align_co
     Returns (image, fine token grid). Validated at windows 7 and 8, factors 2, 4 and 8 with
     align_corners=False and factor 4 with align_corners=True. Factor 2 with
     align_corners=True is also validated live at window 7; see the module docstring.
-    out_window=None preserves window and today's graph. An explicit output window
-    must divide factor*window. It changes only coefficient slices and output rows;
-    the source halo and the two products, with one final cast, stay the same.
-    Mixed windows 7->14 and 14->7 are validated live at factor 2 with aligned corners."""
+    out_window=None preserves window and today's graph. Explicit out_window=window
+    emits the same graph as None but is outside the validated record. An explicit
+    output window must divide factor*window. It changes only coefficient slices and
+    output rows; the source halo and two products, with one final cast, stay the same.
+
+    Distinct output windows have live evidence only for single-parent inputs:
+    W7(7)->W14(14) and W14(14)->W7(28), at factor 2 with aligned corners for the
+    planned 224 x 224 DPT layout. Multi-parent inputs 14 x 28 and 28 x 14 have
+    bit-exact offline graph-vs-NumPy-mirror agreement only; they have not run live.
+    The validated record has no extent field, so its entries do not convey that scope."""
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     output_window = _resize_output_window(window, factor, out_window)
     coarse = tokens.coarse(window)

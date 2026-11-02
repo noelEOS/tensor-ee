@@ -66,14 +66,6 @@ composites promoted from the models when the converter was built: SegFormer-B0's
 
 ## Reading the columns
 
-`window_resize` at factor 2 with `align_corners=True` has an
-[offline record](evidence/window-resize-x2-offline.json) and a
-[completed live plan](evidence/window-resize-x2-live-plan.md) at W7 on
-7 → 14 → 28 → 56 → 112 → 224 maps. The separate
-[output-window plan](evidence/window-resize-x2-out-window-live-plan.md) covers
-DPT's W7(7) → W14(14) → W7(28) bridge with separate live evidence.
-The `out_window=None` default retains the validated same-window graphs.
-
 **Layouts** ([contract §3](library-contract.md#3-tensor-types)):
 - **R**, raster: an `ee.Image` with one band per channel on a georeferenced `Grid`
   (`Raster`). The CNN path's layout.
@@ -332,6 +324,25 @@ arrays, and the server arrays it reads when they are assets. The converter's pla
 them, with each block's locality, to cut a graph into stages: a batch graph holds at most
 24-26 M embedded values ([a research milestone's findings](history/swin_encoder/notes/milestone5_findings.md)),
 and the planner's default budget is 24 M per stage ([converter guide](converter.md#3-plan)).
+
+### Window resize evidence notes
+
+`window_resize` at factor 2 with `align_corners=True` has an
+[offline record](evidence/window-resize-x2-offline.json) and a
+[completed live plan](evidence/window-resize-x2-live-plan.md) at W7 on
+7 → 14 → 28 → 56 → 112 → 224 maps. The separate
+[output-window plan](evidence/window-resize-x2-out-window-live-plan.md) covers
+DPT's W7(7) → W14(14) → W7(28) bridge.
+
+Live evidence for distinct output windows is single-parent only:
+W7(7) → W14(14) and W14(14) → W7(28), for the planned DPT at 224 × 224.
+Multi-parent inputs 14 × 28 and 28 × 14 have bit-exact offline
+graph-vs-NumPy-mirror agreement only; they have not run live.
+The `validated` record has no extent field; these are the live extent limits.
+
+The `out_window=None` default retains the validated same-window graphs.
+An explicit `out_window` equal to `window` builds the same graph as `None`,
+but that explicit setting is outside the validated record.
 
 ## Layers
 
