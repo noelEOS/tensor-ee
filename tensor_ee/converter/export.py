@@ -174,9 +174,10 @@ class Traced:
 
     ``modules``: path -> module; ``parameters``: placeholder name -> ``state_dict`` name, for the
     parameters and buffers the program reads; ``input`` and ``output``: the model's one input
-    placeholder and the call it returns; ``live``: the nodes the output depends on."""
+    placeholder and the call it returns; ``outputs``: all returned tensor leaves
+    (opt-in ``multiple_outputs=True``); ``live``: the nodes any output depends on."""
 
-    def __init__(self, model, program):
+    def __init__(self, model, program, *, multiple_outputs: bool = False):
         self.model, self.program = model, program
         self.modules = dict(model.named_modules(remove_duplicate=False))
         signature = program.graph_signature
@@ -184,15 +185,17 @@ class Traced:
         nodes = {node.name: node for node in program.graph.nodes}
         if len(signature.user_inputs) != 1:
             reject(f"the model takes {len(signature.user_inputs)} tensors; a converted model takes one")
-        if len(signature.user_outputs) != 1 or signature.user_outputs[0] not in nodes:
+        if (not signature.user_outputs or any(name not in nodes for name in signature.user_outputs)
+                or (not multiple_outputs and len(signature.user_outputs) != 1)):
             reject(f"the model returns {len(signature.user_outputs)} values; a converted model returns one tensor")
+        self.outputs = tuple(nodes[name] for name in signature.user_outputs)
         self.input, self.output = nodes[signature.user_inputs[0]], nodes[signature.user_outputs[0]]
         self.nodes = tuple(program.graph.nodes)
         self.order = {node: index for index, node in enumerate(self.nodes)}
         self.live = self._live()
 
     def _live(self) -> frozenset:
-        live, pending = set(), [self.output]
+        live, pending = set(), list(self.outputs)
         while pending:
             node = pending.pop()
             if node not in live:
@@ -238,12 +241,14 @@ def _shape(node) -> tuple[int, ...]:
     return tuple(int(d) for d in value.shape)
 
 
-def trace(model, input_shape) -> Traced:
+def trace(model, input_shape, *, multiple_outputs: bool = False) -> Traced:
     """Export ``model`` at ``input_shape`` (``(1, channels, height, width)``).
 
     Allocates a zero example, then runs Python ``forward`` code locally with fake tensors,
     without numerical inference on image data. This is not a sandbox: trust the model's
-    source. Refuses training mode and non-float32 weights.
+    source. Refuses training mode and non-float32 weights. ``multiple_outputs=True``
+    admits tensor output trees for ClassTokenExport; ordinary group/convert still
+    require one output tensor.
     """
     check_evaluation(model)
     _float32(model)
@@ -254,7 +259,7 @@ def trace(model, input_shape) -> Traced:
     except Exception as error:   # export's own refusals name the Python line they stopped at
         reject(f"torch.export could not trace the model at {shape}: {type(error).__name__}: {error}",
                code="untraceable")
-    return Traced(model, program)
+    return Traced(model, program, multiple_outputs=multiple_outputs)
 
 
 # ---------------------------------------------------------------------------
@@ -841,6 +846,171 @@ def group(traced: Traced, recognizers: Mapping[str, Recognizer], *, forward_mism
     outside the closed set, and units whose calls disagree with their nodes. A unit whose forward
     code differs from its validated trace is refused, or with ``forward_mismatch="report"``
     recorded in ``Grouped.differences``."""
+    if len(traced.outputs) != 1:
+        reject("group requires one output; use ClassTokenExport for paired intermediate outputs")
     grouping = _Grouping(traced, recognizers, forward_mismatch)
     grouping.assign()
     return grouping.result()
+
+
+class ClassTokenExport:
+    """Graph exporter for class-first sequences, supplied with recognized block bindings.
+
+    This is graph plumbing, not a module recognizer. Bind a traced patch/block output
+    to its already described edge with ``bind``. ``resolve`` maps a checked class-first
+    concatenation plus position add to ``class_token_position`` and maps exact prefix /
+    spatial row slices to ``pair_select``. It never treats arbitrary addition or slicing
+    as glue. ``forward_intermediates`` preserves the exported output tree, including
+    (spatial, prefix) tuples for DPT; its leaves are explicit component edge ids.
+
+    ``edges`` and ``nodes`` are the graph fragment accumulated by the caller. The caller
+    may extend them with recognized blocks, then build a BlockGraph. No model family
+    becomes supported by ``convert`` merely by providing this mapping machinery.
+    """
+
+    def __init__(self, traced: Traced, edges: Mapping, nodes=()):
+        self.traced, self.edges, self.nodes = traced, dict(edges), list(nodes)
+        self.bindings, self.selections = {}, {}
+
+    def bind(self, node, edge_id: str) -> None:
+        """Associate a recognized tensor output with an existing spatial or pair edge."""
+        edge, shape = self.edges[edge_id], _shape(node)
+        if edge.layout not in ("W", "P"):
+            reject("class-token export bindings require W spatial or P pair edges")
+        rows = edge.grid.height * edge.grid.width + (1 if edge.layout == "P" else 0)
+        if shape == (1, rows, edge.channels):
+            axes = Axes.of(("N", "T", "C"), shape)
+            if edge.layout == "W":
+                axes = self._spatial_axes(edge)
+        elif edge.layout == "W" and shape == (1, edge.channels, edge.grid.height, edge.grid.width):
+            axes = Axes.of(NCHW, shape)
+        else:
+            reject(f"{node.name}: traced shape {shape} does not match edge {edge_id!r}")
+        if node in self.bindings and self.bindings[node][0] != edge_id:
+            raise ValueError(f"{node.name} is already bound to an edge")
+        self.bindings[node] = edge_id, axes
+
+    @staticmethod
+    def _spatial_axes(edge):
+        return Axes((("N",), ("H", "W"), ("C",)),
+                    {"N": 1, "H": edge.grid.height, "W": edge.grid.width, "C": edge.channels})
+
+    def _add(self, node):
+        from .graph import Edge
+        from .operations import get_operation
+
+        if node.output in self.edges or any(n.id == node.id for n in self.nodes):
+            raise ValueError(f"class-token export id {node.id!r} already exists")
+        edge = Edge(**get_operation(node.op).infer(node.settings, tuple(self.edges[i] for i in node.inputs)))
+        self.edges[node.output] = edge
+        self.nodes.append(node)
+        return node.output
+
+    def _parameter(self, node, shape, what):
+        # The class token's batch expand is bookkeeping only at batch one.
+        if not isinstance(node, torch.fx.Node):
+            reject(f"{what}: expected a stored parameter", code="unsupported_glue")
+        if node.target == torch.ops.aten.expand.default:
+            arguments = _arguments(node)
+            if _shape(node) != shape or arguments.get("implicit", False):
+                reject(f"{what}: unsupported expansion", code="unsupported_glue")
+            node = arguments["self"]
+        if node.name not in self.traced.parameters or _shape(node) != shape:
+            reject(f"{what}: expected one stored parameter of shape {shape}", code="unsupported_glue")
+        return self.traced.parameters[node.name]
+
+    def _position(self, node):
+        from .graph import Node
+
+        arguments = _arguments(node)
+        cat, position = arguments["self"], arguments["other"]
+        if arguments.get("alpha", 1) != 1 or not isinstance(cat, torch.fx.Node) or cat.target != torch.ops.aten.cat.default:
+            reject(f"{node.name}: expected class-first cat plus position with alpha=1", code="unsupported_glue")
+        parts = _arguments(cat)
+        if parts["dim"] != 1 or len(parts["tensors"]) != 2:
+            reject("class-token concatenation requires exactly two tensors on row axis 1", code="unsupported_glue")
+        cls, spatial = parts["tensors"]
+        edge_id, axes = self._resolve(spatial)
+        edge = self.edges[edge_id]
+        if (edge.layout != "W" or edge.window != 14 or (edge.grid.height, edge.grid.width) != (14, 14)
+                or _shape(spatial) != (1, 196, edge.channels)
+                or axes.canonical() != self._spatial_axes(edge).canonical()):
+            reject("class-token concatenation requires row-major 196 spatial rows", code="unsupported_glue")
+        token_name = self._parameter(cls, (1, 1, edge.channels), "class token at row 0")
+        position_name = self._parameter(position, (1, 197, edge.channels), "all-row position")
+        if _shape(cat) != (1, 197, edge.channels) or _shape(node) != _shape(cat):
+            reject("class-token sequence must have exactly 197 rows", code="unsupported_glue")
+        name = f"{node.name}.position"
+        out = self._add(Node(name, "class_token_position", (edge_id,), name,
+                             parameters={"cls_token": token_name, "pos_embed": position_name}))
+        return out, Axes.of(("N", "T", "C"), _shape(node))
+
+    def _slice(self, node):
+        from .graph import Node
+
+        a = _arguments(node)
+        source = a["self"]
+        edge_id, axes = self._resolve(source)
+        edge = self.edges[edge_id]
+        shape = _shape(source)
+        dim = a["dim"] % len(shape)
+        start, end, step = a["start"], a["end"], a["step"]
+        if step != 1:
+            reject("class-token slices require step 1", code="unsupported_glue")
+        end = min(end, shape[dim])
+        if start == 0 and end == shape[dim] and _shape(node) == shape:
+            return edge_id, axes
+        if edge.layout != "P" or dim != 1 or shape != (1, 197, edge.channels):
+            reject("only exact spatial/prefix row selection is class-token glue", code="unsupported_glue")
+        if (start, end) == (1, 197):
+            component, selected_axes = "spatial", self._spatial_axes(edge.spatial)
+        elif (start, end) == (0, 1):
+            component, selected_axes = "prefix", Axes.of(("N", "T", "C"), (1, 1, edge.channels))
+        else:
+            reject("select rows 1:197 (spatial) or 0:1 (prefix)", code="unsupported_glue")
+        key = edge_id, component
+        if key not in self.selections:
+            name = f"{edge_id}.{component}"
+            self.selections[key] = self._add(Node(name, "pair_select", (edge_id,), name, {"component": component}))
+        return self.selections[key], selected_axes
+
+    def _resolve(self, node):
+        if node in self.bindings:
+            return self.bindings[node]
+        if node.op != "call_function":
+            reject(f"{node.name}: bind recognized block outputs before exporting class-token edges", code="unsupported_glue")
+        if node.target == torch.ops.aten.add.Tensor:
+            result = self._position(node)
+        elif node.target == torch.ops.aten.slice.Tensor:
+            result = self._slice(node)
+        elif node.target in GLUE and node.target is not operator.getitem:
+            edge_id, axes = self._resolve(_arguments(node)["self"])
+            result = edge_id, _glue_axes(self.traced, node, axes)
+        else:
+            reject(f"{node.name}: not class-token edge bookkeeping", code="unsupported_glue")
+        self.bindings[node] = result
+        return result
+
+    def resolve(self, node) -> str:
+        """The graph edge id for a traced sequence, selected component or layout move."""
+        edge_id, axes = self._resolve(node)
+        edge = self.edges[edge_id]
+        if edge.layout == "P":
+            allowed = (Axes.of(("N", "T", "C"), (1, 197, edge.channels)).canonical(),)
+        else:
+            allowed = (self._spatial_axes(edge).canonical(),
+                       Axes.of(NCHW, (1, edge.channels, edge.grid.height, edge.grid.width)).canonical())
+        if axes.canonical() not in allowed:
+            reject(f"{node.name}: output axes {axes} do not preserve the edge's row-major order",
+                   code="unsupported_glue")
+        return edge_id
+
+    def forward_intermediates(self):
+        """The original output tree with explicit edge ids in place of tensors.
+
+        Use ``trace(..., multiple_outputs=True)`` for a forward returning intermediate
+        pairs. The caller can pass each selected edge on to its DPT recognizers.
+        """
+        from torch.utils._pytree import tree_unflatten
+
+        return tree_unflatten([self.resolve(node) for node in self.traced.outputs], self.traced.program.call_spec.out_spec)

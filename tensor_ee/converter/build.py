@@ -35,7 +35,7 @@ from ..core.ops import WindowOps
 from ..core.tensor import Raster, ServerArray, WindowTensor, band_names
 from ..layouts.boundaries import boundary_raster, boundary_windows, saved_image
 from .graph import BlockGraph, Edge, Stage, canonical, grid_to_json
-from .operations import OPERATIONS
+from .operations import get_operation
 
 
 def _same_grid(a, b) -> bool:
@@ -44,7 +44,12 @@ def _same_grid(a, b) -> bool:
 
 def _check(edge: Edge, tensor, name: str) -> None:
     """Refuse a tensor that is not what ``edge`` describes (client-side only)."""
-    if edge.layout == "W":
+    if edge.layout == "P":
+        if not isinstance(tensor, tuple) or len(tensor) != 2:
+            raise GridMismatch(f"edge {name!r} requires (spatial, prefix)")
+        _check(edge.spatial, tensor[0], f"{name}.spatial")
+        _check(edge.prefix, tensor[1], f"{name}.prefix")
+    elif edge.layout == "W":
         if (not isinstance(tensor, WindowTensor) or getattr(tensor, "layout", "window") != "window"
                 or tensor.window != edge.window or tensor.channels != edge.channels
                 or not _same_grid(tensor.grid, edge.grid)):
@@ -73,10 +78,13 @@ def _bound(node, parameters: Mapping) -> dict:
     return bound
 
 
-def build(graph: BlockGraph, parameters: Mapping, inputs: Mapping, *, outputs=None) -> dict[str, Raster]:
+def build(graph: BlockGraph, parameters: Mapping, inputs: Mapping, *,
+          outputs=None) -> dict[str, Raster | tuple[Raster, Raster]]:
     """Build ``outputs`` (the graph's, by default) from ``inputs``: edge id -> ``Raster`` for an
     R edge, ``WindowTensor`` for a W edge. Returns edge id -> ``Raster``: W outputs as dense
-    bands ``c0`` .. on their token grid, R outputs as they are. Graph construction only."""
+    bands ``c0`` .. on their token grid, R outputs as they are. P inputs are
+    (spatial, prefix) WindowTensor tuples; P outputs are Raster tuples in that
+    same order. Select components before saving boundaries. Graph construction only."""
     outputs = graph.outputs if outputs is None else tuple(outputs)
     nodes = graph.stage_nodes(tuple(inputs), outputs)
     tensors = {}
@@ -85,14 +93,19 @@ def build(graph: BlockGraph, parameters: Mapping, inputs: Mapping, *, outputs=No
         tensors[name] = tensor
     ops = WindowOps(ee)
     for node in nodes:
-        op, edges = OPERATIONS[node.op], tuple(graph.edges[e] for e in node.inputs)
+        op, edges = get_operation(node.op), tuple(graph.edges[e] for e in node.inputs)
         constants = (None if op.constants is None else
                      op.constants(ops, _bound(node, parameters), node.id, node.settings, edges))
         out = op.call(ops, tuple(tensors[e] for e in node.inputs), constants, node.settings)
         _check(graph.edges[node.output], out, node.output)
         tensors[node.output] = out
-    return {name: boundary_raster(ee, tensors[name]) if graph.edges[name].layout == "W" else tensors[name]
-            for name in outputs}
+
+    def boundary(edge, tensor):
+        if edge.layout == "P":
+            return boundary(edge.spatial, tensor[0]), boundary(edge.prefix, tensor[1])
+        return boundary_raster(ee, tensor) if edge.layout == "W" else tensor
+
+    return {name: boundary(graph.edges[name], tensors[name]) for name in outputs}
 
 
 def saved_inputs(graph: BlockGraph, assets: Mapping[str, str]) -> dict:
@@ -103,6 +116,8 @@ def saved_inputs(graph: BlockGraph, assets: Mapping[str, str]) -> dict:
         edge = graph.edges.get(name)
         if edge is None:
             raise ValueError(f"{name!r} is not an edge of graph {graph.name!r}")
+        if edge.layout == "P":
+            reject(f"edge {name!r}: select spatial and prefix components before saving a pair")
         if edge.layout == "R":
             tensors[name] = Raster(saved_image(ee, asset_id, edge.bands, edge.grid), edge.bands, edge.grid)
         elif edge.layout == "W":

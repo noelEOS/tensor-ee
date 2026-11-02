@@ -67,7 +67,7 @@ from ..core.metadata import Between, SettingsCheck, Validated, check_settings, d
 from ..core.tensor import band_names
 from .export import Grouped, Unit, _empty_mapping, group, trace
 from .graph import BlockGraph, Edge, Node
-from .operations import OPERATIONS
+from .operations import get_operation
 from .recognizers import ALL_RECOGNIZERS, TRACED, TRACED_WITH
 
 INPUT, INPUT_WINDOWS, LOGITS = "input", "input_windows", "logits"
@@ -268,7 +268,7 @@ def report(graph: BlockGraph, grouped: Grouped) -> ConversionReport:
     units = {unit.id: unit for unit in grouped.units}
     nodes = []
     for node in graph.nodes:
-        metadata = OPERATIONS[node.op].metadata
+        metadata = get_operation(node.op).metadata
         settings = dict(node.settings) if metadata is None else record_settings(graph, node)
         check = None if metadata is None else check_settings(metadata, settings)
         choices = units[node.id].choices if node.id in units else {}
@@ -286,6 +286,7 @@ def report(graph: BlockGraph, grouped: Grouped) -> ConversionReport:
 # ---------------------------------------------------------------------------
 def _traced_shape(unit: Unit, edge: Edge, shape: tuple[int, ...]) -> None:
     sizes = {"N": 1, "C": edge.channels, "H": edge.grid.height, "W": edge.grid.width}
+    sizes["T"] = edge.grid.height * edge.grid.width + (1 if edge.layout == "P" else 0)
     expected = tuple(sizes[axis] for axis in unit.writes)
     if shape != expected:
         reject(f"node {unit.id!r} ({unit.op}): its modules write {shape}, where the block writes {expected} "
@@ -294,7 +295,7 @@ def _traced_shape(unit: Unit, edge: Edge, shape: tuple[int, ...]) -> None:
 
 def _reads_raster(grouped: Grouped) -> bool:
     """Whether the blocks reading the model input read a raster (R) rather than windows."""
-    layouts = {OPERATIONS[u.op].metadata.layout_in if OPERATIONS[u.op].metadata is not None else "W"
+    layouts = {get_operation(u.op).metadata.layout_in if get_operation(u.op).metadata is not None else "W"
                for u in grouped.units if INPUT in grouped.reads[u.id]}
     if len(layouts) != 1:
         reject(f"the blocks reading the input read layouts {sorted(layouts)}; the input is one of them")
@@ -363,7 +364,7 @@ class _Writer:
         self.edges, self.nodes = dict(edges), []
 
     def add(self, node: Node) -> Edge:
-        operation = OPERATIONS.get(node.op)
+        operation = get_operation(node.op)
         if operation is None:
             raise ValueError(f"node {node.id!r}: the recognizers name {node.op!r}, which is not in the registry")
         try:
