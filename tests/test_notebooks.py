@@ -37,7 +37,7 @@ MANIFESTS = ROOT / "data" / "manifests"
 COLAB = "https://colab.research.google.com/github/noelEOS/tensor-ee/blob/main/notebooks/"
 # Calls that reach Earth Engine or start work: only cells tagged "live" may make them.
 LIVE_CALLS = re.compile(r"ee\.Initialize|ee\.Authenticate|\.getInfo\(|\.start\(\)|computePixels|"
-                        r"getMapId|\.status\(\)|export_weights\(")
+                        r"getMapId|export_weights\(")   # task.status() needs a started task
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+")
 HOME = re.compile(r"/Users/|/home/|[A-Za-z]:\\\\Users|~/")
 ASSET = re.compile(r"projects/([^/\s\"'`]+)/assets/[^\s\"'`)]*")
@@ -117,6 +117,29 @@ def test_the_quickstart_has_one_setting_and_stops_cleanly_without_it():
     assert type(stopped.value).__name__ == "Stop"
     assert stopped.value._render_traceback_() == [f"Stopped: {stopped.value}"]
     assert len(_cells("01_quickstart.ipynb")) <= 10
+
+
+def test_the_quickstart_waits_with_progress_and_stops_on_a_failed_export(capsys):
+    settings = next(_source(cell) for cell in _code("01_quickstart.ipynb") if "def wait_for" in _source(cell))
+    namespace = {}
+    with pytest.raises(Exception):
+        exec(compile(settings, "settings", "exec"), namespace)   # stops: PROJECT is empty
+
+    class Task:
+        def __init__(self, states):
+            self.states = list(states)
+
+        def status(self):
+            state = self.states.pop(0) if len(self.states) > 1 else self.states[0]
+            return {"state": state, "error_message": "out of memory"}
+
+    with mock.patch.object(namespace["time"], "sleep", lambda seconds: None):
+        namespace["wait_for"](Task(["READY"] + ["RUNNING"] * 6 + ["COMPLETED"]))
+        assert capsys.readouterr().out.count("still running") == 2
+        with pytest.raises(Exception) as stopped:
+            namespace["wait_for"](Task(["RUNNING", "FAILED"]))
+    assert type(stopped.value).__name__ == "Stop" and "out of memory" in str(stopped.value)
+    assert namespace["TASKS_URL"] in str(stopped.value)
 
 
 def test_live_steps_in_03_check_the_switches_and_the_project():
