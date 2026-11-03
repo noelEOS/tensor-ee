@@ -137,14 +137,17 @@ def _shape(value) -> tuple:
     return value.shape if isinstance(value, ServerArray) else np.shape(value)
 
 
-def swin_block_constants(ops, parameters: dict, *, layout=WINDOW_LAYOUT) -> SwinBlockConstants:
+def swin_block_constants(ops, parameters: dict, *, layout=WINDOW_LAYOUT,
+                         relative_bias_gather: str = "one_hot") -> SwinBlockConstants:
     """parameters: timm state_dict names -> float32 NumPy arrays or ServerArrays.
 
     ``layout``: the window layout the block runs in (``WINDOW_LAYOUT``, window 7 and 49
     rows, by default; ``swin_stage_blocks`` passes the configuration's). The LayerNorm
     constants are ``RowConstant``s and the biases are repeated to its rows; the
     relative-position bias uses its window, which the constants record
-    (``SwinBlockConstants.window``)."""
+    (``SwinBlockConstants.window``). ``relative_bias_gather="slices"`` opts into
+    the structured table gather; the default preserves the validated model graphs.
+    It changes only the relative-position constants, not attention arithmetic."""
     p = parameters
     dim = _shape(p["norm1.weight"])[0]
     heads = _shape(p["attn.relative_position_bias_table"])[1]
@@ -155,7 +158,7 @@ def swin_block_constants(ops, parameters: dict, *, layout=WINDOW_LAYOUT) -> Swin
         norm1_bias=row_constant(ops, p["norm1.bias"], layout),
         qkv=LinearConstants(ops, p["attn.qkv.weight"], p["attn.qkv.bias"], layout),
         relative_bias=[ops.wrap(b) for b in relative_position_bias(
-            ops.ee, p["attn.relative_position_bias_table"], layout.window)],
+            ops.ee, p["attn.relative_position_bias_table"], layout.window, gather=relative_bias_gather)],
         proj=LinearConstants(ops, p["attn.proj.weight"], p["attn.proj.bias"], layout),
         norm2_weight=row_constant(ops, p["norm2.weight"], layout),
         norm2_bias=row_constant(ops, p["norm2.bias"], layout),
@@ -266,10 +269,13 @@ def _group_shapes(config: SwinUPerNetConfig, group: str) -> dict:
 
 
 def swin_stage_blocks(ops, parameters: dict, s: int, count: int | None = None, *,
-                      config: SwinUPerNetConfig = SWIN_T224) -> list:
+                      config: SwinUPerNetConfig = SWIN_T224,
+                      relative_bias_gather: str = "one_hot") -> list:
     """SwinBlockConstants of the first `count` blocks of stage s (``config.depths[s - 1]``
     when not given), built for the configuration's window layout. Parameters whose shapes
-    differ from the configuration's (stage width, heads, window) are refused."""
+    differ from the configuration's (stage width, heads, window) are refused.
+    ``relative_bias_gather`` selects the block constants' gather for every block.
+    The default converter and fixed adapter continue to use ``"one_hot"``."""
     depth = config.depths[s - 1]
     count = depth if count is None else count
     if not 0 <= count <= depth:
@@ -278,7 +284,8 @@ def swin_stage_blocks(ops, parameters: dict, s: int, count: int | None = None, *
     for b in range(count):
         group = f"s{s}b{b}"
         check_shapes(parameters[group], _group_shapes(config, group), group)
-        blocks.append(swin_block_constants(ops, parameters[group], layout=config.layout))
+        blocks.append(swin_block_constants(ops, parameters[group], layout=config.layout,
+                                           relative_bias_gather=relative_bias_gather))
     return blocks
 
 
@@ -523,7 +530,8 @@ _MODELS = ({"window": 7, "stage_dims": (96, 192, 384, 768), "num_heads": (3, 6, 
            {"window": 8, "stage_dims": (48, 96, 192, 384), "num_heads": (2, 4, 8, 16), "depths": (2, 2, 2, 2),
             "embed_dim": 48, "channels": 3})
 _STAGES = tuple({"dim": (dim,), "heads": (heads,), "depth": (depth,), "window": (model["window"],),
-                 "shift": (model["window"] // 2, None), "shifted": (s < 3,)}
+                 "shift": (model["window"] // 2, None), "shifted": (s < 3,),
+                 "relative_bias_gather": ("one_hot",)}
                 for model in _MODELS
                 for s, (dim, heads, depth) in enumerate(zip(model["stage_dims"], model["num_heads"], model["depths"])))
 """Stage 4 is one window in both models (7 x 7 and 8 x 8 tokens), so timm's rule runs it unshifted."""
@@ -549,7 +557,8 @@ METADATA = validate_metadata({
         status=_STATUS + _WIDTHS,
         evidence=_EVIDENCE + ("docs/history/swin_block/notes/findings.md",
                               "parts: layer_norm, window_attention, linear, swin_mlp_branch"),
-        validated=Validated(_pick("dim", "heads", "window"))),
+        validated=Validated(_pick("dim", "heads", "window", "relative_bias_gather"),
+                            sources=(swin_block_constants,))),
     "shifted_swin_block": BlockMetadata(
         # The shifted windows straddle their neighbours: after the roll by w // 2 and the
         # unroll, an output window reads w - w // 2 tokens into them (4 at windows 7 and 8).
@@ -563,14 +572,16 @@ METADATA = validate_metadata({
         evidence=_EVIDENCE + ("docs/history/swin_pair/notes/findings.md",
                               "parts: layer_norm, shift_windows (none), window_attention with shifted_window_mask, "
                               "linear, swin_mlp_branch"),
-        validated=Validated(_pick("dim", "heads", "window", "shift", shifted=True))),
+        validated=Validated(_pick("dim", "heads", "window", "shift", "relative_bias_gather", shifted=True),
+                            sources=(swin_block_constants,))),
     "swin_stage": BlockMetadata(
         name="swin_stage", layout_in="W", layout_out="W", locality=Locality.EXTENT,
         policy=COMPOSITE, embedded_constants=swin_stage_values, asset_arrays=swin_stage_arrays,
         chip_edge_dependent=True, status=_STATUS + _WIDTHS + "; depths 2, 2, 6, 2 and 2, 2, 2, 2",
         evidence=_EVIDENCE + ("docs/history/swin_encoder/notes/milestone5_findings.md",
                               "parts: swin_block, periodic_extension (none), shifted_swin_block"),
-        validated=Validated(_pick("dim", "heads", "depth", "window", "shift", "shifted"))),
+        validated=Validated(_pick("dim", "heads", "depth", "window", "shift", "shifted", "relative_bias_gather"),
+                            sources=(swin_stage_blocks,))),
     "swin_patch_embedding": BlockMetadata(
         # patch // 2 at the validated patch 4 (patch_embed's own radius 4 covers the validated patch size 8)
         name="swin_patch_embedding", layout_in="R", layout_out="W", locality=Locality.KERNEL, radius=2,

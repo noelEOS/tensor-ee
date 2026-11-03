@@ -667,7 +667,7 @@ def test_swin_t224_is_inside_every_record(swin):
     lines = report.lines()
     assert lines[0] == "swin_t224: 32 nodes; 32 with a validated record, 32 inside, 0 outside; 0 layout operations"
     assert ("encoder.model.layers_0.blocks.1 = shifted_swin_block from encoder.model.layers_0.blocks.1 "
-            "(SwinTransformerBlock) [dim 96, heads 3, shift 3, window 7]: inside its validated record") in lines
+            "(SwinTransformerBlock) [dim 96, heads 3, relative_bias_gather 'one_hot', shift 3, window 7]: inside its validated record") in lines
     assert ("decoder.psp = psp_forward from decoder.feature_norms.3 (LayerNorm2d), decoder.psp (PSPModule) [decoder "
             "256, height 7, sizes (1, 2, 3, 6), stage_dims (96, 192, 384, 768), width 7, window 7]: inside its "
             "validated record") in lines
@@ -719,12 +719,12 @@ def test_a_wider_swin_converts_and_is_reported_outside(wider):
     assert lines[0] == "upernet: 32 nodes; 32 with a validated record, 12 inside, 20 outside; 0 layout operations"
     block = next(node for node in report.nodes if node.id == "encoder.model.layers_0.blocks.0")
     assert block.verdict() == (
-        "outside its validated record: no configuration holds dim 64, heads 2, window 7; nearest: "
-        "{dim 96; heads 3; window 7}: dim 64 is not 96; heads 2 is not 3 | "
-        "{dim 192; heads 6; window 7}: dim 64 is not 192; heads 2 is not 6 | "
-        "{dim 384; heads 12; window 7}: dim 64 is not 384; heads 2 is not 12 | "
-        "{dim 768; heads 24; window 7}: dim 64 is not 768; heads 2 is not 24 | "
-        "{dim 48; heads 2; window 8}: dim 64 is not 48; window 7 is not 8")
+        "outside its validated record: no configuration holds dim 64, heads 2, window 7 with relative_bias_gather 'one_hot'; nearest: "
+        "{dim 96; heads 3; relative_bias_gather 'one_hot'; window 7}: dim 64 is not 96; heads 2 is not 3 | "
+        "{dim 192; heads 6; relative_bias_gather 'one_hot'; window 7}: dim 64 is not 192; heads 2 is not 6 | "
+        "{dim 384; heads 12; relative_bias_gather 'one_hot'; window 7}: dim 64 is not 384; heads 2 is not 12 | "
+        "{dim 768; heads 24; relative_bias_gather 'one_hot'; window 7}: dim 64 is not 768; heads 2 is not 24 | "
+        "{dim 48; heads 2; relative_bias_gather 'one_hot'; window 8}: dim 64 is not 48; window 7 is not 8")
     embed = next(node for node in report.nodes if node.id == "encoder.model.patch_embed")
     assert embed.check.outside == ("dim",)
     psp = next(node for node in report.nodes if node.id == "decoder.psp")

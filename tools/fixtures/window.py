@@ -1218,8 +1218,10 @@ def _crop() -> list[Fixture]:
 
 
 def fixtures() -> list[Fixture]:
+    from . import relative_bias
+
     return (_calibration() + [_p01_single(WINDOW)] + [f for w in P01_WINDOWS for f in _p01_window(w)]
-            + _crop())
+            + _crop() + relative_bias.fixtures())
 
 
 def _p01a() -> tuple[str, ...]:
@@ -1237,6 +1239,7 @@ def _p01() -> tuple[str, ...]:
 
 
 SELECTIONS = {"p01": _p01, "p01a": _p01a, "p01b": _p01b,
-              "conv3x3_crop": lambda: tuple(f.id for f in _crop())}
+              "conv3x3_crop": lambda: tuple(f.id for f in _crop()),
+              "relative_bias_slices": lambda: tuple(f.id for f in fixtures() if "/slices-w" in f.id or "/bias-slices" in f.id)}
 """Named selections of this lane (``tools.fixtures.select``): name -> a callable returning the
 fixture ids. A run sends its fixtures in registry order."""

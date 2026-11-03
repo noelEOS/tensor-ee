@@ -115,6 +115,10 @@ def _extent(k: int):
 
 
 EDGE_SETTINGS = {
+    # The converter's constants adapter retains the original gather. This is a
+    # reporting choice, not a new node setting or a change to the emitted graph.
+    "swin_block": lambda inputs: {"relative_bias_gather": "one_hot"},
+    "shifted_swin_block": lambda inputs: {"relative_bias_gather": "one_hot"},
     "vit_patch_embed": lambda inputs: {"channels": inputs[0].channels},
     "project_pyramid": _pyramid_edges, "fuse_head": _head_edges,
     # Swin and UPerNet: the bands a patch embedding reads (and its norm, which the recognizer

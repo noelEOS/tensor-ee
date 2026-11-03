@@ -160,6 +160,12 @@ NEVER_VARIED = {
     "raster/batch_norm": {"eps", "clip_footprints"},
     "raster/standardize": {"clip_footprints"},
     "window/shifted_window_mask": {"value"},
+    # The original live record used only the one-hot gather; the opt-in keeps that status.
+    "window/relative_position_bias": {"gather"},
+    # These composites' original model records predate the optional slices gather.
+    "window/swin_block": {"relative_bias_gather"},
+    "window/shifted_swin_block": {"relative_bias_gather"},
+    "window/swin_stage": {"relative_bias_gather"},
     "window/group_product": {"k"},
     "window/patch_merge": {"bias"},
     "window/window_matrix_resize": {"out_size", "row0", "col0"},

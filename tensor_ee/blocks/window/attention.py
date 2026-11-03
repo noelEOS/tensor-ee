@@ -32,7 +32,11 @@ w x w window (row-major, t = a w + b) is
 (timm get_relative_position_index), and bias[h, t1, t2] = table[index, h]. Both
 steps run on the server from the table alone: the index from integer sequences, the
 gather as a one-hot [N*N, (2w-1)^2] matrix times the table. Each one-hot row has a
-single 1, so every gathered value is exactly a table entry.
+single 1, so every gathered value is exactly a table entry. The opt-in
+``gather="slices"`` reverses the coefficient table once, reshapes it to
+[2w-1, 2w-1, heads], and concatenates a w x w slice for each row-major query.
+Both paths return [w*w, w*w] per head with the same final float32 cast;
+slices has not been validated live.
 
 **Shifted-window mask.** timm (SwinTransformerBlock.get_attn_mask) labels the
 *shifted* token raster with nine regions, rows [0, H-w), [H-w, H-s), [H-s, H) times
@@ -177,19 +181,43 @@ def relative_position_index(ee, window: int = WINDOW):
     return dy.multiply(2 * window - 1).add(dx)
 
 
-def relative_position_bias(ee, table, window: int = WINDOW, *, policy: str = DOUBLE_ROUND_ONCE) -> list:
+def relative_position_bias(ee, table, window: int = WINDOW, *, policy: str = DOUBLE_ROUND_ONCE,
+                           gather: str = "one_hot") -> list:
     """Per-head float32 [N, N] ee.Array biases from a [(2w-1)^2, heads] table
     (a NumPy array or a ServerArray). The gather is exact; one float32 rounding.
-    Windows 5, 7, 8 and 12 are validated."""
+    Windows 5, 7, 8 and 12 are validated with the default ``gather="one_hot"``.
+
+    ``gather="slices"`` reverses the small table once and concatenates one w x w
+    table slice per query. It avoids the [w**4, (2*w-1)**2] one-hot temporary and
+    moves the same finite coefficient values, preserving the final float32 cast.
+    Fixed — offline only: slices at windows 7, 12 and 14. The default's
+    validated record and model graphs are unchanged.
+    """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
+    if not isinstance(gather, str) or gather not in ("one_hot", "slices"):
+        reject(f"relative-position gather must be 'one_hot' or 'slices'; received {gather!r}")
     entries, heads = table.shape if isinstance(table, ServerArray) else np.asarray(table).shape
     if entries != (2 * window - 1) ** 2:
         raise ValueError("table rows must be (2w-1)^2")
     n = window * window
-    index = relative_position_index(ee, window).reshape([n * n, 1]).repeat(1, entries)
-    rows = ee.Array(ee.List.sequence(0, entries - 1)).double().reshape([1, entries]).repeat(0, n * n)
-    one_hot = index.eq(rows)                                      # [N*N, entries] of 0/1
-    gathered = one_hot.matrixMultiply(constant_value(ee, table))  # [N*N, heads], exact
+    if gather == "one_hot":
+        index = relative_position_index(ee, window).reshape([n * n, 1]).repeat(1, entries)
+        rows = ee.Array(ee.List.sequence(0, entries - 1)).double().reshape([1, entries]).repeat(0, n * n)
+        one_hot = index.eq(rows)                                      # [N*N, entries] of 0/1
+        gathered = one_hot.matrixMultiply(constant_value(ee, table))  # [N*N, heads], exact
+    else:
+        side = 2 * window - 1
+        reversed_table = ee.Array(constant_value(ee, table).toList().reverse()).reshape([side, side, heads])
+
+        def query_rows(query):
+            query = ee.Number(query)
+            row = ee.Number(window - 1).subtract(query.divide(window).floor())
+            col = ee.Number(window - 1).subtract(query.mod(window))
+            # Query (a,b), key (c,d): table[a-c+w-1, b-d+w-1].
+            return (reversed_table.slice(0, row, row.add(window))
+                    .slice(1, col, col.add(window)).reshape([n, heads]))
+
+        gathered = ee.Array.cat(ee.List.sequence(0, n - 1).map(query_rows), 0)
     return [gathered.slice(1, h, h + 1).reshape([n, n]).float() for h in range(heads)]
 
 
@@ -358,7 +386,7 @@ def shifted_window_mask(ee, coarse, window: int = WINDOW, shift: int | None = No
 # ---------------------------------------------------------------------------
 def relative_bias_values(heads: int, *, window: int = WINDOW) -> int:
     """Values embedded for a NumPy table: [(2w-1)^2, heads] (the index and the one-hot
-    gather are built on the server from integer sequences)."""
+    gather, or the slice bounds, are built on the server from integer sequences)."""
     return (2 * window - 1) ** 2 * heads
 
 
@@ -425,11 +453,11 @@ METADATA = validate_metadata({
     "relative_position_bias": BlockMetadata(
         name="relative_position_bias", layout_in="V", layout_out="V", locality=Locality.POINTWISE,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=relative_bias_values, asset_arrays=relative_bias_arrays,
-        status="Ready — windows 5, 7, 8, 12",
+        status="Ready — windows 5, 7, 8, 12; gather='one_hot'; slices: Fixed — offline only",
         evidence=("docs/history/building-blocks-2026-10-11.md#36-linear-layers-and-attention", "docs/history/swin_block/notes/findings.md",
                   "docs/evidence/p01-offline.json",
                   "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json"),
-        validated=Validated(({"window": _WINDOWS},))),
+        validated=Validated(({"window": _WINDOWS, "gather": ("one_hot",)},))),
     "window_attention": BlockMetadata(
         name="window_attention", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=COMPOSITE, embedded_constants=window_attention_values, asset_arrays=window_attention_arrays,

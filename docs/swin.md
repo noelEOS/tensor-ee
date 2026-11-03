@@ -12,6 +12,15 @@ window-7 architecture and UPerNet decoder. It is not a generic transformer
 compiler. A different grid changes execution coordinates; it does not establish
 trained-model performance on a different sensor or resolution.
 
+The library's `relative_position_bias(..., gather="slices")` is an opt-in for
+larger windows, also exposed by `swin_block_constants` and `swin_stage_blocks`
+as `relative_bias_gather="slices"`. Asset-backed bias-lookup measurements at
+windows 12 and 14 reduced peak memory from 85M to 0.5M and 217M to 1.8M,
+with latency from 1.0 to 0.33 s and 2.0 to 1.4 s respectively. Window 7 was
+slower (0.42 to 0.52 s), so the default remains `"one_hot"`, including in the
+converter and fixed Swin-T workflow. These measurements cover bias lookup only;
+they establish no whole-model speedup. Slices is currently offline-only.
+
 ## Supply the model and weight assets
 
 The wheel contains code, not weights, personal manifests, prepared images or
