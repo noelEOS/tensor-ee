@@ -66,14 +66,46 @@ def test_grouped_double_differs_only_at_rounding_boundaries(case):
 
 
 def test_rounding_probe_fixture_separates_the_formulations():
-    """Phase 16 probe (run live by the archived validate_fusion): channel 0 = 2^40 + 1 - 2^40 across groups,
-    channel 1 = 2^53 + 1 | + 1 - 2^53: monolithic (1, 0), A (0, 0), B (1, 1)."""
+    """Exact double sums in any order: monolithic and B (1, 2), rounded A (0, 0).
+
+    Each product is an integer and the sum of absolute products is at most 2^41 + 2,
+    below double's exact-integer limit. Float32 partials still lose the unit terms.
+    """
     from reference.upernet.helpers import grouped_probe_inputs
     x, w, params = grouped_probe_inputs()
     resized = {R.RESIZED[n]: x[..., 2 * g:2 * g + 2].astype(np.float64) for g, n in enumerate(R.PYRAMID)}
-    assert list(MF.conv3x3(x, w)[3, 3]) == [1.0, 0.0]
+    assert list(MF.conv3x3(x, w)[3, 3]) == [1.0, 2.0]
     assert list(MU.grouped_rounded(resized, params)["grouped_sum"][3, 3]) == [0.0, 0.0]
-    assert list(MU.grouped_double(resized, params)["double_sum"][3, 3]) == [1.0, 1.0]
+    assert list(MU.grouped_double(resized, params)["double_sum"][3, 3]) == [1.0, 2.0]
+
+
+def test_historical_rounding_probe_with_explicit_sequential_accumulation():
+    """Historical Phase 16 example: monolithic (1, 0), A (0, 0), B (1, 1).
+
+    This result depends on accumulation order: sequential 2^53 + 1 + 1 - 2^53
+    loses both units, while regrouping can retain them. Use fixed scalar additions,
+    never a BLAS/MKL reduction whose SIMD path may reassociate the double sum.
+    """
+    channels = (
+        ((2.0 ** 40, 1.0), (-(2.0 ** 40),), (), ()),
+        ((), (), (2.0 ** 53, 1.0), (1.0, -(2.0 ** 53))),
+    )
+
+    def sequential(terms, rounding=float):
+        total = 0.0
+        for term in terms:
+            total = float(rounding(total + float(term)))
+        return total
+
+    monolithic, rounded, double = [], [], []
+    for groups in channels:
+        partials = [sequential(group) for group in groups]
+        monolithic.append(float(np.float32(sequential(term for group in groups for term in group))))
+        rounded.append(sequential([float(np.float32(p)) for p in partials], np.float32))
+        double.append(float(np.float32(sequential(partials))))
+    assert monolithic == [1.0, 0.0]
+    assert rounded == [0.0, 0.0]
+    assert double == [1.0, 1.0]
 
 
 def test_order_study(case):
