@@ -42,4 +42,3 @@ def snapshot():
             found["fixture/" + str(i)] = {"sha256": request.graph_sha256, "bytes": request.graph_bytes}
     assert len(found) == 68, len(found)
     return found
-
