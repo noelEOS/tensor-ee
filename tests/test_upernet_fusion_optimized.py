@@ -79,33 +79,38 @@ def test_rounding_probe_fixture_separates_the_formulations():
     assert list(MU.grouped_double(resized, params)["double_sum"][3, 3]) == [1.0, 2.0]
 
 
+def test_historical_rounding_probe_grouped_formulations():
+    """Original 2^53 probe: real grouped A (0, 0), B (1, 1).
+
+    Each group dot has at most two nonzero terms, so its result is independent of
+    the BLAS accumulation order. The four partials are added in MU's fixed order.
+    """
+    from reference.upernet.helpers import grouped_probe_inputs_historical
+    x, _, params = grouped_probe_inputs_historical()
+    resized = {R.RESIZED[n]: x[..., 2 * g:2 * g + 2].astype(np.float64) for g, n in enumerate(R.PYRAMID)}
+    assert list(MU.grouped_rounded(resized, params)["grouped_sum"][3, 3]) == [0.0, 0.0]
+    assert list(MU.grouped_double(resized, params)["double_sum"][3, 3]) == [1.0, 1.0]
+
+
 def test_historical_rounding_probe_with_explicit_sequential_accumulation():
-    """Historical Phase 16 example: monolithic (1, 0), A (0, 0), B (1, 1).
+    """Historical Phase 16 monolithic dot in sequential order gives (1, 0).
 
     This result depends on accumulation order: sequential 2^53 + 1 + 1 - 2^53
     loses both units, while regrouping can retain them. Use fixed scalar additions,
     never a BLAS/MKL reduction whose SIMD path may reassociate the double sum.
+    A and B are checked through the real grouped code in the test above.
     """
-    channels = (
-        ((2.0 ** 40, 1.0), (-(2.0 ** 40),), (), ()),
-        ((), (), (2.0 ** 53, 1.0), (1.0, -(2.0 ** 53))),
-    )
-
-    def sequential(terms, rounding=float):
+    from reference.upernet.helpers import grouped_probe_inputs_historical
+    x, w, _ = grouped_probe_inputs_historical()
+    # Only the centre tap is nonzero; preserve its channel order explicitly.
+    products = x[3, 3].astype(np.float64) * w[:, :, 1, 1].astype(np.float64)
+    monolithic = []
+    for channel in products:
         total = 0.0
-        for term in terms:
-            total = float(rounding(total + float(term)))
-        return total
-
-    monolithic, rounded, double = [], [], []
-    for groups in channels:
-        partials = [sequential(group) for group in groups]
-        monolithic.append(float(np.float32(sequential(term for group in groups for term in group))))
-        rounded.append(sequential([float(np.float32(p)) for p in partials], np.float32))
-        double.append(float(np.float32(sequential(partials))))
+        for term in channel:
+            total = total + float(term)
+        monolithic.append(float(np.float32(total)))
     assert monolithic == [1.0, 0.0]
-    assert rounded == [0.0, 0.0]
-    assert double == [1.0, 1.0]
 
 
 def test_order_study(case):

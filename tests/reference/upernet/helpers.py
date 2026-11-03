@@ -1,11 +1,14 @@
-"""Small NumPy and PyTorch helpers adapted from research modules archived at the tag
-``research-archive-2026-10-12``:
+"""Small NumPy and PyTorch helpers copied unchanged (apart from imports and the historical
+fixture's name) from research modules archived at ``research-archive-2026-10-12``,
+plus a new portable rounding probe:
 
 - ``pixel_ids_numpy``: ``upernet/earth_engine/feature_interface.py``;
 - ``fold``: ``upernet/earth_engine/normalization.py`` (BatchNorm folded into a conv weight;
   the decoder runs explicit BatchNorm instead, and this shows why);
-- ``grouped_probe_inputs``: ``upernet/earth_engine/validate_fusion.py`` (the Phase 16 fixture,
-  with smaller magnitudes so its double sums are independent of accumulation order);
+- ``grouped_probe_inputs_historical``: ``upernet/earth_engine/validate_fusion.py``
+  (the original Phase 16 fixture, unchanged);
+- ``grouped_probe_inputs``: a new portable fixture whose double sums are independent
+  of accumulation order;
 - ``torch_resize_matrix``: ``upernet/reference/m12_architecture_contract.py`` (PyTorch's own
   bilinear resize matrix, read off one-hot inputs).
 """
@@ -47,6 +50,25 @@ def grouped_probe_inputs():
     w = np.zeros((2, 8, 3, 3), np.float32)
     w[0, [0, 1, 2], 1, 1] = [2.0 ** 20, 1.0, 2.0 ** 20]
     w[1, [4, 5, 6, 7], 1, 1] = [2.0 ** 20, 1.0, 1.0, 2.0 ** 20]
+    params = {R.WEIGHT: w, f"{R.PREFIX}.1.weight": np.ones(2, np.float32),
+              f"{R.PREFIX}.1.bias": np.zeros(2, np.float32),
+              f"{R.PREFIX}.1.running_mean": np.zeros(2, np.float32),
+              f"{R.PREFIX}.1.running_var": np.ones(2, np.float32)}
+    return x, w, params
+
+
+def grouped_probe_inputs_historical():
+    """A one-window fixture (7 x 7 tokens, four groups of two channels) whose fusion conv
+    reveals each formulation's rounding.  Output channel 0 at the centre token is
+    2^40 (group 1) + 1 (group 1) - 2^40 (group 2); channel 1 is 2^53 + 1 (group 3) + 1 -
+    2^53 (group 4).  Monolithic (one sequential double dot): 1, 0; A (groups rounded to
+    float32): 0, 0; B (group dots in double, summed in double): 1, 1."""
+    x = np.zeros((7, 7, 8), np.float32)
+    x[3, 3, [0, 1, 2]] = [2.0 ** 20, 1.0, -(2.0 ** 20)]
+    x[3, 3, [4, 5, 6, 7]] = [2.0 ** 27, 1.0, 1.0, -(2.0 ** 27)]
+    w = np.zeros((2, 8, 3, 3), np.float32)
+    w[0, [0, 1, 2], 1, 1] = [2.0 ** 20, 1.0, 2.0 ** 20]
+    w[1, [4, 5, 6, 7], 1, 1] = [2.0 ** 26, 1.0, 1.0, 2.0 ** 26]
     params = {R.WEIGHT: w, f"{R.PREFIX}.1.weight": np.ones(2, np.float32),
               f"{R.PREFIX}.1.bias": np.zeros(2, np.float32),
               f"{R.PREFIX}.1.running_mean": np.zeros(2, np.float32),
