@@ -103,7 +103,9 @@ output.
   outside the validated records ([guide](docs/converter.md)). Any other new model goes in
   `tensor_ee/models/<slug>/`, composed from blocks by hand like `swin_t224`. It imports only
   library layers, uses the reference model's `state_dict` names, takes NumPy arrays or
-  `ServerArray`s as weights, and is not loaded by `import tensor_ee`. `compile_model` stays the
+  `ServerArray`s as weights, and is not loaded by `import tensor_ee`. A random-weight model's
+  numerical reference uses integer-generated weights with calibrated BatchNorm (CONTRIBUTING,
+  "Model references follow the same rule"). `compile_model` stays the
   CNN path (`torch.fx` onto the R blocks): attention models go through the converter, which is
   extended with recognizers, never by routing them through `compile_model`.
 - **A new recognizer** follows CONTRIBUTING's "Add a recognizer":
@@ -129,8 +131,11 @@ output.
 
 - Keep four claims apart: graph identity, offline mirror agreement, live agreement and model
   accuracy. One does not establish another.
-- The 1e-4 absolute target is unchanged. Report the largest absolute error, never only a
-  relative one. Never relax a check or rewrite a recorded result.
+- The 1e-4 absolute target against float32 PyTorch is unchanged and applies to block
+  fixtures and to a model's final outputs. A model's intermediate outputs are checked
+  against float64 PyTorch instead: the mirror no farther than float32 PyTorch
+  (CONTRIBUTING, "Numerical comparisons"). Report the largest absolute error, never
+  only a relative one. Never relax a check or rewrite a recorded result.
 
 ## Never
 
