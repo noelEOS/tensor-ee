@@ -496,7 +496,7 @@ EXPECTED_METADATA = {
     "naive_attention": (Locality.WINDOW, None, False, REO, "Ready", "window"),
     "split_heads": (Locality.POINTWISE, None, False, M.NO_ARITHMETIC, "Ready", "per token"),
     "relative_position_bias": (Locality.POINTWISE, None, False, DRO,
-                               "Ready — windows 5, 7, 8, 12; gather='one_hot'; slices: Fixed — offline only",
+                               "Ready — windows 5, 7, 8, 12; gather='one_hot'; gather='slices': windows 7, 12, 14, heads 2",
                                "— (non-spatial V)"),
     "window_attention": (Locality.WINDOW, None, False, M.COMPOSITE, "Ready — windows 5, 7, 8, 12", "window"),
     "shifted_window_mask": (Locality.WINDOW, None, True, DRO, "Ready — windows 5, 7, 8, 12; shift ⌊w/2⌋",
@@ -587,12 +587,14 @@ EXPECTED_METADATA.update({
     "swin_mlp_branch": (Locality.POINTWISE, None, False, CMP,
                         SWIN + "widths 96, 192, 384, 768 at window 7 and 48, 96, 192, 384 at window 8; hidden 4 × width",
                         "pointwise (per token row)"),
-    "swin_block": (Locality.WINDOW, None, False, CMP, SWIN + SWIN_WIDTHS, "window-local"),
+    "swin_block": (Locality.WINDOW, None, False, CMP, SWIN + SWIN_WIDTHS + "; relative_bias_gather='slices': Fixed — offline only", "window-local"),
     # Stages 1-3 only: stage 4 is one window in both models, never shifted (lead decision, X02b).
     "shifted_swin_block": (RING, 4, True, CMP,
                            SWIN + "widths 96, 192, 384, heads 3, 6, 12 at window 7; widths 48, 96, 192, heads 2, 4, 8 "
-                                  "at window 8; shift ⌊w/2⌋; not stage 4 (one window, unshifted)", "window+ring"),
-    "swin_stage": (Locality.EXTENT, None, True, CMP, SWIN + SWIN_WIDTHS + "; depths 2, 2, 6, 2 and 2, 2, 2, 2",
+                                  "at window 8; shift ⌊w/2⌋; not stage 4 (one window, unshifted)"
+                                  "; relative_bias_gather='slices': Fixed — offline only", "window+ring"),
+    "swin_stage": (Locality.EXTENT, None, True, CMP, SWIN + SWIN_WIDTHS + "; depths 2, 2, 6, 2 and 2, 2, 2, 2"
+                   "; relative_bias_gather='slices': Fixed — offline only",
                    "window+ring (depth//2 windows per stage)"),
     "swin_patch_embedding": (Locality.KERNEL, 2, False, CMP,
                              SWIN + "patch 4; 2 bands → width 96 at window 7, 3 bands → width 48 at window 8",

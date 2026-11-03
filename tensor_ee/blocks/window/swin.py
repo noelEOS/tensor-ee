@@ -147,7 +147,9 @@ def swin_block_constants(ops, parameters: dict, *, layout=WINDOW_LAYOUT,
     relative-position bias uses its window, which the constants record
     (``SwinBlockConstants.window``). ``relative_bias_gather="slices"`` opts into
     the structured table gather; the default preserves the validated model graphs.
-    It changes only the relative-position constants, not attention arithmetic."""
+    It changes only the relative-position constants, not attention arithmetic.
+    At block level, slices remains Fixed — offline only; the small live parity
+    fixtures do not promote the block's validated settings."""
     p = parameters
     dim = _shape(p["norm1.weight"])[0]
     heads = _shape(p["attn.relative_position_bias_table"])[1]
@@ -543,6 +545,9 @@ def _pick(*names, shifted=None):
                  if shifted is None or stage["shifted"] == (shifted,))
 
 
+_SLICE_STATUS = "; relative_bias_gather='slices': Fixed — offline only"
+
+
 METADATA = validate_metadata({
     "swin_mlp_branch": BlockMetadata(
         name="swin_mlp_branch", layout_in="W", layout_out="W", locality=Locality.POINTWISE,
@@ -554,7 +559,7 @@ METADATA = validate_metadata({
     "swin_block": BlockMetadata(
         name="swin_block", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=COMPOSITE, embedded_constants=swin_block_values, asset_arrays=swin_block_arrays,
-        status=_STATUS + _WIDTHS,
+        status=_STATUS + _WIDTHS + _SLICE_STATUS,
         evidence=_EVIDENCE + ("docs/history/swin_block/notes/findings.md",
                               "parts: layer_norm, window_attention, linear, swin_mlp_branch"),
         validated=Validated(_pick("dim", "heads", "window", "relative_bias_gather"),
@@ -568,7 +573,7 @@ METADATA = validate_metadata({
         policy=COMPOSITE, embedded_constants=shifted_swin_block_values, asset_arrays=shifted_swin_block_arrays,
         chip_edge_dependent=True,
         status=_STATUS + ("widths 96, 192, 384, heads 3, 6, 12 at window 7; widths 48, 96, 192, heads 2, 4, 8 "
-                          "at window 8; shift ⌊w/2⌋; not stage 4 (one window, unshifted)"),
+                          "at window 8; shift ⌊w/2⌋; not stage 4 (one window, unshifted)") + _SLICE_STATUS,
         evidence=_EVIDENCE + ("docs/history/swin_pair/notes/findings.md",
                               "parts: layer_norm, shift_windows (none), window_attention with shifted_window_mask, "
                               "linear, swin_mlp_branch"),
@@ -577,7 +582,7 @@ METADATA = validate_metadata({
     "swin_stage": BlockMetadata(
         name="swin_stage", layout_in="W", layout_out="W", locality=Locality.EXTENT,
         policy=COMPOSITE, embedded_constants=swin_stage_values, asset_arrays=swin_stage_arrays,
-        chip_edge_dependent=True, status=_STATUS + _WIDTHS + "; depths 2, 2, 6, 2 and 2, 2, 2, 2",
+        chip_edge_dependent=True, status=_STATUS + _WIDTHS + "; depths 2, 2, 6, 2 and 2, 2, 2, 2" + _SLICE_STATUS,
         evidence=_EVIDENCE + ("docs/history/swin_encoder/notes/milestone5_findings.md",
                               "parts: swin_block, periodic_extension (none), shifted_swin_block"),
         validated=Validated(_pick("dim", "heads", "depth", "window", "shift", "shifted", "relative_bias_gather"),

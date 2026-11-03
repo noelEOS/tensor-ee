@@ -36,7 +36,7 @@ single 1, so every gathered value is exactly a table entry. The opt-in
 ``gather="slices"`` reverses the coefficient table once, reshapes it to
 [2w-1, 2w-1, heads], and concatenates a w x w slice for each row-major query.
 Both paths return [w*w, w*w] per head with the same final float32 cast;
-slices has not been validated live.
+Slices is validated live at windows 7, 12 and 14 with two heads.
 
 **Shifted-window mask.** timm (SwinTransformerBlock.get_attn_mask) labels the
 *shifted* token raster with nine regions, rows [0, H-w), [H-w, H-s), [H-s, H) times
@@ -190,8 +190,8 @@ def relative_position_bias(ee, table, window: int = WINDOW, *, policy: str = DOU
     ``gather="slices"`` reverses the small table once and concatenates one w x w
     table slice per query. It avoids the [w**4, (2*w-1)**2] one-hot temporary and
     moves the same finite coefficient values, preserving the final float32 cast.
-    Fixed — offline only: slices at windows 7, 12 and 14. The default's
-    validated record and model graphs are unchanged.
+    Slices is validated live at windows 7, 12 and 14 with two heads. The
+    default's validated settings and model graphs are unchanged.
     """
     validate_policy(policy, allowed=DOUBLE_ROUND_ONCE)
     if not isinstance(gather, str) or gather not in ("one_hot", "slices"):
@@ -453,11 +453,14 @@ METADATA = validate_metadata({
     "relative_position_bias": BlockMetadata(
         name="relative_position_bias", layout_in="V", layout_out="V", locality=Locality.POINTWISE,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=relative_bias_values, asset_arrays=relative_bias_arrays,
-        status="Ready — windows 5, 7, 8, 12; gather='one_hot'; slices: Fixed — offline only",
+        status="Ready — windows 5, 7, 8, 12; gather='one_hot'; gather='slices': windows 7, 12, 14, heads 2",
         evidence=("docs/history/building-blocks-2026-10-11.md#36-linear-layers-and-attention", "docs/history/swin_block/notes/findings.md",
                   "docs/evidence/p01-offline.json",
-                  "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json"),
-        validated=Validated(({"window": _WINDOWS, "gather": ("one_hot",)},))),
+                  "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json",
+                  "docs/evidence/window-relative-bias-slices-offline.json",
+                  "docs/evidence/live-fixtures/20261103T173919Z-relative_bias_slices.json"),
+        validated=Validated(({"window": _WINDOWS, "gather": ("one_hot",)},
+                             {"window": (7, 12, 14), "gather": ("slices",), "heads": (2,)}))),
     "window_attention": BlockMetadata(
         name="window_attention", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=COMPOSITE, embedded_constants=window_attention_values, asset_arrays=window_attention_arrays,

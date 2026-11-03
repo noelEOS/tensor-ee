@@ -89,10 +89,13 @@ def test_block_and_stage_builders_propagate_opt_in(offline):
     assert optimized.fc1.weight_t.serialize() == original.fc1.weight_t.serialize()
 
 
-def test_existing_validation_record_does_not_claim_new_gather():
+def test_bias_validation_preserves_default_and_limits_slices_to_live_settings():
     metadata = METADATA['relative_position_bias']
     assert check_settings(metadata, {'window': 7, 'gather': 'one_hot'}).inside
-    assert not check_settings(metadata, {'window': 7, 'gather': 'slices'}).inside
+    for window in (7, 12, 14):
+        assert check_settings(metadata, {'window': window, 'gather': 'slices', 'heads': 2}).inside
+    assert not check_settings(metadata, {'window': 5, 'gather': 'slices', 'heads': 2}).inside
+    assert not check_settings(metadata, {'window': 7, 'gather': 'slices', 'heads': 3}).inside
 
 
 @pytest.mark.parametrize('block', ['swin_block', 'shifted_swin_block', 'swin_stage'])
@@ -110,3 +113,16 @@ def test_full_block_difference_fixtures_require_exact_equality():
     strict = [fixture for fixture in fixtures() if fixture.id.endswith('-exact')]
     assert len(strict) == 2
     assert all(fixture.tolerance == 0 and fixture.mirror.exact for fixture in strict)
+
+
+@pytest.mark.parametrize('block', ['swin_block', 'shifted_swin_block'])
+def test_live_block_parity_does_not_promote_slice_block_settings(block):
+    from tensor_ee.blocks.window.swin import METADATA as SWIN_METADATA
+    metadata = SWIN_METADATA[block]
+    settings = {'dim': 16, 'heads': 2, 'window': 7, 'relative_bias_gather': 'slices'}
+    if block == 'shifted_swin_block':
+        settings['shift'] = 3
+    assert not check_settings(metadata, settings).inside
+    assert all(configuration['relative_bias_gather'] == ('one_hot',)
+               for configuration in metadata.validated.mappings)
+    assert "slices': Fixed — offline only" in metadata.status

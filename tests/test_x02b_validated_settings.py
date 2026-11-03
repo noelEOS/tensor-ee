@@ -160,9 +160,7 @@ NEVER_VARIED = {
     "raster/batch_norm": {"eps", "clip_footprints"},
     "raster/standardize": {"clip_footprints"},
     "window/shifted_window_mask": {"value"},
-    # The original live record used only the one-hot gather; the opt-in keeps that status.
-    "window/relative_position_bias": {"gather"},
-    # These composites' original model records predate the optional slices gather.
+    # Block and stage records retain their original model gather coverage.
     "window/swin_block": {"relative_bias_gather"},
     "window/shifted_swin_block": {"relative_bias_gather"},
     "window/swin_stage": {"relative_bias_gather"},
@@ -483,6 +481,17 @@ COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat
                         "window/concat_rows/vit-encoder-reduced", "window/concat_rows/vit-dpt-reduced"}
 """Whole-model checks whose compatibility block field does not identify block evidence."""
 
+RELATIVE_BIAS_PARITY_FIXTURES = {
+    f"window/{block}/bias-slices{suffix}"
+    for block in ("swin_block", "shifted_swin_block") for suffix in ("", "-exact")
+}
+"""Live gather-parity comparisons retained as evidence without promoting block settings.
+
+Only the relative_position_bias lookup settings are promoted by this run. The
+small block comparisons remain separate from the model settings in block records.
+"""
+
+
 
 def _live_fixtures() -> list[dict]:
     found = []
@@ -491,7 +500,7 @@ def _live_fixtures() -> list[dict]:
         if isinstance(data, dict) and data.get("kind") == "live_fixture_run":
             found += [dict(fixture["spec"], record=str(path.relative_to(ROOT)))
                       for fixture in data["fixtures"] if fixture["status"] == "passed"
-                      and fixture["spec"]["id"] not in COMPOSITION_FIXTURES]
+                      and fixture["spec"]["id"] not in COMPOSITION_FIXTURES | RELATIVE_BIAS_PARITY_FIXTURES]
     return found
 
 
@@ -526,6 +535,8 @@ def _fixture_settings(spec: dict) -> dict:
     if spec["block"] == "conv3x3_window" and settings.get("stride") == 2:
         # The stride-2 live record stores widths in shapes; retain its exact bytes.
         settings["cin"], settings["cout"] = shapes["input"][-1], shapes["cout"]
+    if spec["block"] == "relative_position_bias" and settings.get("gather") == "slices":
+        settings["heads"] = shapes["heads"]
     if "bands" in settings:
         settings["channels"] = len(settings["bands"])
     if "tokens" in shapes:
