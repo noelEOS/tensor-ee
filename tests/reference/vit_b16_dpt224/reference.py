@@ -131,8 +131,18 @@ def torch_outputs(model, image):
 
 def reference(image, state, config):
     import torch
+    from tensor_ee.models.vit_b16_dpt224.configuration import parameter_shapes
     model = smp_model(config)
-    model.load_state_dict({name: torch.from_numpy(value) for name, value in state.items()}, strict=False)
+    missing, unexpected = model.load_state_dict(
+        {name: torch.from_numpy(value) for name, value in state.items()}, strict=False)
+    classifier = {"encoder.model.head.weight", "encoder.model.head.bias"}
+    counters = {name.removesuffix(".running_var") + ".num_batches_tracked"
+                for name in parameter_shapes(config) if name.endswith(".running_var")}
+    assert set(missing) == classifier, (missing, classifier)
+    assert set(unexpected) == set(), unexpected
+    # PyTorch supplies omitted BN counters for unversioned state mappings, so
+    # check their exact omission separately from the reported missing keys.
+    assert model.state_dict().keys() - state.keys() == classifier | counters
     return torch_outputs(model, image)
 
 

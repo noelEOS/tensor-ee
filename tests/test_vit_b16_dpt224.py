@@ -125,6 +125,23 @@ def test_full_width_float64_ordering_for_every_output():
         assert row["mirror_vs_torch64"]["max_abs"] <= row["torch32_vs_torch64"]["max_abs"], (name, row)
 
 
+def test_smp_reference_rejects_unloaded_and_unexpected_weights(monkeypatch):
+    pytest.importorskip("timm")
+    pytest.importorskip("segmentation_models_pytorch")
+    from reference.vit_b16_dpt224 import reference as R
+    image, state = F.expanded(F._data(14126))
+    model, result = R.smp_model(REDUCED), object()
+    monkeypatch.setattr(R, "smp_model", lambda config: model)
+    monkeypatch.setattr(R, "torch_outputs", lambda model, image: result)
+    assert R.reference(image, state, REDUCED) is result
+    for name in ("encoder.model.patch_embed.proj.weight",
+                 "decoder.projection_blocks.0.project.0.bias", "segmentation_head.head.4.weight"):
+        with pytest.raises(AssertionError, match=name):
+            R.reference(image, {key: value for key, value in state.items() if key != name}, REDUCED)
+    with pytest.raises(AssertionError, match="unexpected.weight"):
+        R.reference(image, {**state, "unexpected.weight": np.ones(1, np.float32)}, REDUCED)
+
+
 def test_reduced_library_numpy_native_and_flattened_server_paths():
     from reference.vit_b16_dpt224.reference import mirror, errors
     from reference.vit_b16_dpt224.execution import execute

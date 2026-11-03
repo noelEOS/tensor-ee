@@ -75,12 +75,9 @@ argmax flips. The full-width result below remains a failure.
 The full-width check **does not meet** the unchanged 1e-4 absolute target. With SMP's native
 random initialization (seed 14126), the largest error is 0.00060272216796875
 at fusion 3; final logits differ by 0.0003509521484375 with zero argmax flips.
-The [failed per-output record](evidence/dpt-smp-full-width-failed.json) also
-feeds exact SMP encoder pairs to the decoder mirror: the decoder alone still
-fails. Disabling oneDNN reduces the error but
-[still fails](evidence/dpt-smp-cpu-backend-failed.json) at final logits
-(0.00017547607421875). The native seed, weights, input and failed records are
-unchanged. The maintainer accepted this case as `pytest.mark.xfail(strict=True)`:
+The native seed, weights and input are unchanged; the tool-generated dtype
+record below retains this measured failure.
+The maintainer accepted this case as `pytest.mark.xfail(strict=True)`:
 the 1e-4 assertion stays in place and an unexpected pass fails the test suite.
 No full-width 1e-4 equivalence is claimed.
 
@@ -98,11 +95,14 @@ activation maxima, float32 spacing and argmax flips. At full width:
 
 Final-logit errors in that same order are 0.0003509521484375,
 0.00014951722456757466 and 0.0003701043979305041, with zero argmax flips.
+At full width, the mirror also **does not meet 1e-4 against float64 PyTorch**:
+logits differ by 0.00014951722456757466 (about 1.50e-4), and fusion 3 by
+0.00011782084319733599 (about 1.18e-4). It remains closer to float64 PyTorch
+than float32 PyTorch is at every full-width output.
 Float32 decoder activations reach 190.1188201904297; float32 spacing there is
 1.52587890625e-5. Accumulated float32 rounding at these magnitudes exceeds the
-absolute target. Float32 PyTorch itself misses the float64 reference by more
-than the mirror does, at **every full-width output**. A separate passing test
-asserts that ordering for all 22 outputs. This assertion supplements the retained
+absolute target. A separate passing test asserts that ordering for all 22
+outputs. This assertion supplements the retained
 absolute-error check; it is not a relative-error substitute or a 1e-4 claim.
 
 The ordering is asserted at full width only. Reduced-twin float64 numbers are
