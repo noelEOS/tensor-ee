@@ -8,8 +8,9 @@ every Earth Engine data call and ``ee.Authenticate`` refused, as in
 - The quickstart (01) has no offline mode of its own: the test installs the client's offline
   signatures, and after its settings cell supplies a project name and the place and scene that
   its live cells would find (the preset Sun Moon Lake chip).
-- 03 runs with ``RUN_LIVE = False`` and its own offline signatures; switching it to live must
-  undo them without a restart.
+- 03 runs with ``USE_EARTH_ENGINE = False`` and its own offline signatures; switching it to
+  Earth Engine must undo them without a restart. Each of its Earth Engine steps has its own
+  checkbox, off as shipped.
 - 02 is offline throughout.
 
 Notebooks that need segmentation-models-pytorch or timm skip by name without them.
@@ -144,11 +145,14 @@ def test_the_quickstart_waits_with_progress_and_stops_on_a_failed_export(capsys)
 
 def test_live_steps_in_03_check_the_switches_and_the_project():
     cells = _code("03_bring_your_own_cnn.ipynb")
-    settings = [cell for cell in cells if re.search(r"^RUN_LIVE = False\b", _source(cell), re.M)]
+    settings = [cell for cell in cells if re.search(r"^USE_EARTH_ENGINE = False\b", _source(cell), re.M)]
     assert len(settings) == 1 and f'PROJECT = "{PLACEHOLDER_PROJECT}"' in _source(settings[0])
+    checkboxes = []
     for cell in cells:
         if _live(cell):
             assert "live_step(" in _source(cell)
+            checkboxes += re.findall(r'^([A-Z_]+) = False  # @param \{type:"boolean"\}$', _source(cell), re.M)
+    assert checkboxes == ["UPLOAD_WEIGHTS", "EXPORT_TEST_TILE", "COMPARE_WITH_PYTORCH", "EXPORT_REGION"]
 
 
 @pytest.mark.parametrize("name", sorted(EXPECTED))
@@ -226,8 +230,8 @@ def _run(name, monkeypatch, *, after_settings=None, signatures=False, then=None)
                         raise
                 if after_settings and "@param" in _source(cell):
                     namespace.update(after_settings)
-                if "RUN_LIVE" in namespace:
-                    assert namespace["RUN_LIVE"] is False
+                if "USE_EARTH_ENGINE" in namespace:
+                    assert namespace["USE_EARTH_ENGINE"] is False
             if then:
                 then(namespace)
         finally:
@@ -268,17 +272,17 @@ def test_bring_your_own_cnn_runs_offline_and_goes_live_without_a_restart(monkeyp
     import ee
 
     def switch_to_live(namespace):
-        # Rerunning the connect cell with RUN_LIVE = True undoes the offline signatures.
+        # Rerunning the connect cell with USE_EARTH_ENGINE = True undoes the offline signatures.
         connect = next((index, cell) for index, cell in enumerate(_cells("03_bring_your_own_cnn.ipynb"))
                        if "ApiTestCase()" in _source(cell))
-        namespace["RUN_LIVE"] = True
+        namespace["USE_EARTH_ENGINE"] = True
         offline = namespace["offline"]
         _exec("03_bring_your_own_cnn.ipynb", *connect, namespace)
         assert "offline" not in namespace
         assert ee.data._install_cloud_api_resource is namespace["_install_cloud_api_resource"]
         assert ee.data.getAlgorithms is offline.old_get_algorithms
         assert ee.data.getMapId is offline.old_get_map_id
-        namespace["RUN_LIVE"] = False
+        namespace["USE_EARTH_ENGINE"] = False
 
     namespace = _run("03_bring_your_own_cnn.ipynb", monkeypatch, then=switch_to_live)
     assert namespace["CHECKPOINT"] is None

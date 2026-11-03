@@ -1,7 +1,10 @@
 # Start here
 
-For anyone with an Earth Engine account and some Python who wants to try TensorEE. A browser
-is enough: the notebooks run in Google Colab.
+For anyone with an Earth Engine account and some Python who wants to try TensorEE.
+
+- **A browser is enough:** the notebooks run in Google Colab.
+- **No coding agent needed:** TensorEE is an ordinary Python library. You run the notebooks
+  cell by cell, as you would any other.
 
 ## What TensorEE does, and does not do
 
@@ -31,8 +34,10 @@ is enough: the notebooks run in Google Colab.
      refused and why.
    - [Notebook 03, bring your own CNN](../notebooks/03_bring_your_own_cnn.ipynb)
      ([open in Colab](https://colab.research.google.com/github/noelEOS/tensor-ee/blob/main/notebooks/03_bring_your_own_cnn.ipynb)):
-     a trained segmentation-models-pytorch U-Net from checkpoint to an exported region. It runs
-     offline first; each Earth Engine step has its own switch.
+     a trained segmentation-models-pytorch U-Net from checkpoint to an exported region. Try it
+     offline with a demo model first; then each Earth Engine step (upload the weights, export a
+     test tile, compare it with PyTorch, export the region) has its own checkbox, run one at a
+     time.
 
 For details, see [Getting started](getting-started.md) and the [guides](README.md).
 
@@ -64,7 +69,8 @@ For details, see [Getting started](getting-started.md) and the [guides](README.m
 
 ## What has been checked
 
-- **Graph identity:** the Earth Engine computation is byte for byte one checked before.
+- **Same operations every time:** the Earth Engine operations TensorEE builds for its reference
+  models are compared byte for byte with saved copies, so an unintended change is caught.
 - **Offline agreement:** each building block, computed in NumPy, matches PyTorch.
 - **Live agreement:** Earth Engine's result matches PyTorch on the same input, within 1e-4 in
   the logits. For the trained U-Net's recorded chip: at most 1.35e-5
