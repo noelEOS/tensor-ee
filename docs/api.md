@@ -248,6 +248,29 @@ The historical
 research runners are archived at the tag `research-archive-2026-10-12`
 ([history](history/README.md)).
 
+## SMP DPT with a timm ViT-B/16 encoder
+
+tensor-ee converts SMP DPT models with a timm ViT-B/16 encoder at 224 × 224.
+Use `tensor_ee.converter.convert.convert`, with SMP 0.5.0, timm 1.0.30,
+evaluation mode, unfused attention, one class token and cat readout; the
+[converter example and refusals](converter.md#smp-050-dpt-at-224--224)
+show the supported form. The result is a weight-free block graph and conversion
+report; `build` binds weights and produces dense logits on the abstract input grid.
+The caller prepares the crop and handles georeferenced relabeling.
+
+The [evidence summary](converter.md#smp-dpt-vit-b16-evidence-and-scope) keeps graph
+identity, offline mirror agreement, live agreement and model accuracy separate.
+Random-weight full-width and reduced conversions are byte-identical to their
+hand-composed targets. Full width is offline only: DPT misses the 1e-4 absolute
+target against both float32 and float64 PyTorch, with 0 argmax flips
+([numbers and dtype record](vit-b16-dpt224.md#numerical-scope)). Live agreement
+covers only the reduced encoder twin with rank-at-most-4 projection weights,
+the structured reduced DPT twin (`vit_dpt_reduced`, 7 requests, sampled head/logit
+readouts), and individual blocks' recorded settings. The full-width live run
+needs the staged runner and remains a follow-up. Random weights establish no
+model accuracy. ViT-S, ViT-L, DeiT-III, DINOv2 and patch 8 are later work;
+fused attention, register tokens and other readouts are outside the claim.
+
 ## Class rows beside spatial windows
 
 `tensor_ee.blocks.window.merge.concat_rows(ops, parts, *, rows, channels)`
