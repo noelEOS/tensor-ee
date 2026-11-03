@@ -11,8 +11,9 @@ import math
 import operator
 
 
-from ..blocks.window import activations, linear, merge, normalization
+from ..blocks.window import activations, attention, linear, merge, normalization, patch
 from ..core.errors import GridMismatch, reject
+from ..core.grid import TokenGrid
 from ..core.tensor import ServerArray, WindowTensor
 from ..layouts.boundaries import pin_boundary
 from ..weights.constants import WindowLayout, row_constant
@@ -145,11 +146,66 @@ def _add_infer(s, inputs):
     return _description(x)
 
 
+def _attention_infer(s, inputs):
+    x = _pair(inputs)
+    dim, heads = _positive(s, "dim"), _positive(s, "heads")
+    if dim % heads or x.channels != 3 * dim:
+        raise GridMismatch("class_token_attention requires packed QKV and equal-width heads")
+    if not isinstance(s["scale_query"], bool):
+        reject("scale_query must be a bool")
+    return _description(x, dim)
+
+
+def _attention_call(ops, tensors, constants, s):
+    spatial, cls = tensors[0]
+    # The W14 image and W1 class row occupy the same physical coarse-grid pixel.
+    a, b = attention.class_token_attention(ops, spatial.image, cls.image,
+        dim=s["dim"], heads=s["heads"], window=14, scale_query=s["scale_query"])
+    return spatial.like(a, s["dim"]), cls.like(b, s["dim"])
+
+
+def _patch_infer(s, inputs):
+    x = inputs[0]
+    if (s['patch'] != 16 or s['window'] != 14 or s['norm'] is not False):
+        reject('vit_patch_embed requires patch=16, window=14, norm=False')
+    if x.layout != "R" or not isinstance(x.grid, TokenGrid) or (x.grid.height, x.grid.width) != (224, 224):
+        raise GridMismatch("vit_patch_embed reads a 224 by 224 raster")
+    return dict(layout="W", grid=x.grid.coarse(16), channels=_positive(s, "dim"), window=14, bands=None)
+
+
+def _patch_constants(ops, p, prefix, s, inputs):
+    x = inputs[0]
+    weight = _shape(p[f"{prefix}.proj.weight"], (s["dim"], x.channels, 16, 16), "proj.weight")
+    bias = _shape(p[f"{prefix}.proj.bias"], (s["dim"],), "proj.bias")
+    return patch.patch_embed_constants(ops, {"proj.weight": _reshape(weight, (s["dim"], x.channels * 256)),
+                                            "proj.bias": bias}, rows=WindowLayout(14), norm=False)
+
+
+def _patch_call(ops, tensors, constants, s):
+    x = tensors[0]
+    out = patch.patch_embed(ops, x.image, x.grid, constants, patch=16, bands=x.bands, window=14, norm=False)["x"]
+    return WindowTensor(out, x.grid.coarse(16), s["dim"], 14)
+
+
 def pair_operations(Operation):
     """Explicit registry entries, loaded by operations.py (avoids a graph import cycle)."""
     no_roles = lambda s: ()
     no_cost = lambda s, inputs: (0, 0)
     return {
+        "vit_patch_embed": Operation(
+            function=patch.patch_embed, metadata=patch.METADATA["patch_embed"], inputs=1,
+            settings=("dim", "patch", "window", "norm"),
+            roles=lambda s: ("proj.weight", "proj.bias"), infer=_patch_infer,
+            cost=lambda s, inputs: (patch.METADATA["patch_embed"].embedded_constants(
+                s["dim"], patch=16, channels=inputs[0].channels, layout=WindowLayout(14), norm=False),
+                patch.METADATA["patch_embed"].asset_arrays(norm=False)),
+            constants=_patch_constants, call=_patch_call),
+        "class_token_attention": Operation(
+            function=attention.class_token_attention, metadata=attention.METADATA["class_token_attention"],
+            inputs=1, settings=("dim", "heads", "scale_query"), roles=no_roles, infer=_attention_infer,
+            cost=lambda s, inputs: (attention.METADATA["class_token_attention"].embedded_constants(),
+                                   attention.METADATA["class_token_attention"].asset_arrays()),
+            call=_attention_call),
         "class_token_position": Operation(
             function=merge.add, metadata=merge.METADATA["add"], inputs=1, settings=(),
             roles=lambda s: ("cls_token", "pos_embed"), infer=_position_infer,

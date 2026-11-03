@@ -1,9 +1,10 @@
-"""Recognizers: SMP SegFormer, timm Swin and SMP UPerNet classes to block-graph operations.
+"""Recognizers: SMP SegFormer/UPerNet and timm Swin/ViT to block-graph operations.
 
 ``RECOGNIZERS`` (SegFormer's) and
 ``SWIN_RECOGNIZERS`` (Swin's and UPerNet's) map module classes, by the qualified names
 ``nn_module_stack`` records, to the functions that read them (``export.group``);
-``ALL_RECOGNIZERS`` holds both, for ``convert``. The converter layer does not import ``segmentation_models_pytorch`` or
+``VIT_RECOGNIZERS`` adds class-first timm ViT (below); ``ALL_RECOGNIZERS`` holds
+every family for ``convert``. The converter layer does not import ``segmentation_models_pytorch`` or
 ``timm``: classes are matched by name, and settings are read from the modules' attributes.
 The SegFormer recognizers are written against SMP 0.5.0 (``Segformer`` with a MiT encoder), the
 Swin and UPerNet ones against timm 1.0.30 and SMP 0.5.0 (see "Swin and UPerNet" below):
@@ -117,7 +118,10 @@ from ..blocks.window.segformer import LAYOUT
 from ..blocks.window.swin_upernet_config import LEVELS, MLP_RATIO
 from ..core.errors import reject
 from .export import NHWC, Forward, Through, Traced, Unit, _arguments, _under, container, operation_name, qualified_name
-from .operations import OPERATIONS
+from .operations import OPERATIONS, get_operation
+from . import vit_dataflow as _vit_flow
+from .vit_fingerprints import FINGERPRINTS as VIT_FINGERPRINTS
+from .vit_fingerprints import SOURCE as VIT_SOURCE, TRACED_WITH as VIT_TRACED_WITH
 
 SMP = "segmentation_models_pytorch"
 MIT = f"{SMP}.encoders.mix_transformer"
@@ -1271,3 +1275,186 @@ SWIN_RECOGNIZERS = {
 ALL_RECOGNIZERS = {**RECOGNIZERS, **SWIN_RECOGNIZERS}
 """Every family's recognizers, the table ``convert`` groups with: the families share only
 ``Sequential``, a container in both."""
+
+
+# ---------------------------------------------------------------------------
+# Class-first timm ViT: fine-grained pair operations, not a new composite block.
+# ---------------------------------------------------------------------------
+VIT_MODEL = 'timm.models.vision_transformer.VisionTransformer'
+VIT_BLOCK = 'timm.models.vision_transformer.Block'
+VIT_ATTENTION = 'timm.layers.attention.Attention'
+VIT_NORM = 'timm.layers.norm.LayerNorm'
+VIT_AXES = ('N', 'T', 'C')
+TRACED[VIT_SOURCE] = VIT_TRACED_WITH
+
+
+def _vit_forward(kind, dataflow=None):
+    def check(traced, calls):
+        return (_vit_flow.parameters(traced, calls)
+                or (None if dataflow is None else dataflow(traced, calls)))
+    return Forward(VIT_FINGERPRINTS[kind], VIT_SOURCE, check, axes=True)
+
+
+def _vit_unit(path, op, settings, kind, *, owns=None, inputs=None, forward=None, **fields):
+    roles = get_operation(op).roles(settings)
+    fields.setdefault('axes', VIT_AXES)
+    return Unit(path, op, settings, {role: f'{path}.{role}' for role in roles},
+                owns=(path,) if owns is None else owns, inputs=(path,) if inputs is None else inputs,
+                window=14,
+                forward=_vit_forward(kind) if forward is None else forward, **fields)
+
+
+def _vit_norm(parent, path, name, *, final=False):
+    module, where = _child(parent, path, name, TORCH_LAYER_NORM, VIT_NORM)
+    _layer_norm(module, where, parent.embed_dim if final else parent.norm1.normalized_shape[0])
+    return _vit_unit(where, 'pair_layer_norm', {'eps': module.eps}, 'final_norm' if final else 'norm',
+                     owns=(where, 'head_drop') if final else (where,))
+
+
+def vit_attention(module, path, traced):
+    """timm's unfused Attention -> packed pair linear, class-token core, pair linear."""
+    qkv, _ = _child(module, path, 'qkv', LINEAR)
+    dim = qkv.in_features
+    heads = module.num_heads
+    if (not isinstance(heads, int) or heads < 1 or dim % heads
+            or module.head_dim != dim // heads or module.attn_dim != dim):
+        _refuse(path, module, 'attention width and heads must give equal-width full-channel heads')
+    if module.fused_attn:
+        _refuse(path, module, 'fused_attn must be False: the library uses explicit query-first scaling')
+    if module.gate is not None:
+        _refuse(path, module, 'attention gate is unsupported')
+    if module.scale != (dim // heads) ** -0.5:
+        _refuse(path, module, 'scale must equal head_dim ** -0.5')
+    for name in ('q_norm', 'k_norm', 'norm'):
+        _child(module, path, name, IDENTITY)
+    for name in ('attn_drop', 'proj_drop'):
+        _child(module, path, name, DROPOUT)
+    units = []
+    for name, cin, cout in (('qkv', dim, 3 * dim), ('proj', dim, dim)):
+        layer, where = _child(module, path, name, LINEAR)
+        bias = layer.bias is not None
+        _linear(layer, where, cin, cout, bias=bias)
+        units.append(_vit_unit(where, 'pair_linear',
+            dict(in_features=cin, out_features=cout, bias=bias), 'linear' if name == 'qkv' else 'projection',
+            owns=(where,) if name == 'qkv' else (where, path + '.proj_drop')))
+    def check(t, calls):
+        return (_vit_forward('attention', _vit_flow.attention(path, dim, heads))
+                .difference(t, _vit_flow.calls_at(t, path)))
+    units.insert(1, _vit_unit(path, 'class_token_attention',
+        dict(dim=dim, heads=heads, scale_query=True), 'attention_core',
+        forward=_vit_forward('attention_core', check),
+        choices={'scale_query': "derived from timm's checked explicit forward: Q is scaled before QK^T"}))
+    return tuple(units)
+
+
+def vit_mlp(module, path, traced):
+    """timm Mlp -> pair linear, exact GELU, pair linear (evaluation dropout only)."""
+    _child(module, path, 'norm', IDENTITY)
+    act, where = _child(module, path, 'act', GELU)
+    if act.approximate != 'none':
+        _refuse(where, act, 'GELU approximate must be none')
+    for name in ('drop1', 'drop2'):
+        _child(module, path, name, DROPOUT)
+    first, f = _child(module, path, 'fc1', LINEAR)
+    second, s = _child(module, path, 'fc2', LINEAR)
+    _linear(first, f, first.in_features, first.out_features, bias=first.bias is not None)
+    _linear(second, s, first.out_features, first.in_features, bias=second.bias is not None)
+    def check(t, calls):
+        return _vit_forward('mlp').difference(t, _vit_flow.calls_at(t, path))
+    return (
+        _vit_unit(f, 'pair_linear', dict(in_features=first.in_features, out_features=first.out_features,
+                    bias=first.bias is not None), 'linear', forward=_vit_forward('linear', check)),
+        _vit_unit(path + '.act', 'pair_gelu', {}, 'gelu', owns=(path + '.act', path + '.drop1')),
+        _vit_unit(s, 'pair_linear', dict(in_features=second.in_features, out_features=second.out_features,
+                    bias=second.bias is not None), 'fc2', owns=(s, path + '.drop2')),
+    )
+
+
+def vit_block(module, path, traced):
+    """timm pre-norm Block -> norms, Attention, Mlp, and two separately checked residuals."""
+    for name in ('ls1', 'ls2'):
+        _child(module, path, name, IDENTITY)  # LayerScale cannot be omitted.
+    for name in ('drop_path1', 'drop_path2'):
+        _inference_identity(module, path, name)
+    attn, a = _child(module, path, 'attn', VIT_ATTENTION)
+    mlp, m = _child(module, path, 'mlp', TIMM_MLP)
+    dim = attn.qkv.in_features
+    for name in ('norm1', 'norm2'):
+        norm, where = _child(module, path, name, TORCH_LAYER_NORM, VIT_NORM)
+        _layer_norm(norm, where, dim)
+    if mlp.fc1.in_features != dim or mlp.fc2.out_features != dim:
+        _refuse(m, mlp, 'MLP must preserve the attention width')
+    residuals = _vit_flow.calls_at(traced, path, children=False)
+    if len(residuals) != 2:
+        _refuse(path, module, 'the block must contain two residual calls')
+    def check(t, calls):
+        return _vit_forward('block', _vit_flow.block(path)).difference(t, _vit_flow.calls_at(t, path))
+    units = [_vit_norm(module, path, 'norm1'), *vit_attention(attn, a, traced),
+             _vit_norm(module, path, 'norm2'), *vit_mlp(mlp, m, traced)]
+    for index, node in enumerate(residuals):
+        units.append(_vit_unit(f'{path}.residual{index + 1}', 'pair_add', {}, 'residual', owns=(path,),
+            select=lambda call, held=node: call is held,
+            inputs=tuple(Through(f'residual operand {i}', lambda t, c, i=i: c[0].args[i]) for i in range(2)),
+            forward=_vit_forward('residual', check)))
+    return tuple(units)
+
+
+def vit_patch_embedding(module, path, traced):
+    """Flattened timm PatchEmbed at fixed 224/16 -> unnormalized W14 patch embedding."""
+    proj, p = _child(module, path, 'proj', CONV2D)
+    if (tuple(module.patch_size) != (16, 16) or tuple(module.grid_size) != (14, 14)
+            or tuple(module.img_size) != (224, 224) or not module.flatten
+            or getattr(module.output_fmt, 'value', module.output_fmt) != 'NCHW'
+            or module.dynamic_img_pad):
+        _refuse(path, module, 'patch_size 16, grid_size 14 by 14, img_size 224, flattened row-major output required')
+    _conv2d(proj, p, proj.in_channels, proj.out_channels, 16, 16, 0)
+    _child(module, path, 'norm', IDENTITY)
+    return (_vit_unit(path, 'vit_patch_embed', dict(dim=proj.out_channels, patch=16, window=14, norm=False), 'patch',
+                      axes=('N', 'C', 'H', 'W'), output_axes=VIT_AXES),)
+
+
+def vision_transformer(module, path, traced):
+    """Recognize an encoder-only VisionTransformer; no pooling or classifier arithmetic.
+
+    All child units are declared together so root position calls and each block's
+    two residuals can own separate trace calls. Class names are checked before
+    reading settings; no model package is imported. The returned pair is final
+    spatial features plus the class row, in the pair-edge carrier order.
+    """
+    if path:
+        _refuse(path, module, 'this recognizer currently accepts a root VisionTransformer encoder')
+    if (module.cls_token is None or module.num_prefix_tokens != 1 or module.num_reg_tokens != 0
+            or module.reg_token is not None or module.no_embed_class or module.pos_embed is None):
+        _refuse(path, module, 'exactly one class token, no register tokens, and all-row positional embeddings required')
+    if module.dynamic_img_size:
+        _refuse(path, module, 'dynamic_img_size is unsupported; grid must be 14 by 14')
+    if module.global_pool != '' or module.num_classes != 0:
+        _refuse(path, module, "encoder output required: num_classes=0, global_pool='' (no pooling or pre-logits head)")
+    for name in ('norm_pre', 'patch_drop', 'fc_norm', 'head'):
+        _child(module, path, name, IDENTITY)
+    if getattr(module, 'pre_logits', None) is not None and qualified_name(module.pre_logits) != IDENTITY:
+        _refuse(path, module, 'a pre-logits head is unsupported')
+    for name in ('pos_drop', 'head_drop'):
+        _child(module, path, name, DROPOUT)
+    patch, p = _child(module, path, 'patch_embed', PATCH_EMBED)
+    if patch.proj.out_channels != module.embed_dim or not len(module.blocks):
+        _refuse(path, module, 'patch width must equal embed_dim and at least one block is required')
+    _child(module, path, 'blocks', SEQUENTIAL)
+    units = list(vit_patch_embedding(patch, p, traced))
+    if tuple(module.pos_embed.shape) != (1, 197, module.embed_dim) or tuple(module.cls_token.shape) != (1, 1, module.embed_dim):
+        _refuse(path, module, 'class/position parameter shapes must be [1,1,C] and [1,197,C]')
+    units.append(Unit('position', 'class_token_position', {}, {'cls_token': 'cls_token', 'pos_embed': 'pos_embed'},
+        owns=('', 'pos_drop'), inputs=('',), window=14, axes=VIT_AXES,
+        forward=_vit_forward('position', _vit_flow.position(len(module.blocks)))))
+    for index, child in enumerate(module.blocks):
+        block, b = _child(module.blocks, 'blocks', str(index), VIT_BLOCK)
+        if block.attn.qkv.in_features != module.embed_dim:
+            _refuse(b, block, 'every block must preserve embed_dim')
+        units.extend(vit_block(block, b, traced))
+    units.append(_vit_norm(module, path, 'norm', final=True))
+    return tuple(units)
+
+
+VIT_RECOGNIZERS = {VIT_MODEL: vision_transformer, VIT_BLOCK: vit_block,
+                   VIT_ATTENTION: vit_attention, TIMM_MLP: vit_mlp}
+ALL_RECOGNIZERS.update(VIT_RECOGNIZERS)

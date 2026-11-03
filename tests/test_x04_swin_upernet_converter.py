@@ -217,7 +217,9 @@ def test_the_recognizer_tables_and_the_converter_load_neither_smp_nor_timm():
     assert sorted(name.rsplit(".", 1)[-1] for name in SWIN_RECOGNIZERS) == [
         "FeatureListNet", "PatchEmbed", "PatchMerging", "Sequential", "SwinTransformerBlock", "SwinTransformerStage",
         "TimmUniversalEncoder", "UPerNet"]
-    assert ALL_RECOGNIZERS == {**RECOGNIZERS, **SWIN_RECOGNIZERS} and len(RECOGNIZERS) == 6
+    from tensor_ee.converter.recognizers import VIT_RECOGNIZERS
+    assert ALL_RECOGNIZERS == {**RECOGNIZERS, **SWIN_RECOGNIZERS, **VIT_RECOGNIZERS}
+    assert len(RECOGNIZERS) == 6
 
 
 # ---------------------------------------------------------------------------
