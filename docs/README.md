@@ -1,12 +1,16 @@
 # Documentation
 
-Start with [Getting started](getting-started.md). The guides below are the reader
-documentation; the records after them hold the evidence the guides cite.
+New to TensorEE? Start with [Start here](start-here.md): a plain-language guide and three
+notebooks. [Getting started](getting-started.md) is the reference for installing and running
+it. The guides below are the reader documentation; the records after them hold the evidence
+the guides cite.
 
 ## Guides
 
 | Guide | What it covers |
 |---|---|
+| [Start here](start-here.md) | A plain-language guide: what TensorEE does, three ways to begin, and the words you will meet |
+| [Notebooks](../notebooks/) | [Quickstart](../notebooks/01_quickstart.ipynb) with the trained U-Net; [is my model supported?](../notebooks/02_is_my_model_supported.ipynb), offline; [bring your own CNN](../notebooks/03_bring_your_own_cnn.ipynb), from checkpoint to a region. Each opens in Colab |
 | [Getting started](getting-started.md) | Install, the offline example, both demos and a first conversion, with expected output |
 | [Code Editor demo](../CODE_EDITOR.md) | The trained U-Net in the Earth Engine Code Editor: no install, no checkpoint |
 | [Browser demo](../DEMO.md) | A local web app that runs either trained model in Earth Engine, with an offline mode |

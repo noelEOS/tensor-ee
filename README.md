@@ -26,6 +26,10 @@ shown alongside it uses a separately deployed model endpoint.
 
 ## Get started
 
+- **[Start here](https://github.com/noelEOS/tensor-ee/blob/main/docs/start-here.md).** New to TensorEE?
+  A plain-language guide with three notebooks that run in Colab: a quickstart with the
+  trained U-Net, a check of whether your own model is supported, and your own CNN from
+  checkpoint to Earth Engine.
 - **[Run the Code Editor demo](https://github.com/noelEOS/tensor-ee/blob/main/CODE_EDITOR.md).** No install or checkpoint. The trained
   U-Net reads public weights; you need an Earth Engine account and a
   [registered Cloud project](https://developers.google.com/earth-engine/guides/access)
