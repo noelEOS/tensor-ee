@@ -95,10 +95,10 @@ def test_shared_packer_moves_every_kernel_position(factor, assets):
 
 
 @lru_cache(maxsize=2)
-def _native_comparison(config):
-    from reference.vit_b16_dpt224.diagnostics import native_comparison
+def _integer_comparison(config):
+    from reference.vit_b16_dpt224.diagnostics import integer_comparison
     with LF.offline_earth_engine():
-        return native_comparison(config)
+        return integer_comparison(config)
 
 
 @pytest.mark.parametrize("config", (REDUCED, pytest.param(DPT_B16, marks=pytest.mark.xfail(
@@ -108,7 +108,7 @@ def _native_comparison(config):
 def test_random_weight_smp_outputs(config):
     pytest.importorskip("timm")
     pytest.importorskip("segmentation_models_pytorch")
-    record = _native_comparison(config)
+    record = _integer_comparison(config)
     differences = {name: row["mirror_vs_torch32"]["max_abs"] for name, row in record["outputs"].items()}
     flips = record["outputs"]["logits"]["mirror_vs_torch32"]["argmax_flips"]
     print("\n" + ("full" if config == DPT_B16 else "reduced") + " random-weight max_abs: "
@@ -119,7 +119,7 @@ def test_random_weight_smp_outputs(config):
 def test_full_width_float64_ordering_for_every_output():
     pytest.importorskip("timm")
     pytest.importorskip("segmentation_models_pytorch")
-    outputs = _native_comparison(DPT_B16)["outputs"]
+    outputs = _integer_comparison(DPT_B16)["outputs"]
     assert len(outputs) == 22
     for name, row in outputs.items():
         assert row["mirror_vs_torch64"]["max_abs"] <= row["torch32_vs_torch64"]["max_abs"], (name, row)
