@@ -261,12 +261,13 @@ The caller prepares the crop and handles georeferenced relabeling.
 The [evidence summary](converter.md#smp-dpt-vit-b16-evidence-and-scope) keeps graph
 identity, offline mirror agreement, live agreement and model accuracy separate.
 Random-weight full-width and reduced conversions are byte-identical to their
-hand-composed targets. Full width is offline only: with integer-generated weights
-and fixed BatchNorm calibration, head/logits meet 1e-4 against float32 PyTorch
-(full-width errors 8.82e-6/8.69e-6, reduced 2.98e-8/2.24e-8; zero final argmax
-flips). Every intermediate's error against float64 PyTorch is no larger than
-float32 PyTorch's own; intermediate agreement within 1e-4 is not claimed
-([scales, results and historical native-init record](vit-b16-dpt224.md#numerical-scope)). Live agreement
+hand-composed targets. Full width is offline only: with counter-based integer-hash
+weights at native initializer scales and fixed BatchNorm calibration, head/logits
+meet 1e-4 against float32 PyTorch (full-width errors 2.06e-5/2.01e-5, reduced
+7.60e-6/7.29e-6; zero argmax flips). Every intermediate's error against float64
+PyTorch is no larger than float32 PyTorch's own; intermediate agreement within
+1e-4 against float32 is not claimed
+([scales, results and historical records](vit-b16-dpt224.md#numerical-scope)). Live agreement
 covers only the reduced encoder twin with rank-at-most-4 projection weights,
 the structured reduced DPT twin (`vit_dpt_reduced`, 7 requests, sampled head/logit
 readouts), and individual blocks' recorded settings. The full-width live run

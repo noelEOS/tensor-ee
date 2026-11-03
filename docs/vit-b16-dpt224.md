@@ -67,8 +67,7 @@ full-width staged boundaries and two existing reduced-fixture requests.
 
 The final full-width and reduced numerical references overwrite every learned
 SMP/timm parameter using a counter-based integer hash, with no library RNG values
-retained. The generator and scales are fixed before comparison, and the result
-stands without a further reference design.
+retained. The generator and scales are fixed before comparison.
 
 For a parameter's full `state_dict` name, the key is
 `uint64(zlib.crc32(name.encode("utf-8")))` (zero-extended from 32 bits). For flat
@@ -150,40 +149,56 @@ checks serialization identity, independently of these numerical references.
 
 The independent SMP reference hooks its actual forward outputs: encoder pairs,
 readouts, reassembled features, fusion outputs, head and final logits. The NumPy
-mirror uses the library's established rounding hypotheses. The
-[integer-reference record](evidence/dpt-integer-offline.json), generated once on
-clean procedure commit `24e1b6f`, records all 22 outputs at both widths.
-Under that superseded procedure, both references pass the [numerical comparison rules](../CONTRIBUTING.md#numerical-comparisons):
-head and logits meet 1e-4 against float32 PyTorch; all 20 intermediate outputs
-have mirror error against float64 PyTorch no larger than float32 PyTorch's own.
-That record motivated removal of the strict expected failure. The newly declared
-hash procedure has not yet been compared; its record will determine the final
-assertions without changing the 1e-4 target. The unscaled record has not been edited.
+mirror uses the library's established rounding hypotheses. The final
+[hash-reference record](evidence/dpt-hash-offline.json), generated once on clean
+declaration commit `6197082`, contains all 22 outputs at each width and every
+parameter's native-scale initialization rule. Both widths passed the
+[numerical comparison rules](../CONTRIBUTING.md#numerical-comparisons): head
+and logits meet 1e-4 against float32 PyTorch, and all 20 intermediates have
+mirror/float64 error no larger than float32 PyTorch's own. There is no expected
+failure for this final reference. No weights, inputs or calibration were
+adjusted after comparison. Every output at both widths has zero argmax flips in all three comparisons.
 
-| Reference | Head error vs float32 | Logit error vs float32 | Final-logit argmax flips |
-|---|---:|---:|---:|
-| Full width | 8.821487426757812e-6 | 8.687376976013184e-6 | 0 |
-| Reduced | 2.9802322387695312e-8 | 2.2351741790771484e-8 | 0 |
+| Reference | Head error vs float32 | Logit error vs float32 | Head error vs float64 | Logit error vs float64 |
+|---|---:|---:|---:|---:|
+| Full width | 2.059340476989746e-5 | 2.0056962966918945e-5 | 4.209816711675529e-6 | 5.705644484210737e-6 |
+| Reduced | 7.599592208862305e-6 | 7.286667823791504e-6 | 9.560554570825497e-6 | 1.1002035396723286e-5 |
 
-The largest full-width intermediate is fusion 3: float32 peak 381,309,472,
-with float32 step 32. Its mirror/float32 error is 1000, mirror/float64 error
-105.84820801019669, and float32/float64 error 1024.995563685894. These large
-intermediate errors pass the ordering rule; they do not establish 1e-4
-intermediate agreement. There is one feature-channel argmax flip against
-float32 across the full-width intermediates, and none at head or logits.
-At reduced width, the largest mirror/float32 error is 2.9802322387695312e-6
-(encoder 0 spatial); the largest mirror/float64 error is 8.701439941916078e-7
-(encoder 3 spatial). Reduced intermediate and final comparisons have no argmax
-flips. The record retains peaks, steps and all three errors for every output.
+At full width, the largest mirror/float32 error is 0.00018787384033203125
+at fusion 3 (fusion 2 also exceeds 1e-4). These intermediate outputs are checked
+against float64, not held to a 1e-4 float32 target. Fusion 3's mirror/float64
+error is 4.644907568440715e-5 versus float32/float64 error
+0.00018706553028202677; it is the largest mirror/float64 error in the model.
+Its float32 peak is 51.930015563964844 with step 3.814697265625e-6.
+Head/logit peaks are 3.6273183822631836/3.608076572418213.
 
-The [native-init dtype record](evidence/dpt-dtype-offline.json) remains unchanged
-as history. It measured full-width mirror/float32 errors of
-0.00060272216796875 at fusion 3 and 0.0003509521484375 at logits (zero logit
-argmax flips), with activations reaching 190.1188201904297. Its reduced
-native-init comparison and float64 diagnostics are historical observations,
-not the weights or assertions of the current integer reference.
-Offline mirror agreement establishes neither Earth Engine execution nor model
-accuracy. Graph identity and the compact reduced live evidence remain separate.
+At reduced width, fusion 3 has the largest mirror/float32 error,
+5.7697296142578125e-5, and mirror/float64 error, 3.139735947632616e-5,
+versus float32/float64 error 6.617691321508801e-5. Its float32 peak is
+28.775081634521484 with step 1.9073486328125e-6. Head/logit peaks are
+3.752713680267334/3.7479302883148193. The record retains peaks, float32
+steps, three absolute errors and argmax flips for every output.
+
+The earlier evidence remains unchanged as history:
+
+- [Native-init dtype record](evidence/dpt-dtype-offline.json): full-width
+  mirror/float32 error 0.00060272216796875 at fusion 3 and
+  0.0003509521484375 at logits; activations reached 190.1188201904297.
+- [Unscaled periodic-pattern record](evidence/dpt-integer-offline.json),
+  declared at `24e1b6f`: head/logits met 1e-4, but fusion 3 reached
+  381,309,472 (step 32), with mirror/float32 error 1000 and
+  mirror/float64 error 105.84820801019669. This unrealistic activation
+  regime caused the procedure to be superseded.
+- [Fan-in-scaled periodic-pattern record](evidence/dpt-fan-in-offline.json),
+  preserved at `ce619d9`: full-width head/logit errors
+  0.0005536079406738281/0.0005426406860351562 against float32, with
+  mirror/float64 errors 0.00010378112662046135/0.00010239660514788085.
+  Fusion 3 still reached 2,992,211.5. That run stopped before reduced width.
+
+The final hash recipe addresses the periodic matrices' coherent low-rank
+structure described above. Offline mirror agreement establishes neither Earth
+Engine execution nor model accuracy. Graph identity and the unchanged compact
+reduced live evidence remain separate.
 
 The reduced twin retains 224/16 geometry, four raw feature pairs and 64-dimensional
 heads, with encoder width 64, one head and four blocks; intermediate widths

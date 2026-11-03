@@ -620,16 +620,19 @@ one class token and cat readout, as in the example above. Four claims stay separ
   and [DPT numerical evidence](vit-b16-dpt224.md#numerical-scope) compare NumPy
   mirrors with PyTorch. The [reduced DPT fixture record](evidence/dpt-reduced-offline.json)
   has largest absolute error 1.86e-9, using its unchanged compact fixture weights.
-  The [integer-reference record](evidence/dpt-integer-offline.json) uses
-  `_fixed_weights` and a fixed four-batch BatchNorm calibration at full and reduced
-  width. Head/logits meet 1e-4 against float32 PyTorch: full-width errors
-  8.82e-6/8.69e-6, reduced errors 2.98e-8/2.24e-8, with zero final argmax flips.
-  Every intermediate's mirror/float64 error is no larger than float32 PyTorch's
-  own. Full-width fusion3 peaks at 3.81e8 (float32 step 32): mirror/float32 error
-  1000, mirror/float64 105.85, float32/float64 1025.00. This is the approved
-  intermediate ordering claim, not 1e-4 intermediate agreement. The
-  [native-init dtype record](evidence/dpt-dtype-offline.json) retains its older
-  failures unchanged as history. Full-width agreement remains offline only.
+  The final [hash-reference record](evidence/dpt-hash-offline.json) uses a
+  counter-based integer hash at each native initializer's standard deviation,
+  followed by fixed four-batch BatchNorm calibration. Head/logits meet 1e-4
+  against float32 PyTorch: full-width errors 2.06e-5/2.01e-5, reduced errors
+  7.60e-6/7.29e-6. Every intermediate's mirror/float64 error is no larger
+  than float32 PyTorch's own. Full-width fusion3 peaks at 51.93 (float32
+  step 3.81e-6): mirror/float32 error 1.88e-4, mirror/float64 4.64e-5,
+  float32/float64 1.87e-4. This is an intermediate ordering claim, not
+  1e-4 intermediate agreement against float32. Every recorded output has zero
+  argmax flips. The [native-init](evidence/dpt-dtype-offline.json),
+  [unscaled periodic](evidence/dpt-integer-offline.json), and
+  [fan-in periodic](evidence/dpt-fan-in-offline.json) records remain unchanged
+  as superseded history. Full-width agreement remains offline only.
 - **Live agreement.** It exists only for the
   [reduced ViT encoder twin](evidence/live-fixtures/20261103T022505Z-vit_encoder_reduced.json)
   with **rank-at-most-4 projection weights**, the

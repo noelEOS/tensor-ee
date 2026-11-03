@@ -146,7 +146,7 @@ def test_integer_weight_smp_final_outputs(config):
     differences = {name: record["outputs"][name]["mirror_vs_torch32"]["max_abs"]
                    for name in ("head", "logits")}
     flips = record["outputs"]["logits"]["mirror_vs_torch32"]["argmax_flips"]
-    print("\n" + ("full" if config == DPT_B16 else "reduced") + " integer-weight final max_abs: "
+    print("\n" + ("full" if config == DPT_B16 else "reduced") + " hash-initialized final max_abs: "
           + json.dumps(differences) + "; argmax_flips=" + str(flips))
     assert max(differences.values()) <= 1e-4, differences
 
