@@ -197,7 +197,9 @@ def test_the_registry_gains_one_library_function_per_operation():
     import importlib
     assert list(OPERATIONS)[:7] == ["relabel_to_windows", "overlap_embedding", "mit_block", "channel_norm",
                                     "project_pyramid", "fuse_head", "relabel_from_windows"]
-    assert tuple(OPERATIONS)[7:7 + len(NEW_OPERATIONS)] == NEW_OPERATIONS
+    assert tuple(OPERATIONS)[7:] == NEW_OPERATIONS + (
+        "linear", "conv3x3_window", "batch_norm", "concat", "gelu", "relu", "add",
+        "window_depth_to_space", "window_resize")
     for name in NEW_OPERATIONS:
         op = OPERATIONS[name]
         module = importlib.import_module(op.function.__module__)
