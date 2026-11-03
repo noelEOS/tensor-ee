@@ -20,6 +20,11 @@ the inverse relabel's settings and in the output edge. Node ids are module paths
 ``state_dict`` names, so a converted graph compares directly with a hand-written one; the graph
 holds no weight value.
 
+An encoder-only timm ViT (``num_classes=0, global_pool=''`` and unfused attention)
+instead returns its final ``norm`` P edge: W14 spatial features and a W1 class
+row. Its caller-prepared raster starts on the abstract token grid, as Swin's
+does; no dense classifier output or source-grid relabel is added.
+
 **The model's interface.** That is SegFormer's, whose first blocks read windows. A model
 whose first block reads a raster (timm's Swin: ``patch_embed``, an R block) has no relabel in
 the library: a raster is relabeled onto a token grid only as windows. Its graph starts from the
@@ -110,6 +115,7 @@ def _extent(k: int):
 
 
 EDGE_SETTINGS = {
+    "vit_patch_embed": lambda inputs: {"channels": inputs[0].channels},
     "project_pyramid": _pyramid_edges, "fuse_head": _head_edges,
     # Swin and UPerNet: the bands a patch embedding reads (and its norm, which the recognizer
     # requires: timm's PatchEmbed with a LayerNorm); C4's extent for the PSP and the
@@ -348,6 +354,10 @@ def _convert_on_tokens(model, grouped: Grouped, source_grid, name: str | None, i
                f"windows: its graph starts from its input on the abstract {input_edge.grid}; convert with "
                "source_grid=None and relabel the source onto that grid and back in the recipe (contract section 11)")
     output = next(unit for unit in grouped.units if unit.id == grouped.output)
+    if output.op == "pair_layer_norm":
+        writer = _Writer({INPUT: input_edge})
+        writer.units(grouped, INPUT)
+        return writer.result(model, name, grouped, outputs=(grouped.output,))
     if output.op not in DENSE:
         reject(f"the model's output, {output.id} ({output.op}), has no dense form on its token grid; the converter "
                f"writes those of {sorted(DENSE)}")
@@ -384,7 +394,7 @@ class _Writer:
             edge = self.add(Node(unit.id, unit.op, inputs, unit.id, unit.settings, unit.parameters))
             _traced_shape(unit, edge, grouped.shapes[unit.id])
 
-    def result(self, model, name: str | None, grouped: Grouped) -> Conversion:
-        graph = BlockGraph(type(model).__name__.lower() if name is None else name, (INPUT,), (LOGITS,), self.edges,
+    def result(self, model, name: str | None, grouped: Grouped, *, outputs=(LOGITS,)) -> Conversion:
+        graph = BlockGraph(type(model).__name__.lower() if name is None else name, (INPUT,), outputs, self.edges,
                            tuple(self.nodes))
         return Conversion(graph, report(graph, grouped))

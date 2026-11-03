@@ -452,6 +452,9 @@ class Unit:
     output_axes: tuple[str, ...] | None = None
     derived: tuple[str, ...] = ()
     choices: Mapping = field(default_factory=_empty_mapping)
+    select: Callable | None = None
+    """Optional call predicate when several operations share a module path (residuals).
+    Predicates partition calls; overlapping matches at equal depth are refused."""
 
     def __post_init__(self):
         object.__setattr__(self, "owns", tuple(self.owns))
@@ -620,16 +623,23 @@ class _Grouping:
         if forward_mismatch not in FORWARD_MISMATCH:
             raise ValueError(f"forward_mismatch is one of {FORWARD_MISMATCH}; received {forward_mismatch!r}")
         self.traced, self.recognizers, self.forward_mismatch = traced, recognizers, forward_mismatch
-        self.owned: dict[str, Unit] = {}             # module path -> the unit owning it
+        self.owned: dict[str, list[Unit]] = {}       # module path -> candidate units
         self.recognized: set[str] = set()
         self.calls: dict[str, list] = {}             # unit id -> its calls, in graph order
         self.unit_of: dict = {}                      # call -> its unit
         self.selected: dict = {}                     # unit id -> the getitem selecting its output
         self.glue, self.unused, self.differences = [], [], {}
 
-    def _owner(self, path: str) -> Unit | None:
-        owners = [(len(p), unit) for p, unit in self.owned.items() if _under(path, p)]
-        return max(owners, key=lambda pair: pair[0])[1] if owners else None
+    def _owner(self, path: str, node) -> Unit | None:
+        owners = [(len(p), unit) for p, units in self.owned.items() if _under(path, p)
+                  for unit in units if unit.select is None or unit.select(node)]
+        if not owners:
+            return None
+        depth = max(length for length, _ in owners)
+        matches = {unit.id: unit for length, unit in owners if length == depth}
+        if len(matches) != 1:
+            raise ValueError(f"call {node.name!r} matches multiple units: {sorted(matches)}")
+        return next(iter(matches.values()))
 
     def _recognize(self, path: str, qualname: str, node) -> None:
         module = self.traced.modules.get(path)
@@ -643,9 +653,11 @@ class _Grouping:
                    code="unrecognized_module")
         for unit in recognizer(module, path, self.traced):
             for owned in unit.owns:
-                if not _under(owned, path) or owned in self.owned:
+                previous = self.owned.get(owned, [])
+                if (not _under(owned, path)
+                        or previous and (unit.select is None or any(u.select is None for u in previous))):
                     raise ValueError(f"{_where(path, qualname)}: unit {unit.id!r} cannot own {owned!r}")
-                self.owned[owned] = unit
+                self.owned.setdefault(owned, []).append(unit)
             self.calls.setdefault(unit.id, [])
         self.recognized.add(path)
 
@@ -663,7 +675,7 @@ class _Grouping:
             for path, qualname in self.traced.stack(node):
                 if path not in self.recognized:
                     self._recognize(path, qualname, node)
-                unit = self._owner(innermost)
+                unit = self._owner(innermost, node)
                 if unit is not None:
                     break
             if unit is not None:
@@ -678,7 +690,7 @@ class _Grouping:
 
     def _units(self) -> dict[str, Unit]:
         units = {}
-        for unit in self.owned.values():
+        for unit in (u for units in self.owned.values() for u in units):
             if units.setdefault(unit.id, unit) is not unit:
                 raise ValueError(f"two units are named {unit.id!r}")
         for unit_id, calls in self.calls.items():
