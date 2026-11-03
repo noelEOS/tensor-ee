@@ -158,6 +158,9 @@ PYTHONPATH=. flock /tmp/tensor-ee-heavy.lock python tools/vit_b16_dpt224_numeric
     --output docs/evidence/dpt-dtype-offline.json
 ```
 
+The numerical command above produced the committed record. To reproduce it,
+choose a fresh output path: the tool refuses to overwrite earlier evidence.
+
 The planning command measures actual serialized export payloads against offline
 EE signatures. It uses synthetic table reads, one per parameter; these create no
 assets. Its explicit cuts are patch plus twelve encoder blocks (spatial and class
