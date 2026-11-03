@@ -143,7 +143,10 @@ def fixtures():
         reference_source="SMP 0.5.0 DPT encoder_weights=None, timm pretrained=False, fused_attn=False",
         mirror=MirrorSpec(_mirror, False, "tests/reference/vit_b16_dpt224/reference.py", bound=1e-4),
         requests=7, constants=_cost, window=14, accepts=(concat_rows, WindowLayout),
-        history="Not yet run live.", notes="Reduced whole-model composition, not individual-block evidence. "
+        history="docs/evidence/live-fixtures/20261103T041356Z-vit_dpt_reduced.json "
+        "(passed: structured reduced twin; all readouts bit-identical to NumPy; "
+        "EE vs SMP maximum absolute error 1.862645149230957e-9)",
+        notes="Reduced whole-model composition, not individual-block evidence. "
         "Rank <=4 projection matrices and rank1 positional rows; general random weights are compared offline separately. "
         "All reassemble/fusion branches; 112/224 outputs sampled to 56x56; input seed echoed.")]
 

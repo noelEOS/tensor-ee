@@ -108,6 +108,19 @@ are each 9.313225746154785e-10. Its seven-request plan has a largest payload
 of 1,944,662 bytes and at most 31,360 output values per request, with no assets
 or tasks. This is separate evidence from the native-SMP random-weight check.
 
+The [reduced G3-live run](evidence/live-fixtures/20261103T041356Z-vit_dpt_reduced.json)
+passed exactly those seven requests on clean `24fdec8`, with zero assets and
+tasks. Every readout was float32 and fully valid; the input echo was exact.
+Earth Engine matched the NumPy mirror bit for bit at all ten output readouts.
+The largest absolute EE-versus-SMP error was 1.862645149230957e-9 (fusion 3);
+head and final sampled logits were each 9.313225746154785e-10. This validates
+only the structured reduced twin and sampled readouts described above.
+
+Post-run local comparison on identical input/weight hashes found zero argmax
+flips at every readout, including final logits. This inference uses the live
+record's EE-versus-mirror bit identity and the local mirror-versus-SMP decisions;
+the live record itself remains exactly as the harness wrote it.
+
 ## Offline request sizing and deferred full-width live run
 
 ```sh
