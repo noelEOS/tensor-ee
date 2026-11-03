@@ -185,6 +185,21 @@ def test_reduced_fixture_plan_and_layout_chain():
     assert plan.totals()["assets"] == plan.totals()["tasks"] == 0
 
 
+def test_reduced_fixture_preserves_its_live_validated_graphs():
+    record = json.loads(Path(
+        "docs/evidence/live-fixtures/20261103T041356Z-vit_dpt_reduced.json").read_text())
+    assert record["status"] == "passed" and record["dirty"] is False
+    old = record["fixtures"][0]
+    with deep_recursion():
+        plan = LF.make_plan(select(["vit_dpt_reduced"]))
+    assert not plan.violations, plan.violations
+    data = plan.data[old["spec"]["id"]]
+    assert data.inputs_sha256 == old["inputs_sha256"]
+    assert data.weights_sha256 == old["weights_sha256"]
+    assert [request.graph_sha256 for request in plan.all_requests] == [
+        request["graph_sha256"] for request in old["requests"]]
+
+
 def test_full_width_staged_request_measurements():
     with LF.offline_earth_engine(), deep_recursion():
         import ee
