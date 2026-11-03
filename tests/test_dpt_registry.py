@@ -47,7 +47,17 @@ def test_readout_accepts_aligned_class_row():
 
 
 def test_registry_holds_library_functions_and_resize_cost():
-    from tensor_ee.blocks.window import linear, resample
+    from tensor_ee.blocks.window import activations, conv, linear, merge, normalization, resample
+    from tensor_ee.layouts.window import to_dense
+    expected = {
+        "window_linear": linear.linear, "window_conv3x3": conv.conv3x3_window,
+        "window_batch_norm": normalization.batch_norm, "dpt_cat_readout": merge.concat,
+        "window_gelu": activations.gelu, "window_relu": activations.relu, "window_add": merge.add,
+        "dpt_transpose_linear": linear.linear, "window_depth_to_space": resample.window_depth_to_space,
+        "dpt_resize": resample.window_resize, "window_dense": to_dense,
+    }
+    for name, function in expected.items():
+        assert OPERATIONS[name].function is function
     projection = OPERATIONS['dpt_transpose_linear']
     layout = OPERATIONS['window_depth_to_space']
     assert projection.function is linear.linear
