@@ -552,6 +552,12 @@ existing functions:
   `add`, linear projections, and ×2 `window_resize(align_corners=True)`. Fusion
   windows are 7 → 14 → 7 → 7 → 7; the final head resize stays W7 before `to_dense`.
 
+Registry keys use the names of the library functions they hold. Ordinary and
+packed transposed-convolution coefficients share one `linear` entry; packing is
+a constants-builder setting, followed by a separate `window_depth_to_space` node.
+Dense output reuses `head_dense`, whose library body calls the same `to_dense` as
+the hand target. The original registry function/metadata invariant is unchanged.
+
 The transposed-convolution packer is the public coefficient-layout function
 `weights.constants.upsampling_parameters`, shared with the hand models. The
 Prithvi model's old private name remains an alias. It preserves position-major

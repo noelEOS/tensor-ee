@@ -36,29 +36,28 @@ def test_readout_refuses_invalid_class_row(change):
     if change == 'channels': options['channels'] = 32
     if change == 'layout': options.update(layout='R', window=None, bands=tuple(f'c{i}' for i in range(64)))
     with pytest.raises(GridMismatch, match='channels must match' if change == 'channels' else 'one W1 row aligned'):
-        OPERATIONS['dpt_cat_readout'].infer({}, (spatial, Edge(**options)))
+        OPERATIONS['concat'].infer({}, (spatial, Edge(**options)))
 
 
 def test_readout_accepts_aligned_class_row():
     grid = TokenGrid(28, 28, 1.)
-    out = OPERATIONS['dpt_cat_readout'].infer({}, (Edge('W', grid, 64, window=14),
+    out = OPERATIONS['concat'].infer({}, (Edge('W', grid, 64, window=14),
         Edge('W', grid.coarse(14), 64, window=1)))
     assert out['channels'] == 128 and out['window'] == 14 and out['grid'] == grid
 
 
 def test_registry_holds_library_functions_and_resize_cost():
     from tensor_ee.blocks.window import activations, conv, linear, merge, normalization, resample
-    from tensor_ee.layouts.window import to_dense
     expected = {
-        "window_linear": linear.linear, "window_conv3x3": conv.conv3x3_window,
-        "window_batch_norm": normalization.batch_norm, "dpt_cat_readout": merge.concat,
-        "window_gelu": activations.gelu, "window_relu": activations.relu, "window_add": merge.add,
-        "dpt_transpose_linear": linear.linear, "window_depth_to_space": resample.window_depth_to_space,
-        "dpt_resize": resample.window_resize, "window_dense": to_dense,
+        "linear": linear.linear, "conv3x3_window": conv.conv3x3_window,
+        "batch_norm": normalization.batch_norm, "concat": merge.concat,
+        "gelu": activations.gelu, "relu": activations.relu, "add": merge.add,
+        "window_depth_to_space": resample.window_depth_to_space,
+        "window_resize": resample.window_resize,
     }
     for name, function in expected.items():
         assert OPERATIONS[name].function is function
-    projection = OPERATIONS['dpt_transpose_linear']
+    projection = OPERATIONS['linear']
     layout = OPERATIONS['window_depth_to_space']
     assert projection.function is linear.linear
     assert projection.metadata is linear.METADATA['linear']
@@ -66,5 +65,5 @@ def test_registry_holds_library_functions_and_resize_cost():
     assert layout.metadata is resample.METADATA['window_depth_to_space']
     edge = Edge('W', TokenGrid(14, 14, 1.), 8, window=14)
     settings = dict(factor=2, align_corners=True, out_window=7)
-    assert OPERATIONS['dpt_resize'].cost(settings, (edge,)) == (
+    assert OPERATIONS['window_resize'].cost(settings, (edge,)) == (
         resample.window_resize_values(14, 14, 2, align_corners=True, window=14, out_window=7), 0)

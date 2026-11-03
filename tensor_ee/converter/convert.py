@@ -80,7 +80,7 @@ INPUT, INPUT_WINDOWS, LOGITS = "input", "input_windows", "logits"
 TOKEN_SCALE = 2.5
 """The abstract token grid's default scale: SegFormer-B0's (``SegformerB0Config.input_grid``), the
 one validated live, and the Swin-T224 adapter's model grid (``TokenGrid(224, 224, 2.5)``)."""
-DENSE = {"head_logits": "head_dense", "dpt_resize": "window_dense"}
+DENSE = {"head_logits": "head_dense", "window_resize": "head_dense"}
 """The output unit's operation -> the operation writing its W edge as dense bands on its token
 grid, for a model whose graph stays on the token grid (see the module docstring)."""
 

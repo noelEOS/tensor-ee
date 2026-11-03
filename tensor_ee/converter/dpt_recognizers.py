@@ -53,9 +53,9 @@ def _full_check(unit, t, path, kind, check=None):
 def _conv(module, path, *, kernel=3, stride=1, bias=False):
     R._conv2d(module, path, module.in_channels, module.out_channels, kernel, stride, kernel // 2, bias=bias)
     if kernel == 1:
-        return _unit(path, 'window_linear', dict(in_features=module.in_channels, out_features=module.out_channels,
-                     bias=bias, conv=True), 'conv')
-    return _unit(path, 'window_conv3x3', dict(cin=module.in_channels, cout=module.out_channels,
+        return _unit(path, 'linear', dict(in_features=module.in_channels, out_features=module.out_channels,
+                     bias=bias, conv=True, factor=1), 'conv')
+    return _unit(path, 'conv3x3_window', dict(cin=module.in_channels, cout=module.out_channels,
                  stride=stride, bias=bias), 'conv')
 
 
@@ -66,11 +66,11 @@ def _bn(module, path, channels):
         for role in ('weight', 'bias', 'running_mean', 'running_var'):
             flow.require(t.parameters.get(args[role].name) == path + '.' + role,
                          f'{path}: BatchNorm {role} must read its own parameter or buffer')
-    return replace(_unit(path, 'window_batch_norm', {'eps': module.eps}, 'bn'), forward=_forward('bn', roles))
+    return replace(_unit(path, 'batch_norm', {'eps': module.eps}, 'bn'), forward=_forward('bn', roles))
 
 
 def _binary(path, node, kind='add'):
-    return _unit(path, 'window_add', {}, kind, owns=(path.rsplit('.', 1)[0],),
+    return _unit(path, 'add', {}, kind, owns=(path.rsplit('.', 1)[0],),
         select=lambda n, held=node: n is held,
         inputs=tuple(Through(f'operand {i}', lambda t, c, i=i: c[0].args[i]) for i in range(2)))
 
@@ -80,7 +80,7 @@ def _resize(path, node, out_window):
         a = _arguments(calls[0])
         flow.require(a['output_size'] is None and a['scale_factors'] == [2.0, 2.0]
                      and a['align_corners'] is True, f'{path}: resize must use x2 bilinear align_corners=True')
-    unit = _unit(path + '.resize', 'dpt_resize', dict(factor=2, align_corners=True, out_window=out_window),
+    unit = _unit(path + '.resize', 'window_resize', dict(factor=2, align_corners=True, out_window=out_window),
         'resize', owns=(path,), inputs=(path,), select=lambda n, held=node: n is held)
     return replace(unit, forward=_forward('resize', check))
 
@@ -181,12 +181,12 @@ def _readout(module, path, t):
         # Feature view reads the original NCHW spatial tensor; alias/slice reads the prefix.
         return calls[0].args[0] if index == 0 else next(n for n in calls if operation_name(n.target)
                                                      in ('aten.alias.default', 'aten.slice.Tensor')).args[0]
-    cat = _unit(path + '.cat', 'dpt_cat_readout', {}, 'cat', owns=(path,),
+    cat = _unit(path + '.cat', 'concat', {}, 'cat', owns=(path,),
         select=lambda n: n in before, inputs=tuple(Through(f'readout input {i}',
         lambda t, c, i=i: cat_inputs(t, c, i)) for i in range(2)), axes=NTC, input_axes=(NCHW, NTC))
-    units = [cat, _unit(f, 'window_linear', dict(in_features=fc.in_features, out_features=fc.out_features,
-             bias=True, conv=False), 'linear', axes=NTC),
-        _unit(a, 'window_gelu', {}, 'readout_gelu', owns=(a, path), inputs=(a,), axes=NTC,
+    units = [cat, _unit(f, 'linear', dict(in_features=fc.in_features, out_features=fc.out_features,
+             bias=True, conv=False, factor=1), 'linear', axes=NTC),
+        _unit(a, 'gelu', {}, 'readout_gelu', owns=(a, path), inputs=(a,), axes=NTC,
               output_axes=NCHW, select=lambda n: n in after or t.path(n) == a)]
     def check(traced, calls):
         local = flow.calls_at(traced, path, children=False)
@@ -227,7 +227,8 @@ def _reassemble(module, path, t):
                 or tuple(up.padding) != (0, 0) or tuple(up.output_padding) != (0, 0)
                 or tuple(up.dilation) != (1, 1) or up.groups != 1 or up.bias is None or up.padding_mode != 'zeros'):
             R._refuse(u, up, f'upsampling must be biased non-overlapping ConvTranspose x{factor}')
-        units.append(_unit(u, 'dpt_transpose_linear', dict(channels=up.in_channels, factor=factor), 'transpose',
+        units.append(_unit(u, 'linear', dict(in_features=up.in_channels, out_features=up.out_channels * factor * factor,
+            bias=True, conv=False, factor=factor), 'transpose',
             post_op=('window_depth_to_space', dict(factor=factor, out_window=7))))
     elif index == 2:
         R._child(module, path, 'upsample', R.IDENTITY)
@@ -262,7 +263,7 @@ def _residual(module, path, t):
     channels = module.conv_1.in_channels
     for i in (1, 2):
         act = activations[i-1]
-        units.append(_unit(path + f'.relu{i}', 'window_relu', {}, 'relu', owns=(path + '.activation',),
+        units.append(_unit(path + f'.relu{i}', 'relu', {}, 'relu', owns=(path + '.activation',),
                             inputs=(path + '.activation',), select=lambda n, held=act: n is held))
         conv, c = R._child(module, path, f'conv_{i}', R.CONV2D)
         bn, b = R._child(module, path, f'batch_norm_{i}', R.BATCH_NORM)
@@ -330,7 +331,7 @@ def _head(module, path, t):
     if c0.out_channels != c0.in_channels or c4.in_channels != c0.out_channels:
         R._refuse(path, module, 'head feature channels must match')
     units = [_conv(c0, p0), _bn(bn, b, c0.out_channels),
-        _unit(path + '.head.2', 'window_relu', {}, 'head_relu', owns=(path + '.head.2', path + '.head.3')),
+        _unit(path + '.head.2', 'relu', {}, 'head_relu', owns=(path + '.head.2', path + '.head.3')),
         _conv(c4, p4, kernel=1, bias=True)]
     resize = flow.calls_at(t, path, children=False)[0]
     units.append(_resize(path, resize, None))

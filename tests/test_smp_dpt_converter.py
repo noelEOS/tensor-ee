@@ -87,7 +87,7 @@ def test_every_boundary_equals_hand_target(config):
     nodes = {node.id: node for node in converted.graph.nodes}
     for i, factor in enumerate((4, 2)):
         prefix = f'decoder.reassemble_blocks.{i}.upsample'
-        assert nodes[prefix + '.projection'].op == 'dpt_transpose_linear'
+        assert nodes[prefix + '.projection'].op == 'linear'
         assert nodes[prefix].op == 'window_depth_to_space'
         assert nodes[prefix].inputs == (prefix + '.projection',)
         assert nodes[prefix].settings['factor'] == factor
@@ -99,7 +99,7 @@ def test_every_boundary_equals_hand_target(config):
         # W14 stride-2 convolution and W14 fusion convolution are deliberately
         # reported outside their individual block records; graph identity still
         # preserves the hand target's evidence at its recorded settings.
-        assert any(n.op == 'window_conv3x3' for n in converted.report.nodes)
+        assert any(n.op == 'conv3x3_window' for n in converted.report.nodes)
 
 
 def test_native_inline_decoder_weights(reduced):

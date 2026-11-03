@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from ..blocks.window import activations, conv, linear, merge, normalization, resample
 from ..core.errors import GridMismatch, reject
-from ..core.tensor import Raster, ServerArray, WindowTensor, band_names
-from ..layouts.window import to_dense
+from ..core.tensor import ServerArray, WindowTensor
 from ..weights.constants import WindowLayout, upsampling_parameters
 from .pair_operations import _reshape, _shape
 
@@ -27,8 +26,24 @@ def _roles(s):
     return ('weight', 'bias') if s['bias'] else ('weight',)
 
 
+def _linear_infer(s, inputs):
+    factor = s['factor']
+    if isinstance(factor, bool) or not isinstance(factor, int) or factor not in (1, 2, 4):
+        reject('linear coefficient packing requires factor 1, 2 or 4')
+    if factor > 1 and (s['conv'] or not s['bias'] or s['out_features'] % (factor * factor)):
+        reject('transposed-convolution coefficients require biased packed output channels')
+    return _point(s, inputs)
+
+
 def _linear_constants(ops, p, prefix, s, inputs):
     cin, cout = s['in_features'], s['out_features']
+    factor = s['factor']
+    if factor > 1:
+        channels = cout // (factor * factor)
+        weight = _shape(p[prefix + '.weight'], (cin, channels, factor, factor), prefix + '.weight')
+        bias = _shape(p[prefix + '.bias'], (channels,), prefix + '.bias')
+        weight, bias = upsampling_parameters(weight, bias, factor=factor)
+        return linear.LinearConstants(ops, weight, bias, WindowLayout(inputs[0].window))
     shape = (cout, cin, 1, 1) if s['conv'] else (cout, cin)
     weight = _shape(p[prefix + '.weight'], shape, prefix + '.weight')
     bias = _shape(p[prefix + '.bias'], (cout,), prefix + '.bias') if s['bias'] else None
@@ -104,30 +119,8 @@ def _cat_call(ops, tensors, c, s):
 def _add_infer(s, inputs):
     out = _window(inputs[0])
     if inputs[1] != inputs[0]:
-        raise GridMismatch('window_add requires equal W edges')
+        raise GridMismatch('add requires equal W edges')
     return out
-
-
-def _upsample_infer(s, inputs):
-    out = _window(inputs[0])
-    f = s['factor']
-    if f not in (2, 4) or inputs[0].channels != s['channels']:
-        reject('DPT ConvTranspose requires factor 2 or 4 and matching channels')
-    out['channels'] *= f * f
-    return out
-
-
-def _upsample_constants(ops, p, prefix, s, inputs):
-    c, f = s['channels'], s['factor']
-    weight = _shape(p[prefix + '.weight'], (c, c, f, f), prefix + '.weight')
-    bias = _shape(p[prefix + '.bias'], (c,), prefix + '.bias')
-    weight, bias = upsampling_parameters(weight, bias, factor=f)
-    return linear.LinearConstants(ops, weight, bias, WindowLayout(inputs[0].window))
-
-
-def _upsample_call(ops, tensors, c, s):
-    (x,) = tensors
-    return x.like(linear.linear(ops, x.image, c, layout=x), s['channels'] * s['factor'] ** 2)
 
 
 def _depth_infer(s, inputs):
@@ -148,12 +141,6 @@ def _depth_call(ops, tensors, c, s):
     image, grid = resample.window_depth_to_space(ops.ee, x.image, x.grid, channels,
         window=x.window, out_window=s['out_window'], factor=s['factor'])
     return WindowTensor(image, grid, channels, s['out_window'])
-
-
-def _upsample_cost(s, inputs):
-    m = linear.METADATA['linear']
-    return (m.embedded_constants(s['channels'], s['channels'] * s['factor'] ** 2,
-                                layout=WindowLayout(inputs[0].window)), m.asset_arrays())
 
 
 def _resize_infer(s, inputs):
@@ -177,33 +164,26 @@ def _operations(Operation, no_roles):
     none = no_roles
     point = lambda fn: lambda ops, ts, c, s: ts[0].like(fn(ops, ts[0].image))
     return {
-        'window_linear': Operation(linear.linear, linear.METADATA['linear'], 1,
-            ('in_features', 'out_features', 'bias', 'conv'), _roles, _point, _linear_cost,
+        'linear': Operation(linear.linear, linear.METADATA['linear'], 1,
+            ('in_features', 'out_features', 'bias', 'conv', 'factor'), _roles, _linear_infer, _linear_cost,
             lambda ops, ts, c, s: ts[0].like(linear.linear(ops, ts[0].image, c, layout=ts[0]), s['out_features']),
             _linear_constants),
-        'window_conv3x3': Operation(conv.conv3x3_window, conv.METADATA['conv3x3_window'], 1,
+        'conv3x3_window': Operation(conv.conv3x3_window, conv.METADATA['conv3x3_window'], 1,
             ('cin', 'cout', 'stride', 'bias'), _roles, _conv_infer, _conv_cost, _conv_call, _conv_constants),
-        'window_batch_norm': Operation(normalization.batch_norm, normalization.METADATA['batch_norm'], 1,
+        'batch_norm': Operation(normalization.batch_norm, normalization.METADATA['batch_norm'], 1,
             ('eps',), lambda s: ('weight', 'bias', 'running_mean', 'running_var'), _point, _bn_cost,
             lambda ops, ts, c, s: ts[0].like(normalization.batch_norm(ops, ts[0].image, c, layout=ts[0])), _bn_constants),
-        'dpt_cat_readout': Operation(merge.concat, merge.METADATA['concat'], 2, (), none, _cat_infer, zero, _cat_call),
-        'window_gelu': Operation(activations.gelu, activations.METADATA['gelu'], 1, (), none, _point, zero,
+        'concat': Operation(merge.concat, merge.METADATA['concat'], 2, (), none, _cat_infer, zero, _cat_call),
+        'gelu': Operation(activations.gelu, activations.METADATA['gelu'], 1, (), none, _point, zero,
                                   point(activations.gelu)),
-        'window_relu': Operation(activations.relu, activations.METADATA['relu'], 1, (), none, _point, zero,
+        'relu': Operation(activations.relu, activations.METADATA['relu'], 1, (), none, _point, zero,
                                   point(activations.relu)),
-        'window_add': Operation(merge.add, merge.METADATA['add'], 2, (), none, _add_infer, zero,
+        'add': Operation(merge.add, merge.METADATA['add'], 2, (), none, _add_infer, zero,
                                  lambda ops, ts, c, s: merge.add(*ts)),
-        'dpt_transpose_linear': Operation(linear.linear, linear.METADATA['linear'], 1, ('channels', 'factor'),
-            lambda s: ('weight', 'bias'), _upsample_infer, _upsample_cost, _upsample_call, _upsample_constants),
         'window_depth_to_space': Operation(resample.window_depth_to_space,
             resample.METADATA['window_depth_to_space'], 1, ('factor', 'out_window'), none, _depth_infer, zero, _depth_call),
-        'dpt_resize': Operation(resample.window_resize, resample.METADATA['window_resize'], 1,
+        'window_resize': Operation(resample.window_resize, resample.METADATA['window_resize'], 1,
             ('factor', 'align_corners', 'out_window'), none, _resize_infer,
             lambda s, xs: (resample.METADATA['window_resize'].embedded_constants(xs[0].grid.height,
                 xs[0].grid.width, 2, align_corners=True, window=xs[0].window, out_window=s['out_window']), 0), _resize_call),
-        'window_dense': Operation(to_dense, None, 1, (), none,
-            lambda s, xs: dict(layout='R', grid=xs[0].grid, channels=xs[0].channels, window=None,
-                               bands=tuple(band_names(xs[0].channels))), zero,
-            lambda ops, ts, c, s: Raster(to_dense(ops.ee, ts[0].grid, ts[0].image, ts[0].channels,
-                                                 window=ts[0].window), tuple(band_names(ts[0].channels)), ts[0].grid)),
     }
