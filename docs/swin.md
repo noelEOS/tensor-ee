@@ -14,18 +14,17 @@ trained-model performance on a different sensor or resolution.
 
 The library's `relative_position_bias(..., gather="slices")` is an opt-in for
 larger windows, also exposed by `swin_block_constants` and `swin_stage_blocks`
-as `relative_bias_gather="slices"`. Asset-backed bias-lookup measurements at
-windows 12 and 14 reduced peak memory from 85M to 0.5M and 217M to 1.8M,
-with latency from 1.0 to 0.33 s and 2.0 to 1.4 s respectively. Window 7 was
-slower (0.42 to 0.52 s), so the default remains `"one_hot"`, including in the
-converter and fixed Swin-T workflow. These measurements cover bias lookup only;
-they establish no whole-model speedup. The [live fixture run](evidence/live-fixtures/20261103T173919Z-relative_bias_slices.json)
+as `relative_bias_gather="slices"`. The slices gather uses much less memory at
+windows 12 and 14 and is slower at window 7, so it is for large windows only;
+the default remains `"one_hot"`, including in the converter and fixed Swin-T workflow.
+The [live fixture run](evidence/live-fixtures/20261103T173919Z-relative_bias_slices.json)
 validated two-head bias tables at W7/W12/W14 bit for bit. Its eight requests
 also compared dim-16, two-head W7 blocks, unshifted and shifted by 3: both gather
 paths matched the mirror bit for bit and their difference was exactly zero;
 maximum block error against PyTorch was 1.79e-7. These block parity results remain
-in the live record; slices at block/stage level stays Fixed — offline only in
-metadata, and the existing model validation records keep `"one_hot"`.
+in the live record; block-level promotion waits for a fix to the validation
+report's handling of tied nearest records. Existing block/stage statuses and
+validation records remain unchanged, and the converter keeps the default gather.
 
 ## Supply the model and weight assets
 

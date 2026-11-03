@@ -160,10 +160,6 @@ NEVER_VARIED = {
     "raster/batch_norm": {"eps", "clip_footprints"},
     "raster/standardize": {"clip_footprints"},
     "window/shifted_window_mask": {"value"},
-    # Block and stage records retain their original model gather coverage.
-    "window/swin_block": {"relative_bias_gather"},
-    "window/shifted_swin_block": {"relative_bias_gather"},
-    "window/swin_stage": {"relative_bias_gather"},
     "window/group_product": {"k"},
     "window/patch_merge": {"bias"},
     "window/window_matrix_resize": {"out_size", "row0", "col0"},
@@ -482,15 +478,14 @@ COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat
 """Whole-model checks whose compatibility block field does not identify block evidence."""
 
 RELATIVE_BIAS_PARITY_FIXTURES = {
-    f"window/{block}/bias-slices{suffix}"
-    for block in ("swin_block", "shifted_swin_block") for suffix in ("", "-exact")
+    "window/swin_block/bias-slices",
+    "window/swin_block/bias-slices-exact",
+    "window/shifted_swin_block/bias-slices",
+    "window/shifted_swin_block/bias-slices-exact",
 }
-"""Live gather-parity comparisons retained as evidence without promoting block settings.
-
-Only the relative_position_bias lookup settings are promoted by this run. The
-small block comparisons remain separate from the model settings in block records.
+"""Their live evidence is recorded, but block-level promotion waits for a fix to
+validation reports' handling of tied nearest records. Only the lookup is promoted.
 """
-
 
 
 def _live_fixtures() -> list[dict]:
@@ -536,6 +531,7 @@ def _fixture_settings(spec: dict) -> dict:
         # The stride-2 live record stores widths in shapes; retain its exact bytes.
         settings["cin"], settings["cout"] = shapes["input"][-1], shapes["cout"]
     if spec["block"] == "relative_position_bias" and settings.get("gather") == "slices":
+        # The lookup record restricts heads to two; the live spec stores it in shapes.
         settings["heads"] = shapes["heads"]
     if "bands" in settings:
         settings["channels"] = len(settings["bands"])

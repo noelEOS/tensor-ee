@@ -453,7 +453,7 @@ METADATA = validate_metadata({
     "relative_position_bias": BlockMetadata(
         name="relative_position_bias", layout_in="V", layout_out="V", locality=Locality.POINTWISE,
         policy=DOUBLE_ROUND_ONCE, embedded_constants=relative_bias_values, asset_arrays=relative_bias_arrays,
-        status="Ready — windows 5, 7, 8, 12; gather='one_hot'; gather='slices': windows 7, 12, 14, heads 2",
+        status="Ready — windows 5, 7, 8, 12; gather=slices: windows 7, 12, 14, heads 2",
         evidence=("docs/history/building-blocks-2026-10-11.md#36-linear-layers-and-attention", "docs/history/swin_block/notes/findings.md",
                   "docs/evidence/p01-offline.json",
                   "docs/evidence/live-fixtures/20261013T074301Z-p01a.json", "docs/evidence/live-fixtures/20261013T074330Z-p01b.json", "docs/evidence/live-fixtures/20261013T075542Z-window-relative_position_bias-w12.json",

@@ -532,8 +532,7 @@ _MODELS = ({"window": 7, "stage_dims": (96, 192, 384, 768), "num_heads": (3, 6, 
            {"window": 8, "stage_dims": (48, 96, 192, 384), "num_heads": (2, 4, 8, 16), "depths": (2, 2, 2, 2),
             "embed_dim": 48, "channels": 3})
 _STAGES = tuple({"dim": (dim,), "heads": (heads,), "depth": (depth,), "window": (model["window"],),
-                 "shift": (model["window"] // 2, None), "shifted": (s < 3,),
-                 "relative_bias_gather": ("one_hot",)}
+                 "shift": (model["window"] // 2, None), "shifted": (s < 3,)}
                 for model in _MODELS
                 for s, (dim, heads, depth) in enumerate(zip(model["stage_dims"], model["num_heads"], model["depths"])))
 """Stage 4 is one window in both models (7 x 7 and 8 x 8 tokens), so timm's rule runs it unshifted."""
@@ -543,9 +542,6 @@ def _pick(*names, shifted=None):
     """The stages' configurations reduced to ``names`` (only the shifted stages when asked)."""
     return tuple({name: stage[name] for name in names} for stage in _STAGES
                  if shifted is None or stage["shifted"] == (shifted,))
-
-
-_SLICE_STATUS = "; relative_bias_gather='slices': Fixed — offline only"
 
 
 METADATA = validate_metadata({
@@ -559,11 +555,10 @@ METADATA = validate_metadata({
     "swin_block": BlockMetadata(
         name="swin_block", layout_in="W", layout_out="W", locality=Locality.WINDOW,
         policy=COMPOSITE, embedded_constants=swin_block_values, asset_arrays=swin_block_arrays,
-        status=_STATUS + _WIDTHS + _SLICE_STATUS,
+        status=_STATUS + _WIDTHS,
         evidence=_EVIDENCE + ("docs/history/swin_block/notes/findings.md",
                               "parts: layer_norm, window_attention, linear, swin_mlp_branch"),
-        validated=Validated(_pick("dim", "heads", "window", "relative_bias_gather"),
-                            sources=(swin_block_constants,))),
+        validated=Validated(_pick("dim", "heads", "window"))),
     "shifted_swin_block": BlockMetadata(
         # The shifted windows straddle their neighbours: after the roll by w // 2 and the
         # unroll, an output window reads w - w // 2 tokens into them (4 at windows 7 and 8).
@@ -573,20 +568,18 @@ METADATA = validate_metadata({
         policy=COMPOSITE, embedded_constants=shifted_swin_block_values, asset_arrays=shifted_swin_block_arrays,
         chip_edge_dependent=True,
         status=_STATUS + ("widths 96, 192, 384, heads 3, 6, 12 at window 7; widths 48, 96, 192, heads 2, 4, 8 "
-                          "at window 8; shift ⌊w/2⌋; not stage 4 (one window, unshifted)") + _SLICE_STATUS,
+                          "at window 8; shift ⌊w/2⌋; not stage 4 (one window, unshifted)"),
         evidence=_EVIDENCE + ("docs/history/swin_pair/notes/findings.md",
                               "parts: layer_norm, shift_windows (none), window_attention with shifted_window_mask, "
                               "linear, swin_mlp_branch"),
-        validated=Validated(_pick("dim", "heads", "window", "shift", "relative_bias_gather", shifted=True),
-                            sources=(swin_block_constants,))),
+        validated=Validated(_pick("dim", "heads", "window", "shift", shifted=True))),
     "swin_stage": BlockMetadata(
         name="swin_stage", layout_in="W", layout_out="W", locality=Locality.EXTENT,
         policy=COMPOSITE, embedded_constants=swin_stage_values, asset_arrays=swin_stage_arrays,
-        chip_edge_dependent=True, status=_STATUS + _WIDTHS + "; depths 2, 2, 6, 2 and 2, 2, 2, 2" + _SLICE_STATUS,
+        chip_edge_dependent=True, status=_STATUS + _WIDTHS + "; depths 2, 2, 6, 2 and 2, 2, 2, 2",
         evidence=_EVIDENCE + ("docs/history/swin_encoder/notes/milestone5_findings.md",
                               "parts: swin_block, periodic_extension (none), shifted_swin_block"),
-        validated=Validated(_pick("dim", "heads", "depth", "window", "shift", "shifted", "relative_bias_gather"),
-                            sources=(swin_stage_blocks,))),
+        validated=Validated(_pick("dim", "heads", "depth", "window", "shift", "shifted"))),
     "swin_patch_embedding": BlockMetadata(
         # patch // 2 at the validated patch 4 (patch_embed's own radius 4 covers the validated patch size 8)
         name="swin_patch_embedding", layout_in="R", layout_out="W", locality=Locality.KERNEL, radius=2,

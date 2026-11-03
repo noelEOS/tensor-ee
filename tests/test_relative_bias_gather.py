@@ -99,13 +99,20 @@ def test_bias_validation_preserves_default_and_limits_slices_to_live_settings():
 
 
 @pytest.mark.parametrize('block', ['swin_block', 'shifted_swin_block', 'swin_stage'])
-def test_composite_record_does_not_claim_opt_in(block):
+def test_composite_record_keeps_main_settings_without_a_gather_field(block):
     from tensor_ee.blocks.window.swin import METADATA as SWIN_METADATA
     metadata = SWIN_METADATA[block]
     settings = {key: values[0] for key, values in metadata.validated.configurations[0]}
     assert check_settings(metadata, settings).inside
-    settings['relative_bias_gather'] = 'slices'
-    assert not check_settings(metadata, settings).inside
+    expected_names = {
+        'swin_block': {'dim', 'heads', 'window'},
+        'shifted_swin_block': {'dim', 'heads', 'window', 'shift'},
+        'swin_stage': {'dim', 'heads', 'depth', 'window', 'shift', 'shifted'},
+    }
+    assert metadata.validated.names == expected_names[block]
+    assert metadata.validated.sources == ()
+    # As on main, a setting absent from the record is ignored by the query.
+    assert check_settings(metadata, {**settings, 'relative_bias_gather': 'slices'}).inside
 
 
 def test_full_block_difference_fixtures_require_exact_equality():
@@ -123,6 +130,6 @@ def test_live_block_parity_does_not_promote_slice_block_settings(block):
     if block == 'shifted_swin_block':
         settings['shift'] = 3
     assert not check_settings(metadata, settings).inside
-    assert all(configuration['relative_bias_gather'] == ('one_hot',)
-               for configuration in metadata.validated.mappings)
-    assert "slices': Fixed — offline only" in metadata.status
+    assert 'relative_bias_gather' not in metadata.validated.names
+    assert metadata.validated.sources == ()
+    assert 'slices' not in metadata.status
