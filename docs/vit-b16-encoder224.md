@@ -1,11 +1,14 @@
 # ViT-B/16 encoder target at 224
 
-`tensor_ee.models.vit_b16_encoder224` is a hand-composed target for a later
-converter recognizer. It is not imported by `import tensor_ee`. It uses existing
-blocks, with no converter or new block. It has offline composition and
-numerical evidence, plus live agreement for the reduced twin on the recorded
-rank-at-most-4 projection weights. Full width has offline evidence only. No
-converter equivalence, trained-model accuracy, or DPT decoder is claimed.
+`tensor_ee.models.vit_b16_encoder224` is the hand-composed target for the
+[timm ViT converter recognizer](converter.md#timm-vit-b16-encoder-at-224--224).
+It is not imported by `import tensor_ee` and uses existing library blocks.
+The [converter gate](../tests/test_timm_vit_converter.py) checks byte-identical
+graphs at full and reduced width; this is graph identity only. Separately, the
+target has offline composition and numerical evidence, plus live agreement for
+the reduced twin on the recorded rank-at-most-4 projection weights. Full width
+has offline evidence only. No trained-model accuracy is claimed. The DPT decoder
+has its [own target and evidence](vit-b16-dpt224.md).
 
 ## Contract and usage
 

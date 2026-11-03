@@ -1,8 +1,11 @@
 # ViT-B/16 + DPT target at 224
 
-`tensor_ee.models.vit_b16_dpt224` is the hand-composed target for a later SMP
-DPT recognizer. It reuses `vit_b16_encoder224` and existing library blocks.
-It adds no block or converter support and is not loaded by `import tensor_ee`.
+`tensor_ee.models.vit_b16_dpt224` is the hand-composed target for the
+[SMP DPT recognizer](converter.md#smp-050-dpt-at-224--224). It reuses
+`vit_b16_encoder224` and existing library blocks and is not loaded by
+`import tensor_ee`. The [converter gate](../tests/test_smp_dpt_converter.py)
+checks byte-identical graphs at full and reduced width: graph identity only,
+separate from the offline and reduced live numerical evidence below.
 Weights are native NumPy float32 arrays or native/flattened `ServerArray`s,
 using SMP 0.5.0's `state_dict` names. Constructors build graphs only.
 
