@@ -81,6 +81,7 @@ def integer_comparison(config):
         "config": {"encoder_width": config.encoder.width, "heads": config.encoder.heads,
                    "depth": config.encoder.depth, "indices": list(config.indices),
                    "intermediate": list(config.intermediate), "fusion": config.fusion},
+        "initialization": model._integer_reference_recipe,
         "parameters_sha256": digest.hexdigest(),
         "float32_input_sha256": hashlib.sha256(image.tobytes()).hexdigest(),
         "calibration": {"batches": CALIBRATION_BATCHES, "batch_size": CALIBRATION_BATCH_SIZE,

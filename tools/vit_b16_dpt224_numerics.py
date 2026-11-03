@@ -1,7 +1,7 @@
-"""Record integer-weight calibrated DPT dtype comparisons offline, on a clean committed tree.
+"""Record fan-in-scaled integer-weight calibrated DPT dtype comparisons offline, on a clean committed tree.
 
 PYTHONPATH=. flock /tmp/tensor-ee-heavy.lock python tools/vit_b16_dpt224_numerics.py \
-    --output docs/evidence/dpt-integer-offline.json
+    --output docs/evidence/dpt-fan-in-offline.json
 
 Never overwrites an existing record. No weights are tuned, no cloud call is made.
 Final outputs require 1e-4 vs float32; intermediate errors vs float64 must
@@ -49,8 +49,8 @@ def measure():
             assert len(result["outputs"]) == 22
             results[name] = result
             gc.collect()
-            # Stop immediately on a final-output miss; preserve the measurements.
-            if not final_target(result):
+            # Stop on any numerical miss; preserve the measurements without retuning.
+            if not final_target(result) or not intermediate_target(result):
                 break
     assert not attempts
     assert revision == _revision()
@@ -58,13 +58,13 @@ def measure():
                      "intermediate_float64_ordering_met": intermediate_target(result)}
               for name, result in results.items()}
     return {
-        "kind": "dpt_integer_calibrated_offline_comparison", "schema_version": 1,
+        "kind": "dpt_fan_in_scaled_offline_comparison", "schema_version": 1,
         "status": "passed" if len(results) == 2 and all(
             all(row.values()) for row in claims.values()) else "failed",
         "revision": revision, "dirty": False, "cloud_calls": 0,
         "command": "PYTHONPATH=. python " + " ".join(sys.argv),
         "input_seed": INPUT_SEED,
-        "weights": "_fixed_weights scale=128; fixed four-batch BN calibration; model.double()",
+        "weights": "_fixed_weights pattern times per-tensor 2^k; fan-in RMS targets; unit norm affine; zero biases; fixed four-batch BN calibration; model.double()",
         "input": "same float32 dyadic values converted exactly to double",
         "fused_attention": False,
         "versions": {"python": platform.python_version(), **{

@@ -104,9 +104,9 @@ EVALUATION_SEED = 14127
 
 
 def calibrated_model(config):
-    """Integer weights, followed by one fixed BatchNorm calibration pass.
+    """Fan-in-scaled integer weights, followed by one fixed BN calibration pass.
 
-    _fixed_weights uses its default scale 128 for every learned parameter.
+    initialization.initialize fixes every learned value by its declared formula.
     Reset BN statistics, use cumulative averaging (momentum=None), and train
     under no_grad on four distinct batches of two dyadic six-band 224 crops.
     Each batch is dyadic(14128, "bn-calibration-{batch}", (2,224,224,6),
@@ -117,10 +117,11 @@ def calibrated_model(config):
     """
     import hashlib
     import torch
-    from tools.graph_identity import _fixed_weights
+    from .initialization import initialize
     from tools.fixtures.core import dyadic
 
-    model = _fixed_weights(smp_model(config))
+    model = smp_model(config)
+    model._integer_reference_recipe = initialize(model)
     def parameter_digest():
         digest = hashlib.sha256()
         for name, value in model.named_parameters():
