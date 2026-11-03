@@ -114,11 +114,11 @@ def test_hand_target_graph_identity_at_every_pair(config):
 
 @pytest.mark.parametrize('options,match', [
     ({'patch_size': 8}, 'patch_size'), ({'img_size': 256}, 'grid_size'),
-    ({'class_token': False, 'global_pool': 'avg'}, 'class token'),
-    ({'reg_tokens': 1}, 'register'), ({'no_embed_class': True}, 'all-row'),
+    ({'class_token': False, 'global_pool': 'avg'}, 'class token is required'),
+    ({'reg_tokens': 1}, 'register tokens are unsupported'), ({'no_embed_class': True}, 'all-row positional embeddings including the class row are required'),
     ({'init_values': 1e-5}, 'ls1'), ({'qk_norm': True}, 'q_norm'),
-    ({'pre_norm': True}, 'norm_pre'), ({'global_pool': 'avg'}, 'pre-logits'),
-    ({'num_classes': 10}, 'pre-logits'),
+    ({'pre_norm': True}, 'norm_pre'), ({'global_pool': 'avg'}, 'encoder output required'),
+    ({'num_classes': 10}, 'encoder output required'),
 ])
 def test_fixed_attributes_refused(options, match):
     with pytest.raises(UnsupportedOperation, match=match) as error:
@@ -242,3 +242,16 @@ def test_dataflow_mutation_refused_and_reported(reduced, change):
         group(traced, ALL_RECOGNIZERS)
     assert error.value.code == 'forward_code'
     assert group(traced, ALL_RECOGNIZERS, forward_mismatch='report').differences
+
+
+@pytest.mark.parametrize('error_type', [KeyError, AttributeError, IndexError])
+def test_unexpected_position_check_error_raises_in_report_mode(reduced, monkeypatch, error_type):
+    traced = trace(reduced, (1, 6, 224, 224))
+    original = flow.one
+    def unexpected(t, path, operation=None):
+        if path == 'pos_drop':
+            raise error_type('unexpected position checker failure')
+        return original(t, path, operation)
+    monkeypatch.setattr(flow, 'one', unexpected)
+    with pytest.raises(error_type, match='unexpected position checker failure'):
+        group(traced, ALL_RECOGNIZERS, forward_mismatch='report')

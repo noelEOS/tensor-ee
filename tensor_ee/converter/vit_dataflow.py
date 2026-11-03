@@ -109,31 +109,38 @@ def block(path):
     return check
 
 
-def position(depth):
+def position(depth, *, path="", final=True, position_path=None):
     def check(traced, calls):
         try:
-            cat = one(traced, '', 'aten.cat.default')
+            root = path + '.' if path else ''
+            def local(op):
+                found = [n for n in calls_at(traced, path if position_path is None else position_path, children=False)
+                         if operation_name(n.target) == op]
+                require(len(found) == 1, f'{path}: expected one {op}')
+                return found[0]
+            cat = local('aten.cat.default')
             require(cat.args[1] == 1 and len(cat.args[0]) == 2, 'class token must be concatenated on row axis 1')
             cls, spatial = cat.args[0]
             require(operation_name(cls.target) == 'aten.expand.default', 'class token must occupy row 0')
-            require(traced.parameters.get(cls.args[0].name) == 'cls_token', 'row 0 must read cls_token')
-            patch = calls_at(traced, 'patch_embed')[-1]
+            require(traced.parameters.get(cls.args[0].name) == root + 'cls_token', 'row 0 must read cls_token')
+            patch = calls_at(traced, root + 'patch_embed')[-1]
             require(spatial is patch, 'spatial rows must follow class row in row-major patch order')
-            add = one(traced, '', 'aten.add.Tensor')
-            require(add.args[0] is cat and traced.parameters.get(add.args[1].name) == 'pos_embed',
+            add = local('aten.add.Tensor')
+            require(add.args[0] is cat and traced.parameters.get(add.args[1].name) == root + 'pos_embed',
                     'position addition must read the class-first concatenation and pos_embed')
-            drop = one(traced, 'pos_drop', 'aten.dropout.default')
+            drop = one(traced, root + 'pos_drop', 'aten.dropout.default')
             require(drop.args[0] is add, 'position dropout must follow position addition')
             state = drop
             for i in range(depth):
-                norm = one(traced, f'blocks.{i}.norm1', 'aten.layer_norm.default')
+                norm = one(traced, f'{root}blocks.{i}.norm1', 'aten.layer_norm.default')
                 require(norm.args[0] is state, f'blocks.{i} must follow position addition / previous residual')
-                state = calls_at(traced, f'blocks.{i}', children=False)[-1]
-            norm = one(traced, 'norm', 'aten.layer_norm.default')
-            require(norm.args[0] is state, 'final norm must follow the last block')
-            output = one(traced, 'head_drop', 'aten.dropout.default')
-            require(output.args[0] is norm and traced.output is output, 'encoder must return the final norm sequence')
-        except (Difference, AttributeError, IndexError) as error:
+                state = calls_at(traced, f'{root}blocks.{i}', children=False)[-1]
+            if final:
+                norm = one(traced, root + 'norm', 'aten.layer_norm.default')
+                require(norm.args[0] is state, 'final norm must follow the last block')
+                output = one(traced, root + 'head_drop', 'aten.dropout.default')
+                require(output.args[0] is norm and traced.output is output, 'encoder must return the final norm sequence')
+        except Difference as error:
             return str(error)
         return None
     return check

@@ -799,3 +799,14 @@ PAIR_OPERATIONS: dict[str, Operation] = pair_operations(Operation)
 def get_operation(name: str) -> Operation | None:
     """Look up an ordinary block or an explicit pair adapter, without runtime discovery."""
     return OPERATIONS.get(name) or PAIR_OPERATIONS.get(name)
+
+
+from .dpt_operations import _operations as _dpt_operations
+
+# Preserve the original registry's entries before adding the DPT leaf blocks.
+_MAIN_OPERATIONS = tuple(OPERATIONS.items())
+_DPT_OPERATIONS = _dpt_operations(Operation, _no_roles)
+_DPT_COLLISIONS = set(OPERATIONS).intersection(_DPT_OPERATIONS)
+if _DPT_COLLISIONS:
+    raise ValueError(f"DPT operations collide with existing operations: {sorted(_DPT_COLLISIONS)}")
+OPERATIONS.update(_DPT_OPERATIONS)
