@@ -68,6 +68,9 @@ mirror uses the library's established rounding hypotheses. Tests compare every
 pixel at reduced and full width under the unchanged absolute 1e-4 target and
 report the largest absolute error per output and final-logit argmax flips.
 Those checks are offline agreement, not Earth Engine execution or model accuracy.
+The reduced native-SMP random-weight comparison passes: largest absolute error
+4.291534423828125e-6 (fusion 3), final logits 2.6226043701171875e-6 and zero
+argmax flips. The full-width result below remains a failure.
 
 The current full-width check **fails** the absolute target. With SMP's native
 random initialization (seed 14126), the largest error is 0.00060272216796875
@@ -98,6 +101,12 @@ all pixels and check native NumPy, native ServerArray and flattened ServerArray
 paths. Whole-model records are excluded from individual-block promotion.
 The fixture's head BN bias has a positive dyadic offset to keep its ReLU active;
 a sensitivity test requires nonconstant logits that change with the input.
+The [reduced fixture's offline record](evidence/dpt-reduced-offline.json),
+generated on clean `2d702c9`, passes all ten readouts. Its largest absolute
+mirror-versus-PyTorch error is 1.862645149230957e-9 (fusion 3); head and logits
+are each 9.313225746154785e-10. Its seven-request plan has a largest payload
+of 1,944,662 bytes and at most 31,360 output values per request, with no assets
+or tasks. This is separate evidence from the native-SMP random-weight check.
 
 ## Offline request sizing and deferred full-width live run
 

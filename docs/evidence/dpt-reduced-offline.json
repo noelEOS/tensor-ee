@@ -1,0 +1,523 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "2d702c9b71cfb2fbdb88219057313f1c79ef12b3",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.12.3",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0+cpu",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 1,
+      "requests": 7,
+      "values": 77693,
+      "payload_bytes": 310772,
+      "request_bytes": 10171792,
+      "max_values": 31360,
+      "max_request_bytes": 1944662,
+      "max_bands": 10,
+      "embedded_constants": 6926376,
+      "inline_values": 10752,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "window/concat_rows/vit-dpt-reduced",
+        "lane": "window",
+        "block": "concat_rows",
+        "parts": [],
+        "settings": {
+          "window": 14
+        },
+        "policy": "none",
+        "shapes": {
+          "input": [
+            224,
+            224,
+            6
+          ],
+          "logits": [
+            224,
+            224,
+            2
+          ],
+          "encoder": "width64,heads1,depth4; raw blocks0,1,2,3",
+          "decoder": "mid4,8,16,16; fusion4"
+        },
+        "seed": 14126,
+        "tolerance": 0.0001,
+        "requests": 7,
+        "reference": "SMP 0.5.0 DPT encoder_weights=None, timm pretrained=False, fused_attn=False",
+        "mirror": {
+          "source": "tests/reference/vit_b16_dpt224/reference.py",
+          "exact": false,
+          "bound": 0.0001
+        },
+        "history": "Not yet run live.",
+        "calibration": false,
+        "notes": "Reduced whole-model composition, not individual-block evidence. Rank <=4 projection matrices and rank1 positional rows; general random weights are compared offline separately. All reassemble/fusion branches; 112/224 outputs sampled to 56x56; input seed echoed."
+      },
+      "inputs_sha256": "3c328fa7a5f60f86c705b98892c535c6b8e66e17fd69a6e3d2dcedbd785f832d",
+      "weights_sha256": "b521b04febe2e4a03bf7f8164b37fbe4e978ad8155781d08b4650e7ef7334cc9",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 4.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -4.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "reassemble0",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "fusion2",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 31360,
+          "payload_bytes": 125440,
+          "request_bytes": 1786683,
+          "graph_sha256": "c44883295af7d8f711ebc5c2ff025556f8ce93b7d41d1061af475464b2fbeedb",
+          "graph_bytes": 1786457,
+          "embedded_constants": 1154396,
+          "inline_values": 1536
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 28,
+              "height": 28
+            },
+            "affineTransform": {
+              "scaleX": 8.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -8.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 28,
+          "height": 28,
+          "readouts": [
+            {
+              "name": "reassemble1",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "fusion1",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 7840,
+          "payload_bytes": 31360,
+          "request_bytes": 1642794,
+          "graph_sha256": "2e4b65c766d19420ac7c8859433373541344488461795075c27132f3a0aa08b4",
+          "graph_bytes": 1642568,
+          "embedded_constants": 1154396,
+          "inline_values": 1536
+        },
+        {
+          "index": 2,
+          "grid": {
+            "dimensions": {
+              "width": 14,
+              "height": 14
+            },
+            "affineTransform": {
+              "scaleX": 16.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -16.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 14,
+          "height": 14,
+          "readouts": [
+            {
+              "name": "reassemble2",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "fusion0",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 10,
+          "values": 1960,
+          "payload_bytes": 7840,
+          "request_bytes": 1496729,
+          "graph_sha256": "9d43c1d200a1ba5efd077f2e484c5294efbdf90f8b08277ab6486f07003f9ab1",
+          "graph_bytes": 1496501,
+          "embedded_constants": 1154396,
+          "inline_values": 1536
+        },
+        {
+          "index": 3,
+          "grid": {
+            "dimensions": {
+              "width": 7,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 32.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -32.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 7,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "reassemble3",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 245,
+          "payload_bytes": 980,
+          "request_bytes": 1359099,
+          "graph_sha256": "30aaba51579e3530d514e08956d4cfa483467b4ba090553dcc1ae29f6954cf7b",
+          "graph_bytes": 1358873,
+          "embedded_constants": 1154396,
+          "inline_values": 1536
+        },
+        {
+          "index": 4,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 4.0,
+              "shearX": 0,
+              "translateX": 1.0,
+              "shearY": 0,
+              "scaleY": -4.0,
+              "translateY": -1.0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "fusion3",
+              "kind": "output",
+              "channels": 4
+            },
+            {
+              "name": "head",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 8,
+          "values": 25088,
+          "payload_bytes": 100352,
+          "request_bytes": 1915986,
+          "graph_sha256": "c76600a0d6cc2ecd175549eb508bb043c1e7ec7ee37372e1fc501ffb0904d257",
+          "graph_bytes": 1915755,
+          "embedded_constants": 1154396,
+          "inline_values": 1536
+        },
+        {
+          "index": 5,
+          "grid": {
+            "dimensions": {
+              "width": 56,
+              "height": 56
+            },
+            "affineTransform": {
+              "scaleX": 4.0,
+              "shearX": 0,
+              "translateX": 0.5,
+              "shearY": 0,
+              "scaleY": -4.0,
+              "translateY": -0.5
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 56,
+          "height": 56,
+          "readouts": [
+            {
+              "name": "logits",
+              "kind": "output",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 9408,
+          "payload_bytes": 37632,
+          "request_bytes": 1944662,
+          "graph_sha256": "ce19d5e7525efd5f12f7e87afccd5fce7995f5d8ba1a2e5323395ac2bf11fd78",
+          "graph_bytes": 1944431,
+          "embedded_constants": 1154396,
+          "inline_values": 1536
+        },
+        {
+          "index": 6,
+          "grid": {
+            "dimensions": {
+              "width": 16,
+              "height": 16
+            },
+            "affineTransform": {
+              "scaleX": 1.0,
+              "shearX": 0,
+              "translateX": 0,
+              "shearY": 0,
+              "scaleY": -1.0,
+              "translateY": 0
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 16,
+          "height": 16,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 6
+            }
+          ],
+          "bands": 7,
+          "values": 1792,
+          "payload_bytes": 7168,
+          "request_bytes": 25839,
+          "graph_sha256": "81db410c6f7e08f44df28cfb09cbae44ba51645ff9e12574dc6dc4faba1bbb01",
+          "graph_bytes": 25613,
+          "embedded_constants": 0,
+          "inline_values": 1536
+        }
+      ],
+      "errors": [],
+      "seconds": 2.393,
+      "outputs": {
+        "reassemble0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 3.4924596548080444e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 49,
+              "channel": 2,
+              "actual": 0.001148753333836794,
+              "expected": 0.0011487529845908284
+            }
+          }
+        },
+        "fusion2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 9.313225746154785e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 0,
+              "actual": 0.009404607117176056,
+              "expected": 0.00940460804849863
+            }
+          }
+        },
+        "reassemble1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 2.9103830456733704e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 16,
+              "channel": 1,
+              "actual": 0.0008360666106455028,
+              "expected": 0.0008360669016838074
+            }
+          }
+        },
+        "fusion1": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 3136,
+            "max_abs": 9.313225746154785e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 3,
+              "actual": -0.012018921785056591,
+              "expected": -0.012018920853734016
+            }
+          }
+        },
+        "reassemble2": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 5.820766091346741e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 11,
+              "channel": 2,
+              "actual": -0.001344451797194779,
+              "expected": -0.0013444512151181698
+            }
+          }
+        },
+        "fusion0": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 784,
+            "max_abs": 9.313225746154785e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 3,
+              "channel": 1,
+              "actual": -0.004899637773633003,
+              "expected": -0.004899638704955578
+            }
+          }
+        },
+        "reassemble3": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 196,
+            "max_abs": 5.238689482212067e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 3,
+              "channel": 1,
+              "actual": -0.0006204105447977781,
+              "expected": -0.0006204100209288299
+            }
+          }
+        },
+        "fusion3": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 12544,
+            "max_abs": 1.862645149230957e-09,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 41,
+              "channel": 2,
+              "actual": -0.009275303222239017,
+              "expected": -0.009275305084884167
+            }
+          }
+        },
+        "head": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 9.313225746154785e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 5,
+              "col": 39,
+              "channel": 0,
+              "actual": -0.0032178652472794056,
+              "expected": -0.003217864315956831
+            }
+          }
+        },
+        "logits": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 6272,
+            "max_abs": 9.313225746154785e-10,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 4,
+              "col": 19,
+              "channel": 0,
+              "actual": -0.0032178102992475033,
+              "expected": -0.0032178093679249287
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}
