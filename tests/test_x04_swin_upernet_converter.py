@@ -197,7 +197,9 @@ def test_the_registry_gains_one_library_function_per_operation():
     import importlib
     assert list(OPERATIONS)[:7] == ["relabel_to_windows", "overlap_embedding", "mit_block", "channel_norm",
                                     "project_pyramid", "fuse_head", "relabel_from_windows"]
-    assert tuple(OPERATIONS)[7:] == NEW_OPERATIONS
+    assert tuple(OPERATIONS)[7:] == NEW_OPERATIONS + (
+        "linear", "conv3x3_window", "batch_norm", "concat", "gelu", "relu", "add",
+        "window_depth_to_space", "window_resize")
     for name in NEW_OPERATIONS:
         op = OPERATIONS[name]
         module = importlib.import_module(op.function.__module__)
@@ -217,8 +219,8 @@ def test_the_recognizer_tables_and_the_converter_load_neither_smp_nor_timm():
     assert sorted(name.rsplit(".", 1)[-1] for name in SWIN_RECOGNIZERS) == [
         "FeatureListNet", "PatchEmbed", "PatchMerging", "Sequential", "SwinTransformerBlock", "SwinTransformerStage",
         "TimmUniversalEncoder", "UPerNet"]
-    from tensor_ee.converter.recognizers import VIT_RECOGNIZERS
-    assert ALL_RECOGNIZERS == {**RECOGNIZERS, **SWIN_RECOGNIZERS, **VIT_RECOGNIZERS}
+    from tensor_ee.converter.recognizers import DPT_RECOGNIZERS, VIT_RECOGNIZERS
+    assert ALL_RECOGNIZERS == {**RECOGNIZERS, **SWIN_RECOGNIZERS, **VIT_RECOGNIZERS, **DPT_RECOGNIZERS}
     assert len(RECOGNIZERS) == 6
 
 

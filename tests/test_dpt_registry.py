@@ -1,0 +1,91 @@
+"""DPT registry edge refusals and the shared coefficient-transport function."""
+import numpy as np
+import pytest
+
+from tensor_ee.converter.graph import Edge
+from tensor_ee.converter.operations import OPERATIONS
+from tensor_ee.core.errors import GridMismatch
+from tensor_ee.core.grid import TokenGrid
+from tensor_ee.models.prithvi_sen1floods11.model import _upsampling_parameters
+from tensor_ee.weights.constants import upsampling_parameters
+
+
+def test_packer_alias_and_default():
+    assert _upsampling_parameters is upsampling_parameters
+    for factor in (2, 4):
+        weight = np.arange(3 * 5 * factor ** 2, dtype=np.float32).reshape(3, 5, factor, factor)
+        bias = np.arange(5, dtype=np.float32)
+        packed, repeated = upsampling_parameters(weight, bias, factor=factor)
+        for y in range(factor):
+            for x in range(factor):
+                offset = (y * factor + x) * 5
+                np.testing.assert_array_equal(packed[offset:offset+5], weight[:, :, y, x].T)
+                np.testing.assert_array_equal(repeated[offset:offset+5], bias)
+        if factor == 2:
+            for a, b in zip(upsampling_parameters(weight, bias), (packed, repeated)):
+                np.testing.assert_array_equal(a, b)
+
+
+@pytest.mark.parametrize('change', ['window', 'grid', 'channels', 'layout'])
+def test_readout_refuses_invalid_class_row(change):
+    grid = TokenGrid(14, 14, 1.)
+    spatial = Edge('W', grid, 64, window=14)
+    options = dict(layout='W', grid=grid.coarse(14), channels=64, window=1)
+    if change == 'window': options.update(grid=TokenGrid(2, 2, 1.), window=2)
+    if change == 'grid': options['grid'] = TokenGrid(1, 1, 2.)
+    if change == 'channels': options['channels'] = 32
+    if change == 'layout': options.update(layout='R', window=None, bands=tuple(f'c{i}' for i in range(64)))
+    with pytest.raises(GridMismatch, match='channels must match' if change == 'channels' else 'one W1 row aligned'):
+        OPERATIONS['concat'].infer({}, (spatial, Edge(**options)))
+
+
+def test_readout_accepts_aligned_class_row():
+    grid = TokenGrid(28, 28, 1.)
+    out = OPERATIONS['concat'].infer({}, (Edge('W', grid, 64, window=14),
+        Edge('W', grid.coarse(14), 64, window=1)))
+    assert out['channels'] == 128 and out['window'] == 14 and out['grid'] == grid
+
+
+def test_registry_holds_library_functions_and_resize_cost():
+    from tensor_ee.blocks.window import activations, conv, linear, merge, normalization, resample
+    expected = {
+        "linear": linear.linear, "conv3x3_window": conv.conv3x3_window,
+        "batch_norm": normalization.batch_norm, "concat": merge.concat,
+        "gelu": activations.gelu, "relu": activations.relu, "add": merge.add,
+        "window_depth_to_space": resample.window_depth_to_space,
+        "window_resize": resample.window_resize,
+    }
+    for name, function in expected.items():
+        assert OPERATIONS[name].function is function
+    projection = OPERATIONS['linear']
+    layout = OPERATIONS['window_depth_to_space']
+    assert projection.function is linear.linear
+    assert projection.metadata is linear.METADATA['linear']
+    assert layout.function is resample.window_depth_to_space
+    assert layout.metadata is resample.METADATA['window_depth_to_space']
+    edge = Edge('W', TokenGrid(14, 14, 1.), 8, window=14)
+    settings = dict(factor=2, align_corners=True, out_window=7)
+    assert OPERATIONS['window_resize'].cost(settings, (edge,)) == (
+        resample.window_resize_values(14, 14, 2, align_corners=True, window=14, out_window=7), 0)
+
+
+def test_dpt_additions_preserve_main_registry_entries_by_identity_and_order():
+    from tensor_ee.converter import operations
+    main = operations._MAIN_OPERATIONS
+    main_keys = (
+        "relabel_to_windows", "overlap_embedding", "mit_block", "channel_norm", "project_pyramid",
+        "fuse_head", "relabel_from_windows", "patch_embed", "swin_block", "shifted_swin_block",
+        "patch_merge", "psp_forward", "fpn_layer_norm", "fpn_lateral", "fpn_merge", "fpn_conv_block",
+        "fusion_forward", "head_logits", "head_dense")
+    additions = ("linear", "conv3x3_window", "batch_norm", "concat", "gelu", "relu", "add",
+                 "window_depth_to_space", "window_resize")
+    assert tuple(name for name, _ in main) == main_keys
+    assert tuple(operations._DPT_OPERATIONS) == additions
+    assert not set(main_keys).intersection(operations._DPT_OPERATIONS)
+    assert tuple(OPERATIONS) == main_keys + additions
+    assert tuple(OPERATIONS.items())[:len(main)] == main
+    for name, original in main:
+        current = OPERATIONS[name]
+        assert current is original, name
+        for field in ("function", "metadata", "cost", "constants", "infer", "call", "roles"):
+            assert getattr(current, field) is getattr(original, field), (name, field)

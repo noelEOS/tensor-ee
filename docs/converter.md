@@ -21,7 +21,7 @@ PyTorch model ──convert──▶ block graph ──plan──▶ stages ─�
 This guide begins with offline conversions of the two original models: SegFormer-B0,
 `Segformer("mit_b0")` of segmentation-models-pytorch (SMP) 0.5.0, and SMP's `UPerNet` with
 timm's Swin-T encoder, both at 224 × 224 with two input bands and two classes.
-The encoder-only timm ViT-B/16 recognizer is described in section 6.
+The timm ViT-B/16 encoder and SMP DPT recognizers are described in section 6.
 
 Two terms recur below. The **hand-built graphs** are the 19 SegFormer-B0 and Swin-T/UPerNet
 graphs composed by hand from the blocks and run live before the converter existed; the
@@ -480,20 +480,22 @@ addition. The attention block itself uses the existing `concat_rows` to combine
 class-first keys and values. No new block or converter arithmetic is added.
 `build` returns `norm` as `(spatial Raster, class Raster)`. A 197-row sequence
 never becomes a square window. Select components explicitly before planning
-saved boundaries. This recognizer does not convert a DPT decoder or a classifier.
+saved boundaries. The root ViT recognizer returns the encoder sequence. SMP DPT uses the nested encoder path below.
 
 Refused settings include a patch other than 16, a grid other than 14 × 14,
 dynamic image size/padding, a missing class token, register tokens, positional
 embeddings excluding the class row, normalized patch embeddings, LayerScale,
 QK normalization, attention output normalization/gating, fused attention,
-pre-normalization, patch dropout, pooling, and classification/pre-logits heads.
+pre-normalization, patch dropout, pooling, and classification heads.
 The attention scale must be `head_dim ** -0.5`; projections must preserve its
 full width, with equal-width heads. Patch projection requires a bias. GELU must
 be exact. Evaluation dropout and DropPath are identities. Width, head count,
 depth, linear biases, MLP hidden width and normalization epsilon remain
 parameters: accepted settings outside block records are reported, never promoted.
-Only a root `VisionTransformer` returning its final sequence is recognized;
-`forward_intermediates` and nested encoders need explicit export integration.
+A root `VisionTransformer` returns its final sequence. Nested intermediate extraction
+is supported through the SMP DPT recognizer below; standalone child Attention, Block and
+Mlp modules are not global recognizer entries. In particular, the shared timm Mlp
+class is interpreted by its enclosing Swin or ViT recognizer.
 
 `vit_fingerprints.FINGERPRINTS` records each unit's calls, the complete Block,
 Attention and Mlp forwards, traced with timm 1.0.30 and torch 2.14.0+cpu
@@ -514,11 +516,95 @@ target's evidence at its recorded settings; it adds no model accuracy or new
 full-width live claim. The reduced twin's patch/attention settings remain outside
 their individual block records, even though the encoder twin has live evidence.
 
+
+### SMP 0.5.0 DPT at 224 × 224
+
+`convert` recognizes `segmentation_models_pytorch.encoders.timm_vit.TimmViTEncoder`
+and the qualified classes under `segmentation_models_pytorch.decoders.dpt.decoder`:
+`ReadoutConcatBlock`, `ReassembleBlock`, `FusionBlock`, `ResidualConvBlock` and
+`DPTSegmentationHead`, enclosed by `decoders.dpt.model.DPT`. The converter imports
+neither SMP nor timm. Only the root DPT class is in the global recognizer table;
+its helper recognizers match the enclosed modules by qualified name and declare
+the same units. Construct random weights locally and disable fused attention:
+
+```python
+import segmentation_models_pytorch as smp
+
+dpt = smp.DPT(encoder_name="tu-vit_base_patch16_224", encoder_weights=None,
+              in_channels=6, classes=2).eval()
+for block in dpt.encoder.model.blocks:
+    block.attn.fused_attn = False
+converted_dpt = convert(dpt, (1, 6, 224, 224), scale=1.0)
+assert converted_dpt.graph.outputs == ("logits",)
+```
+
+The input is a caller-prepared raster on the abstract token grid (`source_grid=None`),
+as for the root ViT. The encoder reuses the ViT units and selects four **raw** pairs
+without applying the final norm, at uniformly sampled block indices: `(2, 5, 8, 11)`
+for 12 blocks, `(0, 1, 2, 3)` for the four-block reduced twin. Every spatial/class
+selection is an explicit `pair_select`; `ClassTokenExport` checks the exact slices
+and row-major reshapes. The decoder maps through `OPERATIONS` to the hand target's
+existing functions:
+
+- readout: `WindowOps.repeat_rows`, then spatial-first `concat`, `linear`, exact `gelu`;
+- reassemble: `conv1x1` through the same linear primitive, non-overlapping transposed
+  convolutions as packed `linear` plus `window_depth_to_space` (×4 and ×2,
+  `out_window=7`), identity, or `conv3x3_window(stride=2)`, then `conv3x3_window`;
+- residual/fusion/head: `relu`, `conv3x3_window`, explicit inference `batch_norm`,
+  `add`, linear projections, and ×2 `window_resize(align_corners=True)`. Fusion
+  windows are 7 → 14 → 7 → 7 → 7; the final head resize stays W7 before `to_dense`.
+
+Registry keys use the names of the library functions they hold. Ordinary and
+packed transposed-convolution coefficients share one `linear` entry; packing is
+a constants-builder setting, followed by a separate `window_depth_to_space` node.
+Dense output reuses `head_dense`, whose library body calls the same `to_dense` as
+the hand target. The original registry function/metadata invariant is unchanged.
+
+The transposed-convolution packer is the public coefficient-layout function
+`weights.constants.upsampling_parameters`, shared with the hand models. The
+Prithvi model's old private name remains an alias. It preserves position-major
+kernel columns and bias repetition; no arithmetic, cast, policy or block is added.
+
+Refusals include `readout="add"` or `"ignore"` (the projection must be a
+`ReadoutConcatBlock`), intermediate indices other than the four uniform indices,
+anything other than one prefix token, a class row other than W1 aligned with its
+spatial window, and mismatched spatial/class channels. SMP reads only the first
+prefix row, so extra prefixes are refused even when slicing would hide them.
+Reassemble factors must be `(4, 2, 1, 1/2)`, with the target's convolution kernels,
+strides, padding, dilation, groups and biases. The head must have identity output
+activation and upsampling factor 2. BatchNorm must be affine with running statistics
+and epsilon 1e-5; GELU must be exact. Auxiliary classification heads return two tensors and are refused by export's
+one-output check (`unsupported_option`). The readout class is checked before collecting live prefix
+selections: constructor-built `"ignore"` is refused as a readout, even though its
+unused prefix slices have been pruned.
+The nested ViT retains the root encoder's arithmetic restrictions (unfused attention,
+one class token, fixed 224/16 geometry, no registers, LayerScale or QK normalization).
+Decoder widths, class count and the ViT's parameterized widths/heads/epsilon are
+accepted and described by the conversion report; acceptance adds no validation.
+
+`dpt_fingerprints.FINGERPRINTS` and `recognizers.TRACED` record SMP 0.5.0,
+timm 1.0.30 and torch 2.14.0+cpu. Enclosing forwards and individual units are checked.
+Dataflow checks pin each readout to its spatial/class pair, each reassemble to its
+readout, deepest-first fusion order, each fusion's immediately preceding state,
+residual operands, affine parameter roles, and resize factors and alignment.
+Changes are refused by default (`forward_code`) or marked outside their records
+with `forward_mismatch="report"`; fixed unsupported attributes remain refusals. Only expected trace refusals become
+forward-code differences. Unexpected checker errors (such as `KeyError`,
+`AttributeError` or `IndexError`) propagate even in report mode.
+
+The offline gate compares every selected encoder pair, readout, reassemble, fusion,
+pre-resize head and dense logits byte for byte with `models/vit_b16_dpt224`, at
+full width and on its reduced twin, using the same symbolic table expressions.
+A reduced decoder gate also binds native random-weight literals. These checks add
+no numerical execution, live run or model-accuracy claim. Individual blocks outside
+their validated settings remain outside in the report, including W14 convolutions;
+the hand model's reduced composition evidence has its own narrower scope.
+
 ## Limits
 
 - Families: SMP SegFormer (keys and values one 7 × 7 window after the spatial reduction, so
   `mit_b0` at 224 × 224) and SMP UPerNet with timm's Swin. Only the settings in each block's record
-  are validated. The root timm ViT encoder above returns one atomic pair.
+  are validated. The root timm ViT encoder returns one atomic pair; SMP DPT consumes four intermediate pairs and returns dense logits.
 - One input and one output; batch execution only. The planner cuts by rules and metadata: interactive
   memory and recomputation cost are not modeled, and its `extent` default was read off one hand plan
   (calibrating costs is deferred).

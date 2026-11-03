@@ -1273,8 +1273,8 @@ SWIN_RECOGNIZERS = {
 """timm Swin's and SMP UPerNet's module classes -> recognizers."""
 
 ALL_RECOGNIZERS = {**RECOGNIZERS, **SWIN_RECOGNIZERS}
-"""Every family's recognizers, the table ``convert`` groups with: the families share only
-``Sequential``, a container in both."""
+"""Every family's recognizers, the table ``convert`` groups with. Shared child
+classes are interpreted by their enclosing family recognizer."""
 
 
 # ---------------------------------------------------------------------------
@@ -1413,7 +1413,7 @@ def vit_patch_embedding(module, path, traced):
                       axes=('N', 'C', 'H', 'W'), output_axes=VIT_AXES),)
 
 
-def vision_transformer(module, path, traced):
+def _vision_transformer(module, path, traced, *, intermediates=False):
     """Recognize an encoder-only VisionTransformer; no pooling or classifier arithmetic.
 
     All child units are declared together so root position calls and each block's
@@ -1421,19 +1421,20 @@ def vision_transformer(module, path, traced):
     reading settings; no model package is imported. The returned pair is final
     spatial features plus the class row, in the pair-edge carrier order.
     """
-    if path:
-        _refuse(path, module, 'this recognizer currently accepts a root VisionTransformer encoder')
-    if (module.cls_token is None or module.num_prefix_tokens != 1 or module.num_reg_tokens != 0
-            or module.reg_token is not None or module.no_embed_class or module.pos_embed is None):
-        _refuse(path, module, 'exactly one class token, no register tokens, and all-row positional embeddings required')
+    if module.cls_token is None:
+        _refuse(path, module, 'class token is required')
+    if module.num_reg_tokens != 0 or module.reg_token is not None:
+        _refuse(path, module, 'register tokens are unsupported')
+    if module.num_prefix_tokens != 1:
+        _refuse(path, module, 'exactly one prefix token is required')
+    if module.no_embed_class or module.pos_embed is None:
+        _refuse(path, module, 'all-row positional embeddings including the class row are required')
     if module.dynamic_img_size:
         _refuse(path, module, 'dynamic_img_size is unsupported; grid must be 14 by 14')
-    if module.global_pool != '' or module.num_classes != 0:
-        _refuse(path, module, "encoder output required: num_classes=0, global_pool='' (no pooling or pre-logits head)")
-    for name in ('norm_pre', 'patch_drop', 'fc_norm', 'head'):
+    if not intermediates and (module.global_pool != '' or module.num_classes != 0):
+        _refuse(path, module, "encoder output required: num_classes=0, global_pool='' (no pooling or classifier)")
+    for name in (('norm_pre', 'patch_drop') if intermediates else ('norm_pre', 'patch_drop', 'fc_norm', 'head')):
         _child(module, path, name, IDENTITY)
-    if getattr(module, 'pre_logits', None) is not None and qualified_name(module.pre_logits) != IDENTITY:
-        _refuse(path, module, 'a pre-logits head is unsupported')
     for name in ('pos_drop', 'head_drop'):
         _child(module, path, name, DROPOUT)
     patch, p = _child(module, path, 'patch_embed', PATCH_EMBED)
@@ -1443,18 +1444,32 @@ def vision_transformer(module, path, traced):
     units = list(vit_patch_embedding(patch, p, traced))
     if tuple(module.pos_embed.shape) != (1, 197, module.embed_dim) or tuple(module.cls_token.shape) != (1, 1, module.embed_dim):
         _refuse(path, module, 'class/position parameter shapes must be [1,1,C] and [1,197,C]')
-    units.append(Unit('position', 'class_token_position', {}, {'cls_token': 'cls_token', 'pos_embed': 'pos_embed'},
-        owns=('', 'pos_drop'), inputs=('',), window=14, axes=VIT_AXES,
-        forward=_vit_forward('position', _vit_flow.position(len(module.blocks)))))
+    root = path + '.' if path else ''
+    units.append(Unit(root + 'position', 'class_token_position', {},
+        {'cls_token': root + 'cls_token', 'pos_embed': root + 'pos_embed'},
+        owns=(path, root + 'pos_drop'), inputs=(path,), window=14, axes=VIT_AXES,
+        forward=_vit_forward('position', _vit_flow.position(len(module.blocks), path=path, final=not intermediates))))
     for index, child in enumerate(module.blocks):
-        block, b = _child(module.blocks, 'blocks', str(index), VIT_BLOCK)
+        block, b = _child(module.blocks, root + 'blocks', str(index), VIT_BLOCK)
         if block.attn.qkv.in_features != module.embed_dim:
             _refuse(b, block, 'every block must preserve embed_dim')
         units.extend(vit_block(block, b, traced))
-    units.append(_vit_norm(module, path, 'norm', final=True))
+    if not intermediates:
+        units.append(_vit_norm(module, path, 'norm', final=True))
     return tuple(units)
 
 
-VIT_RECOGNIZERS = {VIT_MODEL: vision_transformer, VIT_BLOCK: vit_block,
-                   VIT_ATTENTION: vit_attention, TIMM_MLP: vit_mlp}
+def vision_transformer(module, path, traced):
+    if path:
+        _refuse(path, module, 'this recognizer currently accepts a root VisionTransformer encoder')
+    return _vision_transformer(module, path, traced)
+
+
+VIT_RECOGNIZERS = {VIT_MODEL: vision_transformer}
 ALL_RECOGNIZERS.update(VIT_RECOGNIZERS)
+
+
+from .dpt_recognizers import _RECOGNIZERS as DPT_RECOGNIZERS
+from .dpt_fingerprints import SOURCE as DPT_SOURCE, TRACED_WITH as DPT_TRACED_WITH
+TRACED[DPT_SOURCE] = DPT_TRACED_WITH
+ALL_RECOGNIZERS.update(DPT_RECOGNIZERS)
