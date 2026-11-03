@@ -2,8 +2,9 @@
 
 `tensor_ee.models.vit_b16_encoder224` is a hand-composed target for a later
 converter recognizer. It is not imported by `import tensor_ee`. It uses existing
-blocks, with no converter or new block. It validates offline composition and
-numerical agreement on the recorded inputs; no encoder execution in Earth Engine,
+blocks, with no converter or new block. It has offline composition and
+numerical evidence, plus live agreement for the reduced twin on the recorded
+rank-at-most-4 projection weights. Full width has offline evidence only. No
 converter equivalence, trained-model accuracy, or DPT decoder is claimed.
 
 ## Contract and usage
@@ -122,7 +123,7 @@ proposal, not an optimized schedule or measured runtime. Global attention spans
 the whole 224-pixel chip; attention stages cannot be tiled with halos. Peak memory
 and EECU cost are unknown. No runner or exports are included or approved.
 
-## Reduced live attempt (failed)
+## Reduced live runs
 
 The [reduced fixture offline record](evidence/vit-encoder-reduced-offline.json)
 was generated on clean commit `a15b793`; all six outputs pass, with largest
@@ -160,17 +161,36 @@ attempted five requests; transport recorded one `computePixels` and one
 The client request path now uses scoped `deep_recursion()` around its second
 serialization. An offline regression reproduces the old failure at recursion
 limit 1000, then verifies one fake-HTTP request with bytes identical to the plan
-and restoration of that limit. This fixes the client failure only; no live retry
-was made and no post-fix Earth Engine result is claimed.
+and restoration of that limit. This fixes the client failure; the approved
+second run below used this path.
 
-None of the six encoder outputs were returned, so their EE-versus-mirror
-comparisons and maximum errors are **unavailable**. This run establishes no
-live encoder agreement, even for the reduced twin. Full width has offline
-mirror-versus-timm and eager numerical evidence only. There is no model-accuracy
-claim. No full-width live selection or staged/export run is proposed. Any later
-successful reduced check would validate only that twin's recorded inputs and
-settings with rank-at-most-4 projection weights, not general weights,
-full-width execution or accuracy.
+The first run returned none of the six encoder outputs, so its EE-versus-mirror
+comparisons and maximum errors are **unavailable**. That attempt establishes no
+live encoder agreement.
+
+The approved second run on clean `719ff2a` passed and wrote the unmodified
+[successful live record](evidence/live-fixtures/20261103T022505Z-vit_encoder_reduced.json).
+All five requests reached `computePixels`, with one `algorithms.list`, no refused
+calls, and no assets or tasks. The run took 75.559 seconds. Every encoder output
+was float32 and fully valid; all values matched the mirror bit for bit. The input
+echo's 6,144 values also matched exactly (zero differing values, max abs 0).
+
+| Output | EE vs mirror differing values | EE vs mirror max abs | EE vs PyTorch max abs |
+|---|---:|---:|---:|
+| block0_spatial | 0 | 0 | 1.817941665649414e-6 |
+| block1_spatial | 0 | 0 | 1.7881393432617188e-6 |
+| norm_spatial | 0 | 0 | 5.7220458984375e-6 |
+| block0_class | 0 | 0 | 1.4901161193847656e-8 |
+| block1_class | 0 | 0 | 1.4901161193847656e-8 |
+| norm_class | 0 | 0 | 4.76837158203125e-7 |
+
+No encoder value exceeded the unchanged 1e-4 absolute target against PyTorch.
+This establishes live agreement only for the reduced twin's recorded inputs and
+settings with **rank-at-most-4 projection weights**: four seed rows times gains
+`1 + row * 2^-10`. It does not establish agreement on general weights. Full width
+remains offline mirror-versus-timm and eager numerical evidence only. There is
+no model-accuracy claim or status promotion. No full-width live selection or
+staged/export run is proposed.
 
 ## Verification
 

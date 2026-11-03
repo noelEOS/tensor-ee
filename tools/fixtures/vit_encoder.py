@@ -124,7 +124,11 @@ def fixtures():
         mirror=MirrorSpec(_mirror, False, 'tests/reference/vit_b16_encoder224/reference.py', bound=1e-4),
         requests=5, constants=_cost, window=14, accepts=(concat_rows, ViTConfig, WindowLayout),
         history='docs/evidence/live-fixtures/20261102T191233Z-vit_encoder_reduced.json '
-                '(failed: client RecursionError before encoder transport; input echo exact)',
+                '(failed: client RecursionError before encoder transport; input echo exact); '
+                'docs/evidence/live-fixtures/20261103T022505Z-vit_encoder_reduced.json '
+                '(passed: reduced twin, rank <= 4 projection weights from four seed rows times '
+                'gains 1 + row * 2**-10, not general weights; EE vs mirror exact; '
+                'EE vs PyTorch max abs 5.7220458984375e-6)',
         notes='Composition check, excluded from individual-block evidence. Integer dyadic coefficients; '
               'projection matrices have rank <= 4; general weights are not tested by this fixture. '
               'All block and final-norm spatial/class outputs; head dimension 64. No assets or tasks.',
