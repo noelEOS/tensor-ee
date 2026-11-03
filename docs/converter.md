@@ -18,9 +18,10 @@ PyTorch model ──convert──▶ block graph ──plan──▶ stages ─�
 - `build_stage` turns a stage into Earth Engine graphs, its weights read from table assets.
 - The runner, or a model's existing workflow, exports the stages in order.
 
-This guide converts, offline, the two models the converter was built for: SegFormer-B0,
+This guide begins with offline conversions of the two original models: SegFormer-B0,
 `Segformer("mit_b0")` of segmentation-models-pytorch (SMP) 0.5.0, and SMP's `UPerNet` with
 timm's Swin-T encoder, both at 224 × 224 with two input bands and two classes.
+The encoder-only timm ViT-B/16 recognizer is described in section 6.
 
 Two terms recur below. The **hand-built graphs** are the 19 SegFormer-B0 and Swin-T/UPerNet
 graphs composed by hand from the blocks and run live before the converter existed; the
@@ -437,8 +438,9 @@ with edge ids as leaves, preserving each `(spatial, prefix)` tuple and the block
 order for DPT. Each selected component is an explicit `pair_select` node; a
 spatial reshape to NCHW is checked as row-major layout bookkeeping. The helper's
 `edges` and `nodes` are the accumulated graph fragment for the later recognizers.
-The ordinary `group`/`convert` interface still requires one output and supports
-only its existing architecture families: this infrastructure adds no recognizer.
+The ordinary `group`/`convert` interface requires one output. The ViT recognizer
+below uses that output for the complete final pair; intermediate pair selections
+remain explicit graph/export operations.
 
 `build` accepts an atomic pair input as two `WindowTensor`s and returns an atomic
 pair output as two boundary `Raster`s, in `(spatial, prefix)` order. A pair is not
@@ -447,11 +449,76 @@ a single asset for it. Select its spatial and prefix components explicitly befor
 planning saved boundaries or passing features into a DPT decoder. No runner or
 live-fixture selection is added by this graph-only change.
 
+### timm ViT-B/16 encoder at 224 × 224
+
+`convert` recognizes timm 1.0.30's `VisionTransformer`, `PatchEmbed`,
+`vision_transformer.Block`, `layers.attention.Attention`, `layers.mlp.Mlp`,
+class-first concatenation and position addition, and the final LayerNorm.
+Matching uses qualified class names from `nn_module_stack`; the converter never
+imports timm. Configure the model to return its encoder sequence:
+
+```python
+import timm
+from tensor_ee.converter.convert import convert
+
+vit = timm.create_model("vit_base_patch16_224", pretrained=False, in_chans=6,
+                        num_classes=0, global_pool="").eval()
+for block in vit.blocks:
+    block.attn.fused_attn = False
+encoded = convert(vit, (1, 6, 224, 224), scale=1.0)
+assert encoded.graph.outputs == ("norm",)
+assert encoded.graph.edges["norm"].layout == "P"
+```
+
+The graph starts from a caller-prepared raster on the abstract token grid,
+with `source_grid=None`, as Swin's does. `scale=1.0` matches the hand-composed
+`models/vit_b16_encoder224` target. Its 123 nodes use existing library functions:
+patch embedding without normalization; pair position addition; pair LayerNorm
+with each module's epsilon (default 1e-6); packed pair linear projections;
+`class_token_attention(window=14, scale_query=True)`; exact GELU; and residual
+addition. The attention block itself uses the existing `concat_rows` to combine
+class-first keys and values. No new block or converter arithmetic is added.
+`build` returns `norm` as `(spatial Raster, class Raster)`. A 197-row sequence
+never becomes a square window. Select components explicitly before planning
+saved boundaries. This recognizer does not convert a DPT decoder or a classifier.
+
+Refused settings include a patch other than 16, a grid other than 14 × 14,
+dynamic image size/padding, a missing class token, register tokens, positional
+embeddings excluding the class row, normalized patch embeddings, LayerScale,
+QK normalization, attention output normalization/gating, fused attention,
+pre-normalization, patch dropout, pooling, and classification/pre-logits heads.
+The attention scale must be `head_dim ** -0.5`; projections must preserve its
+full width, with equal-width heads. Patch projection requires a bias. GELU must
+be exact. Evaluation dropout and DropPath are identities. Width, head count,
+depth, linear biases, MLP hidden width and normalization epsilon remain
+parameters: accepted settings outside block records are reported, never promoted.
+Only a root `VisionTransformer` returning its final sequence is recognized;
+`forward_intermediates` and nested encoders need explicit export integration.
+
+`vit_fingerprints.FINGERPRINTS` records each unit's calls, the complete Block,
+Attention and Mlp forwards, traced with timm 1.0.30 and torch 2.14.0+cpu
+(`recognizers.TRACED`). Fingerprint or dataflow changes are refused by default,
+and reported outside the record with `forward_mismatch="report"`. Checks pin
+the class row to index 0, position addition before the blocks, block order,
+both residual states, Q/K/V split indices, head layouts, query-first scaling,
+ordered score/value products, and the output projection. Distinct residual
+units partition the calls of one Block; overlapping call ownership is refused.
+
+The offline converter gate compares every spatial/class boundary against the
+hand-composed encoder, at full width/depth 768/12 and reduced width/depth 128/2,
+with six bands. Random-weight timm models are traced; both graph builds bind the
+same symbolic table reads, with native-shaped parameters and the same raster
+preparation. No table is created or read live. A separate reduced inline-weight
+comparison checks actual random weight literals. Byte identity preserves the
+target's evidence at its recorded settings; it adds no model accuracy or new
+full-width live claim. The reduced twin's patch/attention settings remain outside
+their individual block records, even though the encoder twin has live evidence.
+
 ## Limits
 
-- Two families: SMP SegFormer (keys and values one 7 × 7 window after the spatial reduction, so
+- Families: SMP SegFormer (keys and values one 7 × 7 window after the spatial reduction, so
   `mit_b0` at 224 × 224) and SMP UPerNet with timm's Swin. Only the settings in each block's record
-  are validated.
+  are validated. The root timm ViT encoder above returns one atomic pair.
 - One input and one output; batch execution only. The planner cuts by rules and metadata: interactive
   memory and recomputation cost are not modeled, and its `extent` default was read off one hand plan
   (calibrating costs is deferred).
