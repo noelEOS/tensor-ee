@@ -150,6 +150,15 @@ def test_compact_fixture_reconstructs_identical_coefficients(monkeypatch):
                                       expected[name].view(np.uint32))
 
 
+def test_live_fixture_logits_retain_input_signal():
+    from reference.vit_b16_dpt224.reference import mirror
+    image, state = F.expanded(F._data(14126))
+    actual = mirror(image, state, REDUCED)["logits"]
+    zero_input = mirror(np.zeros_like(image), state, REDUCED)["logits"]
+    assert np.max(np.ptp(actual, axis=(0, 1))) > 0
+    assert np.any(actual.view(np.uint32) != zero_input.view(np.uint32))
+
+
 def test_reduced_fixture_plan_and_layout_chain():
     from tensor_ee.models.vit_b16_dpt224.configuration import boundary_spec
     from tensor_ee.models.vit_b16_dpt224.model import BANDS, INPUT_GRID, forward

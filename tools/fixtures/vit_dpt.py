@@ -23,6 +23,8 @@ def _data(seed):
             weights[name] = dyadic(seed, name, (1, REDUCED.encoder.width), scale=2**-6, bits=10)
         elif name.endswith("cls_token") or len(shape) == 1:
             offset = 1 if name.endswith((".weight", "running_var")) else 0
+            if name == "segmentation_head.head.1.bias":
+                offset = 2**-5  # Keep the head ReLU active so logits probe the input path.
             weights[name] = dyadic(seed, name, shape, scale=2**-6, offset=offset, bits=10)
         else:
             columns = math.prod(shape[1:])

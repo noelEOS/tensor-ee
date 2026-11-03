@@ -96,6 +96,8 @@ all reassemble and fusion outputs; head/final outputs sample 56 × 56 locations
 from the 112/224 maps. The input seed is echoed exactly. Offline tests compare
 all pixels and check native NumPy, native ServerArray and flattened ServerArray
 paths. Whole-model records are excluded from individual-block promotion.
+The fixture's head BN bias has a positive dyadic offset to keep its ReLU active;
+a sensitivity test requires nonconstant logits that change with the input.
 
 ## Offline request sizing and deferred full-width live run
 
@@ -116,9 +118,14 @@ per export under 24M constants, 10MB/request, 1024 saved bands and at most two
 global-attention blocks per stage. It measures the table-backed single-graph
 payload separately. Request capacity does not predict runtime or memory.
 
+The [measured proposal](evidence/dpt-full-width-plan.json), built on clean
+`cc5a5c6`, has export payloads from 13,974 to 904,545 bytes per stage output;
+all 22 cuts fit those limits. The single-graph table-backed export is 2,625,882
+bytes with 149,172,200 logical constants and twelve global-attention blocks.
+
 Full-width random weights require staged execution with weight tables and a saved
 input, so they do not fit the zero-assets/zero-tasks `live_fixtures` path. The
-proposal adds one input image and one synthetic weight table per parameter;
+proposal adds one input image and 271 synthetic weight tables, one per parameter;
 actual sharding/upload requests, comparison readbacks and polling calls depend
 on a concrete manifest and runner and are not yet budgeted. Nothing here uploads
 weights or submits exports. The later recognizer/runner must remeasure real
