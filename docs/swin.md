@@ -12,6 +12,20 @@ window-7 architecture and UPerNet decoder. It is not a generic transformer
 compiler. A different grid changes execution coordinates; it does not establish
 trained-model performance on a different sensor or resolution.
 
+The library's `relative_position_bias(..., gather="slices")` is an opt-in for
+larger windows, also exposed by `swin_block_constants` and `swin_stage_blocks`
+as `relative_bias_gather="slices"`. The slices gather uses much less memory at
+windows 12 and 14 and is slower at window 7, so it is for large windows only;
+the default remains `"one_hot"`, including in the converter and fixed Swin-T workflow.
+The [live fixture run](evidence/live-fixtures/20261103T173919Z-relative_bias_slices.json)
+validated two-head bias tables at W7/W12/W14 bit for bit. Its eight requests
+also compared dim-16, two-head W7 blocks, unshifted and shifted by 3: both gather
+paths matched the mirror bit for bit and their difference was exactly zero;
+maximum block error against PyTorch was 1.79e-7. These block parity results remain
+in the live record; block-level promotion waits for a fix to the validation
+report's handling of tied nearest records. Existing block/stage statuses and
+validation records remain unchanged, and the converter keeps the default gather.
+
 ## Supply the model and weight assets
 
 The wheel contains code, not weights, personal manifests, prepared images or
