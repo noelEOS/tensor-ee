@@ -137,14 +137,19 @@ def _shape(value) -> tuple:
     return value.shape if isinstance(value, ServerArray) else np.shape(value)
 
 
-def swin_block_constants(ops, parameters: dict, *, layout=WINDOW_LAYOUT) -> SwinBlockConstants:
+def swin_block_constants(ops, parameters: dict, *, layout=WINDOW_LAYOUT,
+                         relative_bias_gather: str = "one_hot") -> SwinBlockConstants:
     """parameters: timm state_dict names -> float32 NumPy arrays or ServerArrays.
 
     ``layout``: the window layout the block runs in (``WINDOW_LAYOUT``, window 7 and 49
     rows, by default; ``swin_stage_blocks`` passes the configuration's). The LayerNorm
     constants are ``RowConstant``s and the biases are repeated to its rows; the
     relative-position bias uses its window, which the constants record
-    (``SwinBlockConstants.window``)."""
+    (``SwinBlockConstants.window``). ``relative_bias_gather="slices"`` opts into
+    the structured table gather; the default preserves the validated model graphs.
+    It changes only the relative-position constants, not attention arithmetic.
+    At block level, slices remains Fixed — offline only; the small live parity
+    fixtures do not promote the block's validated settings."""
     p = parameters
     dim = _shape(p["norm1.weight"])[0]
     heads = _shape(p["attn.relative_position_bias_table"])[1]
@@ -155,7 +160,7 @@ def swin_block_constants(ops, parameters: dict, *, layout=WINDOW_LAYOUT) -> Swin
         norm1_bias=row_constant(ops, p["norm1.bias"], layout),
         qkv=LinearConstants(ops, p["attn.qkv.weight"], p["attn.qkv.bias"], layout),
         relative_bias=[ops.wrap(b) for b in relative_position_bias(
-            ops.ee, p["attn.relative_position_bias_table"], layout.window)],
+            ops.ee, p["attn.relative_position_bias_table"], layout.window, gather=relative_bias_gather)],
         proj=LinearConstants(ops, p["attn.proj.weight"], p["attn.proj.bias"], layout),
         norm2_weight=row_constant(ops, p["norm2.weight"], layout),
         norm2_bias=row_constant(ops, p["norm2.bias"], layout),
@@ -266,10 +271,13 @@ def _group_shapes(config: SwinUPerNetConfig, group: str) -> dict:
 
 
 def swin_stage_blocks(ops, parameters: dict, s: int, count: int | None = None, *,
-                      config: SwinUPerNetConfig = SWIN_T224) -> list:
+                      config: SwinUPerNetConfig = SWIN_T224,
+                      relative_bias_gather: str = "one_hot") -> list:
     """SwinBlockConstants of the first `count` blocks of stage s (``config.depths[s - 1]``
     when not given), built for the configuration's window layout. Parameters whose shapes
-    differ from the configuration's (stage width, heads, window) are refused."""
+    differ from the configuration's (stage width, heads, window) are refused.
+    ``relative_bias_gather`` selects the block constants' gather for every block.
+    The default converter and fixed adapter continue to use ``"one_hot"``."""
     depth = config.depths[s - 1]
     count = depth if count is None else count
     if not 0 <= count <= depth:
@@ -278,7 +286,8 @@ def swin_stage_blocks(ops, parameters: dict, s: int, count: int | None = None, *
     for b in range(count):
         group = f"s{s}b{b}"
         check_shapes(parameters[group], _group_shapes(config, group), group)
-        blocks.append(swin_block_constants(ops, parameters[group], layout=config.layout))
+        blocks.append(swin_block_constants(ops, parameters[group], layout=config.layout,
+                                           relative_bias_gather=relative_bias_gather))
     return blocks
 
 

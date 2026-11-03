@@ -170,16 +170,18 @@ def _form(positional, keyword=()):
 
 
 def test_moved_signatures_are_unchanged():
-    """The parameters the adapter, the capstone tool and the tests pass keep their names, kinds,
-    order and defaults (the renamed composites' under their library names)."""
+    """Original parameters retain names, kinds, order and defaults; the constants
+    builders additionally expose the trailing relative-bias gather opt-in."""
     t224, config = K.SWIN_T224, ("config", K.SWIN_T224)
     expected = {
-        SW: {"swin_block_constants": _form(("ops", "parameters"), (("layout", WINDOW_LAYOUT),)),
+        SW: {"swin_block_constants": _form(("ops", "parameters"), (("layout", WINDOW_LAYOUT),
+                                                                  ("relative_bias_gather", "one_hot"))),
              "swin_mlp_branch": _form(("ops", "x1", "c")),
              "swin_block": _form(("ops", "x", "c")),
              "shifted_swin_block": _form(("ops", "x", "c", "coarse"), (("mask", None), ("shift", None))),
              "swin_stage": _form(("ops", "x", "blocks", "coarse"), (("shifted", True), ("shift", None))),
-             "swin_stage_blocks": _form(("ops", "parameters", "s", ("count", None)), (config,)),
+             "swin_stage_blocks": _form(("ops", "parameters", "s", ("count", None)),
+                                        (config, ("relative_bias_gather", "one_hot"))),
              "swin_merge_constants": _form(("ops", "parameters", "n"), (config,)),
              "swin_patch_embedding_constants": _form(("ops", "parameters"), (config,)),
              "swin_patch_embedding": _form(("ops", "x", "grid", "c"), (config,)),

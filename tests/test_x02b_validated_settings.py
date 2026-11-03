@@ -477,6 +477,16 @@ COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat
                         "window/concat_rows/vit-encoder-reduced", "window/concat_rows/vit-dpt-reduced"}
 """Whole-model checks whose compatibility block field does not identify block evidence."""
 
+RELATIVE_BIAS_PARITY_FIXTURES = {
+    "window/swin_block/bias-slices",
+    "window/swin_block/bias-slices-exact",
+    "window/shifted_swin_block/bias-slices",
+    "window/shifted_swin_block/bias-slices-exact",
+}
+"""Their live evidence is recorded, but block-level promotion waits for a fix to
+validation reports' handling of tied nearest records. Only the lookup is promoted.
+"""
+
 
 def _live_fixtures() -> list[dict]:
     found = []
@@ -485,7 +495,7 @@ def _live_fixtures() -> list[dict]:
         if isinstance(data, dict) and data.get("kind") == "live_fixture_run":
             found += [dict(fixture["spec"], record=str(path.relative_to(ROOT)))
                       for fixture in data["fixtures"] if fixture["status"] == "passed"
-                      and fixture["spec"]["id"] not in COMPOSITION_FIXTURES]
+                      and fixture["spec"]["id"] not in COMPOSITION_FIXTURES | RELATIVE_BIAS_PARITY_FIXTURES]
     return found
 
 
@@ -520,6 +530,9 @@ def _fixture_settings(spec: dict) -> dict:
     if spec["block"] == "conv3x3_window" and settings.get("stride") == 2:
         # The stride-2 live record stores widths in shapes; retain its exact bytes.
         settings["cin"], settings["cout"] = shapes["input"][-1], shapes["cout"]
+    if spec["block"] == "relative_position_bias" and settings.get("gather") == "slices":
+        # The lookup record restricts heads to two; the live spec stores it in shapes.
+        settings["heads"] = shapes["heads"]
     if "bands" in settings:
         settings["channels"] = len(settings["bands"])
     if "tokens" in shapes:
