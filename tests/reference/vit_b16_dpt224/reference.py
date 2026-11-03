@@ -96,6 +96,62 @@ def smp_model(config):
     return model
 
 
+# Fixed before numerical comparison; never tune these to an observed error.
+CALIBRATION_BATCHES = 4
+CALIBRATION_BATCH_SIZE = 2
+CALIBRATION_SEED = 14128
+EVALUATION_SEED = 14127
+
+
+def calibrated_model(config):
+    """Named integer-hash weights at native scales, then the fixed BN calibration.
+
+    initialization.initialize fixes every learned value by its declared formula.
+    Reset BN statistics, use cumulative averaging (momentum=None), and train
+    under no_grad on four distinct batches of two dyadic six-band 224 crops.
+    Each batch is dyadic(14128, "bn-calibration-{batch}", (2,224,224,6),
+    scale=.5, bits=16). Evaluation uses seed 14127, a different stream.
+    Return to eval and restore BN momentum; only running statistics/counters
+    may change. No optimizer, gradient, weight rescaling or evaluation input
+    participates in calibration. Head dropout is downstream of all BN layers.
+    """
+    import hashlib
+    import torch
+    from .initialization import initialize
+    from tools.fixtures.core import dyadic
+
+    model = smp_model(config)
+    model._integer_reference_recipe = initialize(model)
+    def parameter_digest():
+        digest = hashlib.sha256()
+        for name, value in model.named_parameters():
+            digest.update(name.encode())
+            digest.update(value.detach().numpy().tobytes())
+        return digest.hexdigest()
+
+    before = parameter_digest()
+    norms = [module for module in model.modules() if isinstance(module, torch.nn.BatchNorm2d)]
+    momenta = [module.momentum for module in norms]
+    for module in norms:
+        module.reset_running_stats()
+        module.momentum = None
+    model.train()
+    try:
+        with torch.no_grad():
+            for batch in range(CALIBRATION_BATCHES):
+                images = dyadic(CALIBRATION_SEED, f"bn-calibration-{batch}",
+                    (CALIBRATION_BATCH_SIZE, 224, 224, 6), scale=.5, bits=16)
+                model(torch.from_numpy(images).permute(0, 3, 1, 2))
+    finally:
+        model.eval()
+        for module, momentum in zip(norms, momenta):
+            module.momentum = momentum
+    assert parameter_digest() == before, "calibration changed learned parameters"
+    assert all(module.num_batches_tracked.item() == CALIBRATION_BATCHES for module in norms)
+    assert all(parameter.grad is None for parameter in model.parameters())
+    return model
+
+
 def state_of(model):
     # The caller checks names/shapes independently against its config.
     return {name: value.numpy().copy() for name, value in model.state_dict().items()

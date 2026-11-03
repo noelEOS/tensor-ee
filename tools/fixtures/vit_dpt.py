@@ -3,7 +3,8 @@
 Complete 224x224 computation, sampled high-resolution outputs. Integer-only
 coefficients use four seed rows times distinct dyadic row gains, so matrices have
 rank at most four. This is composition evidence, not general-weight validation.
-Independent offline tests also compare unrestricted SMP random weights at full width.
+Separate offline numerical references use native-scale integer-hash weights and fixed
+BatchNorm calibration at full and reduced width; this historical fixture is unchanged.
 """
 from __future__ import annotations
 
@@ -147,7 +148,7 @@ def fixtures():
         "(passed: structured reduced twin; all readouts bit-identical to NumPy; "
         "EE vs SMP maximum absolute error 1.862645149230957e-9)",
         notes="Reduced whole-model composition, not individual-block evidence. "
-        "Rank <=4 projection matrices and rank1 positional rows; general random weights are compared offline separately. "
+        "Rank <=4 projection matrices and rank1 positional rows; native-scale integer-hash weights with calibrated BN are compared offline separately. "
         "All reassemble/fusion branches; 112/224 outputs sampled to 56x56; input seed echoed.")]
 
 

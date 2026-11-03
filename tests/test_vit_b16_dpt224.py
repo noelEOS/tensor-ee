@@ -94,34 +94,72 @@ def test_shared_packer_moves_every_kernel_position(factor, assets):
         _upsampling_parameters(weight.reshape(3, -1), bias, factor=factor)
 
 
-@lru_cache(maxsize=2)
-def _native_comparison(config):
-    from reference.vit_b16_dpt224.diagnostics import native_comparison
-    with LF.offline_earth_engine():
-        return native_comparison(config)
+def test_hash_known_answers_and_counter_addressing():
+    from reference.vit_b16_dpt224.initialization import check_hashes, hash_bits
+    check_hashes()
+    name = "decoder.fusion_blocks.0.project.weight"
+    indices = np.arange(257, dtype=np.uint64)
+    whole = hash_bits(name, indices)
+    np.testing.assert_array_equal(whole, np.concatenate((hash_bits(name, indices[:31]),
+                                                        hash_bits(name, indices[31:]))))
+    np.testing.assert_array_equal(whole[::-1], hash_bits(name, indices[::-1]))
+    assert not np.array_equal(whole, hash_bits(name + ".different", indices))
 
 
-@pytest.mark.parametrize("config", (REDUCED, pytest.param(DPT_B16, marks=pytest.mark.xfail(
-    strict=True, raises=AssertionError,
-    reason="native SMP seed14126: max_abs=0.00060272216796875 at fusion3; "
-           "logits=0.0003509521484375 exceed unchanged 1e-4 target"))), ids=("reduced", "full"))
-def test_random_weight_smp_outputs(config):
+def test_hash_initializer_preserves_native_scale_rules():
     pytest.importorskip("timm")
     pytest.importorskip("segmentation_models_pytorch")
-    record = _native_comparison(config)
-    differences = {name: row["mirror_vs_torch32"]["max_abs"] for name, row in record["outputs"].items()}
+    from reference.vit_b16_dpt224.initialization import initialize
+    from reference.vit_b16_dpt224.reference import smp_model
+    rows = initialize(smp_model(REDUCED))
+    assert all(row["second_build_bit_identical"] for row in rows.values())
+    assert rows["encoder.model.cls_token"]["std"] == 1e-6
+    assert rows["encoder.model.pos_embed"]["std"] == .02
+    assert rows["encoder.model.blocks.0.attn.qkv.weight"]["std"] == .02
+    for field in ("weight", "bias"):
+        patch = rows["encoder.model.patch_embed.proj." + field]
+        assert patch["std"] == math.sqrt(1 / (3 * 1536))
+        transpose = rows["decoder.reassemble_blocks.0.upsample." + field]
+        assert transpose["fan_in"] == 4 and transpose["initializer_fan_in"] == 64
+        assert transpose["std"] == math.sqrt(1 / (3 * 64))
+    assert rows["decoder.reassemble_blocks.2.project_to_feature_dim.weight"]["std"] == math.sqrt(2 / 144)
+    assert rows["decoder.projection_blocks.0.project.0.weight"]["std"] == math.sqrt(2 / (128 + 64))
+    assert rows["segmentation_head.head.0.weight"]["std"] == math.sqrt(2 / (36 + 36))
+    assert rows["segmentation_head.head.4.weight"]["std"] == math.sqrt(2 / (4 + 2))
+    assert rows["segmentation_head.head.1.weight"]["constant"] == 1
+    assert rows["segmentation_head.head.1.bias"]["constant"] == 0
+
+
+@lru_cache(maxsize=2)
+def _integer_comparison(config):
+    from reference.vit_b16_dpt224.diagnostics import integer_comparison
+    with LF.offline_earth_engine():
+        return integer_comparison(config)
+
+
+@pytest.mark.parametrize("config", (REDUCED, DPT_B16), ids=("reduced", "full"))
+def test_integer_weight_smp_final_outputs(config):
+    pytest.importorskip("timm")
+    pytest.importorskip("segmentation_models_pytorch")
+    record = _integer_comparison(config)
+    assert len(record["outputs"]) == 22
+    differences = {name: record["outputs"][name]["mirror_vs_torch32"]["max_abs"]
+                   for name in ("head", "logits")}
     flips = record["outputs"]["logits"]["mirror_vs_torch32"]["argmax_flips"]
-    print("\n" + ("full" if config == DPT_B16 else "reduced") + " random-weight max_abs: "
+    print("\n" + ("full" if config == DPT_B16 else "reduced") + " hash-initialized final max_abs: "
           + json.dumps(differences) + "; argmax_flips=" + str(flips))
     assert max(differences.values()) <= 1e-4, differences
 
 
-def test_full_width_float64_ordering_for_every_output():
+@pytest.mark.parametrize("config", (REDUCED, DPT_B16), ids=("reduced", "full"))
+def test_integer_weight_float64_ordering_for_every_intermediate(config):
     pytest.importorskip("timm")
     pytest.importorskip("segmentation_models_pytorch")
-    outputs = _native_comparison(DPT_B16)["outputs"]
+    outputs = _integer_comparison(config)["outputs"]
     assert len(outputs) == 22
     for name, row in outputs.items():
+        if name in ("head", "logits"):
+            continue  # Both class outputs have the stricter float32 absolute check.
         assert row["mirror_vs_torch64"]["max_abs"] <= row["torch32_vs_torch64"]["max_abs"], (name, row)
 
 
@@ -143,6 +181,7 @@ def test_smp_reference_rejects_unloaded_and_unexpected_weights(monkeypatch):
 
 
 def test_reduced_library_numpy_native_and_flattened_server_paths():
+    """Original compact rank-at-most-four fixture weights, not calibrated weights."""
     from reference.vit_b16_dpt224.reference import mirror, errors
     from reference.vit_b16_dpt224.execution import execute
     image, state = F.expanded(F._data(14126))

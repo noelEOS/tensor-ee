@@ -1,4 +1,4 @@
-"""Native SMP random-state comparisons at float32 and float64; no cloud calls.
+"""Hash-initialized calibrated SMP comparisons at float32 and float64; no cloud calls.
 
 The float64 model receives the exact float32 state and input, converted to double.
 All errors are absolute, and every output retains its activation and decision data.
@@ -10,10 +10,10 @@ import json
 
 import numpy as np
 
-from .reference import mirror, smp_model, state_of, torch_outputs
+from .reference import (CALIBRATION_BATCHES, CALIBRATION_BATCH_SIZE, CALIBRATION_SEED,
+                        EVALUATION_SEED, calibrated_model, mirror, state_of, torch_outputs)
 
-SEED = 14126
-INPUT_SEED = 14127
+INPUT_SEED = EVALUATION_SEED
 
 
 def _leaves(outputs):
@@ -34,16 +34,15 @@ def _comparison(left, right):
     }
 
 
-def native_comparison(config):
-    """Measure both references and the mirror once, without changing initialization."""
+def integer_comparison(config):
+    """Measure both references and the mirror after the fixed calibration pass."""
     import torch
     from tensor_ee.models.vit_b16_dpt224.configuration import parameter_shapes
     from tensor_ee.models.vit_b16_dpt224.model import validate_parameters
     from tools.fixtures.core import dyadic
 
     torch.set_num_threads(2)
-    torch.manual_seed(SEED)
-    model = smp_model(config)
+    model = calibrated_model(config)
     assert tuple(model.encoder._output_indices) == config.indices
     state = state_of(model)
     assert {name: value.shape for name, value in state.items()} == parameter_shapes(config)
@@ -82,8 +81,16 @@ def native_comparison(config):
         "config": {"encoder_width": config.encoder.width, "heads": config.encoder.heads,
                    "depth": config.encoder.depth, "indices": list(config.indices),
                    "intermediate": list(config.intermediate), "fusion": config.fusion},
+        "generator": {"algorithm": "SplitMix64", "key": "crc32(state_dict_name UTF-8), zero-extended to uint64",
+                      "counter": "flat_index+1", "top_bits": 24,
+                      "dyadic": "(u+0.5)/2^23-1", "scale": "sqrt(3)*std_native in float64; one float32 cast",
+                      "known_answers_asserted": True},
+        "initialization": model._integer_reference_recipe,
         "parameters_sha256": digest.hexdigest(),
         "float32_input_sha256": hashlib.sha256(image.tobytes()).hexdigest(),
+        "calibration": {"batches": CALIBRATION_BATCHES, "batch_size": CALIBRATION_BATCH_SIZE,
+                        "seed": CALIBRATION_SEED, "momentum": None,
+                        "learned_parameters_unchanged": True},
         "threads": torch.get_num_threads(), "mkldnn": torch.backends.mkldnn.enabled,
         "outputs": outputs,
     }

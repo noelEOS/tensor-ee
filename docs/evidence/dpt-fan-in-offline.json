@@ -1,0 +1,2253 @@
+{
+  "kind": "dpt_fan_in_scaled_offline_comparison",
+  "schema_version": 1,
+  "status": "failed",
+  "revision": "80e92f3087f63c6d9407964a4695bcc9b6a6838a",
+  "dirty": false,
+  "cloud_calls": 0,
+  "command": "PYTHONPATH=. python tools/vit_b16_dpt224_numerics.py --output docs/evidence/dpt-fan-in-offline.json",
+  "input_seed": 14127,
+  "weights": "_fixed_weights pattern times per-tensor 2^k; fan-in RMS targets; unit norm affine; zero biases; fixed four-batch BN calibration; model.double()",
+  "input": "same float32 dyadic values converted exactly to double",
+  "fused_attention": false,
+  "versions": {
+    "python": "3.12.3",
+    "torch": "2.14.0+cpu",
+    "numpy": "2.5.3",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "earthengine-api": "1.7.45"
+  },
+  "claims": {
+    "absolute_tolerance": 0.0001,
+    "full": {
+      "final_float32_target_met": false,
+      "intermediate_float64_ordering_met": true
+    }
+  },
+  "full": {
+    "config": {
+      "encoder_width": 768,
+      "heads": 12,
+      "depth": 12,
+      "indices": [
+        2,
+        5,
+        8,
+        11
+      ],
+      "intermediate": [
+        256,
+        512,
+        1024,
+        1024
+      ],
+      "fusion": 256
+    },
+    "initialization": {
+      "encoder.model.cls_token": {
+        "fan_in": null,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034937424806935895,
+        "values": 768,
+        "pattern_square_sum": 61436,
+        "rule": "fixed_q_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.pos_embed": {
+        "fan_in": null,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493845823044333,
+        "values": 151296,
+        "pattern_square_sum": 12103608,
+        "rule": "fixed_q_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.patch_embed.proj.weight": {
+        "fan_in": 1536,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493855289287483,
+        "values": 1179648,
+        "pattern_square_sum": 94371790,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.patch_embed.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.0.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.1.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.2.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.3.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.4.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.5.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.6.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.7.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.8.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.9.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.10.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.norm1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.norm1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.attn.qkv.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938565480434995,
+        "values": 1769472,
+        "pattern_square_sum": 141557787,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.attn.qkv.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.attn.proj.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493853104974496,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.attn.proj.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.norm2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.norm2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.mlp.fc1.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.034938568812435455,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.mlp.fc1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.mlp.fc2.weight": {
+        "fan_in": 3072,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469284406217728,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.blocks.11.mlp.fc2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.norm.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.norm.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "encoder.model.head.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.0349385595894574,
+        "values": 768000,
+        "pattern_square_sum": 61439991,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "encoder.model.head.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.projection_blocks.0.project.0.weight": {
+        "fan_in": 1536,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493855289287483,
+        "values": 1179648,
+        "pattern_square_sum": 94371790,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.projection_blocks.0.project.0.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.projection_blocks.1.project.0.weight": {
+        "fan_in": 1536,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493855289287483,
+        "values": 1179648,
+        "pattern_square_sum": 94371790,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.projection_blocks.1.project.0.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.projection_blocks.2.project.0.weight": {
+        "fan_in": 1536,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493855289287483,
+        "values": 1179648,
+        "pattern_square_sum": 94371790,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.projection_blocks.2.project.0.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.projection_blocks.3.project.0.weight": {
+        "fan_in": 1536,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493855289287483,
+        "values": 1179648,
+        "pattern_square_sum": 94371790,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.projection_blocks.3.project.0.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.0.project_to_out_channel.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493855215242997,
+        "values": 196608,
+        "pattern_square_sum": 15728631,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.0.project_to_out_channel.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.0.upsample.weight": {
+        "fan_in": 256,
+        "q": -4,
+        "k": 0,
+        "rms": 0.06987715095287084,
+        "values": 1048576,
+        "pattern_square_sum": 83886144,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.0.upsample.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.0.project_to_feature_dim.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.1.project_to_out_channel.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493858547243299,
+        "values": 393216,
+        "pattern_square_sum": 31457322,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.1.project_to_out_channel.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.1.upsample.weight": {
+        "fan_in": 512,
+        "q": -4,
+        "k": 0,
+        "rms": 0.06987715095287084,
+        "values": 1048576,
+        "pattern_square_sum": 83886144,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.1.upsample.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.1.project_to_feature_dim.weight": {
+        "fan_in": 4608,
+        "q": -6,
+        "k": -2,
+        "rms": 0.017469276446437414,
+        "values": 1179648,
+        "pattern_square_sum": 94371790,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.2.project_to_out_channel.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493856103776722,
+        "values": 786432,
+        "pattern_square_sum": 62914556,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.2.project_to_out_channel.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.2.project_to_feature_dim.weight": {
+        "fan_in": 9216,
+        "q": -7,
+        "k": -3,
+        "rms": 0.008734642203108864,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.3.project_to_out_channel.weight": {
+        "fan_in": 768,
+        "q": -5,
+        "k": -1,
+        "rms": 0.03493856103776722,
+        "values": 786432,
+        "pattern_square_sum": 62914556,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.3.project_to_out_channel.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.3.upsample.weight": {
+        "fan_in": 9216,
+        "q": -7,
+        "k": -3,
+        "rms": 0.0087346402825807,
+        "values": 9437184,
+        "pattern_square_sum": 754974676,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.3.upsample.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.reassemble_blocks.3.project_to_feature_dim.weight": {
+        "fan_in": 9216,
+        "q": -7,
+        "k": -3,
+        "rms": 0.008734642203108864,
+        "values": 2359296,
+        "pattern_square_sum": 188743752,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block1.conv_1.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block1.batch_norm_1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block1.batch_norm_1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block1.conv_2.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block1.batch_norm_2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block1.batch_norm_2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block2.conv_1.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block2.batch_norm_1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block2.batch_norm_1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block2.conv_2.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block2.batch_norm_2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.residual_conv_block2.batch_norm_2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.project.weight": {
+        "fan_in": 256,
+        "q": -4,
+        "k": 0,
+        "rms": 0.06987718427285956,
+        "values": 65536,
+        "pattern_square_sum": 5242889,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.0.project.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block1.conv_1.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block1.batch_norm_1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block1.batch_norm_1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block1.conv_2.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block1.batch_norm_2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block1.batch_norm_2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block2.conv_1.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block2.batch_norm_1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block2.batch_norm_1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block2.conv_2.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block2.batch_norm_2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.residual_conv_block2.batch_norm_2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.project.weight": {
+        "fan_in": 256,
+        "q": -4,
+        "k": 0,
+        "rms": 0.06987718427285956,
+        "values": 65536,
+        "pattern_square_sum": 5242889,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.1.project.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block1.conv_1.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block1.batch_norm_1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block1.batch_norm_1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block1.conv_2.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block1.batch_norm_2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block1.batch_norm_2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block2.conv_1.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block2.batch_norm_1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block2.batch_norm_1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block2.conv_2.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block2.batch_norm_2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.residual_conv_block2.batch_norm_2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.project.weight": {
+        "fan_in": 256,
+        "q": -4,
+        "k": 0,
+        "rms": 0.06987718427285956,
+        "values": 65536,
+        "pattern_square_sum": 5242889,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.2.project.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block1.conv_1.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block1.batch_norm_1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block1.batch_norm_1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block1.conv_2.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block1.batch_norm_2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block1.batch_norm_2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block2.conv_1.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block2.batch_norm_1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block2.batch_norm_1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block2.conv_2.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block2.batch_norm_2.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.residual_conv_block2.batch_norm_2.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.project.weight": {
+        "fan_in": 256,
+        "q": -4,
+        "k": 0,
+        "rms": 0.06987718427285956,
+        "values": 65536,
+        "pattern_square_sum": 5242889,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "decoder.fusion_blocks.3.project.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "segmentation_head.head.0.weight": {
+        "fan_in": 2304,
+        "q": -6,
+        "k": -2,
+        "rms": 0.01746926552487248,
+        "values": 589824,
+        "pattern_square_sum": 47185836,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "segmentation_head.head.1.weight": {
+        "rule": "unit_norm_affine",
+        "rms": 1.0,
+        "exact_values_asserted": true
+      },
+      "segmentation_head.head.1.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      },
+      "segmentation_head.head.4.weight": {
+        "fan_in": 256,
+        "q": -4,
+        "k": 0,
+        "rms": 0.06981568184263721,
+        "values": 512,
+        "pattern_square_sum": 40888,
+        "rule": "fan_in_pattern",
+        "exact_values_asserted": true
+      },
+      "segmentation_head.head.4.bias": {
+        "rule": "zero_bias",
+        "rms": 0.0,
+        "exact_values_asserted": true
+      }
+    },
+    "parameters_sha256": "9fbe4950eb7bfa878559c2a2269daeb9e0f9601e4e2043972b56e7acac88bdf9",
+    "float32_input_sha256": "316691251cb43ab2f326472fe4bc699039e8c644eee0069a18c82c10264ecba1",
+    "calibration": {
+      "batches": 4,
+      "batch_size": 2,
+      "seed": 14128,
+      "momentum": null,
+      "learned_parameters_unchanged": true
+    },
+    "threads": 2,
+    "mkldnn": true,
+    "outputs": {
+      "encoder0_spatial": {
+        "shape": [
+          14,
+          14,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.016948699951171875,
+          "argmax_flips": 1
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.0036736604049352195,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.013275039546236655,
+          "argmax_flips": 1
+        },
+        "max_activation": {
+          "mirror": 142.27655029296875,
+          "torch32": 142.27642822265625,
+          "torch64": 142.27654480354073
+        },
+        "float32_step_at_torch32_peak": 1.52587890625e-05
+      },
+      "encoder0_class": {
+        "shape": [
+          1,
+          1,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.0005908012390136719,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 4.768080043504597e-05,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.0005477917070138005,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 102.86519622802734,
+          "torch32": 102.86511993408203,
+          "torch64": 102.86520905220297
+        },
+        "float32_step_at_torch32_peak": 7.62939453125e-06
+      },
+      "encoder1_spatial": {
+        "shape": [
+          14,
+          14,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.061264991760253906,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.013166594053592107,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.0480983977066618,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 284.05755615234375,
+          "torch32": 284.05596923828125,
+          "torch64": 284.0578579263125
+        },
+        "float32_step_at_torch32_peak": 3.0517578125e-05
+      },
+      "encoder1_class": {
+        "shape": [
+          1,
+          1,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.000835418701171875,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.00021861298748149238,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.0007415440060327683,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 171.10267639160156,
+          "torch32": 171.1021728515625,
+          "torch64": 171.10257723200831
+        },
+        "float32_step_at_torch32_peak": 1.52587890625e-05
+      },
+      "encoder2_spatial": {
+        "shape": [
+          14,
+          14,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.07556915283203125,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.01632054746015399,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.05924860537187726,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 455.6689453125,
+          "torch32": 455.6725769042969,
+          "torch64": 455.6685560690337
+        },
+        "float32_step_at_torch32_peak": 3.0517578125e-05
+      },
+      "encoder2_class": {
+        "shape": [
+          1,
+          1,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.00205230712890625,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.00034227075730086653,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.0018600345852064493,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 259.04083251953125,
+          "torch32": 259.0395202636719,
+          "torch64": 259.04085223666704
+        },
+        "float32_step_at_torch32_peak": 3.0517578125e-05
+      },
+      "encoder3_spatial": {
+        "shape": [
+          14,
+          14,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.1164093017578125,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.025606805508203934,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.09080249624960857,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 649.109130859375,
+          "torch32": 649.1076049804688,
+          "torch64": 649.1091704761734
+        },
+        "float32_step_at_torch32_peak": 6.103515625e-05
+      },
+      "encoder3_class": {
+        "shape": [
+          1,
+          1,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.002685546875,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.0007027688264287235,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.0026352070028110575,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 360.9045715332031,
+          "torch32": 360.90191650390625,
+          "torch64": 360.90455171090906
+        },
+        "float32_step_at_torch32_peak": 3.0517578125e-05
+      },
+      "readout0": {
+        "shape": [
+          14,
+          14,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.039764404296875,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.00859160181235552,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.03117280248451948,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 688.2440185546875,
+          "torch32": 688.2446899414062,
+          "torch64": 688.2440241821172
+        },
+        "float32_step_at_torch32_peak": 6.103515625e-05
+      },
+      "reassemble0": {
+        "shape": [
+          56,
+          56,
+          256
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.549560546875,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.11878478928520053,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.43077575758979947,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 6511.40283203125,
+          "torch32": 6511.40380859375,
+          "torch64": 6511.403893464007
+        },
+        "float32_step_at_torch32_peak": 0.00048828125
+      },
+      "readout1": {
+        "shape": [
+          14,
+          14,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.174407958984375,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.038143973983551405,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.1362639850008236,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 1665.91943359375,
+          "torch32": 1665.921142578125,
+          "torch64": 1665.9204481858635
+        },
+        "float32_step_at_torch32_peak": 0.0001220703125
+      },
+      "reassemble1": {
+        "shape": [
+          28,
+          28,
+          256
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 3.4482421875,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.7748279187211438,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 2.679570284592046,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 35633.5078125,
+          "torch32": 35633.53515625,
+          "torch64": 35633.52195913889
+        },
+        "float32_step_at_torch32_peak": 0.00390625
+      },
+      "readout2": {
+        "shape": [
+          14,
+          14,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.36350250244140625,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.08013565270043443,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.2833668497409718,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 2743.946044921875,
+          "torch32": 2743.945556640625,
+          "torch64": 2743.9463254577754
+        },
+        "float32_step_at_torch32_peak": 0.000244140625
+      },
+      "reassemble2": {
+        "shape": [
+          14,
+          14,
+          256
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.91668701171875,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.21179439734714833,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.7266033688058542,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 10456.205078125,
+          "torch32": 10456.40625,
+          "torch64": 10456.212102300391
+        },
+        "float32_step_at_torch32_peak": 0.0009765625
+      },
+      "readout3": {
+        "shape": [
+          14,
+          14,
+          768
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.5751953125,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.1298859255084608,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.4453093869915392,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 3663.583251953125,
+          "torch32": 3663.581787109375,
+          "torch64": 3663.582691905304
+        },
+        "float32_step_at_torch32_peak": 0.000244140625
+      },
+      "reassemble3": {
+        "shape": [
+          7,
+          7,
+          256
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 2.995361328125,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.8078888093932619,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 2.721166615273887,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 68778.1875,
+          "torch32": 68777.53125,
+          "torch64": 68778.05032922866
+        },
+        "float32_step_at_torch32_peak": 0.0078125
+      },
+      "fusion0": {
+        "shape": [
+          14,
+          14,
+          256
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 3.984375,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.7970217623023927,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 3.7081695077577024,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 85909.625,
+          "torch32": 85908.0625,
+          "torch64": 85909.42316322096
+        },
+        "float32_step_at_torch32_peak": 0.0078125
+      },
+      "fusion1": {
+        "shape": [
+          28,
+          28,
+          256
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 20.78125,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 3.679201983526582,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 17.81373505263764,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 454875.03125,
+          "torch32": 454870.09375,
+          "torch64": 454874.6052966443
+        },
+        "float32_step_at_torch32_peak": 0.03125
+      },
+      "fusion2": {
+        "shape": [
+          56,
+          56,
+          256
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 40.625,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 5.586746213492006,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 35.038253786507994,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 669075.75,
+          "torch32": 669071.4375,
+          "torch64": 669075.4373042173
+        },
+        "float32_step_at_torch32_peak": 0.0625
+      },
+      "fusion3": {
+        "shape": [
+          112,
+          112,
+          256
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 147.609375,
+          "argmax_flips": 1
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 21.863697417837102,
+          "argmax_flips": 1
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 129.45638490605052,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 2992254.75,
+          "torch32": 2992211.5,
+          "torch64": 2992251.440239367
+        },
+        "float32_step_at_torch32_peak": 0.25
+      },
+      "head": {
+        "shape": [
+          112,
+          112,
+          2
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.0005536079406738281,
+          "argmax_flips": 1
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.00010378112662046135,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.0005442405058300182,
+          "argmax_flips": 1
+        },
+        "max_activation": {
+          "mirror": 18.07628059387207,
+          "torch32": 18.07619857788086,
+          "torch64": 18.076259201935322
+        },
+        "float32_step_at_torch32_peak": 1.9073486328125e-06
+      },
+      "logits": {
+        "shape": [
+          224,
+          224,
+          2
+        ],
+        "mirror_vs_torch32": {
+          "max_abs": 0.0005426406860351562,
+          "argmax_flips": 0
+        },
+        "mirror_vs_torch64": {
+          "max_abs": 0.00010239660514788085,
+          "argmax_flips": 0
+        },
+        "torch32_vs_torch64": {
+          "max_abs": 0.0005448948705755186,
+          "argmax_flips": 0
+        },
+        "max_activation": {
+          "mirror": 18.0706729888916,
+          "torch32": 18.07059097290039,
+          "torch64": 18.0706515840453
+        },
+        "float32_step_at_torch32_peak": 1.9073486328125e-06
+      }
+    }
+  }
+}

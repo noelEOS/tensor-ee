@@ -107,8 +107,11 @@ model. [`tests/test_graph_identity.py`](tests/test_graph_identity.py) refuses to
 generators while the G1 fixtures build.
 
 **Model references follow the same rule.** A random-weight model's numerical reference,
-the PyTorch model its mirror is compared with, takes its weights from integer arithmetic
-(`_fixed_weights`), never from a library's native random initialization. Native
+the PyTorch model its mirror is compared with, takes its weights from integer arithmetic,
+never from a library's native random initialization: a counter-based integer hash of each
+parameter's name and position, identical on every platform, scaled per tensor to the
+standard deviation the library's own initializer gives it, so the reference behaves like a
+natively initialized model. Native
 initialization is not bit-identical across platforms, and it can let activations grow
 far beyond a trained model's. Its BatchNorm running statistics are then calibrated from
 a fixed set of integer-generated inputs, separate from the evaluation input: a fixed

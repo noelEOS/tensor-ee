@@ -105,7 +105,7 @@ output.
   library layers, uses the reference model's `state_dict` names, takes NumPy arrays or
   `ServerArray`s as weights, and is not loaded by `import tensor_ee`. A random-weight model's
   numerical reference uses integer-generated weights with calibrated BatchNorm (CONTRIBUTING,
-  "Model references follow the same rule"). `compile_model` stays the
+  "Add a block", the paragraph "Model references follow the same rule"). `compile_model` stays the
   CNN path (`torch.fx` onto the R blocks): attention models go through the converter, which is
   extended with recognizers, never by routing them through `compile_model`.
 - **A new recognizer** follows CONTRIBUTING's "Add a recognizer":
