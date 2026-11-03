@@ -1,0 +1,557 @@
+{
+  "kind": "explicit_measured_dpt_cuts",
+  "submitted": false,
+  "limits": {
+    "constants": 24000000,
+    "bands": 1024,
+    "request_bytes": 10000000,
+    "extent": 2
+  },
+  "state_values": 121607938,
+  "logical_constants": 149172200,
+  "stages": [
+    {
+      "stop": "patch",
+      "inputs": [
+        "input"
+      ],
+      "outputs": [
+        "patch_spatial",
+        "patch_class"
+      ],
+      "constants": 1482240,
+      "conservative_constants": 1482240,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "patch_spatial": 904545,
+        "patch_class": 13974
+      },
+      "exports": 2,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block0",
+      "inputs": [
+        "patch_spatial",
+        "patch_class"
+      ],
+      "outputs": [
+        "block0_spatial",
+        "block0_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block0_spatial": 230129,
+        "block0_class": 230002
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block1",
+      "inputs": [
+        "block0_spatial",
+        "block0_class"
+      ],
+      "outputs": [
+        "block1_spatial",
+        "block1_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block1_spatial": 230131,
+        "block1_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block2",
+      "inputs": [
+        "block1_spatial",
+        "block1_class"
+      ],
+      "outputs": [
+        "block2_spatial",
+        "block2_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block2_spatial": 230131,
+        "block2_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block3",
+      "inputs": [
+        "block2_spatial",
+        "block2_class"
+      ],
+      "outputs": [
+        "block3_spatial",
+        "block3_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block3_spatial": 230131,
+        "block3_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block4",
+      "inputs": [
+        "block3_spatial",
+        "block3_class"
+      ],
+      "outputs": [
+        "block4_spatial",
+        "block4_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block4_spatial": 230131,
+        "block4_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block5",
+      "inputs": [
+        "block4_spatial",
+        "block4_class"
+      ],
+      "outputs": [
+        "block5_spatial",
+        "block5_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block5_spatial": 230131,
+        "block5_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block6",
+      "inputs": [
+        "block5_spatial",
+        "block5_class"
+      ],
+      "outputs": [
+        "block6_spatial",
+        "block6_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block6_spatial": 230131,
+        "block6_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block7",
+      "inputs": [
+        "block6_spatial",
+        "block6_class"
+      ],
+      "outputs": [
+        "block7_spatial",
+        "block7_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block7_spatial": 230131,
+        "block7_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block8",
+      "inputs": [
+        "block7_spatial",
+        "block7_class"
+      ],
+      "outputs": [
+        "block8_spatial",
+        "block8_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block8_spatial": 230131,
+        "block8_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block9",
+      "inputs": [
+        "block8_spatial",
+        "block8_class"
+      ],
+      "outputs": [
+        "block9_spatial",
+        "block9_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block9_spatial": 230131,
+        "block9_class": 230004
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block10",
+      "inputs": [
+        "block9_spatial",
+        "block9_class"
+      ],
+      "outputs": [
+        "block10_spatial",
+        "block10_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block10_spatial": 230145,
+        "block10_class": 230018
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "block11",
+      "inputs": [
+        "block10_spatial",
+        "block10_class"
+      ],
+      "outputs": [
+        "block11_spatial",
+        "block11_class"
+      ],
+      "constants": 9044736,
+      "conservative_constants": 16122624,
+      "boundary_bands": [
+        768,
+        768
+      ],
+      "request_bytes": {
+        "block11_spatial": 230147,
+        "block11_class": 230020
+      },
+      "exports": 2,
+      "extent_nodes": 1,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "reassemble0",
+      "inputs": [
+        "block2_spatial",
+        "block2_class"
+      ],
+      "outputs": [
+        "reassemble0"
+      ],
+      "constants": 4018176,
+      "conservative_constants": 4018176,
+      "boundary_bands": [
+        256
+      ],
+      "request_bytes": {
+        "reassemble0": 224764
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "reassemble1",
+      "inputs": [
+        "block5_spatial",
+        "block5_class"
+      ],
+      "outputs": [
+        "reassemble1"
+      ],
+      "constants": 4453376,
+      "conservative_constants": 4453376,
+      "boundary_bands": [
+        256
+      ],
+      "request_bytes": {
+        "reassemble1": 224879
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "reassemble2",
+      "inputs": [
+        "block8_spatial",
+        "block8_class"
+      ],
+      "outputs": [
+        "reassemble2"
+      ],
+      "constants": 4676608,
+      "conservative_constants": 4676608,
+      "boundary_bands": [
+        256
+      ],
+      "request_bytes": {
+        "reassemble2": 214594
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "reassemble3",
+      "inputs": [
+        "block11_spatial",
+        "block11_class"
+      ],
+      "outputs": [
+        "reassemble3"
+      ],
+      "constants": 14163968,
+      "conservative_constants": 14163968,
+      "boundary_bands": [
+        256
+      ],
+      "request_bytes": {
+        "reassemble3": 232865
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "fusion0",
+      "inputs": [
+        "reassemble3"
+      ],
+      "outputs": [
+        "fusion0"
+      ],
+      "constants": 2675966,
+      "conservative_constants": 2675966,
+      "boundary_bands": [
+        256
+      ],
+      "request_bytes": {
+        "fusion0": 141971
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "fusion1",
+      "inputs": [
+        "reassemble2",
+        "fusion0"
+      ],
+      "outputs": [
+        "fusion1"
+      ],
+      "constants": 3241096,
+      "conservative_constants": 3241096,
+      "boundary_bands": [
+        256
+      ],
+      "request_bytes": {
+        "fusion1": 368259
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "fusion2",
+      "inputs": [
+        "reassemble1",
+        "fusion1"
+      ],
+      "outputs": [
+        "fusion2"
+      ],
+      "constants": 2639104,
+      "conservative_constants": 2639104,
+      "boundary_bands": [
+        256
+      ],
+      "request_bytes": {
+        "fusion2": 175345
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "fusion3",
+      "inputs": [
+        "reassemble0",
+        "fusion2"
+      ],
+      "outputs": [
+        "fusion3"
+      ],
+      "constants": 2640128,
+      "conservative_constants": 2640128,
+      "boundary_bands": [
+        256
+      ],
+      "request_bytes": {
+        "fusion3": 178761
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    },
+    {
+      "stop": "logits",
+      "inputs": [
+        "fusion3"
+      ],
+      "outputs": [
+        "logits"
+      ],
+      "constants": 644706,
+      "conservative_constants": 644706,
+      "boundary_bands": [
+        2
+      ],
+      "request_bytes": {
+        "logits": 104723
+      },
+      "exports": 1,
+      "extent_nodes": 0,
+      "tileable": false,
+      "within_limits": true
+    }
+  ],
+  "inference_tasks": 35,
+  "inference_assets": 35,
+  "weight_table_assets": 271,
+  "input_assets": 1,
+  "weight_upload_requests": null,
+  "input_upload_requests": null,
+  "readback_requests": null,
+  "within_limits": true,
+  "runtime_measured": false,
+  "eecu_seconds": null,
+  "compute_estimate": "approximately 40 G MACs per crop; not an EECU estimate",
+  "single_graph": {
+    "export_request_bytes": 2625882,
+    "constants": 149172200,
+    "extent_nodes": 12,
+    "transport": "synthetic table assets and saved input; not inline random weights",
+    "fits_live_fixtures": false,
+    "reason": "live_fixtures creates no assets and requires inline inputs/weights; full-width inference needs weight transport, saved boundaries and a staged runner"
+  },
+  "cloud_calls": 0,
+  "command": "PYTHONPATH=. python tools/vit_b16_dpt224_plan.py",
+  "measured_revision": "cc5a5c640c744af37725ea987689ec98bec0ac39",
+  "dirty": false
+}

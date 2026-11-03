@@ -133,20 +133,31 @@ def reshape_parameter(value, shape):
 _reshape = reshape_parameter
 
 
-def _upsampling_parameters(weight, bias):
-    """ConvTranspose [in,out,2,2] -> linear [4*out,in], position-major columns."""
+def _upsampling_parameters(weight, bias, *, factor=2):
+    """Non-overlapping ConvTranspose [in,out,f,f] -> linear [f*f*out,in].
+
+    Position-major columns (dy,dx,out), with one bias per position. The default
+    factor 2 keeps Prithvi's existing expressions; DPT also uses factor 4.
+    """
+    if isinstance(factor, bool) or not isinstance(factor, numbers.Integral) or factor not in (2, 4):
+        raise ValueError("upsampling factor must be 2 or 4")
+    if len(weight.shape) != 4 or tuple(weight.shape[2:]) != (factor, factor):
+        raise ValueError("upsampling weight must have native [in,out,factor,factor] shape")
     cin, cout = weight.shape[:2]
+    if tuple(bias.shape) != (cout,):
+        raise ValueError("upsampling bias must have shape [out]")
+    positions = factor * factor
     if isinstance(weight, ServerArray):
-        packed = (weight.array.reshape([cin, cout, 4]).transpose(1, 2)
-                  .reshape([cin, 4 * cout]).transpose())
-        weight = ServerArray(packed, (4 * cout, cin))
+        packed = (weight.array.reshape([cin, cout, positions]).transpose(1, 2)
+                  .reshape([cin, positions * cout]).transpose())
+        weight = ServerArray(packed, (positions * cout, cin))
     else:
-        weight = weight.transpose(0, 2, 3, 1).reshape(cin, 4 * cout).T
+        weight = weight.transpose(0, 2, 3, 1).reshape(cin, positions * cout).T
     if isinstance(bias, ServerArray):
-        repeated = bias.array.reshape([1, cout]).repeat(0, 4).reshape([4 * cout])
-        bias = ServerArray(repeated, (4 * cout,))
+        repeated = bias.array.reshape([1, cout]).repeat(0, positions).reshape([positions * cout])
+        bias = ServerArray(repeated, (positions * cout,))
     else:
-        bias = np.tile(bias, 4)
+        bias = np.tile(bias, positions)
     return weight, bias
 
 
