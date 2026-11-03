@@ -613,20 +613,23 @@ one class token and cat readout, as in the example above. Four claims stay separ
   and [SMP DPT converter gate](../tests/test_smp_dpt_converter.py) convert random-weight
   models to graphs byte-identical to the hand-composed targets, at full width and
   reduced width. Both builds bind the same symbolic table reads; reduced inline
-  gates also compare random-weight literals. These gates establish graph identity,
+  gates also compare native SMP/timm random-weight literals, independently of
+  the calibrated integer numerical references. These gates establish graph identity,
   not numerical execution.
 - **Offline mirror agreement.** The [encoder evidence](vit-b16-encoder224.md)
   and [DPT numerical evidence](vit-b16-dpt224.md#numerical-scope) compare NumPy
   mirrors with PyTorch. The [reduced DPT fixture record](evidence/dpt-reduced-offline.json)
-  has largest absolute error 1.86e-9. Full width is **offline only** and does
-  **not meet the unchanged 1e-4 absolute target**: against float32 PyTorch,
-  fusion3 differs by 6.03e-4 and logits by 3.51e-4; against float64 PyTorch,
-  fusion3 differs by 1.18e-4 and logits by 1.50e-4. Activations reach about
-  190, where one float32 step is about 1.5e-5. Float32 PyTorch itself differs
-  from float64 PyTorch by more (fusion3 6.13e-4, logits 3.70e-4); there are
-  **0 argmax flips**. The [dtype record](evidence/dpt-dtype-offline.json)
-  retains these failures; neither rounding scale nor unchanged decisions relaxes
-  the absolute target.
+  has largest absolute error 1.86e-9, using its unchanged compact fixture weights.
+  The [integer-reference record](evidence/dpt-integer-offline.json) uses
+  `_fixed_weights` and a fixed four-batch BatchNorm calibration at full and reduced
+  width. Head/logits meet 1e-4 against float32 PyTorch: full-width errors
+  8.82e-6/8.69e-6, reduced errors 2.98e-8/2.24e-8, with zero final argmax flips.
+  Every intermediate's mirror/float64 error is no larger than float32 PyTorch's
+  own. Full-width fusion3 peaks at 3.81e8 (float32 step 32): mirror/float32 error
+  1000, mirror/float64 105.85, float32/float64 1025.00. This is the approved
+  intermediate ordering claim, not 1e-4 intermediate agreement. The
+  [native-init dtype record](evidence/dpt-dtype-offline.json) retains its older
+  failures unchanged as history. Full-width agreement remains offline only.
 - **Live agreement.** It exists only for the
   [reduced ViT encoder twin](evidence/live-fixtures/20261103T022505Z-vit_encoder_reduced.json)
   with **rank-at-most-4 projection weights**, the

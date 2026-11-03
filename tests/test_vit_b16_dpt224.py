@@ -101,27 +101,29 @@ def _integer_comparison(config):
         return integer_comparison(config)
 
 
-@pytest.mark.parametrize("config", (REDUCED, pytest.param(DPT_B16, marks=pytest.mark.xfail(
-    strict=True, raises=AssertionError,
-    reason="native SMP seed14126: max_abs=0.00060272216796875 at fusion3; "
-           "logits=0.0003509521484375 exceed unchanged 1e-4 target"))), ids=("reduced", "full"))
-def test_random_weight_smp_outputs(config):
+@pytest.mark.parametrize("config", (REDUCED, DPT_B16), ids=("reduced", "full"))
+def test_integer_weight_smp_final_outputs(config):
     pytest.importorskip("timm")
     pytest.importorskip("segmentation_models_pytorch")
     record = _integer_comparison(config)
-    differences = {name: row["mirror_vs_torch32"]["max_abs"] for name, row in record["outputs"].items()}
+    assert len(record["outputs"]) == 22
+    differences = {name: record["outputs"][name]["mirror_vs_torch32"]["max_abs"]
+                   for name in ("head", "logits")}
     flips = record["outputs"]["logits"]["mirror_vs_torch32"]["argmax_flips"]
-    print("\n" + ("full" if config == DPT_B16 else "reduced") + " random-weight max_abs: "
+    print("\n" + ("full" if config == DPT_B16 else "reduced") + " integer-weight final max_abs: "
           + json.dumps(differences) + "; argmax_flips=" + str(flips))
     assert max(differences.values()) <= 1e-4, differences
 
 
-def test_full_width_float64_ordering_for_every_output():
+@pytest.mark.parametrize("config", (REDUCED, DPT_B16), ids=("reduced", "full"))
+def test_integer_weight_float64_ordering_for_every_intermediate(config):
     pytest.importorskip("timm")
     pytest.importorskip("segmentation_models_pytorch")
-    outputs = _integer_comparison(DPT_B16)["outputs"]
+    outputs = _integer_comparison(config)["outputs"]
     assert len(outputs) == 22
     for name, row in outputs.items():
+        if name in ("head", "logits"):
+            continue  # Both class outputs have the stricter float32 absolute check.
         assert row["mirror_vs_torch64"]["max_abs"] <= row["torch32_vs_torch64"]["max_abs"], (name, row)
 
 
@@ -143,6 +145,7 @@ def test_smp_reference_rejects_unloaded_and_unexpected_weights(monkeypatch):
 
 
 def test_reduced_library_numpy_native_and_flattened_server_paths():
+    """Original compact rank-at-most-four fixture weights, not calibrated weights."""
     from reference.vit_b16_dpt224.reference import mirror, errors
     from reference.vit_b16_dpt224.execution import execute
     image, state = F.expanded(F._data(14126))

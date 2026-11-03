@@ -210,10 +210,14 @@ The [reduced DPT live record](evidence/live-fixtures/20261103T041356Z-vit_dpt_re
 passed 7 requests, matching the mirror bit for bit at all ten readouts, with
 largest absolute EE-versus-PyTorch error 1.86e-9. This covers only the structured
 rank-at-most-4 reduced twin and its sampled head/logit readouts, not unrestricted
-weights. The reduced twin meets the unchanged 1e-4 absolute target. The offline
-NumPy mirror at full width misses that target against both float32 and float64
-PyTorch, with 0 argmax flips; float32 PyTorch itself differs from float64 by more
-([numerics and dtype record](vit-b16-dpt224.md#numerical-scope)). Its absolute
-check remains a strict expected failure, with a separate float64 ordering guard.
+weights. Separate full-width and reduced offline references use integer-generated
+weights with fixed BatchNorm calibration. Head/logits meet 1e-4 against float32
+PyTorch (full-width 8.82e-6/8.69e-6, reduced 2.98e-8/2.24e-8), with zero final
+argmax flips. Every intermediate meets the float64 ordering rule: mirror error
+no larger than float32 PyTorch's own. This does not claim 1e-4 intermediate
+agreement; full-width fusion3 peaks at 3.81e8 with mirror/float64 error 105.85
+versus float32/float64 error 1025.00. The strict expected failure is removed;
+the native-init evidence remains unchanged as history
+([numerics and records](vit-b16-dpt224.md#numerical-scope)).
 Full-width live agreement has not been established: the staged runner is a
 follow-up. Random weights establish no model accuracy.
