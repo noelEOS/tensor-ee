@@ -802,4 +802,11 @@ def get_operation(name: str) -> Operation | None:
 
 
 from .dpt_operations import _operations as _dpt_operations
-OPERATIONS.update(_dpt_operations(Operation, _no_roles))
+
+# Preserve the original registry's entries before adding the DPT leaf blocks.
+_MAIN_OPERATIONS = tuple(OPERATIONS.items())
+_DPT_OPERATIONS = _dpt_operations(Operation, _no_roles)
+_DPT_COLLISIONS = set(OPERATIONS).intersection(_DPT_OPERATIONS)
+if _DPT_COLLISIONS:
+    raise ValueError(f"DPT operations collide with existing operations: {sorted(_DPT_COLLISIONS)}")
+OPERATIONS.update(_DPT_OPERATIONS)

@@ -242,3 +242,16 @@ def test_dataflow_mutation_refused_and_reported(reduced, change):
         group(traced, ALL_RECOGNIZERS)
     assert error.value.code == 'forward_code'
     assert group(traced, ALL_RECOGNIZERS, forward_mismatch='report').differences
+
+
+@pytest.mark.parametrize('error_type', [KeyError, AttributeError, IndexError])
+def test_unexpected_position_check_error_raises_in_report_mode(reduced, monkeypatch, error_type):
+    traced = trace(reduced, (1, 6, 224, 224))
+    original = flow.one
+    def unexpected(t, path, operation=None):
+        if path == 'pos_drop':
+            raise error_type('unexpected position checker failure')
+        return original(t, path, operation)
+    monkeypatch.setattr(flow, 'one', unexpected)
+    with pytest.raises(error_type, match='unexpected position checker failure'):
+        group(traced, ALL_RECOGNIZERS, forward_mismatch='report')

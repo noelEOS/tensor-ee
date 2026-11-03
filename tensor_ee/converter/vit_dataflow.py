@@ -140,7 +140,7 @@ def position(depth, *, path="", final=True, position_path=None):
                 require(norm.args[0] is state, 'final norm must follow the last block')
                 output = one(traced, root + 'head_drop', 'aten.dropout.default')
                 require(output.args[0] is norm and traced.output is output, 'encoder must return the final norm sequence')
-        except (Difference, AttributeError, IndexError) as error:
+        except Difference as error:
             return str(error)
         return None
     return check

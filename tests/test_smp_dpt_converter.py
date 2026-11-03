@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import replace
 import math
 import types
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -31,10 +32,18 @@ from reference.vit_b16_dpt224.reference import smp_model
 from tools.live_fixtures import offline_earth_engine
 
 
-def model(config=REDUCED):
+def model(config=REDUCED, **constructor_options):
     if smp.__version__ != '0.5.0':
         pytest.skip('DPT fingerprints require SMP 0.5.0')
-    return smp_model(config)
+    if not constructor_options:
+        return smp_model(config)
+    constructor = smp.DPT
+    def construct(*args, **kwargs):
+        return constructor(*args, **{**kwargs, **constructor_options})
+    # The reduced timm factory is shared with the reference, but these options
+    # reach the actual SMP constructor; no child module is swapped afterwards.
+    with patch.object(smp, 'DPT', construct):
+        return smp_model(config)
 
 
 @pytest.fixture(scope='module')
@@ -235,3 +244,60 @@ def test_decoder_widths_are_reported_parameters():
     assert result.graph.edges['decoder.reassemble_blocks.2.project_to_feature_dim'].channels == 8
     assert any(n.settings.get('cout') == 24 or n.settings.get('out_features') == 24 for n in result.report.nodes)
     assert result.report.outside
+
+
+def test_root_only_recognizer_table_preserves_grouping(reduced):
+    from tensor_ee.converter import dpt_recognizers as dpt
+    from tensor_ee.converter.recognizers import DPT_RECOGNIZERS
+    assert tuple(DPT_RECOGNIZERS) == (dpt.DPT + '.model.DPT',)
+    legacy_children = {
+        dpt.ENCODER: dpt._encoder, dpt.DECODER + 'ReadoutConcatBlock': dpt._readout,
+        dpt.DECODER + 'ReassembleBlock': dpt._reassemble, dpt.DECODER + 'FusionBlock': dpt._fusion,
+        dpt.DECODER + 'ResidualConvBlock': dpt._residual, dpt.DECODER + 'DPTSegmentationHead': dpt._head}
+    traced = trace(reduced, (1, 6, 224, 224))
+    root_only = group(traced, ALL_RECOGNIZERS)
+    legacy = group(traced, {**ALL_RECOGNIZERS, **legacy_children})
+    def units(grouped):
+        return tuple((u.id, u.op, dict(u.settings), dict(u.parameters), u.owns, u.window,
+                      u.axes, u.writes, u.input_axes, u.post_op, u.derived, dict(u.choices))
+                     for u in grouped.units)
+    assert units(root_only) == units(legacy)
+    for field in ('reads', 'output', 'shapes', 'modules', 'glue', 'unused', 'fingerprints', 'differences'):
+        assert getattr(root_only, field) == getattr(legacy, field), field
+
+
+@pytest.mark.parametrize('error_type', [KeyError, AttributeError, IndexError])
+def test_unexpected_dpt_check_error_raises_even_in_report_mode(reduced, monkeypatch, error_type):
+    from tensor_ee.converter import dpt_recognizers as dpt
+    traced = trace(reduced, (1, 6, 224, 224))
+    def unexpected(*args):
+        raise error_type('unexpected checker failure')
+    monkeypatch.setattr(dpt, '_exporter', unexpected)
+    with pytest.raises(error_type, match='unexpected checker failure'):
+        group(traced, ALL_RECOGNIZERS, forward_mismatch='report')
+
+
+@pytest.mark.parametrize('options,expected_code,expected', [
+    ({'decoder_readout': 'add'}, 'unsupported_setting',
+     'decoder.projection_blocks.0: expected segmentation_models_pytorch.decoders.dpt.decoder.ReadoutConcatBlock; '
+     'found segmentation_models_pytorch.decoders.dpt.decoder.ReadoutAddBlock'),
+    ({'decoder_readout': 'ignore'}, 'unsupported_setting',
+     'decoder.projection_blocks.0: expected segmentation_models_pytorch.decoders.dpt.decoder.ReadoutConcatBlock; '
+     'found segmentation_models_pytorch.decoders.dpt.decoder.ReadoutIgnoreBlock'),
+    ({'encoder_output_indices': [0, 2, 4, 6]}, 'unsupported_setting',
+     'encoder (segmentation_models_pytorch.encoders.timm_vit.TimmViTEncoder): output_indices must be '
+     'the four uniform raw block indices (1, 3, 5, 7); the library\'s blocks cannot express it'),
+    ({'activation': 'sigmoid'}, 'unsupported_setting',
+     'segmentation_head.activation.activation: expected torch.nn.modules.linear.Identity; '
+     'found torch.nn.modules.activation.Sigmoid'),
+    ({'aux_params': {'classes': 3}}, 'unsupported_option',
+     'the model returns 2 values; a converted model returns one tensor'),
+])
+def test_constructor_built_refusals_have_exact_messages(options, expected_code, expected):
+    config = (replace(REDUCED, encoder=replace(REDUCED.encoder, depth=8))
+              if 'encoder_output_indices' in options else REDUCED)
+    actual = model(config, **options)
+    with pytest.raises(UnsupportedOperation) as error:
+        convert(actual, (1, 6, 224, 224))
+    assert error.value.code == expected_code
+    assert str(error.value) == expected

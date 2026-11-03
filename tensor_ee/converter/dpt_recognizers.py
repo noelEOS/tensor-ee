@@ -23,7 +23,7 @@ def _safe(check):
     def wrapped(t, calls):
         try:
             return check(t, calls)
-        except (flow.Difference, UnsupportedOperation, AttributeError, IndexError, KeyError) as error:
+        except (flow.Difference, UnsupportedOperation) as error:
             return str(error)
     return wrapped
 
@@ -350,9 +350,13 @@ def _dpt(module, path, t):
     encoder, e = R._child(module, path, 'encoder', ENCODER)
     decoder, d = R._child(module, path, 'decoder', DECODER + 'DPTDecoder')
     head, h = R._child(module, path, 'segmentation_head', DECODER + 'DPTSegmentationHead')
-    units = list(_encoder(encoder, e, t))
     if any(len(getattr(decoder, name)) != 4 for name in ('projection_blocks', 'reassemble_blocks', 'fusion_blocks')):
         R._refuse(d, decoder, 'four readout/reassemble/fusion levels required')
+    # Ignore mode drops prefix selections from the live trace. Refuse the
+    # readout class before examining those selections, so the reason stays exact.
+    for i in range(4):
+        R._child(decoder.projection_blocks, d + '.projection_blocks', str(i), DECODER + 'ReadoutConcatBlock')
+    units = list(_encoder(encoder, e, t))
     for i in range(4):
         for name, cls, recognize in (('projection_blocks', 'ReadoutConcatBlock', _readout),
                                       ('reassemble_blocks', 'ReassembleBlock', _reassemble),
@@ -363,7 +367,4 @@ def _dpt(module, path, t):
     return tuple(units)
 
 
-_RECOGNIZERS = {DPT + '.model.DPT': _dpt, ENCODER: _encoder,
-    DECODER + 'ReadoutConcatBlock': _readout, DECODER + 'ReassembleBlock': _reassemble,
-    DECODER + 'FusionBlock': _fusion, DECODER + 'ResidualConvBlock': _residual,
-    DECODER + 'DPTSegmentationHead': _head}
+_RECOGNIZERS = {DPT + '.model.DPT': _dpt}

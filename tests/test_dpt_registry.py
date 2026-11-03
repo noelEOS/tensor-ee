@@ -67,3 +67,25 @@ def test_registry_holds_library_functions_and_resize_cost():
     settings = dict(factor=2, align_corners=True, out_window=7)
     assert OPERATIONS['window_resize'].cost(settings, (edge,)) == (
         resample.window_resize_values(14, 14, 2, align_corners=True, window=14, out_window=7), 0)
+
+
+def test_dpt_additions_preserve_main_registry_entries_by_identity_and_order():
+    from tensor_ee.converter import operations
+    main = operations._MAIN_OPERATIONS
+    main_keys = (
+        "relabel_to_windows", "overlap_embedding", "mit_block", "channel_norm", "project_pyramid",
+        "fuse_head", "relabel_from_windows", "patch_embed", "swin_block", "shifted_swin_block",
+        "patch_merge", "psp_forward", "fpn_layer_norm", "fpn_lateral", "fpn_merge", "fpn_conv_block",
+        "fusion_forward", "head_logits", "head_dense")
+    additions = ("linear", "conv3x3_window", "batch_norm", "concat", "gelu", "relu", "add",
+                 "window_depth_to_space", "window_resize")
+    assert tuple(name for name, _ in main) == main_keys
+    assert tuple(operations._DPT_OPERATIONS) == additions
+    assert not set(main_keys).intersection(operations._DPT_OPERATIONS)
+    assert tuple(OPERATIONS) == main_keys + additions
+    assert tuple(OPERATIONS.items())[:len(main)] == main
+    for name, original in main:
+        current = OPERATIONS[name]
+        assert current is original, name
+        for field in ("function", "metadata", "cost", "constants", "infer", "call", "roles"):
+            assert getattr(current, field) is getattr(original, field), (name, field)

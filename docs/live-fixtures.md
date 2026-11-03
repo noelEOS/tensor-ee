@@ -224,7 +224,10 @@ The checked checkout recipe in `tools/fixtures/class_row_readout.py` uses
 row other than one W1 row aligned with its spatial window, mismatched class and
 spatial channels, and an encoder with anything other than one prefix token
 (SMP selects only `prefix_tokens[:, :1]`). These are recognizer restrictions;
-the row-repeat and merge primitives do not choose a readout mode. The essential move is:
+the row-repeat and merge primitives do not choose a readout mode. The root DPT
+recognizer checks the readout class before collecting live encoder prefix slices,
+so constructor-built `"ignore"` reports the unsupported readout even when its
+unused prefix slices have been pruned. The essential move is:
 
 ```python
 from tensor_ee.blocks.window.merge import concat

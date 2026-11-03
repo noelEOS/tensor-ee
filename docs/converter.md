@@ -523,7 +523,9 @@ their individual block records, even though the encoder twin has live evidence.
 and the qualified classes under `segmentation_models_pytorch.decoders.dpt.decoder`:
 `ReadoutConcatBlock`, `ReassembleBlock`, `FusionBlock`, `ResidualConvBlock` and
 `DPTSegmentationHead`, enclosed by `decoders.dpt.model.DPT`. The converter imports
-neither SMP nor timm. Construct random weights locally and disable fused attention:
+neither SMP nor timm. Only the root DPT class is in the global recognizer table;
+its helper recognizers match the enclosed modules by qualified name and declare
+the same units. Construct random weights locally and disable fused attention:
 
 ```python
 import segmentation_models_pytorch as smp
@@ -571,7 +573,10 @@ prefix row, so extra prefixes are refused even when slicing would hide them.
 Reassemble factors must be `(4, 2, 1, 1/2)`, with the target's convolution kernels,
 strides, padding, dilation, groups and biases. The head must have identity output
 activation and upsampling factor 2. BatchNorm must be affine with running statistics
-and epsilon 1e-5; GELU must be exact. Auxiliary classification heads are refused.
+and epsilon 1e-5; GELU must be exact. Auxiliary classification heads return two tensors and are refused by export's
+one-output check (`unsupported_option`). The readout class is checked before collecting live prefix
+selections: constructor-built `"ignore"` is refused as a readout, even though its
+unused prefix slices have been pruned.
 The nested ViT retains the root encoder's arithmetic restrictions (unfused attention,
 one class token, fixed 224/16 geometry, no registers, LayerScale or QK normalization).
 Decoder widths, class count and the ViT's parameterized widths/heads/epsilon are
@@ -583,7 +588,9 @@ Dataflow checks pin each readout to its spatial/class pair, each reassemble to i
 readout, deepest-first fusion order, each fusion's immediately preceding state,
 residual operands, affine parameter roles, and resize factors and alignment.
 Changes are refused by default (`forward_code`) or marked outside their records
-with `forward_mismatch="report"`; fixed unsupported attributes remain refusals.
+with `forward_mismatch="report"`; fixed unsupported attributes remain refusals. Only expected trace refusals become
+forward-code differences. Unexpected checker errors (such as `KeyError`,
+`AttributeError` or `IndexError`) propagate even in report mode.
 
 The offline gate compares every selected encoder pair, readout, reassemble, fusion,
 pre-resize head and dense logits byte for byte with `models/vit_b16_dpt224`, at
