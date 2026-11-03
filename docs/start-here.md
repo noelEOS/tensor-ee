@@ -34,10 +34,10 @@ For anyone with an Earth Engine account and some Python who wants to try TensorE
      refused and why.
    - [Notebook 03, bring your own CNN](../notebooks/03_bring_your_own_cnn.ipynb)
      ([open in Colab](https://colab.research.google.com/github/noelEOS/tensor-ee/blob/main/notebooks/03_bring_your_own_cnn.ipynb)):
-     a trained segmentation-models-pytorch U-Net from checkpoint to an exported region. Try it
-     offline with a demo model first; then each Earth Engine step (upload the weights, export a
-     test tile, compare it with PyTorch, export the region) has its own checkbox, run one at a
-     time.
+     a trained segmentation-models-pytorch U-Net from checkpoint to an exported region. One
+     setting says how far a run goes: offline first, then upload the weights, export a test
+     tile, compare it with PyTorch, and export the region. A small random-weight demo model can
+     try every step on public Sentinel-1 before you bring your own.
 
 For details, see [Getting started](getting-started.md) and the [guides](README.md).
 

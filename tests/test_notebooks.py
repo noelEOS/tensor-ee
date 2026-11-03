@@ -8,9 +8,9 @@ every Earth Engine data call and ``ee.Authenticate`` refused, as in
 - The quickstart (01) has no offline mode of its own: the test installs the client's offline
   signatures, and after its settings cell supplies a project name and the place and scene that
   its live cells would find (the preset Sun Moon Lake chip).
-- 03 runs with ``USE_EARTH_ENGINE = False`` and its own offline signatures; switching it to
-  Earth Engine must undo them without a restart. Each of its Earth Engine steps has its own
-  checkbox, off as shipped.
+- 03 runs with ``RUN_UP_TO = "offline"`` and its own offline signatures; switching it to
+  Earth Engine must undo them without a restart. Its Earth Engine steps run up to the step
+  ``RUN_UP_TO`` names, and skip the steps already done (checked here with stand-in tasks).
 - 02 is offline throughout.
 
 Notebooks that need segmentation-models-pytorch or timm skip by name without them.
@@ -109,7 +109,7 @@ def test_only_live_cells_reach_earth_engine(name):
 def test_the_quickstart_has_one_setting_and_stops_cleanly_without_it():
     sources = [_source(cell) for cell in _code("01_quickstart.ipynb")]
     text = "\n".join(sources)
-    assert "RUN_LIVE" not in text and "ApiTestCase" not in text and "restart" not in text.lower()
+    assert "RUN_LIVE" not in text and "ApiTestCase" not in text
     settings = [source for source in sources if 'PROJECT = ""  # @param {type:"string"}' in source]
     assert len(settings) == 1
     namespace = {}
@@ -143,16 +143,24 @@ def test_the_quickstart_waits_with_progress_and_stops_on_a_failed_export(capsys)
     assert namespace["TASKS_URL"] in str(stopped.value)
 
 
-def test_live_steps_in_03_check_the_switches_and_the_project():
+@pytest.mark.parametrize("name", sorted(EXPECTED))
+def test_no_notebook_mentions_a_restart(name):
+    # Installs use !pip, which prints no restart note; the text never asks for one.
+    text = "\n".join(_source(cell) for cell in _cells(name))
+    assert "restart" not in text.lower() and "%pip" not in text
+
+
+def test_live_steps_in_03_follow_one_setting_and_check_the_project():
     cells = _code("03_bring_your_own_cnn.ipynb")
-    settings = [cell for cell in cells if re.search(r"^USE_EARTH_ENGINE = False\b", _source(cell), re.M)]
+    settings = [cell for cell in cells if re.search(r'^RUN_UP_TO = "offline"  # @param \[', _source(cell), re.M)]
     assert len(settings) == 1 and f'PROJECT = "{PLACEHOLDER_PROJECT}"' in _source(settings[0])
-    checkboxes = []
+    options = json.loads(re.search(r"^RUN_UP_TO = .*# @param (\[.*\])$", _source(settings[0]), re.M).group(1))
+    stages = []
     for cell in cells:
         if _live(cell):
-            assert "live_step(" in _source(cell)
-            checkboxes += re.findall(r'^([A-Z_]+) = False  # @param \{type:"boolean"\}$', _source(cell), re.M)
-    assert checkboxes == ["UPLOAD_WEIGHTS", "EXPORT_TEST_TILE", "COMPARE_WITH_PYTORCH", "EXPORT_REGION"]
+            stages += re.findall(r'live_step\("([^"]+)"\)', _source(cell))
+    assert options == ["offline", *stages] == ["offline", "sign in", "upload weights", "export test tile",
+                                               "compare with PyTorch", "export region"]
 
 
 @pytest.mark.parametrize("name", sorted(EXPECTED))
@@ -230,8 +238,8 @@ def _run(name, monkeypatch, *, after_settings=None, signatures=False, then=None)
                         raise
                 if after_settings and "@param" in _source(cell):
                     namespace.update(after_settings)
-                if "USE_EARTH_ENGINE" in namespace:
-                    assert namespace["USE_EARTH_ENGINE"] is False
+                if "RUN_UP_TO" in namespace:
+                    assert namespace["RUN_UP_TO"] == "offline"
             if then:
                 then(namespace)
         finally:
@@ -272,20 +280,77 @@ def test_bring_your_own_cnn_runs_offline_and_goes_live_without_a_restart(monkeyp
     import ee
 
     def switch_to_live(namespace):
-        # Rerunning the connect cell with USE_EARTH_ENGINE = True undoes the offline signatures.
+        # Rerunning the connect cell past "offline" undoes the offline signatures.
         connect = next((index, cell) for index, cell in enumerate(_cells("03_bring_your_own_cnn.ipynb"))
                        if "ApiTestCase()" in _source(cell))
-        namespace["USE_EARTH_ENGINE"] = True
+        namespace["RUN_UP_TO"] = "sign in"
         offline = namespace["offline"]
         _exec("03_bring_your_own_cnn.ipynb", *connect, namespace)
         assert "offline" not in namespace
         assert ee.data._install_cloud_api_resource is namespace["_install_cloud_api_resource"]
         assert ee.data.getAlgorithms is offline.old_get_algorithms
         assert ee.data.getMapId is offline.old_get_map_id
-        namespace["USE_EARTH_ENGINE"] = False
+        namespace["RUN_UP_TO"] = "offline"
 
     namespace = _run("03_bring_your_own_cnn.ipynb", monkeypatch, then=switch_to_live)
     assert namespace["CHECKPOINT"] is None
     assert (namespace["halo"], namespace["alignment"]) == (112, 8)
     assert len(namespace["region_plan"].tiles) == 2 and len(namespace["test_plan"].tiles) == 1
     assert namespace["test_graph_bytes"] > 0
+
+
+def _live_cell(name, title):
+    return next((index, cell) for index, cell in enumerate(_cells(name))
+                if _live(cell) and _source(cell).startswith(title))
+
+
+def test_bring_your_own_cnn_skips_the_steps_already_done(monkeypatch, tmp_path, capsys):
+    import tensor_ee
+    name = "03_bring_your_own_cnn.ipynb"
+
+    class Task:
+        def __init__(self, states):
+            self.states, self.id = list(states), "stand-in"
+
+        def start(self):
+            starts.append(self)
+
+        def status(self):
+            return {"state": self.states.pop(0) if len(self.states) > 1 else self.states[0]}
+
+    uploads, starts, existing = [], [], set()
+
+    def check(namespace):
+        record = tmp_path / "weights.json"
+        namespace.update(RUN_UP_TO="export region", PROJECT="offline-check", WEIGHTS_RECORD=str(record))
+        monkeypatch.setattr(tensor_ee, "export_weights", lambda *args, **kwargs: uploads.append(kwargs))
+        upload = _live_cell(name, "# @title 7.")
+        _exec(name, *upload, namespace)                      # no record: a new upload
+        record.write_text(json.dumps({"status": "uploading", "asset_namespace": "stand-in"}))
+        _exec(name, *upload, namespace)                      # stopped part way: carried on
+        record.write_text(json.dumps({"status": "ready"}))
+        _exec(name, *upload, namespace)                      # finished: skipped
+        assert [kwargs["resume"] for kwargs in uploads] == [False, True]
+        assert "Already uploaded" in capsys.readouterr().out
+        record.write_text(json.dumps({"status": "failed"}))
+        with pytest.raises(Exception) as stopped:
+            _exec(name, *upload, namespace)
+        assert type(stopped.value).__name__ == "Stop"
+
+        namespace["RUN_UP_TO"] = "offline"
+        _exec(name, *_live_cell(name, "# @title 9."), namespace)   # defines the export helpers only
+        namespace.update(RUN_UP_TO="export region", weights_uploaded=True,
+                         asset_exists=lambda asset: asset in existing,
+                         export_task=lambda image, plan, asset_name, description: Task(["RUNNING", "COMPLETED"]))
+        monkeypatch.setattr(namespace["time"], "sleep", lambda seconds: None)
+        export_once = namespace["export_once"]
+        export_once("tile", lambda: None, None, "test", minutes=60)          # a new export
+        existing.add("projects/offline-check/assets/tile")
+        export_once("tile", lambda: None, None, "test", minutes=60)          # it exists: skipped
+        assert len(starts) == 1 and "Already exported" in capsys.readouterr().out
+        namespace["started"]["projects/offline-check/assets/region"] = Task(["RUNNING", "RUNNING", "COMPLETED"])
+        export_once("region", lambda: None, None, "region", minutes=60)      # still running: waited for
+        assert len(starts) == 1 and "still running; waiting" in capsys.readouterr().out
+        namespace["RUN_UP_TO"] = "offline"
+
+    _run(name, monkeypatch, then=check)
