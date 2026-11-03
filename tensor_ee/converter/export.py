@@ -311,7 +311,8 @@ def fingerprint(calls, *, axes: bool = False) -> tuple[str, ...]:
                  if not (axes and operation_name(node.target) in MEMORY_ONLY))
 
 
-STRUCTURE = {"aten.conv2d.default": ("stride", "padding", "dilation", "groups"),
+STRUCTURE = {"aten.conv_transpose2d.input": ("stride", "padding", "output_padding", "groups", "dilation"),
+             "aten.conv2d.default": ("stride", "padding", "dilation", "groups"),
              "aten.adaptive_avg_pool2d.default": ("output_size",),
              "aten.layer_norm.default": ("normalized_shape",)}
 """ATen call -> its integer arguments that decide the arithmetic and are attributes of the module
@@ -455,6 +456,14 @@ class Unit:
     select: Callable | None = None
     """Optional call predicate when several operations share a module path (residuals).
     Predicates partition calls; overlapping matches at equal depth are refused."""
+    input_axes: tuple[tuple[str, ...], ...] | None = None
+    """Per-input axes where inputs use different layouts (DPT spatial/class readout)."""
+    post_op: tuple[str, Mapping] | None = None
+    """A parameter-free layout operation after the unit's block (ConvTranspose packing).
+
+    The writer emits separate registry nodes for the block and layout move, checking
+    the final edge against the traced tensor. Neither operation is converter arithmetic.
+    """
 
     def __post_init__(self):
         object.__setattr__(self, "owns", tuple(self.owns))
@@ -463,6 +472,10 @@ class Unit:
         object.__setattr__(self, "settings", MappingProxyType(dict(self.settings)))
         object.__setattr__(self, "parameters", MappingProxyType(dict(self.parameters)))
         object.__setattr__(self, "choices", MappingProxyType(dict(self.choices)))
+        if self.post_op is not None:
+            object.__setattr__(self, "post_op", (self.post_op[0], MappingProxyType(dict(self.post_op[1]))))
+        if self.input_axes is not None and len(self.input_axes) != len(self.inputs):
+            raise ValueError("input_axes must describe every input")
         if not self.owns or not self.inputs:
             raise ValueError(f"unit {self.id!r} owns one or more module paths and reads one or more edges")
         if not all(isinstance(spec, (str, Through)) for spec in self.inputs):
@@ -795,10 +808,11 @@ class _Grouping:
                        "it reads one", code="unsupported_glue")
             claimed.add(tensors[0])
             source, axes = self._resolve(tensors[0], memo, outputs)
-            if set(axes.sizes) != set(unit.axes):
+            wanted = unit.axes if unit.input_axes is None else unit.input_axes[index]
+            if set(axes.sizes) != set(wanted):
                 reject(f"{unit.id} ({unit.op}) reads input {index} with axes {sorted(axes.sizes)}, where its module "
-                       f"reads {list(unit.axes)}", code="unsupported_glue")
-            expected = Axes.of(unit.axes, tuple(axes.sizes[a] for a in unit.axes))
+                       f"reads {list(wanted)}", code="unsupported_glue")
+            expected = Axes.of(wanted, tuple(axes.sizes[a] for a in wanted))
             if axes.canonical() != expected.canonical():
                 reject(f"{unit.id} ({unit.op}) reads input {index} as {axes}, where its module reads "
                        f"{expected}: the glue between is not layout bookkeeping of its axes", code="unsupported_glue")

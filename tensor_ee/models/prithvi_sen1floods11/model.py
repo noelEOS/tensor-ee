@@ -36,6 +36,7 @@ import numpy as np
 from ...core.grid import TokenGrid, to_grid
 from ...core.ops import WindowOps
 from ...core.tensor import Raster, ServerArray, WindowTensor, band_names
+from ...weights.constants import upsampling_parameters as _upsampling_parameters
 from ...weights.constants import ValueLayout, WindowLayout, row_constant
 from ...blocks.window.activations import gelu, relu
 from ...blocks.window.attention import class_token_attention
@@ -131,34 +132,6 @@ def reshape_parameter(value, shape):
 
 # Retain the private name for existing Prithvi callers.
 _reshape = reshape_parameter
-
-
-def _upsampling_parameters(weight, bias, *, factor=2):
-    """Non-overlapping ConvTranspose [in,out,f,f] -> linear [f*f*out,in].
-
-    Position-major columns (dy,dx,out), with one bias per position. The default
-    factor 2 keeps Prithvi's existing expressions; DPT also uses factor 4.
-    """
-    if isinstance(factor, bool) or not isinstance(factor, numbers.Integral) or factor not in (2, 4):
-        raise ValueError("upsampling factor must be 2 or 4")
-    if len(weight.shape) != 4 or tuple(weight.shape[2:]) != (factor, factor):
-        raise ValueError("upsampling weight must have native [in,out,factor,factor] shape")
-    cin, cout = weight.shape[:2]
-    if tuple(bias.shape) != (cout,):
-        raise ValueError("upsampling bias must have shape [out]")
-    positions = factor * factor
-    if isinstance(weight, ServerArray):
-        packed = (weight.array.reshape([cin, cout, positions]).transpose(1, 2)
-                  .reshape([cin, positions * cout]).transpose())
-        weight = ServerArray(packed, (positions * cout, cin))
-    else:
-        weight = weight.transpose(0, 2, 3, 1).reshape(cin, positions * cout).T
-    if isinstance(bias, ServerArray):
-        repeated = bias.array.reshape([1, cout]).repeat(0, positions).reshape([positions * cout])
-        bias = ServerArray(repeated, (positions * cout,))
-    else:
-        bias = np.tile(bias, positions)
-    return weight, bias
 
 
 def compose(backend, inputs, config=PRITHVI, *, start="input", stop="logits",

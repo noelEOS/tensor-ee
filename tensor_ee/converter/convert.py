@@ -80,7 +80,7 @@ INPUT, INPUT_WINDOWS, LOGITS = "input", "input_windows", "logits"
 TOKEN_SCALE = 2.5
 """The abstract token grid's default scale: SegFormer-B0's (``SegformerB0Config.input_grid``), the
 one validated live, and the Swin-T224 adapter's model grid (``TokenGrid(224, 224, 2.5)``)."""
-DENSE = {"head_logits": "head_dense"}
+DENSE = {"head_logits": "head_dense", "dpt_resize": "window_dense"}
 """The output unit's operation -> the operation writing its W edge as dense bands on its token
 grid, for a model whose graph stays on the token grid (see the module docstring)."""
 
@@ -272,14 +272,16 @@ class Conversion:
 def report(graph: BlockGraph, grouped: Grouped) -> ConversionReport:
     """The conversion report of ``graph``, converted as ``grouped``."""
     units = {unit.id: unit for unit in grouped.units}
+    units.update({unit.id + '.projection': unit for unit in grouped.units if unit.post_op is not None})
     nodes = []
     for node in graph.nodes:
         metadata = get_operation(node.op).metadata
         settings = dict(node.settings) if metadata is None else record_settings(graph, node)
         check = None if metadata is None else check_settings(metadata, settings)
+        owner = units[node.id].id if node.id in units else node.id
         choices = units[node.id].choices if node.id in units else {}
-        nodes.append(NodeCheck(node.id, node.op, tuple(grouped.modules.get(node.id, ())), MappingProxyType(settings),
-                               check, grouped.differences.get(node.id), MappingProxyType(dict(choices))))
+        nodes.append(NodeCheck(node.id, node.op, tuple(grouped.modules.get(owner, ())), MappingProxyType(settings),
+                               check, grouped.differences.get(owner), MappingProxyType(dict(choices))))
     traced_with = {}
     for source in sorted({u.forward.source for u in grouped.units if u.forward is not None}) or [None]:
         traced_with.update(TRACED.get(source, TRACED_WITH))
@@ -391,7 +393,15 @@ class _Writer:
         output edge checked against the traced shape of its modules' output."""
         for unit in grouped.units:
             inputs = tuple(input_edge if source == INPUT else source for source in grouped.reads[unit.id])
-            edge = self.add(Node(unit.id, unit.op, inputs, unit.id, unit.settings, unit.parameters))
+            projected = unit.id if unit.post_op is None else unit.id + '.projection'
+            edge = self.add(Node(projected, unit.op, inputs, projected, unit.settings, unit.parameters))
+            if unit.post_op is not None:
+                op, settings = unit.post_op
+                operation = get_operation(op)
+                if (operation is None or operation.roles(settings)
+                        or operation.metadata is not None and operation.metadata.policy != 'none'):
+                    reject(f'{unit.id}: a post operation must be parameter-free layout bookkeeping')
+                edge = self.add(Node(unit.id, op, (projected,), unit.id, settings))
             _traced_shape(unit, edge, grouped.shapes[unit.id])
 
     def result(self, model, name: str | None, grouped: Grouped, *, outputs=(LOGITS,)) -> Conversion:

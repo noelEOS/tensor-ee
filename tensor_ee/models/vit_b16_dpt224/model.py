@@ -28,8 +28,8 @@ from ...blocks.window.normalization import BatchNormConstants, batch_norm
 from ...blocks.window.resample import window_depth_to_space, window_resize
 from ...core.tensor import Raster, ServerArray, WindowTensor, band_names
 from ...layouts.window import to_dense
-from ...weights.constants import WindowLayout
-from ..prithvi_sen1floods11.model import _upsampling_parameters, reshape_parameter
+from ...weights.constants import WindowLayout, upsampling_parameters
+from ..prithvi_sen1floods11.model import reshape_parameter
 from ..vit_b16_encoder224 import model as encoder
 from ..vit_b16_encoder224.configuration import parameter_shapes as encoder_shapes
 from .configuration import DPT_B16, DPTConfig, parameter_shapes
@@ -153,7 +153,7 @@ class LibraryBackend(encoder.LibraryBackend):
                 self.linears[prefix, 196] = LinearConstants(self.ops, weight, bias, 196)
             elif "upsample" in prefix and weight.shape[-1] in (2, 4):
                 factor = weight.shape[-1]
-                packed, repeated = _upsampling_parameters(weight, bias, factor=factor)
+                packed, repeated = upsampling_parameters(weight, bias, factor=factor)
                 self.linears[prefix, 196] = LinearConstants(self.ops, packed, repeated, 196)
             elif len(weight.shape) == 4:
                 if prefix.startswith("decoder.reassemble_blocks."):

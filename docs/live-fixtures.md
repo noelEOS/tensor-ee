@@ -219,8 +219,12 @@ Prithvi's `position()` pins and masks the class image on this coarse grid; it do
 not repeat its array rows. Reprojecting the class onto the fine grid is unnecessary
 for this move and does not change a one-row array into a 196-row array.
 
-The checked checkout recipe in `tools/fixtures/class_row_readout.py` uses only
-`readout="cat"`; `"ignore"` and `"add"` are refused. Its essential move is:
+The checked checkout recipe in `tools/fixtures/class_row_readout.py` uses
+`readout="cat"`. The DPT readout recognizer refuses `"ignore"` and `"add"`, a class
+row other than one W1 row aligned with its spatial window, mismatched class and
+spatial channels, and an encoder with anything other than one prefix token
+(SMP selects only `prefix_tokens[:, :1]`). These are recognizer restrictions;
+the row-repeat and merge primitives do not choose a readout mode. The essential move is:
 
 ```python
 from tensor_ee.blocks.window.merge import concat
@@ -240,7 +244,7 @@ At 768 channels this produces `[196, 1536]`, with each spatial row first and its
 own window's class row second. Existing `LinearConstants`/`linear` (1536 → 768,
 constants built for 196 rows) and `gelu` can follow it. The move itself has no
 arithmetic, casts, per-row loop or coefficient constants; it depends only on its
-matching window. This recipe adds no model or converter support.
+matching window. The fixture tests the move; the DPT converter maps its readout onto the same primitives.
 
 Selection `class_row_readout` contains `window/concat/class-row-readout-w14`:
 four adjacent W14 windows with distinct class rows, four channels, exact-bit

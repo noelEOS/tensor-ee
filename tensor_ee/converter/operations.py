@@ -799,3 +799,7 @@ PAIR_OPERATIONS: dict[str, Operation] = pair_operations(Operation)
 def get_operation(name: str) -> Operation | None:
     """Look up an ordinary block or an explicit pair adapter, without runtime discovery."""
     return OPERATIONS.get(name) or PAIR_OPERATIONS.get(name)
+
+
+from .dpt_operations import _operations as _dpt_operations
+OPERATIONS.update(_dpt_operations(Operation))

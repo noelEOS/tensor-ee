@@ -114,11 +114,11 @@ def test_hand_target_graph_identity_at_every_pair(config):
 
 @pytest.mark.parametrize('options,match', [
     ({'patch_size': 8}, 'patch_size'), ({'img_size': 256}, 'grid_size'),
-    ({'class_token': False, 'global_pool': 'avg'}, 'class token'),
-    ({'reg_tokens': 1}, 'register'), ({'no_embed_class': True}, 'all-row'),
+    ({'class_token': False, 'global_pool': 'avg'}, 'class token is required'),
+    ({'reg_tokens': 1}, 'register tokens are unsupported'), ({'no_embed_class': True}, 'all-row positional embeddings including the class row are required'),
     ({'init_values': 1e-5}, 'ls1'), ({'qk_norm': True}, 'q_norm'),
-    ({'pre_norm': True}, 'norm_pre'), ({'global_pool': 'avg'}, 'pre-logits'),
-    ({'num_classes': 10}, 'pre-logits'),
+    ({'pre_norm': True}, 'norm_pre'), ({'global_pool': 'avg'}, 'encoder output required'),
+    ({'num_classes': 10}, 'encoder output required'),
 ])
 def test_fixed_attributes_refused(options, match):
     with pytest.raises(UnsupportedOperation, match=match) as error:
