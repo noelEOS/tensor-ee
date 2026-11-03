@@ -65,39 +65,64 @@ full-width staged boundaries and two existing reduced-fixture requests.
 
 ## Fixed integer reference procedure
 
-The full-width and reduced numerical references overwrite every learned
-SMP/timm parameter before any comparison. For each tensor's flattened integer
-pattern `p[i] = ((17*i+3)%31-15)/128`, let `R = sqrt(sum(p[i]**2)/N)`.
-For Linear, `fan_in=in_features`; for Conv2d,
-`fan_in=(Cin/groups)*kh*kw`; for the non-overlapping ConvTranspose2d
-(`kernel=stride`, groups 1), `fan_in=Cin`, the inputs summed at one output.
-The declared scaling is:
+The final full-width and reduced numerical references overwrite every learned
+SMP/timm parameter using a counter-based integer hash, with no library RNG values
+retained. The generator and scales are fixed before comparison, and the result
+stands without a further reference design.
 
-```text
-q = round_half_up(-0.5*log2(fan_in))
-k = round_half_up(q-log2(R))
-weight[i] = p[i] * 2**k
-```
+For a parameter's full `state_dict` name, the key is
+`uint64(zlib.crc32(name.encode("utf-8")))` (zero-extended from 32 bits). For flat
+index `i`, start at `key+(i+1)*0x9E3779B97F4A7C15`, then apply SplitMix64's
+xor-shift/multiply finalizer (`>>30`, multiplier `0xBF58476D1CE4E5B9`; `>>27`,
+multiplier `0x94D049BB133111EB`; final xor `>>31`). All arithmetic wraps modulo
+`2**64` in NumPy uint64. Take its top 24 bits `u`; the value
+`d=(u+0.5)/2**23-1` lies in `(-1,1)` and is exactly representable in float32.
+Compute `d*sqrt(3)*std_native` in float64, then cast once to float32.
+This matches the source initializer's standard deviation, with uniform dyadics
+rather than Gaussian samples where the native initializer is Gaussian.
+Constant native initializers stay constants. Every tensor is built twice and
+asserted bit-identical; five independently derived name/index/hash answers
+are hard-coded in the generator and asserted before initialization.
 
-Half ties round upward, including negative exponents. The achieved RMS is
-nearest to `2**q` in logarithmic distance among allowed power-of-two scales;
-it does not generally equal that target exactly. Exponent decisions use exact
-integer sums of squares and comparisons, without floating-point reductions or
-logarithms. One period of the integer pattern has 31 entries and square sum
-2480. Code independently asserts every initialized float32 bit against the
-formula and records each scaled tensor's `fan_in`, `q`, `k`, achieved RMS, element
-count and integer square sum. Class token and position embedding use the same
-rule with the target fixed at `q=-5`. LayerNorm and BatchNorm affine weights
-are one; their biases and every other bias are zero. Native initialization
-supplies no numerical-reference values. The power-of-two multipliers preserve
-the pattern's exact float32 representation.
+The scales below were read from the pinned installed sources before declaration:
+`timm/models/vision_transformer.py` (`VisionTransformer.init_weights`,
+`init_weights_vit_timm`), `timm/layers/patch_embed.py`, SMP's `base/model.py`
+and `base/initialization.py`, and torch's `_ConvNd.reset_parameters`, norm
+`reset_parameters`, and `nn.init` fan calculations. The record names each
+parameter, native initializer and source, standard deviation, fan-in, shape,
+and generator key. No observed tensor RMS or comparison error sets a scale.
 
-This recipe supersedes the unscaled procedure at `24e1b6f`, whose
-[record](evidence/dpt-integer-offline.json) stays unchanged as history:
-`_fixed_weights` without fan-in scaling let full-width intermediate values
-reach 3.8e8 at fusion 3, outside a realistic activation regime. Native-init
-records also stay unchanged. No comparison has been used to adjust this new
-recipe. Its calibration and evaluation inputs are unchanged from `24e1b6f`.
+| Parameters | Native initializer | Declared standard deviation |
+|---|---|---|
+| Encoder Linear weights, including unused classifier | timm 1.0.30 truncated normal | .02 |
+| Position embedding | timm 1.0.30 truncated normal | .02 |
+| Class token | timm 1.0.30 normal | 1e-6 |
+| Encoder patch Conv2d weight and bias | torch 2.14 defaults | `sqrt(1/(3*fan_in))` |
+| Decoder Conv2d weights | SMP 0.5.0 Kaiming uniform, ReLU, fan-in | `sqrt(2/fan_in)` |
+| Decoder Linear weights | SMP 0.5.0 Xavier uniform | `sqrt(2/(fan_in+fan_out))` |
+| Decoder ConvTranspose2d weight and bias | torch 2.14 defaults, untouched by SMP | `sqrt(1/(3*initializer_fan_in))` |
+| Head Conv2d weights | SMP 0.5.0 Xavier uniform | `sqrt(2/(fan_in+fan_out))` |
+| Norm affine / other biases | Native constants | weights 1; biases 0 |
+
+Linear fan-in/out are its input/output widths. Conv2d uses
+`fan_in=(Cin/groups)*kh*kw`, `fan_out=Cout*kh*kw`. For ConvTranspose2d,
+torch's stored `[Cin,Cout,k,k]` gives `initializer_fan_in=Cout*kh*kw`;
+the record distinguishes that initializer convention from `fan_in=Cin`, the
+actual sum at each non-overlapping output. Torch's default convolution bias is
+random uniform, so patch/transpose biases also use the hash at that std.
+
+The two periodic-pattern records stay unchanged as history:
+[unscaled](evidence/dpt-integer-offline.json), declared at `24e1b6f`, and
+[fan-in-scaled](evidence/dpt-fan-in-offline.json), preserved at `ce619d9`.
+The `_fixed_weights` pattern `((17*i+3)%31-15)/128` repeats every 31 values;
+its matrices have rank at most 30. Diagnostic measurements on 768×768,
+3072×768 and 256×2304 matrices found top singular values 5–10 times those of
+random weights at the same RMS. This coherent structure made the full-width
+activations snowball: fusion 3 reached 3.8e8 unscaled and 2.99e6 after fan-in
+scaling. It is unsuitable for these model numerical references. `_fixed_weights`
+itself remains unchanged for graph-gate fixtures. Native-init evidence also
+remains unchanged. The hash recipe's calibration and evaluation inputs are
+unchanged from `24e1b6f`.
 
 BatchNorm running statistics are reset and calibrated once, using four batches of two six-band
 224 × 224 inputs generated by `dyadic(14128, "bn-calibration-{batch}",
@@ -132,8 +157,8 @@ Under that superseded procedure, both references pass the [numerical comparison 
 head and logits meet 1e-4 against float32 PyTorch; all 20 intermediate outputs
 have mirror error against float64 PyTorch no larger than float32 PyTorch's own.
 That record motivated removal of the strict expected failure. The newly declared
-fan-in-scaled procedure has not yet been compared; its record must pass the same
-assertions independently. The unscaled record has not been edited.
+hash procedure has not yet been compared; its record will determine the final
+assertions without changing the 1e-4 target. The unscaled record has not been edited.
 
 | Reference | Head error vs float32 | Logit error vs float32 | Final-logit argmax flips |
 |---|---:|---:|---:|
@@ -204,10 +229,10 @@ the live record itself remains exactly as the harness wrote it.
 PYTHONPATH=. python tools/vit_b16_dpt224_plan.py
 PYTHONPATH=. python tools/live_fixtures.py --plan vit_dpt_reduced
 PYTHONPATH=. flock /tmp/tensor-ee-heavy.lock python tools/vit_b16_dpt224_numerics.py \
-    --output docs/evidence/dpt-fan-in-offline.json
+    --output docs/evidence/dpt-hash-offline.json
 ```
 
-The numerical command writes the fan-in-scaled reference record. The tool
+The numerical command writes the hash-initialized reference record. The tool
 refuses to overwrite earlier evidence; the fixed procedure is not retuned or
 rerun to obtain a passing result.
 

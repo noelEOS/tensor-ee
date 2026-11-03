@@ -1,4 +1,4 @@
-"""Integer-weight calibrated SMP comparisons at float32 and float64; no cloud calls.
+"""Hash-initialized calibrated SMP comparisons at float32 and float64; no cloud calls.
 
 The float64 model receives the exact float32 state and input, converted to double.
 All errors are absolute, and every output retains its activation and decision data.
@@ -81,6 +81,10 @@ def integer_comparison(config):
         "config": {"encoder_width": config.encoder.width, "heads": config.encoder.heads,
                    "depth": config.encoder.depth, "indices": list(config.indices),
                    "intermediate": list(config.intermediate), "fusion": config.fusion},
+        "generator": {"algorithm": "SplitMix64", "key": "crc32(state_dict_name UTF-8), zero-extended to uint64",
+                      "counter": "flat_index+1", "top_bits": 24,
+                      "dyadic": "(u+0.5)/2^23-1", "scale": "sqrt(3)*std_native in float64; one float32 cast",
+                      "known_answers_asserted": True},
         "initialization": model._integer_reference_recipe,
         "parameters_sha256": digest.hexdigest(),
         "float32_input_sha256": hashlib.sha256(image.tobytes()).hexdigest(),
