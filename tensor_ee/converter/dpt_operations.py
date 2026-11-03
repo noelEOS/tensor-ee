@@ -171,10 +171,10 @@ def _resize_call(ops, tensors, c, s):
     return WindowTensor(image, grid, x.channels, s['out_window'] or x.window)
 
 
-def _operations(Operation):
+def _operations(Operation, no_roles):
     """Direct function references and library builders, installed into OPERATIONS."""
     zero = lambda s, xs: (0, 0)
-    none = lambda s: ()
+    none = no_roles
     point = lambda fn: lambda ops, ts, c, s: ts[0].like(fn(ops, ts[0].image))
     return {
         'window_linear': Operation(linear.linear, linear.METADATA['linear'], 1,

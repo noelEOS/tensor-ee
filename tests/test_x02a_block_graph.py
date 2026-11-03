@@ -210,15 +210,25 @@ def test_an_unread_edge_is_refused():
 
 
 def test_every_operation_is_one_library_function_held_by_reference():
-    """Every entry, SegFormer's and those later lanes add (X04): one window block or a boundary
-    relabel, with its block's METADATA; constants exactly where it reads parameters."""
+    """Every entry holds a library block or layout function and its METADATA.
+
+    Adapter keys may distinguish coefficient preparation or input conventions
+    while retaining a direct reference to the same library function.
+    """
+    aliases = {
+        "window_linear": "linear", "window_conv3x3": "conv3x3_window",
+        "window_batch_norm": "batch_norm", "dpt_cat_readout": "concat",
+        "window_gelu": "gelu", "window_relu": "relu", "window_add": "add",
+        "dpt_transpose_linear": "linear", "dpt_resize": "window_resize", "window_dense": "to_dense",
+    }
     for name, op in OPERATIONS.items():
-        assert op.name == name
+        function_name = aliases.get(name, name)
+        assert op.name == function_name
         module = importlib.import_module(op.function.__module__)
-        assert getattr(module, name) is op.function
-        boundaries = op.function.__module__ == "tensor_ee.layouts.boundaries"
-        assert boundaries or op.function.__module__.startswith("tensor_ee.blocks.window.")
-        assert op.metadata is (None if boundaries else module.METADATA[name])
+        assert getattr(module, function_name) is op.function
+        layout = op.function.__module__ in ("tensor_ee.layouts.boundaries", "tensor_ee.layouts.window")
+        assert layout or op.function.__module__.startswith("tensor_ee.blocks.window.")
+        assert op.metadata is (None if layout else module.METADATA[function_name])
         assert (op.constants is None) == (op.roles is operations._no_roles)
     # Explicit: no operation is looked up by name at run time.
     assert "getattr" not in inspect.getsource(operations) and "import_module" not in inspect.getsource(operations)

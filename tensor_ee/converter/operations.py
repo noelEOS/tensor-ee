@@ -802,4 +802,4 @@ def get_operation(name: str) -> Operation | None:
 
 
 from .dpt_operations import _operations as _dpt_operations
-OPERATIONS.update(_dpt_operations(Operation))
+OPERATIONS.update(_dpt_operations(Operation, _no_roles))
