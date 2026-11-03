@@ -182,18 +182,38 @@ or an accuracy benchmark.
 
 The [hand-composed ViT encoder target](vit-b16-encoder224.md) exposes every raw
 block's spatial/class pair and the final norm, with SMP DPT encoder parameter
-names. Reduced and full-width random-weight timm comparisons pass offline; the
-reduced interactive live attempt failed before encoder readback (client recursion).
-Only the input echo returned exactly. No encoder live agreement, converter
-equivalence, DPT decoder, or model accuracy is claimed.
+names. Reduced and full-width random-weight timm comparisons pass offline.
+The [first reduced live attempt](evidence/live-fixtures/20261102T191233Z-vit_encoder_reduced.json)
+failed before encoder readback because of client recursion; only its input echo
+returned exactly. The [passing rerun](evidence/live-fixtures/20261103T022505Z-vit_encoder_reduced.json)
+matched the mirror bit for bit at all encoder outputs, with largest absolute
+EE-versus-PyTorch error 5.72e-6. This live agreement covers only the reduced
+twin's recorded inputs and rank-at-most-4 projection weights. Full width remains
+offline only; no model accuracy is claimed.
+
+The [timm ViT converter gate](../tests/test_timm_vit_converter.py) converts
+random-weight full-width and reduced encoders to graphs byte-identical to this
+hand-composed target. That is graph identity, separate from offline mirror
+agreement and the reduced twin's live evidence. The [converter guide](converter.md#smp-dpt-vit-b16-evidence-and-scope)
+states the claim and its limits.
 
 ## ViT-B/16 + DPT target, 224 × 224
 
 The [hand-composed DPT target](vit-b16-dpt224.md) reuses the merged ViT encoder
 and existing library blocks, with SMP 0.5.0 defaults, six bands and two classes.
-Its notes state the layout chain, offline comparisons, reduced composition
-fixture and measured export proposal. Full-width live agreement and model
-accuracy are not established. No DPT recognizer is added by this target.
-The reduced twin carries the 1e-4 claim. The native full-width absolute check is
-a documented strict expected failure, with a separate float64 ordering guard;
-full-width live validation is deferred to a follow-up and is not met here.
+The [SMP DPT recognizer](converter.md#smp-050-dpt-at-224--224) now converts this
+model; its [converter gate](../tests/test_smp_dpt_converter.py) compares
+random-weight full-width and reduced conversions byte for byte with the target.
+This establishes graph identity, not numerical execution.
+
+The [reduced DPT live record](evidence/live-fixtures/20261103T041356Z-vit_dpt_reduced.json)
+passed 7 requests, matching the mirror bit for bit at all ten readouts, with
+largest absolute EE-versus-PyTorch error 1.86e-9. This covers only the structured
+rank-at-most-4 reduced twin and its sampled head/logit readouts, not unrestricted
+weights. The reduced twin meets the unchanged 1e-4 absolute target. The offline
+NumPy mirror at full width misses that target against both float32 and float64
+PyTorch, with 0 argmax flips; float32 PyTorch itself differs from float64 by more
+([numerics and dtype record](vit-b16-dpt224.md#numerical-scope)). Its absolute
+check remains a strict expected failure, with a separate float64 ordering guard.
+Full-width live agreement has not been established: the staged runner is a
+follow-up. Random weights establish no model accuracy.

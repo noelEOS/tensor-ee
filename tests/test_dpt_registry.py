@@ -69,23 +69,36 @@ def test_registry_holds_library_functions_and_resize_cost():
         resample.window_resize_values(14, 14, 2, align_corners=True, window=14, out_window=7), 0)
 
 
-def test_dpt_additions_preserve_main_registry_entries_by_identity_and_order():
-    from tensor_ee.converter import operations
-    main = operations._MAIN_OPERATIONS
-    main_keys = (
-        "relabel_to_windows", "overlap_embedding", "mit_block", "channel_norm", "project_pyramid",
-        "fuse_head", "relabel_from_windows", "patch_embed", "swin_block", "shifted_swin_block",
-        "patch_merge", "psp_forward", "fpn_layer_norm", "fpn_lateral", "fpn_merge", "fpn_conv_block",
-        "fusion_forward", "head_logits", "head_dense")
+def test_dpt_additions_preserve_main_function_metadata_and_key_order():
+    """Pin main a988d79's 19 function/metadata references and key order, not adapters."""
+    from tensor_ee.blocks.window import patch, segformer, swin, upernet
+    from tensor_ee.layouts import boundaries
+
+    # Written from a988d79's operations.py, independently of its import-time snapshot.
+    main = {
+        "relabel_to_windows": (boundaries.relabel_to_windows, None),
+        "overlap_embedding": (segformer.overlap_embedding, segformer.METADATA["overlap_embedding"]),
+        "mit_block": (segformer.mit_block, segformer.METADATA["mit_block"]),
+        "channel_norm": (segformer.channel_norm, segformer.METADATA["channel_norm"]),
+        "project_pyramid": (segformer.project_pyramid, segformer.METADATA["project_pyramid"]),
+        "fuse_head": (segformer.fuse_head, segformer.METADATA["fuse_head"]),
+        "relabel_from_windows": (boundaries.relabel_from_windows, None),
+        "patch_embed": (patch.patch_embed, patch.METADATA["patch_embed"]),
+        "swin_block": (swin.swin_block, swin.METADATA["swin_block"]),
+        "shifted_swin_block": (swin.shifted_swin_block, swin.METADATA["shifted_swin_block"]),
+        "patch_merge": (patch.patch_merge, patch.METADATA["patch_merge"]),
+        "psp_forward": (upernet.psp_forward, upernet.METADATA["psp_forward"]),
+        "fpn_layer_norm": (upernet.fpn_layer_norm, upernet.METADATA["fpn_layer_norm"]),
+        "fpn_lateral": (upernet.fpn_lateral, upernet.METADATA["fpn_lateral"]),
+        "fpn_merge": (upernet.fpn_merge, upernet.METADATA["fpn_merge"]),
+        "fpn_conv_block": (upernet.fpn_conv_block, upernet.METADATA["fpn_conv_block"]),
+        "fusion_forward": (upernet.fusion_forward, upernet.METADATA["fusion_forward"]),
+        "head_logits": (upernet.head_logits, upernet.METADATA["head_logits"]),
+        "head_dense": (upernet.head_dense, upernet.METADATA["head_dense"]),
+    }
     additions = ("linear", "conv3x3_window", "batch_norm", "concat", "gelu", "relu", "add",
                  "window_depth_to_space", "window_resize")
-    assert tuple(name for name, _ in main) == main_keys
-    assert tuple(operations._DPT_OPERATIONS) == additions
-    assert not set(main_keys).intersection(operations._DPT_OPERATIONS)
-    assert tuple(OPERATIONS) == main_keys + additions
-    assert tuple(OPERATIONS.items())[:len(main)] == main
-    for name, original in main:
-        current = OPERATIONS[name]
-        assert current is original, name
-        for field in ("function", "metadata", "cost", "constants", "infer", "call", "roles"):
-            assert getattr(current, field) is getattr(original, field), (name, field)
+    assert tuple(OPERATIONS) == tuple(main) + additions
+    for name, (function, metadata) in main.items():
+        assert OPERATIONS[name].function is function, name
+        assert OPERATIONS[name].metadata is metadata, name

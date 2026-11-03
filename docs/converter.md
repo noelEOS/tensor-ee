@@ -21,7 +21,8 @@ PyTorch model ──convert──▶ block graph ──plan──▶ stages ─�
 This guide begins with offline conversions of the two original models: SegFormer-B0,
 `Segformer("mit_b0")` of segmentation-models-pytorch (SMP) 0.5.0, and SMP's `UPerNet` with
 timm's Swin-T encoder, both at 224 × 224 with two input bands and two classes.
-The timm ViT-B/16 encoder and SMP DPT recognizers are described in section 6.
+tensor-ee converts SMP DPT models with a timm ViT-B/16 encoder at 224 × 224.
+The recognizers, refused settings and evidence limits are described in section 6.
 
 Two terms recur below. The **hand-built graphs** are the 19 SegFormer-B0 and Swin-T/UPerNet
 graphs composed by hand from the blocks and run live before the converter existed; the
@@ -42,13 +43,15 @@ Four kinds of evidence apply, and they are kept apart:
   conversion that succeeds says the library can express the model, not that it was validated.
 - **Offline mirror agreement**: NumPy mirrors against PyTorch, per block, in the
   [live fixture harness](live-fixtures.md). The converter adds none.
-- **Live agreement.** One run so far ([record of the run](evidence/x06-live.json)): the converted SegFormer-B0, under the planner's default four
+- **Live agreement.** For the original converted models, one runner run so far ([record of the run](evidence/x06-live.json)): the converted SegFormer-B0, under the planner's default four
   stages, run by the library runner on one chip with random weights, agreed with PyTorch within the
   1e-4 absolute target at every saved boundary (largest absolute error 3.58e-6; logits 2.98e-6, 0
   argmax disagreements). C1–C3 and the logits are bit-identical to the hand-staged run, and the
   logits to the single-graph run, which exported nothing else. The four stages took 92.2 batch
   EECU-seconds.
 - **Model accuracy**: not measured. The weights here are random.
+
+For ViT-B/16 and SMP DPT, see the separate [four-part evidence summary](#smp-dpt-vit-b16-evidence-and-scope) below; the SegFormer runner result does not validate them.
 
 ## Before you start
 
@@ -600,11 +603,55 @@ no numerical execution, live run or model-accuracy claim. Individual blocks outs
 their validated settings remain outside in the report, including W14 convolutions;
 the hand model's reduced composition evidence has its own narrower scope.
 
+### SMP DPT ViT-B/16: evidence and scope
+
+**tensor-ee converts SMP DPT models with a timm ViT-B/16 encoder at 224 × 224**.
+This claim uses SMP 0.5.0 and timm 1.0.30, evaluation mode, unfused attention,
+one class token and cat readout, as in the example above. Four claims stay separate:
+
+- **Graph identity.** The [timm encoder converter gate](../tests/test_timm_vit_converter.py)
+  and [SMP DPT converter gate](../tests/test_smp_dpt_converter.py) convert random-weight
+  models to graphs byte-identical to the hand-composed targets, at full width and
+  reduced width. Both builds bind the same symbolic table reads; reduced inline
+  gates also compare random-weight literals. These gates establish graph identity,
+  not numerical execution.
+- **Offline mirror agreement.** The [encoder evidence](vit-b16-encoder224.md)
+  and [DPT numerical evidence](vit-b16-dpt224.md#numerical-scope) compare NumPy
+  mirrors with PyTorch. The [reduced DPT fixture record](evidence/dpt-reduced-offline.json)
+  has largest absolute error 1.86e-9. Full width is **offline only** and does
+  **not meet the unchanged 1e-4 absolute target**: against float32 PyTorch,
+  fusion3 differs by 6.03e-4 and logits by 3.51e-4; against float64 PyTorch,
+  fusion3 differs by 1.18e-4 and logits by 1.50e-4. Activations reach about
+  190, where one float32 step is about 1.5e-5. Float32 PyTorch itself differs
+  from float64 PyTorch by more (fusion3 6.13e-4, logits 3.70e-4); there are
+  **0 argmax flips**. The [dtype record](evidence/dpt-dtype-offline.json)
+  retains these failures; neither rounding scale nor unchanged decisions relaxes
+  the absolute target.
+- **Live agreement.** It exists only for the
+  [reduced ViT encoder twin](evidence/live-fixtures/20261103T022505Z-vit_encoder_reduced.json)
+  with **rank-at-most-4 projection weights**, the
+  [reduced DPT twin](evidence/live-fixtures/20261103T041356Z-vit_dpt_reduced.json)
+  (`vit_dpt_reduced`, **7 requests**, structured rank-at-most-4 projection weights
+  and sampled head/logit readouts), plus the individual blocks' live records
+  linked in the [catalogue](building-blocks.md). Both twins matched their mirrors
+  bit for bit; the largest absolute EE-versus-PyTorch errors were 5.72e-6 for
+  the encoder and 1.86e-9 for DPT. This does not validate unrestricted weights
+  or promote settings outside individual block records. The full-width live run
+  has not been done; it needs the staged runner and remains a follow-up
+  ([proposal and limits](vit-b16-dpt224.md#offline-request-sizing-and-deferred-full-width-live-run)).
+- **Model accuracy.** None is claimed: random weights only, no accuracy evaluation.
+
+The claim does not cover ViT-S, ViT-L, DeiT-III, DINOv2 or patch 8; these are
+later work. Fused attention, register tokens and other readouts are also outside
+this claim and are refused by these recognizers. Parameterized settings that
+convert outside a block's validated record gain no validation from acceptance.
+
 ## Limits
 
 - Families: SMP SegFormer (keys and values one 7 × 7 window after the spatial reduction, so
   `mit_b0` at 224 × 224) and SMP UPerNet with timm's Swin. Only the settings in each block's record
-  are validated. The root timm ViT encoder returns one atomic pair; SMP DPT consumes four intermediate pairs and returns dense logits.
+  are validated. SMP DPT with a timm ViT-B/16 encoder at 224 × 224 also converts,
+  under the evidence limits above. The root timm ViT encoder returns one atomic pair; SMP DPT consumes four intermediate pairs and returns dense logits.
 - One input and one output; batch execution only. The planner cuts by rules and metadata: interactive
   memory and recomputation cost are not modeled, and its `extent` default was read off one hand plan
   (calibrating costs is deferred).

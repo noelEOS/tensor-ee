@@ -10,7 +10,7 @@ documentation; the records after them hold the evidence the guides cite.
 | [Getting started](getting-started.md) | Install, the offline example, both demos and a first conversion, with expected output |
 | [Code Editor demo](../CODE_EDITOR.md) | The trained U-Net in the Earth Engine Code Editor: no install, no checkpoint |
 | [Browser demo](../DEMO.md) | A local web app that runs either trained model in Earth Engine, with an offline mode |
-| [ViT-B/16 encoder target](vit-b16-encoder224.md) | Hand-composed DPT encoder target, offline evidence and reduced live plan |
+| [ViT-B/16 encoder target](vit-b16-encoder224.md) | Hand-composed DPT encoder target, offline evidence and reduced live agreement on rank-at-most-4 projection weights ([record](evidence/live-fixtures/20261103T022505Z-vit_encoder_reduced.json)) |
 | [Models and their evidence](model.md) | Models built from the blocks, what each was checked against, and the trained checkpoints |
 | [U-Net single-chip walkthrough](water-chip.md) | The trained U-Net from Python: upload its weights, export one chip, check it against PyTorch |
 | [Release validation](validation.md) | The walkthrough's verified run, which the README figure was rendered from |
@@ -18,7 +18,7 @@ documentation; the records after them hold the evidence the guides cite.
 | [API guide](api.md) | The CNN API: entry points, supported forms, numerical and validity rules |
 | [SMP CNNs](smp-models.md) | Compile standard segmentation-models-pytorch CNNs with `adapt_smp_model`: contract, evidence, live check |
 | [Your own CNN over a region](own-model.md) | A trained SMP Unet/resnet34 from checkpoint to a tiled, batch-exported region, with its halo cost |
-| [Converter guide](converter.md) | Convert, report, plan, build and run SegFormer-B0 and the Swin-T/UPerNet |
+| [Converter guide](converter.md) | Convert, report, plan and build SegFormer-B0, Swin-T/UPerNet and SMP DPT with timm ViT-B/16; runner evidence and limits |
 | [Block catalogue](building-blocks.md) | Every block's layout, locality, precision policy, status and evidence; the layers and the public API |
 | [Live fixtures](live-fixtures.md) | The harness that compares a block's Earth Engine result and its NumPy mirror with PyTorch |
 | [Library contract](library-contract.md) | The rules the library is built to: layers, tensor types, policies, metadata, gates |
