@@ -186,3 +186,11 @@ names. Reduced and full-width random-weight timm comparisons pass offline; the
 reduced interactive live attempt failed before encoder readback (client recursion).
 Only the input echo returned exactly. No encoder live agreement, converter
 equivalence, DPT decoder, or model accuracy is claimed.
+
+## ViT-B/16 + DPT target, 224 × 224
+
+The [hand-composed DPT target](vit-b16-dpt224.md) reuses the merged ViT encoder
+and existing library blocks, with SMP 0.5.0 defaults, six bands and two classes.
+Its notes state the layout chain, offline comparisons, reduced composition
+fixture and measured export proposal. Full-width live agreement and model
+accuracy are not established. No DPT recognizer is added by this target.

@@ -1,0 +1,31 @@
+{
+  "kind": "dpt_cpu_backend_diagnostic",
+  "seed": 14126,
+  "input_seed": 14127,
+  "mkldnn": false,
+  "max_abs": {
+    "encoder0_spatial": 1.7881393432617188e-06,
+    "encoder0_class": 1.2814998626708984e-06,
+    "encoder1_spatial": 3.814697265625e-06,
+    "encoder1_class": 2.1457672119140625e-06,
+    "encoder2_spatial": 4.0531158447265625e-06,
+    "encoder2_class": 2.6226043701171875e-06,
+    "encoder3_spatial": 4.76837158203125e-06,
+    "encoder3_class": 3.2186508178710938e-06,
+    "readout0": 2.7418136596679688e-06,
+    "reassemble0": 5.364418029785156e-07,
+    "readout1": 3.5762786865234375e-06,
+    "reassemble1": 1.6093254089355469e-06,
+    "readout2": 5.0067901611328125e-06,
+    "reassemble2": 6.4373016357421875e-06,
+    "readout3": 6.4373016357421875e-06,
+    "reassemble3": 1.1309981346130371e-05,
+    "fusion0": 2.8848648071289062e-05,
+    "fusion1": 5.14984130859375e-05,
+    "fusion2": 0.00011444091796875,
+    "fusion3": 0.000274658203125,
+    "head": 0.00019073486328125,
+    "logits": 0.00017547607421875
+  },
+  "argmax_flips": 0
+}
