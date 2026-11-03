@@ -106,6 +106,18 @@ Use `dyadic()` in [`tools/fixtures/core.py`](tools/fixtures/core.py) for arrays 
 model. [`tests/test_graph_identity.py`](tests/test_graph_identity.py) refuses torch's normal
 generators while the G1 fixtures build.
 
+**Model references follow the same rule.** A random-weight model's numerical reference,
+the PyTorch model its mirror is compared with, takes its weights from integer arithmetic
+(`_fixed_weights`), never from a library's native random initialization. Native
+initialization is not bit-identical across platforms, and it can let activations grow
+far beyond a trained model's. Its BatchNorm running statistics are then calibrated from
+a fixed set of integer-generated inputs, separate from the evaluation input: a fixed
+number of batches, `model.train()` for that pass only under `torch.no_grad()` with
+`momentum=None`, then `model.eval()`. Only the running statistics change. Fix the
+procedure before looking at any comparison and run it once; never adjust weights,
+inputs or calibration until a check passes. A trained model is compared with its
+trained weights. Records made with native initialization stay as history.
+
 ## Add a recognizer
 
 The converter (`tensor_ee.converter.convert`, [guide](docs/converter.md)) turns a PyTorch
@@ -249,12 +261,25 @@ research inputs are not uploaded to CI.
 
 ## Numerical comparisons
 
-- Keep three claims apart: graph identity, numerical agreement on recorded inputs,
-  and model accuracy. One does not establish another. Graph construction alone is
-  not numerical equivalence. Describe live evidence separately from offline checks.
-- Keep the 1e-4 absolute logit target and every recorded exception. Never relax a
-  check silently or rewrite a historical result; the known U-Net impulse failure
-  stays documented.
+- Keep four claims apart: graph identity, offline mirror agreement, live agreement and
+  model accuracy. One does not establish another. Graph construction alone is not
+  numerical equivalence. Describe live evidence separately from offline checks.
+- **The 1e-4 absolute target, against float32 PyTorch, applies to every block
+  fixture's outputs and to a model's final outputs** (its logits, and its
+  probabilities where it produces them). Keep it and every recorded exception. Never
+  relax a check silently or rewrite a historical result; the known U-Net impulse
+  failure stays documented.
+- **A model's intermediate outputs** (encoder features, decoder stages, anything
+  before the final output) are recorded but not held to 1e-4. Each is checked against
+  a float64 run of the same PyTorch model, with the same float32 weights and input
+  converted by `model.double()`: the mirror's largest absolute error against float64
+  must be no larger than float32 PyTorch's own. Large intermediate values put 1e-4
+  out of reach of any float32 implementation; this check shows the library is at
+  least as accurate as PyTorch there.
+- **Record the scale with every comparison**, for each output: its largest absolute
+  value, the float32 step at that value (`np.spacing`), the largest absolute error
+  against float32 PyTorch and, for a model, against float64 PyTorch, and argmax flips
+  where the output has classes.
 - Retain the actual prepared input pixels and their IEEE float32 identity, the
   ordered bands, the affine grid and coordinate orientation, and the raw mask
   channels.
