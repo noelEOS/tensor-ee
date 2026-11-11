@@ -72,7 +72,7 @@ graphs byte for byte; numerical and live evidence have narrower scope, detailed 
 | Fixed Swin-T/UPerNet, 224 × 224 | [Three-stage workflow](https://github.com/noelEOS/tensor-ee/blob/main/docs/swin.md) | Trained EE weights are public; this workflow also needs a local checkpoint, not yet public |
 | Prithvi Sen1Floods11, 224 × 224 crops | [Crop and region API](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11) | Released trained checkpoint; live evidence on synthetic crops and one real Sentinel-2 crop |
 | SMP SegFormer-B0 or UPerNet with timm's Swin encoder | [Attention converter](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md) | Conversion examples use random weights; the report identifies settings outside the validated records |
-| SMP DPT + timm ViT-B/16, 224 × 224 | [DPT conversion](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md#smp-050-dpt-at-224--224) | Random weights; full-width graph identity, limited reduced-twin live evidence; full-width numerics miss the target |
+| SMP DPT + timm ViT-B/16, 224 × 224 | [DPT conversion](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md#smp-050-dpt-at-224--224) | Random weights; full-width graph identity; full-width logits meet the 1e-4 target offline only; live evidence covers reduced twins |
 
 You can also compose a model from the [block catalogue](https://github.com/noelEOS/tensor-ee/blob/main/docs/building-blocks.md).
 It has 88 blocks: 23 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
@@ -141,8 +141,10 @@ Expect `2 passed` from the example's tests.
   records live comparisons with PyTorch and ONNX Runtime, offline graph identity,
   and the inputs each result covers. The absolute logit target is 1e-4; segmentation
   accuracy is not established; the Prithvi result above covers one labelled crop.
-- **DPT evidence is limited.** Full-width logits differ from float32 PyTorch by
-  up to 3.51e-4, above the unchanged 1e-4 target, despite zero argmax flips.
+- **DPT evidence is limited.** Offline, with random weights, the full-width head and
+  logits are within 2.06e-5 of float32 PyTorch, inside the 1e-4 target, with zero
+  argmax flips. Two intermediate outputs differ from float32 PyTorch by more than 1e-4
+  (largest 1.88e-4); intermediates are checked against float64 PyTorch instead.
   Live checks cover only reduced encoder and DPT twins with structured
   rank-at-most-4 projection weights (sampled DPT readouts), plus individual blocks.
   Full-width live execution remains unvalidated; no accuracy is claimed.
