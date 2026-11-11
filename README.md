@@ -7,7 +7,8 @@
 **Run supported PyTorch models inside Google Earth Engine, without deploying a
 model-serving endpoint.** TensorEE expresses neural-network inference as Earth Engine
 image and array operations. Larger models can run in stages, saving intermediate
-features as Earth Engine assets.
+features as Earth Engine assets—from radar U-Nets to the 100M-parameter Prithvi
+Sen1Floods11 model and supported vision transformers.
 
 ![Earth Engine imagery passes to a deployed Vertex AI endpoint, or is evaluated directly with TensorEE's Earth Engine image and array operations](https://raw.githubusercontent.com/noelEOS/tensor-ee/main/docs/images/inference-location.svg)
 
@@ -16,7 +17,28 @@ are embedded constants or reads from EE table assets. Unsupported operations are
 not approximated. The [Vertex AI integration](https://developers.google.com/earth-engine/guides/ee-vertex-overview)
 shown alongside it uses a separately deployed model endpoint.
 
-## A real example
+## From satellite imagery to flood predictions
+
+**Prithvi Sen1Floods11 now runs inside Earth Engine with its released trained
+checkpoint.** The workflow prepares six Sentinel-2 L1C bands, runs the encoder
+and decoder in stages, and saves the prediction as an EE image asset.
+
+On one 224 × 224 crop from the held-out Bolivia event, EE logits matched PyTorch
+with a **largest absolute difference of 1.41e-5 and zero class disagreements**.
+Water IoU against the hand label was **0.911 on that crop**—an example result,
+not a benchmark or an established accuracy score.
+[Workflow and preprocessing](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11) ·
+[Recorded real-imagery run](https://github.com/noelEOS/tensor-ee/blob/main/docs/evidence/prithvi_sen1floods11-real-imagery-live.json)
+
+The same model can process **a region of independent crops in each staged export**.
+A trained 2 × 2 synthetic-crop run matched PyTorch within 6.11e-6, with zero class
+changes. Crop edges keep their own padding; this is not overlapping slide inference.
+
+**Also new: ViT-B/16 + DPT conversion.** Convert supported SMP DPT models at
+224 × 224 to native EE graphs. Full-width conversion matches the hand-composed
+graphs byte for byte; numerical and live evidence have narrower scope, detailed below.
+
+### Radar water mapping
 
 ![Sentinel-1 radar imagery of Sun Moon Lake, with the water probability and mask computed by a trained U-Net inside Earth Engine](https://raw.githubusercontent.com/noelEOS/tensor-ee/main/docs/images/water_chip_224.png)
 
@@ -36,6 +58,9 @@ shown alongside it uses a separately deployed model endpoint.
   where you can create an image asset. The demo exports one chip, billed to your project.
 - **[Try the offline example](https://github.com/noelEOS/tensor-ee/blob/main/README.md#install).** Build a small CNN's graph locally, with no
   credentials or cloud calls.
+- **[Explore Prithvi flood inference](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11).**
+  Follow the six-band preprocessing and staged workflow; this requires the released
+  checkpoint and your own EE setup.
 - **[Convert an attention model](https://github.com/noelEOS/tensor-ee/blob/main/docs/getting-started.md#5-convert-an-attention-model).**
   Start with random weights, inspect the conversion report, then plan the stages.
 
@@ -45,13 +70,16 @@ shown alongside it uses a separately deployed model endpoint.
 |---|---|---|
 | SegWater ResNet18 U-Net, 224 × 224 | [Code Editor demo](https://github.com/noelEOS/tensor-ee/blob/main/CODE_EDITOR.md); `compile_model` for CNNs | Trained EE weights are public; the Code Editor demo needs no checkpoint |
 | Fixed Swin-T/UPerNet, 224 × 224 | [Three-stage workflow](https://github.com/noelEOS/tensor-ee/blob/main/docs/swin.md) | Trained EE weights are public; this workflow also needs a local checkpoint, not yet public |
-| Prithvi Sen1Floods11, 224 × 224 crops | [Hand-composed crop API](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11) | The released Sen1Floods11 checkpoint runs live in staged exports, one crop or a region of whole crops, and matches PyTorch within 1.5e-05, on synthetic crops and on a real Sentinel-2 crop (water IoU 0.911 against its hand label, one crop). Accuracy is not established. |
+| Prithvi Sen1Floods11, 224 × 224 crops | [Crop and region API](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11) | Released trained checkpoint; live evidence on synthetic crops and one real Sentinel-2 crop |
 | SMP SegFormer-B0 or UPerNet with timm's Swin encoder | [Attention converter](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md) | Conversion examples use random weights; the report identifies settings outside the validated records |
-| SMP DPT with a timm ViT-B/16 encoder, 224 × 224 | [Attention converter](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md#smp-050-dpt-at-224--224) | Converts to graphs byte-identical to the hand-composed targets, full width and reduced. Full width is offline only and misses the 1e-4 absolute target; live agreement covers only the reduced encoder twin (rank-at-most-4 projection weights), the structured reduced DPT twin (7 requests, sampled head/logit readouts), and individual blocks' recorded settings. Random weights only; no accuracy claim. [Evidence and limits](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md#smp-dpt-vit-b16-evidence-and-scope). |
+| SMP DPT + timm ViT-B/16, 224 × 224 | [DPT conversion](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md#smp-050-dpt-at-224--224) | Random weights; full-width graph identity; full-width logits meet the 1e-4 target offline only; live evidence covers reduced twins |
 
 You can also compose a model from the [block catalogue](https://github.com/noelEOS/tensor-ee/blob/main/docs/building-blocks.md).
 It has 88 blocks: 23 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
-The [browser demo](https://github.com/noelEOS/tensor-ee/blob/main/DEMO.md) runs either trained model with a local checkpoint;
+Recent additions include grouped/depthwise convolutions, bilinear upsampling,
+standalone BatchNorm and input standardization. These expand the building blocks;
+whole-model support still depends on the compiler or converter.
+The [browser demo](https://github.com/noelEOS/tensor-ee/blob/main/DEMO.md) runs the SegWater and fixed Swin models with a local checkpoint;
 its `--offline` mode previews the interface without one.
 
 ## Staged inference
@@ -68,7 +96,10 @@ Weights live in EE table assets; saved features and predictions live in EE image
 The checkpoint, manifest and task state are local files. This workflow needs no GCS bucket.
 The [Swin guide](https://github.com/noelEOS/tensor-ee/blob/main/docs/swin.md) details the three steps, including the validity summary
 saved with C1–C3. Other models can use different cuts: the [converter planner](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md#3-plan)
-chooses stages under explicit limits.
+chooses stages under explicit limits. Prithvi uses explicit cut lists and can resume
+from saved encoder boundaries. Its measured merged-stage run reduced stage exports
+from 33 to 16 with identical saved outputs; batch queue time meant wall time did
+not fall. [Measurements and region execution](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11).
 
 ## Install
 
@@ -109,15 +140,23 @@ Expect `2 passed` from the example's tests.
 - **Numerical agreement is not model accuracy.** The [model evidence](https://github.com/noelEOS/tensor-ee/blob/main/docs/model.md)
   records live comparisons with PyTorch and ONNX Runtime, offline graph identity,
   and the inputs each result covers. The absolute logit target is 1e-4; segmentation
-  accuracy is not measured.
-- **Known exception.** The U-Net's synthetic upper-left impulse chip has a largest
+  accuracy is not established; the Prithvi result above covers one labelled crop.
+- **DPT evidence is limited.** Offline, with random weights, the full-width head and
+  logits are within 2.06e-5 of float32 PyTorch, inside the 1e-4 target, with zero
+  argmax flips. Two intermediate outputs differ from float32 PyTorch by more than 1e-4
+  (largest 1.88e-4); intermediates are checked against float64 PyTorch instead.
+  Live checks cover only reduced encoder and DPT twins with structured
+  rank-at-most-4 projection weights (sampled DPT readouts), plus individual blocks.
+  Full-width live execution remains unvalidated; no accuracy is claimed.
+  [Evidence and scope](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md#smp-dpt-vit-b16-evidence-and-scope).
+- **Known U-Net exception.** The U-Net's synthetic upper-left impulse chip has a largest
   absolute logit difference of 1.6510487e-4, above the target; probabilities and the
   water mask agree ([record](https://github.com/noelEOS/tensor-ee/blob/main/docs/history/cnn/SEGWATER_PYTORCH_RESULTS.md)).
 - **EE limits still apply.** Inference uses EE computation and storage, with their costs
   and quotas. The figures make no speed or cost comparison with Vertex AI.
-- **Weights and training data.** Both trained models' EE weights are public under
+- **Weights and training data.** The SegWater and fixed Swin models' EE weights are public under
   [CC BY 4.0](https://github.com/noelEOS/tensor-ee/blob/main/WEIGHTS-LICENSE.md); their [manifests](https://github.com/noelEOS/tensor-ee/tree/main/data/manifests/) list the assets.
-  Checkpoint files are not yet public. Training used Sentinel-1 chips with water labels
+  Their checkpoint files are not yet public. Their training used Sentinel-1 chips with water labels
   derived from Sentinel-2; a fuller dataset description is not yet published
   ([provenance](https://github.com/noelEOS/tensor-ee/blob/main/docs/model.md#training-data-and-provenance)).
 
@@ -129,6 +168,10 @@ Expect `2 passed` from the example's tests.
 [Changelog](https://github.com/noelEOS/tensor-ee/blob/main/CHANGELOG.md)
 
 ## Licence, citation and attribution
+
+Prithvi uses a separately released third-party checkpoint; consult its
+[source and provenance](https://github.com/noelEOS/tensor-ee/blob/main/docs/api.md#prithvi-sen1floods11)
+and upstream terms. The weight licence below applies to TensorEE’s SegWater and fixed Swin weights.
 
 Code and documentation: [MIT](https://github.com/noelEOS/tensor-ee/blob/main/LICENSE). Trained weights: [CC BY 4.0](https://github.com/noelEOS/tensor-ee/blob/main/WEIGHTS-LICENSE.md),
 including the checkpoints when published. Satellite data and third-party libraries keep
