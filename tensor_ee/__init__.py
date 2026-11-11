@@ -5,7 +5,7 @@ from importlib.metadata import PackageNotFoundError as _PackageNotFoundError, ve
 try:
     __version__ = _distribution_version("tensor-ee")
 except _PackageNotFoundError:
-    __version__ = "0.1.0"  # Source checkouts need no installed distribution metadata.
+    __version__ = "0.2.0"  # Source checkouts need no installed distribution metadata.
 
 from .comparison import PixelTensor, compare_segmentation
 from .compatibility import CompatibilityReport, check_compatibility
