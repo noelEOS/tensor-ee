@@ -22,7 +22,7 @@ python -m pip install tensor-ee
 ```
 
 pip ends with `Successfully installed`, followed by what it installed; the distribution
-is `tensor-ee` 0.1.0. Allow several minutes: most of the download is PyTorch, about 600 MB
+is `tensor-ee` 0.2.0. Allow several minutes: most of the download is PyTorch, about 600 MB
 once installed on macOS. On Linux, pip's default PyTorch build also brings the CUDA
 libraries, a few gigabytes; to skip them, install the CPU-only build before installing
 TensorEE, as the continuous integration does:

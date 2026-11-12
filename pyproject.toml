@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tensor-ee"
-version = "0.1.0"
-description = "Experimental building blocks for running pretrained PyTorch models natively in Google Earth Engine: a restricted CNN compiler (the SegWater U-Net; standard SMP Unet and UnetPlusPlus on ResNet and VGG encoders), a converter for supported attention models (SMP SegFormer-B0; SMP UPerNet with timm's Swin-T), and a planner and runner for staged exports."
+version = "0.2.0"
+description = "Experimental building blocks for running pretrained PyTorch models natively in Google Earth Engine: a restricted CNN compiler (the SegWater U-Net; standard SMP Unet and UnetPlusPlus on ResNet and VGG encoders), a converter for supported attention models (SMP SegFormer-B0; SMP UPerNet with timm's Swin-T; SMP DPT with timm's ViT-B/16), a hand-composed Prithvi-EO-1.0 Sen1Floods11 model, and a planner and runner for staged exports."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
