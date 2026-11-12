@@ -26,6 +26,13 @@ from .core.errors import SemanticUnknown, reject as _reject
 from .blocks.raster.conv import _coefficient_field, conv_options, finite_coefficients, grouped_conv_options
 from .blocks.raster.pooling import aligned_size_message, pool_config, pool_options
 from .blocks.raster.resample import nearest_factor
+from .layouts.raster import canonical_phase, phase_pair
+
+
+EMITS_NOTHING = ("batchnorm_constant", "conv_constant", "absorbed")
+"""Call kinds that emit no tensor: coefficient reads that are operands of the one call
+using them, and nodes absorbed into the convolution that reads them (zero padding, and an
+``Identity`` directly ahead of a functional convolution)."""
 
 
 @dataclass(frozen=True)
@@ -89,6 +96,14 @@ def _mul_arguments(input, other, *, out=None):
 
 def _method_mul_arguments(input, other):
     pass
+
+
+def _conv2d_arguments(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1):
+    """Signature only: ``F.conv2d`` (the same object as ``torch.conv2d``)."""
+
+
+def _pad_arguments(input, pad, mode="constant", value=None):
+    """Signature only: ``F.pad``."""
 
 
 _GLOBAL_DIMS = ((2, 3), (3, 2), (-2, -1), (-1, -2))
@@ -314,7 +329,7 @@ def specialize_plumbing(graph: GraphModule, input_shape: tuple[int, int, int, in
                 node.args, node.kwargs = (options.pop("input"),), options
                 changed = True
             call = semantic_call(node, graph)
-            if call.kind == "batchnorm_constant":
+            if call.kind in EMITS_NOTHING:
                 continue
             if all(x in metadata for x in call.inputs):
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))
@@ -382,27 +397,296 @@ def _module_batchnorm_options(module: nn.BatchNorm2d) -> dict[str, Any]:
     return options
 
 
-def batchnorm_predecessor(node: Node, graph: GraphModule) -> tuple[Node, Node, nn.Conv2d] | None:
-    """The unchanged convolution fold, or None for a standalone inference BatchNorm."""
+def _batchnorm_fold(node: Node, graph: GraphModule) -> tuple[Node, Convolution, nn.Conv2d] | None:
+    """The convolution fold with the recognised convolution it folds, or None."""
     module = graph.get_submodule(str(node.target))
     _module_batchnorm_options(module)
     predecessor = _bind_options(_input_arguments, node.args, node.kwargs)["input"]
-    if (not isinstance(predecessor, Node) or predecessor.op != "call_module" or len(predecessor.users) != 1):
+    if not isinstance(predecessor, Node) or len(predecessor.users) != 1:
         return None
-    conv = graph.get_submodule(str(predecessor.target))
-    if not isinstance(conv, nn.Conv2d):
+    if predecessor.op == "call_module":
+        conv = graph.get_submodule(str(predecessor.target))
+        if not isinstance(conv, nn.Conv2d):
+            return None
+        if conv.training or module.training:
+            _reject("Set model.eval() before compilation", "training_mode")
+        if module.num_features != conv.out_channels:
+            _reject("BatchNorm running statistics must match convolution output channels")
+        recognised = convolution(predecessor, graph)
+    elif predecessor.op == "call_function" and predecessor.target is torch.conv2d:
+        recognised = convolution(predecessor, graph)
+        if module.num_features != recognised.module.out_channels:
+            _reject("BatchNorm running statistics must match convolution output channels")
+    else:
         return None
-    if conv.training or module.training:
-        _reject("Set model.eval() before compilation", "training_mode")
-    if module.num_features != conv.out_channels:
-        _reject("BatchNorm running statistics must match convolution output channels")
-    (conv_options if conv.groups == 1 else grouped_conv_options)(conv)
     # Preserve the compiler's existing folding operation and coefficient identity.
-    fused = torch.nn.utils.fuse_conv_bn_eval(conv, module)
+    fused = torch.nn.utils.fuse_conv_bn_eval(recognised.module, module)
     finite_coefficients(fused)
-    source = _bind_options(_input_arguments, predecessor.args, predecessor.kwargs)["input"]
+    _inputs((recognised.source,))
+    return predecessor, recognised, fused
+
+
+def batchnorm_predecessor(node: Node, graph: GraphModule) -> tuple[Node, Node, nn.Conv2d] | None:
+    """The unchanged convolution fold, or None for a standalone inference BatchNorm.
+
+    The convolution is an ``nn.Conv2d`` module or a functional ``F.conv2d``, with any zero
+    padding directly ahead of it (``convolution``); the source returned is what that
+    convolution reads, the padding's input when a padding node is absorbed."""
+    folded = _batchnorm_fold(node, graph)
+    if folded is None:
+        return None
+    predecessor, recognised, fused = folded
+    return predecessor, recognised.source, fused
+
+
+# ---------------------------------------------------------------------------
+# Convolutions: nn.Conv2d or F.conv2d, with the zero padding directly ahead of them
+# ---------------------------------------------------------------------------
+@dataclass(frozen=True)
+class Convolution:
+    """A recognised convolution call.
+
+    ``source``: the tensor it reads (the input of an absorbed padding node or Identity);
+    ``module``: the ``nn.Conv2d`` the blocks run, the model's own module where today's form
+    applies, else a stand-in holding the call's own weight and bias Parameters with padding
+    ``kernel // 2``; ``phase``: ``canonical_phase`` of ``(phase_y, phase_x)``;
+    ``padding``: the total zero padding ``(left, right, top, bottom)``, the padding node's
+    plus the convolution's own; ``path``: the module path of its weight (state-dict names)."""
+
+    source: Node
+    module: nn.Conv2d
+    phase: Any
+    padding: tuple[int, int, int, int]
+    path: str
+
+
+_OTHER_PADDING = tuple(getattr(nn, name) for name in (
+    "ReflectionPad2d", "ReplicationPad2d", "CircularPad2d") if hasattr(nn, name))
+_PADDING_MESSAGE = ("Zero padding is supported only directly ahead of the one convolution that reads it "
+                    "(nn.Conv2d or F.conv2d), as that convolution's padding")
+_CONV_ATTRIBUTE_MESSAGE = ("Functional conv2d weight and bias must be get_attr parameters or buffers used only "
+                           "as this call's operands")
+
+
+def _is_convolution(node: Node, graph: GraphModule) -> bool:
+    if node.op == "call_module":
+        return isinstance(graph.get_submodule(str(node.target)), nn.Conv2d)
+    return node.op == "call_function" and node.target is torch.conv2d
+
+
+def _convolution_operands(node: Node) -> dict[str, Any]:
+    if node.op == "call_module":
+        return _bind_options(_input_arguments, node.args, node.kwargs)
+    return _bind_options(_conv2d_arguments, node.args, node.kwargs)
+
+
+def _read_by_one_convolution(node: Node, graph: GraphModule, *, functional: bool = False) -> bool:
+    """Whether ``node``'s only use is as the input operand of one convolution call (a
+    functional one only, with ``functional``). The padding node and the convolution both
+    ask this, so their verdicts cannot disagree."""
+    if len(node.users) != 1:
+        return False
+    user = next(iter(node.users))
+    if not _is_convolution(user, graph) or (functional and user.op != "call_function"):
+        return False
+    try:
+        operands = _convolution_operands(user)
+    except TypeError:
+        return False
+    return operands["input"] is node and not any(
+        node in _nodes_in(value) for key, value in operands.items() if key != "input")
+
+
+def _static_padding(values, spelling: str) -> tuple[int, int, int, int]:
+    if not isinstance(values, (tuple, list)) or any(isinstance(x, Node) for x in values):
+        _reject(f"{spelling} padding must be static integers; padding computed from a tensor's shape "
+                f"is unsupported (received {values!r})")
+    if len(values) != 4:
+        _reject(f"{spelling} must pad the two spatial axes with four integers (left, right, top, bottom); "
+                f"received {values!r}")
+    if any(isinstance(x, bool) or not isinstance(x, Integral) for x in values):
+        _reject(f"{spelling} padding must be static integers; received {values!r}")
+    if any(x < 0 for x in values):
+        _reject(f"{spelling} with negative padding (cropping) is unsupported; received {tuple(values)!r}")
+    return tuple(int(x) for x in values)
+
+
+def zero_padding(node: Node, graph: GraphModule) -> tuple[Node, tuple[int, int, int, int]] | None:
+    """A zero-padding node's input and ``(left, right, top, bottom)``; None for any other node.
+
+    Spellings: ``nn.ZeroPad2d``, ``nn.ConstantPad2d`` with value 0, and ``F.pad`` with a
+    static four-integer pad, mode ``"constant"`` and value 0 or None. Refused: other values
+    and modes, reflection, replication and circular padding, negative pads, pads computed
+    from a tensor's shape, ``F.pad`` tuples of another length, and a padding node with any
+    other use than as the input of the one convolution directly after it."""
+    if node.op == "call_module":
+        module = graph.get_submodule(str(node.target))
+        if isinstance(module, _OTHER_PADDING):
+            _reject(f"{type(module).__name__} is unsupported: only zero padding directly ahead of a convolution",
+                    "unsupported_operator")
+        if not isinstance(module, nn.ConstantPad2d):
+            return None
+        spelling, value = type(module).__name__, module.value
+        source = _bind_options(_input_arguments, node.args, node.kwargs)["input"]
+        padding = _static_padding(module.padding, spelling)
+    elif node.op == "call_function" and node.target is F.pad:
+        spelling = "F.pad"
+        options = _bind_options(_pad_arguments, node.args, node.kwargs)
+        if options["mode"] != "constant":
+            _reject(f"F.pad mode {options['mode']!r} is unsupported: only zero ('constant') padding "
+                    "directly ahead of a convolution")
+        value = 0 if options["value"] is None else options["value"]
+        source = options["input"]
+        padding = _static_padding(options["pad"], spelling)
+    else:
+        return None
+    if (isinstance(value, bool) or not isinstance(value, Real) or value != 0
+            or math.copysign(1.0, value) < 0):
+        _reject(f"{spelling} value must be 0 (zero padding); received {value!r}")
+    if not _read_by_one_convolution(node, graph):
+        _reject(f"{_PADDING_MESSAGE}; this {spelling} has another use")
     _inputs((source,))
-    return predecessor, source, fused
+    return source, padding
+
+
+def _absorbed_identity(node: Node, graph: GraphModule) -> bool:
+    """An ``nn.Identity`` whose only use is as the input of one functional convolution.
+    Elsewhere, and ahead of an ``nn.Conv2d``, an Identity keeps its own node."""
+    return (node.op == "call_module" and isinstance(graph.get_submodule(str(node.target)), nn.Identity)
+            and _read_by_one_convolution(node, graph, functional=True))
+
+
+def _conv_attribute(node: Any, user: Node, graph: GraphModule):
+    """A functional convolution's weight or bias: a get_attr parameter or buffer used only
+    as that call's weight or bias operand."""
+    message = _CONV_ATTRIBUTE_MESSAGE
+    if not isinstance(node, Node) or node.op != "get_attr" or set(node.users) != {user}:
+        _reject(message)
+    operands = _bind_options(_conv2d_arguments, user.args, user.kwargs)
+    if any(node in _nodes_in(value) for key, value in operands.items() if key not in ("weight", "bias")):
+        _reject(message)
+    try:
+        return graph.get_parameter(str(node.target))
+    except AttributeError:
+        try:
+            return graph.get_buffer(str(node.target))
+        except AttributeError:
+            _reject(message)
+
+
+def conv_constant(node: Node, graph: GraphModule) -> bool:
+    """Allow get_attr only as the weight or bias of the one functional convolution using it."""
+    if node.op != "get_attr" or len(node.users) != 1:
+        return False
+    user = next(iter(node.users))
+    if user.op != "call_function" or user.target is not torch.conv2d:
+        return False
+    try:
+        operands = _bind_options(_conv2d_arguments, user.args, user.kwargs)
+        if operands["weight"] is not node and operands["bias"] is not node:
+            return False
+        _conv_attribute(node, user, graph)
+    except (TypeError, UnsupportedOperation):
+        return False
+    return True
+
+
+def _static_pair(value, name: str) -> tuple[int, int]:
+    pair = tuple(value) if isinstance(value, (tuple, list)) else (value, value)
+    if len(pair) != 2 or any(isinstance(x, bool) or not isinstance(x, Integral) for x in pair):
+        _reject(f"Functional conv2d {name} must be a static integer or pair of integers; received {value!r}")
+    return int(pair[0]), int(pair[1])
+
+
+def _stand_in(weight, bias, *, stride, dilation, groups, padding_mode="zeros") -> nn.Conv2d:
+    """An ``nn.Conv2d`` with padding ``kernel // 2`` holding these weight and bias tensors
+    themselves (no copy, no initialization and no RNG draw), for the blocks' unchanged checks."""
+    if not isinstance(weight, torch.Tensor) or weight.dim() != 4:
+        _reject("Conv2d weight must be a four-dimensional [out, in / groups, kh, kw] tensor", "coefficient_shape")
+    out, per_group, kh, kw = (int(x) for x in weight.shape)
+    try:
+        conv = torch.nn.utils.skip_init(
+            nn.Conv2d, per_group * groups, out, (kh, kw), stride=stride, padding=(kh // 2, kw // 2),
+            dilation=dilation, groups=groups, bias=bias is not None, padding_mode=padding_mode)
+    except (TypeError, ValueError, RuntimeError) as error:
+        _reject(f"Unsupported Conv2d settings: {error}")
+    conv.weight = weight if isinstance(weight, nn.Parameter) else nn.Parameter(weight, requires_grad=False)
+    if bias is not None:
+        conv.bias = bias if isinstance(bias, nn.Parameter) else nn.Parameter(bias, requires_grad=False)
+    return conv.eval()
+
+
+def convolution(node: Node, graph: GraphModule) -> Convolution | None:
+    """The convolution a node calls, with the zero padding directly ahead of it; None for a
+    node that calls no convolution.
+
+    An ``nn.Conv2d`` with padding ``kernel // 2`` (or ``"same"``) and no padding node ahead
+    is today's form: the module itself, its own checks and messages, phase 0. Otherwise, on
+    each axis, the total zero padding before the input (the padding node's plus the
+    convolution's own) must be ``kernel // 2 - phase`` with ``0 <= phase < stride``; the
+    output count is checked against PyTorch's at the proven input size
+    (``infer_metadata``). The blocks then run the centred convolution sampled at that phase.
+    """
+    if not _is_convolution(node, graph):
+        return None
+    operands = _convolution_operands(node)
+    source = operands["input"]
+    if node.op == "call_module":
+        module = graph.get_submodule(str(node.target))
+        path, own = str(node.target), module.padding
+        kh, kw = _pair(module.kernel_size)
+        padded = _quiet_zero_padding(source, graph)
+        if padded is None and (own == "same" or own == (kh // 2, kw // 2)):
+            (conv_options if module.groups == 1 else grouped_conv_options)(module)
+            return Convolution(source, module, 0, (kw // 2, kw // 2, kh // 2, kh // 2), path)
+        stand_in = _stand_in(module.weight, module.bias, stride=module.stride, dilation=module.dilation,
+                             groups=module.groups, padding_mode=module.padding_mode)
+    else:
+        weight = _conv_attribute(operands["weight"], node, graph)
+        bias = None if operands["bias"] is None else _conv_attribute(operands["bias"], node, graph)
+        path = str(operands["weight"].target).rpartition(".")[0] or str(operands["weight"].target)
+        own = operands["padding"]
+        if own not in ("same", "valid"):
+            own = _static_pair(own, "padding")
+        groups = operands["groups"]
+        if isinstance(groups, bool) or not isinstance(groups, Integral) or groups < 1:
+            _reject(f"Functional conv2d groups must be a static positive integer; received {groups!r}")
+        stand_in = _stand_in(weight, bias, stride=_static_pair(operands["stride"], "stride"),
+                             dilation=_static_pair(operands["dilation"], "dilation"), groups=int(groups))
+        kh, kw = _pair(stand_in.kernel_size)
+        padded = _quiet_zero_padding(source, graph)
+        if padded is None and isinstance(source, Node) and _absorbed_identity(source, graph):
+            source = _bind_options(_input_arguments, source.args, source.kwargs)["input"]
+    # The blocks' unchanged checks and messages: odd kernel, stride 1 or 2, dilation 1,
+    # groups, zero padding mode, float32 and finite coefficients.
+    _, stride = (conv_options if stand_in.groups == 1 else grouped_conv_options)(stand_in)
+    own = (kh // 2, kw // 2) if own == "same" else (0, 0) if own == "valid" else _pair(own)
+    if any(isinstance(x, bool) or not isinstance(x, Integral) or x < 0 for x in own):
+        _reject(f"Conv2d padding must be non-negative integers; received {own!r}")
+    if padded is not None:
+        source, (left, right, top, bottom) = padded
+    else:
+        left = right = top = bottom = 0
+    left, right, top, bottom = left + own[1], right + own[1], top + own[0], bottom + own[0]
+    phase = (kh // 2 - top, kw // 2 - left)
+    if not all(0 <= p < stride for p in phase):
+        _reject(f"Conv2d must use same padding (kernel_size // 2), or zero padding that starts "
+                f"kernel_size // 2 - phase pixels before the input on each axis with 0 <= phase < stride: "
+                f"padding (left {left}, right {right}, top {top}, bottom {bottom}), the convolution's own plus "
+                f"any zero padding directly ahead, gives phase {phase} at kernel {(kh, kw)} and stride {stride}")
+    _inputs((source,))
+    return Convolution(source, stand_in, canonical_phase(phase, stride), (left, right, top, bottom), path)
+
+
+def _quiet_zero_padding(source: Any, graph: GraphModule):
+    """``zero_padding`` for a convolution's input; a refused padding node is not absorbed
+    (the padding node itself reports why)."""
+    if not isinstance(source, Node):
+        return None
+    try:
+        return zero_padding(source, graph)
+    except (UnsupportedOperation, TypeError):
+        return None
 
 
 _BATCHNORM_CONSTANTS = ("running_mean", "running_var", "weight", "bias")
@@ -468,11 +752,9 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
             source = _bind_options(_input_arguments, node.args, node.kwargs)["input"]
             inputs = _inputs((source,))
             if isinstance(module, nn.Conv2d):
-                if module.groups != 1:
-                    grouped_conv_options(module)
-                    return SemanticCall("grouped_conv", inputs, module=module)
-                conv_options(module)
-                return SemanticCall("conv", inputs, module=module)
+                return _convolution_call(node, graph)
+            if zero_padding(node, graph) is not None:
+                return SemanticCall("absorbed", ())
             if isinstance(module, (nn.AvgPool2d, nn.MaxPool2d)):
                 return SemanticCall("pool", inputs, {"config": pool_config(module)}, module)
             if isinstance(module, nn.Upsample):
@@ -487,12 +769,16 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
             if isinstance(module, nn.Sigmoid):
                 return SemanticCall("sigmoid", inputs)
             if isinstance(module, nn.Identity):
+                if _absorbed_identity(node, graph):
+                    return SemanticCall("absorbed", ())
                 return SemanticCall("identity", inputs)
             if isinstance(module, nn.BatchNorm2d):
-                folded = batchnorm_predecessor(node, graph)
+                folded = _batchnorm_fold(node, graph)
                 if folded is not None:
-                    predecessor, source, fused = folded
-                    return SemanticCall("batchnorm", inputs, {"source": source, "predecessor": predecessor}, fused)
+                    predecessor, recognised, fused = folded
+                    return SemanticCall("batchnorm", inputs, {
+                        "source": recognised.source, "predecessor": predecessor, "phase": recognised.phase,
+                        "padding": recognised.padding, "path": recognised.path}, fused)
                 return SemanticCall("batch_norm", inputs, _module_batchnorm_options(module))
             if isinstance(module, nn.AdaptiveAvgPool2d):
                 global_pool_size(module.output_size)
@@ -500,6 +786,11 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
             _reject(f"Unsupported module {type(module).__name__}", "unsupported_operator")
         if node.op == "call_function":
             target = node.target
+            if target is torch.conv2d:
+                return _convolution_call(node, graph)
+            if target is F.pad:
+                zero_padding(node, graph)
+                return SemanticCall("absorbed", ())
             if target is F.batch_norm:
                 options = _bind_options(F.batch_norm, node.args, node.kwargs)
                 if options["training"] is not False:
@@ -568,9 +859,22 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
             return SemanticCall(str(node.target), _inputs(values))
         if batchnorm_constant(node, graph):
             return SemanticCall("batchnorm_constant", ())
+        if conv_constant(node, graph):
+            return SemanticCall("conv_constant", ())
+        if node.op == "get_attr" and any(user.op == "call_function" and user.target is torch.conv2d
+                                         for user in node.users):
+            _reject(_CONV_ATTRIBUTE_MESSAGE)
         _reject(f"Unsupported FX operation {node.op}: {node.target}", "unsupported_operator")
     except TypeError as error:
         _reject(f"Invalid call arguments: {error}")
+
+
+def _convolution_call(node: Node, graph: GraphModule) -> SemanticCall:
+    recognised = convolution(node, graph)
+    kind = "conv" if recognised.module.groups == 1 else "grouped_conv"
+    return SemanticCall(kind, _inputs((recognised.source,)),
+                        {"phase": recognised.phase, "padding": recognised.padding, "path": recognised.path},
+                        recognised.module)
 
 
 def infer_metadata(call: SemanticCall, inputs: tuple[TensorMetadata, ...]) -> TensorMetadata:
@@ -582,8 +886,21 @@ def infer_metadata(call: SemanticCall, inputs: tuple[TensorMetadata, ...]) -> Te
         if c != call.module.in_channels:
             _reject("Conv2d input channel count does not match raster", "input_shape")
         stride = _pair(call.module.stride)[0]
-        return TensorMetadata((n, call.module.out_channels, (h + stride - 1) // stride,
-                               (w + stride - 1) // stride), first.scale * stride)
+        phase_y, phase_x = phase_pair(call.options.get("phase", 0), stride)
+        height, width = (h - phase_y + stride - 1) // stride, (w - phase_x + stride - 1) // stride
+        if "padding" in call.options:
+            # PyTorch's output count must be ceil((n - phase) / stride) on each axis: a
+            # padding that drops or adds an output is refused.
+            left, right, top, bottom = call.options["padding"]
+            kh, kw = _pair(call.module.kernel_size)
+            torch_height = (h + top + bottom - kh) // stride + 1
+            torch_width = (w + left + right - kw) // stride + 1
+            if (torch_height, torch_width) != (height, width) or height < 1 or width < 1:
+                _reject(f"Zero padding (left {left}, right {right}, top {top}, bottom {bottom}) on a {h} x {w} "
+                        f"input gives PyTorch {torch_height} x {torch_width} outputs; the convolution sampled at "
+                        f"phase ({phase_y}, {phase_x}) and stride {stride} gives ceil((n - phase) / stride), "
+                        f"{height} x {width}", "input_shape")
+        return TensorMetadata((n, call.module.out_channels, height, width), first.scale * stride)
     if call.kind == "pool":
         config = call.options["config"]
         if config.aligned and (h % config.kernel or w % config.kernel):

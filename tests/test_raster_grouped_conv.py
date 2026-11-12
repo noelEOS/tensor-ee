@@ -131,7 +131,8 @@ def test_grouped_block_and_legacy_block_keep_separate_acceptance_and_status(offl
         C.grouped_conv2d(raster, module)
     with pytest.raises(UnsupportedOperation, match="groups=1"):
         C.conv_options(module)
-    assert C.METADATA["conv2d"].validated.configurations == ((),)
+    # Every accepted call at the sampling phase's default, the one value the evidence ran.
+    assert C.METADATA["conv2d"].validated.configurations == ((("phase", (0,)),),)
     assert C.METADATA["grouped_conv2d"].status.startswith("Ready — depthwise")
     assert C.METADATA["grouped_conv2d"].radius == 2
 
@@ -273,7 +274,8 @@ def test_values_group_order_stride_and_parameters_match_mirror_and_pytorch(monke
     monkeypatch.setattr(K, "ee", fake)
     monkeypatch.setattr(C, "_zero_extended", lambda raster: raster.image)
     monkeypatch.setattr(C, "_project", lambda image, grid, clip: image)
-    def sample(image, bands, g, stride, clip):
+    def sample(image, bands, g, stride, clip, *, phase=(0, 0)):
+        assert phase == (0, 0)  # the blocks pass the default sampling phase as a pair
         return Raster(Image(image.values[::stride, ::stride], bands), bands,
                       g.resized(stride, (g.width + stride - 1) // stride, (g.height + stride - 1) // stride))
     monkeypatch.setattr(C, "_stride_sample", sample)

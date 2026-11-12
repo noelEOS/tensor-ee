@@ -35,8 +35,23 @@ Validated live on 5 x 7 inputs with clip_footprints=False (Earth Engine equal to
 NumPy mirror in every value): depthwise 3 x 3 at strides 1/2 with and without bias,
 depthwise 5 x 5 at stride 1 with bias, grouped 8 -> 8 with 4 groups (2 channels per
 group), and a 4 -> 8 channel multiplier with 4 groups (both 3 x 3, stride 1, with bias).
-Kernel, stride and groups are settings of the PyTorch module, so the record names only
-clip_footprints and the status names the module settings.
+Kernel, stride and groups are settings of the PyTorch module, so the record names
+clip_footprints and phase, and the status names the module settings.
+
+**Sampling phase** (both blocks, keyword-only ``phase``, default 0). An integer or a
+pair ``(phase_y, phase_x)``, each ``0 <= phase < stride``. On an axis with input size
+n, kernel k, stride s and phase p, output pixel i is the centred convolution at input
+pixel ``s i + p``::
+
+    y[i] = b + sum_t w[t] * x[s i + p - k // 2 + t],   t = 0 .. k - 1,  x = 0 outside [0, n)
+
+which is PyTorch's convolution of a map zero-padded ``k // 2 - p`` pixels before the
+input, with ``ceil((n - p) / s)`` outputs. The convolution itself is unchanged (the same
+neighbourhood bands, operands, accumulation and one float32 rounding by the caller);
+only ``stride_sample`` picks other pixels. Phase 0 is today's graph. Its reach from an
+output's anchor ``s i`` is ``k // 2 + p``. A nonzero phase is offline only: it has not
+been validated live, and both records name ``phase`` at its default, 0
+(``canonical_phase`` gives the one form a phase is recorded and reported in).
 """
 
 from __future__ import annotations
@@ -49,13 +64,14 @@ import torch
 from torch import nn
 
 from ...core.errors import SemanticUnknown, UnsupportedOperation, reject as _reject
-from ...core.metadata import ANY_SETTINGS, BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
 # Library converters and coefficient transport. These module-level bindings are
 # the names conv2d looks up (tests patch _inline_float32_array here).
 from ...layouts.raster import project as _project, stride_sample as _stride_sample
 from ...layouts.raster import zero_extended as _zero_extended
+from ...layouts.raster import canonical_phase, phase_pair
 from ...weights.constants import inline_float32_array as _inline_float32_array
 
 
@@ -148,12 +164,19 @@ def _patch_bands(bands, kh, kw):
 def conv2d(raster: Raster, module: nn.Conv2d,
            parameters: tuple[ee.Array, ee.Array | None] | None = None,
            *, execution_dtype: str = "float32", clip_footprints: bool = False,
-           policy: str = FLOAT32_OPERANDS) -> Raster:
-    """PyTorch cross-correlation via ordered neighborhood bands and matrixMultiply."""
+           policy: str = FLOAT32_OPERANDS, phase=0) -> Raster:
+    """PyTorch cross-correlation via ordered neighborhood bands and matrixMultiply.
+
+    ``phase`` (keyword-only, default 0; an integer or a pair ``(phase_y, phase_x)``,
+    each ``0 <= phase < stride``) samples the centred convolution at input pixel
+    ``stride * i + phase`` on each axis: PyTorch's convolution with zero padding
+    ``kernel // 2 - phase`` before the input. Not validated live at a nonzero phase.
+    """
     validate_policy(policy, allowed=FLOAT32_OPERANDS)
     if execution_dtype != "float32":
         raise ValueError("execution_dtype must be float32 (maximum supported precision)")
     (kh, kw), stride_value = conv_options(module)
+    phase = phase_pair(phase, stride_value)
     stride = (stride_value, stride_value)
     if module.in_channels != len(raster.bands):
         raise UnsupportedOperation("Conv2d input channel count does not match raster")
@@ -187,19 +210,22 @@ def conv2d(raster: Raster, module: nn.Conv2d,
     # redundant reproject in the long residual/decoder graph.
     if stride[0] > 1:
         result = _project(result, raster.grid, clip_footprints)
-    return _stride_sample(result, bands, raster.grid, stride[0], clip_footprints)
+    return _stride_sample(result, bands, raster.grid, stride[0], clip_footprints, phase=phase)
 
 
 def grouped_conv2d(raster: Raster, module: nn.Conv2d,
                    parameters: tuple[ee.Array, ee.Array | None] | None = None,
-                   *, clip_footprints: bool = False, policy: str = FLOAT32_OPERANDS) -> Raster:
+                   *, clip_footprints: bool = False, policy: str = FLOAT32_OPERANDS,
+                   phase=0) -> Raster:
     """Grouped cross-correlation: one repeated patch, double product and tap reduction.
 
     ``parameters`` follows conv2d's asset layout, with the grouped weight's actual
     input width: [out, in_per_group * kh * kw], bias [out, 1] or None.
+    ``phase`` is ``conv2d``'s sampling phase (not validated live at a nonzero phase).
     """
     validate_policy(policy, allowed=FLOAT32_OPERANDS)
     (kh, kw), stride = grouped_conv_options(module)
+    phase = phase_pair(phase, stride)
     if module.in_channels != len(raster.bands):
         raise UnsupportedOperation("Conv2d input channel count does not match raster")
     groups = module.groups
@@ -227,7 +253,7 @@ def grouped_conv2d(raster: Raster, module: nn.Conv2d,
     result = result.arrayProject([0]).arrayFlatten([list(bands)])
     if stride > 1:
         result = _project(result, raster.grid, clip_footprints)
-    return _stride_sample(result, bands, raster.grid, stride, clip_footprints)
+    return _stride_sample(result, bands, raster.grid, stride, clip_footprints, phase=phase)
 
 
 # ---------------------------------------------------------------------------
@@ -272,13 +298,17 @@ METADATA = validate_metadata({
         status="Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2",
         evidence=("docs/evidence/raster-grouped-conv-offline.json",
                   "docs/evidence/live-fixtures/20261029T125301Z-grouped_conv.json"),
-        validated=Validated(({"clip_footprints": (False,)},))),
+        # phase entered the record at its default, the one value the evidence ran: a nonzero
+        # phase is outside the record until a live run varies it.
+        validated=Validated(({"clip_footprints": (False,), "phase": (0,)},))),
     # Radius k // 2 for a k x k kernel (receptive_field._window_axis with
     # padding k // 2). The static field records the largest validated kernel,
-    # 7 (radius 3); kernels 1 and 3 have radius 0 and 1.
-    # Validated: any accepted call. Kernels 1, 3 and 7 at strides 1 and 2, and
-    # clip_footprints both ways (True in resnet18_full64_float32_policy.json), were run;
-    # the unqualified "Ready" covers them, and other forms are refused.
+    # 7 (radius 3); kernels 1 and 3 have radius 0 and 1. At a nonzero phase the
+    # window reaches k // 2 + phase on its far side (not validated live).
+    # Validated: every accepted call at phase 0. Kernels 1, 3 and 7 at strides 1 and 2,
+    # and clip_footprints both ways (True in resnet18_full64_float32_policy.json), were
+    # run; the unqualified "Ready" covers them, and other forms are refused. phase entered
+    # the record at its default, the one value the evidence ran.
     "conv2d": BlockMetadata(
         name="conv2d", layout_in="R", layout_out="R", locality=Locality.KERNEL,
         policy=FLOAT32_OPERANDS, embedded_constants=_conv_coefficients,
@@ -286,5 +316,5 @@ METADATA = validate_metadata({
         evidence=("docs/history/cnn/results/parity.json", "docs/history/cnn/results/primitives_float32.json",
                   "docs/history/cnn/results/resnet_primitives.json", "docs/history/cnn/results/resnet18_full64_float32_policy.json",
                   "docs/history/cnn/results/segwater_js_parity_1x1.json", "docs/history/cnn/results/tiled_resnet18_2x2_parity.json"),
-        validated=ANY_SETTINGS),
+        validated=Validated(({"phase": (0,)},))),
 })

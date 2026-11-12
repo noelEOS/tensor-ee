@@ -317,14 +317,15 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     placeholders = 0
     output: Raster | None = None
 
-    def convolve(key: str, raster: Raster, module: nn.Conv2d) -> Raster:
+    def convolve(key: str, raster: Raster, module: nn.Conv2d, phase) -> Raster:
         parameters = None if weight_provider is None else weight_provider(key, module)
         if module.groups != 1:
-            return grouped_conv2d(raster, module, parameters, clip_footprints=clip_footprints)
+            return grouped_conv2d(raster, module, parameters, clip_footprints=clip_footprints, phase=phase)
         return conv2d(raster, module, parameters, execution_dtype=execution_dtype,
-                      clip_footprints=clip_footprints)
+                      clip_footprints=clip_footprints, phase=phase)
 
-    from .semantics import (TensorMetadata, diagnostic_convolution, infer_metadata, semantic_call)
+    from .semantics import (EMITS_NOTHING, TensorMetadata, diagnostic_convolution, infer_metadata,
+                            semantic_call)
     metadata: dict[Node, TensorMetadata] = {}
     for node in traced.graph.nodes:
         try:
@@ -344,7 +345,7 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                 continue
             else:
                 call = semantic_call(node, traced)
-                if call.kind == "batchnorm_constant":
+                if call.kind in EMITS_NOTHING:
                     continue
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))
                 kind = call.kind
@@ -352,9 +353,10 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                     if not include_unfused_nodes and diagnostic_convolution(node, traced):
                         environment[node] = None
                         continue
-                    raster = convolve(node.name, environment[call.inputs[0]], call.module)
+                    raster = convolve(node.name, environment[call.inputs[0]], call.module, call.options["phase"])
                 elif kind == "batchnorm":
-                    raster = convolve(node.name, environment[call.options["source"]], call.module)
+                    raster = convolve(node.name, environment[call.options["source"]], call.module,
+                                      call.options["phase"])
                     folded.append(node.name)
                 else:
                     inputs = tuple(environment[x] for x in call.inputs)

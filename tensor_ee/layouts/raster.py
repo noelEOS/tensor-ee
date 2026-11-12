@@ -14,11 +14,13 @@ and stay two named transforms; merging them would change graphs (G2, deferred).
 
 from __future__ import annotations
 
+from numbers import Integral
 from typing import Sequence
 
 import ee
 import numpy as np
 
+from ..core.errors import reject
 from ..core.grid import FeatureGrid, Grid
 from ..core.tensor import Raster, band_names
 
@@ -44,30 +46,72 @@ def zero_extended(raster: Raster) -> ee.Image:
     return raster.image.unmask(0, sameFootprint=False).reproject(raster.grid.projection())
 
 
+def phase_pair(phase, stride: int) -> tuple[int, int]:
+    """A sampling phase as ``(phase_y, phase_x)``: an integer ``p`` means ``(p, p)``.
+
+    Each phase is an integer with ``0 <= phase < stride``; a bool, a non-integer, a
+    sequence of another length or a value outside that range is refused."""
+    values = tuple(phase) if isinstance(phase, (tuple, list)) else (phase, phase)
+    if (len(values) != 2 or any(isinstance(p, bool) or not isinstance(p, Integral) for p in values)
+            or any(not 0 <= p < stride for p in values)):
+        reject(f"phase must be an integer or a pair (phase_y, phase_x) of integers with "
+               f"0 <= phase < stride {stride}; received {phase!r}")
+    return int(values[0]), int(values[1])
+
+
+def canonical_phase(phase, stride: int) -> int | tuple[int, int]:
+    """The one form a phase is recorded and reported in: the integer ``p`` when both axes
+    have phase ``p``, else the pair ``(phase_y, phase_x)``. ``0``, ``(0, 0)`` and
+    ``[0, 0]`` are all ``0``."""
+    y, x = phase_pair(phase, stride)
+    return y if y == x else (y, x)
+
+
 def stride_sample(image: ee.Image, bands: Sequence[str], grid: Grid,
-                  stride: int, clip_footprints: bool = False) -> Raster:
-    """Sample indices 0,s,2s,... and retain a canonical tensor grid.
+                  stride: int, clip_footprints: bool = False, *, phase=0) -> Raster:
+    """Sample indices phase, phase+s, phase+2s,... and retain a canonical tensor grid.
 
     EE's same-corner coarse grid would sample centers at input indices 1,3,...
     for stride two. Move its corner by half an input pixel to sample 0,2,...,
     then ``changeProj`` moves those *values* onto canonical tensor coordinates.
     A plain reproject at the second step would resample and lose the alignment.
 
+    ``phase`` (keyword-only, default 0) is an integer or a pair ``(phase_y, phase_x)``,
+    each ``0 <= phase < stride`` (``phase_pair``). On an axis with phase ``p`` the sample
+    grid's corner moves by ``(2 p - (s - 1)) / 2`` input pixels, so output pixel ``i`` is
+    input pixel ``s i + p``, sampled at that pixel's centre, and the axis has
+    ``ceil((n - p) / s)`` pixels. The canonical grid keeps the same upper-left corner.
+    An axis with phase 0 keeps today's corner expression, so the default emits today's
+    graph. A nonzero phase is not validated live.
+
     The stride is a parameter, but only strides 1 and 2 are evaluated.
     """
+    phase = phase_pair(phase, stride)
     if stride == 1:
         return finish(image, bands, grid, clip_footprints)
-    width = (grid.width + stride - 1) // stride
-    height = (grid.height + stride - 1) // stride
-    canonical = grid.resized(stride, width, height)
-    a, b, c, d, e, f = canonical.transform
-    sample = Grid(grid.crs,
-                  (a, b, c - (stride - 1) * grid.transform[0] / 2,
-                   d, e, f - (stride - 1) * grid.transform[4] / 2),
-                  width, height)
+    sample, canonical = sample_grids(grid, stride, phase)
     sampled = finish(image, bands, sample, clip_footprints)
     relabeled = sampled.image.changeProj(sample.projection(), canonical.projection())
     return finish(relabeled, bands, canonical, clip_footprints)
+
+
+def sample_grids(grid: Grid, stride: int, phase=0) -> tuple[Grid, Grid]:
+    """``stride_sample``'s two grids at ``stride`` > 1: the sample grid, whose pixel
+    ``(i, j)`` is centred on input pixel ``(s i + phase_y, s j + phase_x)``, and the
+    canonical grid (same upper-left corner as ``grid``, pixel ``s``) the values move to."""
+    phase_y, phase_x = phase_pair(phase, stride)
+    width = (grid.width - phase_x + stride - 1) // stride
+    height = (grid.height - phase_y + stride - 1) // stride
+    if width < 1 or height < 1:
+        reject(f"A {grid.height} x {grid.width} input sampled at stride {stride} and phase "
+               f"({phase_y}, {phase_x}) has no output pixels", "input_shape")
+    canonical = grid.resized(stride, width, height)
+    a, b, c, d, e, f = canonical.transform
+    x0 = (c - (stride - 1) * grid.transform[0] / 2 if phase_x == 0
+          else c + (2 * phase_x - (stride - 1)) * grid.transform[0] / 2)
+    y0 = (f - (stride - 1) * grid.transform[4] / 2 if phase_y == 0
+          else f + (2 * phase_y - (stride - 1)) * grid.transform[4] / 2)
+    return Grid(grid.crs, (a, b, x0, d, e, y0), width, height), canonical
 
 
 def _float32(raster: Raster) -> Raster:
