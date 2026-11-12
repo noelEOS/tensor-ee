@@ -374,10 +374,9 @@ def test_compile_model_keeps_the_per_node_float32_cast(offline_ee):
 # ---------------------------------------------------------------------------
 EXPECTED = {   # block -> (locality, radius, status)
     "global_avg_pool2d": (M.Locality.EXTENT, None,
-        "Fixed — offline only: maps 5 × 7, 12 × 20, 8 × 8, 64 × 64 and 128 × 128; clip_footprints=False"),
+        "Ready — maps 5 × 7, 8 × 8, 12 × 20, 64 × 64 and 128 × 128"),
     "multiply": (M.Locality.POINTWISE, None,
-        "Fixed — offline only: same grid on a 5 × 7 map; one-pixel gate on 5 × 7 and 12 × 20 maps; "
-        "clip_footprints=False"),
+        "Ready — same grid on a 5 × 7 map; one-pixel gate on 5 × 7 and 12 × 20 maps"),
     "grouped_conv2d": (M.Locality.KERNEL, 2,
         "Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2"),
     "bilinear_upsample": (M.Locality.KERNEL, 1, "Ready — factors 2, 3, 4 (align_corners=False), 2, 4 (align_corners=True)"),

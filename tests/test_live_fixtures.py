@@ -87,9 +87,9 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
 # block passed its separate SegFormer G3-live gate, and the bounded activations and the
 # standalone raster BatchNorm, raster bilinear upsampling and raster grouped convolution
 # theirs, and row concatenation, window depth-to-space and class-token attention
-# theirs, and raster input standardization theirs. Raster global average pooling and the
-# elementwise multiply are offline only.
-OFFLINE_ONLY_FIXED: set[str] = {"global_avg_pool2d", "multiply"}
+# theirs, and raster input standardization theirs, and raster global average pooling and the
+# elementwise multiply theirs; no offline-only block remains.
+OFFLINE_ONLY_FIXED: set[str] = set()
 COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat_rows/prithvi-region-2x2",
                         "window/concat_rows/vit-encoder-reduced", "window/concat_rows/vit-dpt-reduced"}
 """Runnable composition checks excluded from block coverage and evidence counts."""
@@ -101,6 +101,7 @@ BILINEAR_G3_BLOCKS = {"bilinear_upsample"}
 GROUPED_CONV_G3_BLOCKS = {"grouped_conv2d"}
 PRITHVI_G3_BLOCKS = {"concat_rows", "window_depth_to_space", "class_token_attention"}
 STANDARDIZE_G3_BLOCKS = {"standardize"}
+GLOBAL_POOL_MULTIPLY_G3_BLOCKS = {"global_avg_pool2d", "multiply"}
 
 # The SegFormer composites promoted from the model (X01a): Fixed at the settings the
 # SegFormer-B0 live runs cover, outside Phase 2's calibration census.
@@ -741,7 +742,8 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
                    if f.id not in COMPOSITION_FIXTURES and f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert (SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | BILINEAR_G3_BLOCKS
-            | GROUPED_CONV_G3_BLOCKS | PRITHVI_G3_BLOCKS | STANDARDIZE_G3_BLOCKS | OFFLINE_ONLY_FIXED <= new_covered)
+            | GROUPED_CONV_G3_BLOCKS | PRITHVI_G3_BLOCKS | STANDARDIZE_G3_BLOCKS | GLOBAL_POOL_MULTIPLY_G3_BLOCKS
+            | OFFLINE_ONLY_FIXED <= new_covered)
     covered = {name for f in plan.fixtures if f.id not in COMPOSITION_FIXTURES
                for name in (f.block, *f.parts)}
     assert PHASE2_FIXED <= covered

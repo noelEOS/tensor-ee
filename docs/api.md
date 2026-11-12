@@ -96,8 +96,8 @@ in either operand order (squeeze-and-excitation's `sigmoid(g) * x`). Adaptive po
 sizes, max pools to one pixel, `mean` without `keepdim` or over other dims, scalar products
 and channel broadcasts (`[N, 1, H, W]`) are refused. A global mean depends on the whole chip:
 the result is per compiled grid, `analyze_receptive_field` lists it in `extent_nodes` and
-refuses a halo, and tiled compilation refuses the model. Both blocks have offline evidence
-only.
+refuses a halo, and tiled compilation refuses the model. Both blocks were validated live at
+the map sizes their catalogue rows list; no whole model that uses them has been.
 
 Model and submodules must already be in eval mode. Computational weights,
 biases and BatchNorm statistics are finite float32 with declared shapes;

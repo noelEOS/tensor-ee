@@ -28,7 +28,7 @@ from torch.nn import functional as F
 from tensor_ee import Grid, Raster, UnsupportedOperation, check_compatibility, compile_model, from_image
 from tensor_ee.blocks.raster import activations as A, merge as MG, pooling as PL
 from tensor_ee.core.grid import one_pixel
-from tensor_ee.core.metadata import NOT_LIVE, Locality
+from tensor_ee.core.metadata import Locality, Validated
 from tensor_ee.receptive_field import UnsupportedReceptiveField, analyze_receptive_field
 from tensor_ee.tiling import compile_tiled_model, plan_tiles
 from reference.raster_gate import global_avg_pool2d as pool_mirror, multiply as multiply_mirror
@@ -89,13 +89,14 @@ def test_global_pool_reduces_onto_the_one_pixel_grid(offline_ee):
         PL.global_avg_pool2d(ee.Image.constant(0))
 
 
-def test_metadata_is_offline_only_and_extent():
+def test_metadata_is_live_validated_and_extent():
     pool, product = PL.METADATA["global_avg_pool2d"], MG.METADATA["multiply"]
     assert pool.locality is Locality.EXTENT and product.locality is Locality.POINTWISE
-    assert pool.validated == product.validated == NOT_LIVE
+    assert pool.validated == product.validated == Validated(({"clip_footprints": (False,)},))
     assert not pool.chip_edge_dependent and not product.chip_edge_dependent
     for entry in (pool, product):
-        assert entry.status.startswith("Fixed — offline only: ") and "Ready" not in entry.status
+        assert entry.status.startswith("Ready — ") and "128" not in product.status
+        assert any(path.startswith("docs/evidence/live-fixtures/") for path in entry.evidence)
         assert entry.embedded_constants() == entry.asset_arrays() == 0
 
 

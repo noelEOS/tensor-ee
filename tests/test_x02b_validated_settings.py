@@ -91,10 +91,9 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = {"raster/global_avg_pool2d", "raster/multiply"}
+OFFLINE_ONLY: set[str] = set()
 """The blocks with no live validation yet, by lane-qualified key (two lanes may share a block
-name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. Raster global
-average pooling and the elementwise multiply have offline fixtures only."""
+name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. None today."""
 
 
 def test_every_block_has_a_record():
@@ -160,6 +159,8 @@ NEVER_VARIED = {
     "window/batch_norm": {"eps"},
     "raster/batch_norm": {"eps", "clip_footprints"},
     "raster/standardize": {"clip_footprints"},
+    "raster/global_avg_pool2d": {"clip_footprints"},
+    "raster/multiply": {"clip_footprints"},
     "window/shifted_window_mask": {"value"},
     "window/group_product": {"k"},
     "window/patch_merge": {"bias"},
@@ -171,6 +172,9 @@ STATUS_ONLY = {
     # block -> (status numbers that name no setting of the block, the reason).
     "raster/grouped_conv2d": ({1, 2, 3, 5}, "kernel, stride, channels per group and multiplier are settings "
                                             "of the PyTorch module, not parameters of the block"),
+    "raster/global_avg_pool2d": ({5, 7, 8, 12, 20, 64, 128}, "the map's size is the input's grid, not a parameter "
+                                                             "of the block"),
+    "raster/multiply": ({5, 7, 12, 20}, "the maps' sizes are the operands' grids, not parameters of the block"),
     "window/decimate": ({32, 64, 160, 256}, "decimate takes no width: the widths say where the model ran each factor"),
     "window/mix_ffn": ({4}, "hidden 4 × width, the MLP ratio, read from the weights"),
     "window/swin_mlp_branch": ({4}, "hidden 4 × width, the MLP ratio, read from the weights"),

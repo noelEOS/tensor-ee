@@ -52,10 +52,15 @@ raster lane's tensors are zero-filled and masked only outside their grid, as ``p
 aligned average also requires. Earth Engine's accumulation type and order for
 ``reduceResolution`` are not established: the NumPy mirror (``tests/reference``) sums in
 double and divides by H W once, and the fixtures use inputs whose double sums are exact in
-every order. ``maxPixels`` above (k + 2)^2 for k = 4 (16,900 at 128 x 128) is untested by
-Earth Engine. **Not validated live**: offline evidence only, maps 5 x 7, 12 x 20, 8 x 8,
-64 x 64 and 128 x 128 (``raster/global_avg_pool2d/*`` and the squeeze-excitation fixture in
-``tools/fixtures/raster.py``), clip_footprints=False.
+every order.
+
+Validated live on maps 5 x 7, 8 x 8, 12 x 20, 64 x 64 and 128 x 128
+(``raster/global_avg_pool2d/*`` and the squeeze-excitation fixture in
+``tools/fixtures/raster.py``), clip_footprints=False: Earth Engine equal to the NumPy mirror
+in every value, and within 2.4e-7 of float32 PyTorch. Earth Engine accepted ``maxPixels``
+16,900 (the 128 x 128 map); a larger map needs a larger ``maxPixels`` and is not validated.
+Those inputs' sums are exact in every order, so the runs do not establish Earth Engine's
+accumulation order either.
 """
 
 from __future__ import annotations
@@ -67,7 +72,7 @@ from torch import nn
 
 from ...core.errors import UnsupportedOperation
 from ...core.grid import Grid, one_pixel
-from ...core.metadata import NOT_LIVE, BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
 from ...layouts.raster import finish as _finish, project as _project
@@ -234,11 +239,13 @@ METADATA = validate_metadata({
         ), sources=(PoolConfig,))),
     # The output depends on every pixel of the map: EXTENT. Not chip-edge dependent in the
     # flag's sense (no wrap or mask); EXTENT already makes a stage whole-chip, as for
-    # window_pool.
+    # window_pool. The map's size is the input's grid, not a parameter, so the record holds
+    # only clip_footprints (never varied) and the status names the maps that ran.
     "global_avg_pool2d": BlockMetadata(
         name="global_avg_pool2d", layout_in="R", layout_out="R", locality=Locality.EXTENT,
         policy=FLOAT32_OPERANDS, embedded_constants=_no_coefficients, asset_arrays=_no_coefficients,
-        status=("Fixed — offline only: maps 5 × 7, 12 × 20, 8 × 8, 64 × 64 and 128 × 128; "
-                "clip_footprints=False"),
-        evidence=("docs/evidence/raster-global-pool-multiply-offline.json",), validated=NOT_LIVE),
+        status="Ready — maps 5 × 7, 8 × 8, 12 × 20, 64 × 64 and 128 × 128",
+        evidence=("docs/evidence/raster-global-pool-multiply-offline.json",
+                  "docs/evidence/live-fixtures/20261112T151417Z-global_pool_multiply.json"),
+        validated=Validated(({"clip_footprints": (False,)},))),
 })

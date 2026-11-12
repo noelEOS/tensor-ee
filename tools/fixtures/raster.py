@@ -804,7 +804,8 @@ def _standardize_fixtures(cost) -> list[Fixture]:
 # ---------------------------------------------------------------------------
 # Global average pooling and the elementwise multiply (selection global_pool_multiply)
 # ---------------------------------------------------------------------------
-_GATE_HISTORY = "none: a new block, offline evidence only"
+_GATE_HISTORY = ("docs/evidence/live-fixtures/20261112T151417Z-global_pool_multiply.json "
+                 "(passed; Earth Engine equal to the mirror)")
 _POOL_BOUND = 1e-6
 """The pool mirror's recorded bound against Earth Engine: one float32 step of a mean of
 magnitude at most 6 is 4.8e-7. Every double sum of these inputs is exact (multiples of 2^-21

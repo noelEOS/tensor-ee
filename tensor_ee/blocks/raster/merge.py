@@ -25,9 +25,10 @@ whole map travels in the one-pixel edge from the ``EXTENT`` pool, so a gate cost
 Policy ``float32_operands``: the product of two float32 values is exact in double, so its
 one float32 rounding at the node boundary gives the correctly rounded float32 product,
 bit-equal to PyTorch's (an IEEE product is commutative, so ``x * g`` and ``g * x`` agree).
-**Not validated live**: offline evidence only, the same-grid form on a 5 x 7 map and the gate
-form on 5 x 7 and, through ``compile_model``, 12 x 20 maps (``raster/multiply/*`` in
-``tools/fixtures/raster.py``), clip_footprints=False.
+Validated live in the same-grid form on a 5 x 7 map and in the gate form on 5 x 7 and,
+through ``compile_model``, 12 x 20 maps (``raster/multiply/*`` in
+``tools/fixtures/raster.py``), clip_footprints=False: Earth Engine equal to the NumPy mirror
+and to float32 PyTorch in every value. Other map sizes are not validated.
 """
 
 from __future__ import annotations
@@ -36,7 +37,7 @@ from typing import Sequence
 
 from ...core.errors import UnsupportedOperation
 from ...core.grid import one_pixel
-from ...core.metadata import ANY_SETTINGS, NOT_LIVE, BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import ANY_SETTINGS, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
 from ...layouts.raster import finish as _finish, project as _project
@@ -117,7 +118,10 @@ METADATA = validate_metadata({
         name="multiply", layout_in="R", layout_out="R", locality=Locality.POINTWISE,
         policy=FLOAT32_OPERANDS, embedded_constants=_no_coefficients,
         asset_arrays=_no_coefficients,
-        status=("Fixed — offline only: same grid on a 5 × 7 map; one-pixel gate on 5 × 7 and 12 × 20 maps; "
-                "clip_footprints=False"),
-        evidence=("docs/evidence/raster-global-pool-multiply-offline.json",), validated=NOT_LIVE),
+        # The maps' sizes are the operands' grids, not parameters: the record holds only
+        # clip_footprints (never varied) and the status names the forms and maps that ran.
+        status="Ready — same grid on a 5 × 7 map; one-pixel gate on 5 × 7 and 12 × 20 maps",
+        evidence=("docs/evidence/raster-global-pool-multiply-offline.json",
+                  "docs/evidence/live-fixtures/20261112T151417Z-global_pool_multiply.json"),
+        validated=Validated(({"clip_footprints": (False,)},))),
 })
