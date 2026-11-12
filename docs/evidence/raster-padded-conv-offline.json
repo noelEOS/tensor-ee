@@ -1,0 +1,862 @@
+{
+  "schema_version": 1,
+  "kind": "offline_fixture_check",
+  "cloud_calls": 0,
+  "status": "passed",
+  "revision": "1a378121c2a44e4df12cbde1d37e20353d1652be",
+  "dirty": false,
+  "tensor_ee": "tensor_ee/__init__.py",
+  "versions": {
+    "python": "3.14.6",
+    "earthengine-api": "1.7.45",
+    "torch": "2.14.0",
+    "timm": "1.0.30",
+    "segmentation-models-pytorch": "0.5.0",
+    "numpy": "2.5.3"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "plan": {
+    "totals": {
+      "fixtures": 6,
+      "requests": 12,
+      "values": 2557,
+      "payload_bytes": 10228,
+      "request_bytes": 181763,
+      "max_values": 400,
+      "max_request_bytes": 22716,
+      "max_bands": 5,
+      "embedded_constants": 402,
+      "inline_values": 3132,
+      "assets": 0,
+      "tasks": 0,
+      "in_flight": 1
+    },
+    "violations": []
+  },
+  "fixtures": [
+    {
+      "spec": {
+        "id": "raster/conv2d/pad0101-k3-s2-h8-w10",
+        "lane": "raster",
+        "block": "conv2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 2,
+          "groups": 1,
+          "padding": [
+            0,
+            1,
+            0,
+            1
+          ],
+          "phase": 1,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            10,
+            2
+          ],
+          "output": [
+            4,
+            5,
+            3
+          ]
+        },
+        "seed": 81,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "nn.ZeroPad2d((0, 1, 0, 1)) then F.conv2d(x, weight, bias, 2, 0, 1, 1)",
+        "mirror": null,
+        "history": "New fixture: not yet run live.",
+        "calibration": false,
+        "notes": "compile_model on a stand-in module: ZeroPad2d(0, 1, 0, 1) absorbed into F.conv2d, so the block runs at phase (1, 1) (output pixel i is input pixel 2 i + phase on each axis); No NumPy mirror of the dense convolution's matrixMultiply exists: compared with PyTorch only."
+      },
+      "inputs_sha256": "d0180c8411c71d4c28486837accfe4bf9ab9652a74071e88b3384d75b022bec6",
+      "weights_sha256": "9baaa16c75f7ede1f533f709f804f25b1ff0a8b3f38db5ab4bbb0c6d11f42b64",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 3
+            }
+          ],
+          "bands": 4,
+          "values": 80,
+          "payload_bytes": 320,
+          "request_bytes": 17447,
+          "graph_sha256": "c658b3cb4403bd7a21b7b7b6c4acc1f933b969665520edc9ec73ce136dcf3d8b",
+          "graph_bytes": 17219,
+          "embedded_constants": 57,
+          "inline_values": 160
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 240,
+          "payload_bytes": 960,
+          "request_bytes": 8065,
+          "graph_sha256": "32df73f4874ce8fd89813ef47470ad748ec1b54e28683d4f9a983180760356d5",
+          "graph_bytes": 7836,
+          "embedded_constants": 0,
+          "inline_values": 160
+        }
+      ],
+      "errors": [],
+      "seconds": 0.016,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/conv2d/pad0101-k3-s2-h7-w9",
+        "lane": "raster",
+        "block": "conv2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 2,
+          "groups": 1,
+          "padding": [
+            0,
+            1,
+            0,
+            1
+          ],
+          "phase": 1,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            7,
+            9,
+            2
+          ],
+          "output": [
+            3,
+            4,
+            3
+          ]
+        },
+        "seed": 82,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "nn.ZeroPad2d((0, 1, 0, 1)) then F.conv2d(x, weight, bias, 2, 0, 1, 1)",
+        "mirror": null,
+        "history": "New fixture: not yet run live.",
+        "calibration": false,
+        "notes": "compile_model on a stand-in module: ZeroPad2d(0, 1, 0, 1) absorbed into F.conv2d, so the block runs at phase (1, 1) (output pixel i is input pixel 2 i + phase on each axis); No NumPy mirror of the dense convolution's matrixMultiply exists: compared with PyTorch only."
+      },
+      "inputs_sha256": "45ff7845069d5cbbe766ef26d188dee198ba789c4d7ff22742e2d4592b5b50d3",
+      "weights_sha256": "9d9afa7f7b72e58fecdae1a41aa2e21bdebe97be687a787bb617d244b7788f45",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 4,
+              "height": 3
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 4,
+          "height": 3,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 3
+            }
+          ],
+          "bands": 4,
+          "values": 48,
+          "payload_bytes": 192,
+          "request_bytes": 16990,
+          "graph_sha256": "6c9275df4150c694d69c874cd6a708abd8e811a7bac3e5095395d0ed0529edb0",
+          "graph_bytes": 16762,
+          "embedded_constants": 57,
+          "inline_values": 126
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 9,
+              "height": 7
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 9,
+          "height": 7,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 2
+            }
+          ],
+          "bands": 3,
+          "values": 189,
+          "payload_bytes": 756,
+          "request_bytes": 7636,
+          "graph_sha256": "6a2a08285c30df3302b9687d23ea85279e6ab41dfcf315b8a0a4e1433938c74d",
+          "graph_bytes": 7408,
+          "embedded_constants": 0,
+          "inline_values": 126
+        }
+      ],
+      "errors": [],
+      "seconds": 0.016,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": null,
+          "note": "no mirror"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-pad0101-k3-s2",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 2,
+          "groups": 4,
+          "padding": [
+            0,
+            1,
+            0,
+            1
+          ],
+          "phase": 1,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            10,
+            4
+          ],
+          "output": [
+            4,
+            5,
+            4
+          ]
+        },
+        "seed": 83,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "nn.ZeroPad2d((0, 1, 0, 1)) then F.conv2d(x, weight, bias, 2, 0, 1, 4)",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New fixture: not yet run live.",
+        "calibration": false,
+        "notes": "compile_model on a stand-in module: ZeroPad2d(0, 1, 0, 1) absorbed into F.conv2d, so the block runs at phase (1, 1) (output pixel i is input pixel 2 i + phase on each axis); The mirror applies the same zero padding and PyTorch's output count."
+      },
+      "inputs_sha256": "7191642021ea6b2ad313f4a97f5fd0c13fdcbcd87944eaed9240560cc830a7a1",
+      "weights_sha256": "d816913c5045aa7daa44db6a395ee99b316b5e1e397f2bbb77931a4fb4f290b2",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 100,
+          "payload_bytes": 400,
+          "request_bytes": 20578,
+          "graph_sha256": "6f866eab05fc4673d2562beb5eaffcb3280ba6a8f59db70d12eed2a2193bdc64",
+          "graph_bytes": 20350,
+          "embedded_constants": 40,
+          "inline_values": 320
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 400,
+          "payload_bytes": 1600,
+          "request_bytes": 11270,
+          "graph_sha256": "f2614088951209d21e3a2452285d1e143573ba8c1ae23768bd73c3a4a699fb5c",
+          "graph_bytes": 11041,
+          "embedded_constants": 0,
+          "inline_values": 320
+        }
+      ],
+      "errors": [],
+      "seconds": 0.016,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 80,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 1,
+              "col": 0,
+              "channel": 1,
+              "actual": 0.27021902799606323,
+              "expected": 0.27021896839141846
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-pad1212-k5-s2",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 5,
+          "stride": 2,
+          "groups": 4,
+          "padding": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "phase": 1,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            10,
+            4
+          ],
+          "output": [
+            4,
+            5,
+            4
+          ]
+        },
+        "seed": 84,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "nn.ZeroPad2d((1, 2, 1, 2)) then F.conv2d(x, weight, bias, 2, 0, 1, 4)",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New fixture: not yet run live.",
+        "calibration": false,
+        "notes": "compile_model on a stand-in module: ZeroPad2d(1, 2, 1, 2) absorbed into F.conv2d, so the block runs at phase (1, 1) (output pixel i is input pixel 2 i + phase on each axis); The mirror applies the same zero padding and PyTorch's output count."
+      },
+      "inputs_sha256": "60a9febe42ac1b26072859284bebf7b3b59f6960b71af6583ff129caa45871a5",
+      "weights_sha256": "79f4b91b98c46eb9840e14ce3da557db83b0069638b7e4b3acc2d9062a819991",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 100,
+          "payload_bytes": 400,
+          "request_bytes": 22716,
+          "graph_sha256": "39a5a6f297ef4ab14bda450241724f0e5fad8256006dcdb7e0e8430426d176f2",
+          "graph_bytes": 22488,
+          "embedded_constants": 104,
+          "inline_values": 320
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 400,
+          "payload_bytes": 1600,
+          "request_bytes": 11269,
+          "graph_sha256": "dbda4ceac7a86f6aaeb50ce17f785753f321c67921738925e0d7db2002cfd4bd",
+          "graph_bytes": 11040,
+          "embedded_constants": 0,
+          "inline_values": 320
+        }
+      ],
+      "errors": [],
+      "seconds": 0.015,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 80,
+            "max_abs": 5.960464477539063e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 0,
+              "channel": 3,
+              "actual": 0.3108431100845337,
+              "expected": 0.3108430504798889
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-pad2222-k5-s2",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 5,
+          "stride": 2,
+          "groups": 4,
+          "padding": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "phase": 0,
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            10,
+            4
+          ],
+          "output": [
+            4,
+            5,
+            4
+          ]
+        },
+        "seed": 85,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "nn.ZeroPad2d((2, 2, 2, 2)) then F.conv2d(x, weight, bias, 2, 0, 1, 4)",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New fixture: not yet run live.",
+        "calibration": false,
+        "notes": "compile_model on a stand-in module: ZeroPad2d(2, 2, 2, 2) absorbed into F.conv2d, so the block runs at phase (0, 0) (output pixel i is input pixel 2 i + phase on each axis); The mirror applies the same zero padding and PyTorch's output count."
+      },
+      "inputs_sha256": "f44951870074a5da1f80cf9259a1cd1b3127f2f64237c3760c535cea1be68ff3",
+      "weights_sha256": "4c5d36839c919d0522d7fe32346fdabf2d4011756ecacbc700bc28ee3dc59baf",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 100,
+          "payload_bytes": 400,
+          "request_bytes": 22701,
+          "graph_sha256": "d74118084276cd3c425a75e5ce21a454053d41f015aee7278bd788689912ebe4",
+          "graph_bytes": 22473,
+          "embedded_constants": 104,
+          "inline_values": 320
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 400,
+          "payload_bytes": 1600,
+          "request_bytes": 11250,
+          "graph_sha256": "cbddcc996820ff74adb79b4905b9862dd2e55ddbfcd212dd065a3adc4a12291f",
+          "graph_bytes": 11021,
+          "embedded_constants": 0,
+          "inline_values": 320
+        }
+      ],
+      "errors": [],
+      "seconds": 0.016,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 80,
+            "max_abs": 4.470348358154297e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 2,
+              "col": 3,
+              "channel": 1,
+              "actual": 0.20211467146873474,
+              "expected": 0.20211462676525116
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "spec": {
+        "id": "raster/grouped_conv2d/depthwise-pad1101-k3-s2",
+        "lane": "raster",
+        "block": "grouped_conv2d",
+        "parts": [],
+        "settings": {
+          "kernel_size": 3,
+          "stride": 2,
+          "groups": 4,
+          "padding": [
+            1,
+            1,
+            0,
+            1
+          ],
+          "phase": [
+            1,
+            0
+          ],
+          "clip_footprints": false
+        },
+        "policy": "float32_operands",
+        "shapes": {
+          "input": [
+            8,
+            10,
+            4
+          ],
+          "output": [
+            4,
+            5,
+            4
+          ]
+        },
+        "seed": 86,
+        "tolerance": 0.0001,
+        "requests": 2,
+        "reference": "nn.ZeroPad2d((1, 1, 0, 1)) then F.conv2d(x, weight, bias, 2, 0, 1, 4)",
+        "mirror": {
+          "source": "reference.raster_conv.grouped_conv2d",
+          "exact": true,
+          "bound": null
+        },
+        "history": "New fixture: not yet run live.",
+        "calibration": false,
+        "notes": "compile_model on a stand-in module: ZeroPad2d(1, 1, 0, 1) absorbed into F.conv2d, so the block runs at phase (1, 0) (output pixel i is input pixel 2 i + phase on each axis); The mirror applies the same zero padding and PyTorch's output count."
+      },
+      "inputs_sha256": "a594aa74b13a6c6e528d301ab83cca568ebb937a27a38247d77048cf4d4feb81",
+      "weights_sha256": "df6fa2afbafaea008d49f1fe9d9a223d0ec3b868131078e07d3041e3b9189d3e",
+      "requests": [
+        {
+          "index": 0,
+          "grid": {
+            "dimensions": {
+              "width": 5,
+              "height": 4
+            },
+            "affineTransform": {
+              "scaleX": 20,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -20,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 5,
+          "height": 4,
+          "readouts": [
+            {
+              "name": "out",
+              "kind": "output",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 100,
+          "payload_bytes": 400,
+          "request_bytes": 20579,
+          "graph_sha256": "d69fb69902c5ff4c58cf8bf0dd7d663ae04fdbb53a2f39354c55620dc066a48e",
+          "graph_bytes": 20351,
+          "embedded_constants": 40,
+          "inline_values": 320
+        },
+        {
+          "index": 1,
+          "grid": {
+            "dimensions": {
+              "width": 10,
+              "height": 8
+            },
+            "affineTransform": {
+              "scaleX": 10,
+              "shearX": 0,
+              "translateX": 1000,
+              "shearY": 0,
+              "scaleY": -10,
+              "translateY": 2000
+            },
+            "crsCode": "EPSG:3857"
+          },
+          "width": 10,
+          "height": 8,
+          "readouts": [
+            {
+              "name": "input",
+              "kind": "input",
+              "channels": 4
+            }
+          ],
+          "bands": 5,
+          "values": 400,
+          "payload_bytes": 1600,
+          "request_bytes": 11262,
+          "graph_sha256": "5a441c878fdc60be35c4da5b619331af353545fbcbe066cc546c52e4cb300062",
+          "graph_bytes": 11033,
+          "embedded_constants": 0,
+          "inline_values": 320
+        }
+      ],
+      "errors": [],
+      "seconds": 0.015,
+      "outputs": {
+        "out": {
+          "mirror_vs_pytorch": {
+            "tolerance": 0.0001,
+            "comparison": "absolute",
+            "values": 80,
+            "max_abs": 1.4901161193847656e-08,
+            "over_tolerance": 0,
+            "pass": true,
+            "worst": {
+              "row": 0,
+              "col": 0,
+              "channel": 3,
+              "actual": 0.18980781733989716,
+              "expected": 0.18980783224105835
+            }
+          }
+        }
+      },
+      "status": "passed"
+    }
+  ]
+}
