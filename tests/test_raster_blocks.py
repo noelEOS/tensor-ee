@@ -256,10 +256,17 @@ def _parameters(function):
     return [(p.name, p.kind, p.default) for p in inspect.signature(function).parameters.values()]
 
 
+ADDED_AFTER_POLICY = {  # keyword-only settings added later, after policy=, each defaulting to today's graph
+    "conv2d": [("phase", KEYWORD, 0)],
+    "grouped_conv2d": [("phase", KEYWORD, 0)],
+}
+
+
 @pytest.mark.parametrize("name", sorted(BLOCKS))
 def test_block_signature_adds_only_a_keyword_only_policy(name):
     block = getattr(BLOCK_MODULES[BLOCKS[name]], name)
-    assert _parameters(block) == BASE_PARAMETERS[name] + [("policy", KEYWORD, POLICIES.get(name, P.FLOAT32_OPERANDS))]
+    assert _parameters(block) == (BASE_PARAMETERS[name] + [("policy", KEYWORD, POLICIES.get(name, P.FLOAT32_OPERANDS))]
+                                  + ADDED_AFTER_POLICY.get(name, []))
 
 
 @pytest.mark.parametrize("name", FACADES)
@@ -377,8 +384,8 @@ EXPECTED = {   # block -> (locality, radius, status)
         "Ready — maps 5 × 7, 8 × 8, 12 × 20, 64 × 64 and 128 × 128"),
     "multiply": (M.Locality.POINTWISE, None,
         "Ready — same grid on a 5 × 7 map; one-pixel gate on 5 × 7 and 12 × 20 maps"),
-    "grouped_conv2d": (M.Locality.KERNEL, 2,
-        "Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2"),
+    "grouped_conv2d": (M.Locality.KERNEL, 3,
+        "Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1 or 2; 3×3 stride 1 with 2 channels per group or channel multiplier 2"),
     "bilinear_upsample": (M.Locality.KERNEL, 1, "Ready — factors 2, 3, 4 (align_corners=False), 2, 4 (align_corners=True)"),
     "batch_norm": (M.Locality.POINTWISE, None, "Ready"),
     "standardize": (M.Locality.POINTWISE, None, "Ready — 6 bands with scale 1e-4; 3 bands without scale"),

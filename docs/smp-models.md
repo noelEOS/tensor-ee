@@ -170,6 +170,19 @@ offline graph construction with symbolic weights, and exact PyTorch adapter
 probe equality. These checks do not establish Earth Engine numerical agreement
 for either whole model.
 
+SMP's own EfficientNet encoders write each convolution as a padding module (or an
+`Identity`) followed by `F.conv2d` with the module's weights, and fix that padding for
+the encoder's configured image size; some stride-2 layers are padded `(0, 1, 0, 1)`
+(3 × 3) or `(1, 2, 1, 2)` (5 × 5). The compiler recognises these as convolutions at a
+sampling phase ([API guide](api.md#spatial-and-numerical-rules)). With random weights,
+three input channels and two classes for `efficientnet-b0`, and eight input channels and
+three classes for `efficientnet-b3`, a Unet at 256 × 256 is `supported` by
+`check_compatibility` after `adapt_smp_model`, whose probe is equal (max_abs 0). Without the
+adapter, the decoder's 10 in-place ReLUs are the only blockers. This is a trace status
+only: no graph of either model has been evaluated, the sampling phase is validated live
+on small fixtures and not on these models, and there is no numerical or accuracy claim
+for these encoders.
+
 Run the full matrix explicitly; the default suite skips it:
 
 ```sh

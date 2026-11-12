@@ -903,6 +903,59 @@ def test_global_pool_multiply_fixture_ids_and_data_are_stable():
         assert all(np.count_nonzero(value == 0) == 0 for value in data.inputs.values()), fixture.id
 
 
+def test_padded_conv_fixture_ids_data_and_graphs_are_stable():
+    """Six distinct graphs. The phase-0 5 x 5 fixture is today's graph of the same
+    nn.Conv2d(padding=2), by recognition; each phase-1 fixture differs from its
+    nn.Conv2d(padding=kernel // 2) graph."""
+    import tensor_ee
+    from tools.fixtures.core import inline_raster
+    from tools.fixtures.raster import _PADDED, _padded_cost_module, _rect_grid
+
+    expected = {
+        "raster/conv2d/pad0101-k3-s2-h8-w10": (
+            "d0180c8411c71d4c28486837accfe4bf9ab9652a74071e88b3384d75b022bec6",
+            "9baaa16c75f7ede1f533f709f804f25b1ff0a8b3f38db5ab4bbb0c6d11f42b64", 1),
+        "raster/conv2d/pad0101-k3-s2-h7-w9": (
+            "45ff7845069d5cbbe766ef26d188dee198ba789c4d7ff22742e2d4592b5b50d3",
+            "9d9afa7f7b72e58fecdae1a41aa2e21bdebe97be687a787bb617d244b7788f45", 1),
+        "raster/grouped_conv2d/depthwise-pad0101-k3-s2": (
+            "7191642021ea6b2ad313f4a97f5fd0c13fdcbcd87944eaed9240560cc830a7a1",
+            "d816913c5045aa7daa44db6a395ee99b316b5e1e397f2bbb77931a4fb4f290b2", 1),
+        "raster/grouped_conv2d/depthwise-pad1212-k5-s2": (
+            "60a9febe42ac1b26072859284bebf7b3b59f6960b71af6583ff129caa45871a5",
+            "79f4b91b98c46eb9840e14ce3da557db83b0069638b7e4b3acc2d9062a819991", 1),
+        "raster/grouped_conv2d/depthwise-pad2222-k5-s2": (
+            "f44951870074a5da1f80cf9259a1cd1b3127f2f64237c3760c535cea1be68ff3",
+            "4c5d36839c919d0522d7fe32346fdabf2d4011756ecacbc700bc28ee3dc59baf", 0),
+        "raster/grouped_conv2d/depthwise-pad1101-k3-s2": (
+            "a594aa74b13a6c6e528d301ab83cca568ebb937a27a38247d77048cf4d4feb81",
+            "df6fa2afbafaea008d49f1fe9d9a223d0ec3b868131078e07d3041e3b9189d3e", (1, 0)),
+    }
+    fixtures = select(["padded_conv"])
+    assert [fixture.id for fixture in fixtures] == list(expected)
+    specs = {f"raster/{spec.block}/{spec.name}": spec for spec in _PADDED}
+    case = ApiTestCase()
+    case.setUp()
+    try:
+        graphs = set()
+        for fixture in fixtures:
+            data = fixture.data(fixture.seed)
+            assert (data.inputs_sha256, data.weights_sha256, fixture.settings["phase"]) == expected[fixture.id]
+            assert fixture.requests == 2 and (fixture.mirror is None) == (fixture.block == "conv2d")
+            out = fixture.build(ee, data)[0]
+            graphs.add(out.image.serialize())
+            spec = specs[fixture.id]
+            grid = _rect_grid(10, *spec.shape)
+            bands = ("b0", "b1", "b2", "b3")[:spec.inputs]
+            plain = tensor_ee.compile_model(_padded_cost_module(spec, data),
+                                            inline_raster(ee, grid.projection(), data.inputs["x"], bands), bands, grid)
+            assert (out.image.serialize() == plain.image.serialize()) == (fixture.settings["phase"] == 0), fixture.id
+            assert list(out.shape[:2]) == fixture.shapes["output"][:2]
+        assert len(graphs) == len(fixtures)
+    finally:
+        case.tearDown()
+
+
 def test_only_the_128_global_pool_fixture_raises_the_raster_grid():
     """The maintainer's allowance is one fixture's own request-grid side (128); the budget's
     default stays 64 for every other fixture, and a lowered --budget applies to that one too."""

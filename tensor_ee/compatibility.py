@@ -11,7 +11,7 @@ from torch import nn
 from torch.fx import GraphModule, Node, symbolic_trace
 
 from .compiler import UnsupportedOperation, _ROOT_MODULES
-from .semantics import (SemanticUnknown, TensorMetadata, diagnostic_convolution,
+from .semantics import (EMITS_NOTHING, SemanticUnknown, TensorMetadata, diagnostic_convolution,
                         infer_metadata, semantic_call, specialize_plumbing)
 
 
@@ -152,7 +152,7 @@ def check_compatibility(model: nn.Module, input_shape: tuple[int, int, int, int]
                 # Static semantics first: invalid options remain blockers even
                 # when a predecessor's shape could not be inferred.
                 call = semantic_call(node, graph)
-                if call.kind == "batchnorm_constant":
+                if call.kind in EMITS_NOTHING:
                     continue
                 if call.kind in ("conv", "grouped_conv"):
                     if not diagnostic_convolution(node, graph):

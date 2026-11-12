@@ -7,7 +7,8 @@ inspecting individual FX tensors. Every node describes one NCHW tensor with
 batch size one; channels are EE bands and spatial dimensions are the Grid.
 
 Semantics are intentionally strict: finite rectangles, missing input values
-filled with zero, odd same-padded stride-one/two convolutions, aligned k x k
+filled with zero, odd stride-one/two convolutions, same-padded or zero-padded at
+a sampling phase (``semantics.convolution``), aligned k x k
 pooling (k = 2, 3, 4), padded 3x3 max pooling (stride one or two) and stride-one
 average pooling, integer nearest/bilinear upsampling, residual addition, channel
 concatenation, global average pooling onto the map's one-pixel grid and elementwise
@@ -246,7 +247,10 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                   clip_footprints: bool = False) -> CompiledModel:
     """Convert an eval-mode model into an EE graph; do not evaluate or export it.
 
-    Supports Conv2d (including grouped/depthwise), ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
+    Supports Conv2d (including grouped/depthwise) and F.conv2d with the model's own weight and
+    bias, each with any zero padding directly ahead of it (ZeroPad2d, ConstantPad2d with 0,
+    F.pad with 0) that leaves kernel // 2 - phase pixels before the input with
+    0 <= phase < stride (a nonzero phase is validated live at stride 2 for 3 x 3 kernels and a depthwise 5 x 5), ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
     Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, ReLU6, Hardswish, Hardsigmoid,
     eval Dropout/Dropout2d, channel Softmax,
     eval BatchNorm2d and F.batch_norm with fixed buffer/parameter statistics, torch.cat,
@@ -317,14 +321,15 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     placeholders = 0
     output: Raster | None = None
 
-    def convolve(key: str, raster: Raster, module: nn.Conv2d) -> Raster:
+    def convolve(key: str, raster: Raster, module: nn.Conv2d, phase) -> Raster:
         parameters = None if weight_provider is None else weight_provider(key, module)
         if module.groups != 1:
-            return grouped_conv2d(raster, module, parameters, clip_footprints=clip_footprints)
+            return grouped_conv2d(raster, module, parameters, clip_footprints=clip_footprints, phase=phase)
         return conv2d(raster, module, parameters, execution_dtype=execution_dtype,
-                      clip_footprints=clip_footprints)
+                      clip_footprints=clip_footprints, phase=phase)
 
-    from .semantics import (TensorMetadata, diagnostic_convolution, infer_metadata, semantic_call)
+    from .semantics import (EMITS_NOTHING, TensorMetadata, diagnostic_convolution, infer_metadata,
+                            semantic_call)
     metadata: dict[Node, TensorMetadata] = {}
     for node in traced.graph.nodes:
         try:
@@ -344,7 +349,7 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                 continue
             else:
                 call = semantic_call(node, traced)
-                if call.kind == "batchnorm_constant":
+                if call.kind in EMITS_NOTHING:
                     continue
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))
                 kind = call.kind
@@ -352,9 +357,10 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                     if not include_unfused_nodes and diagnostic_convolution(node, traced):
                         environment[node] = None
                         continue
-                    raster = convolve(node.name, environment[call.inputs[0]], call.module)
+                    raster = convolve(node.name, environment[call.inputs[0]], call.module, call.options["phase"])
                 elif kind == "batchnorm":
-                    raster = convolve(node.name, environment[call.options["source"]], call.module)
+                    raster = convolve(node.name, environment[call.options["source"]], call.module,
+                                      call.options["phase"])
                     folded.append(node.name)
                 else:
                     inputs = tuple(environment[x] for x in call.inputs)

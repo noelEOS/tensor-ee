@@ -133,7 +133,7 @@ def test_grouped_block_and_legacy_block_keep_separate_acceptance_and_status(offl
         C.conv_options(module)
     assert C.METADATA["conv2d"].validated.configurations == ((),)
     assert C.METADATA["grouped_conv2d"].status.startswith("Ready — depthwise")
-    assert C.METADATA["grouped_conv2d"].radius == 2
+    assert C.METADATA["grouped_conv2d"].radius == 3        # 5 x 5 at phase 1: k // 2 + 1
 
 
 def inverted_residual():
@@ -273,7 +273,8 @@ def test_values_group_order_stride_and_parameters_match_mirror_and_pytorch(monke
     monkeypatch.setattr(K, "ee", fake)
     monkeypatch.setattr(C, "_zero_extended", lambda raster: raster.image)
     monkeypatch.setattr(C, "_project", lambda image, grid, clip: image)
-    def sample(image, bands, g, stride, clip):
+    def sample(image, bands, g, stride, clip, *, phase=(0, 0)):
+        assert phase == (0, 0)  # the blocks pass the default sampling phase as a pair
         return Raster(Image(image.values[::stride, ::stride], bands), bands,
                       g.resized(stride, (g.width + stride - 1) // stride, (g.height + stride - 1) // stride))
     monkeypatch.setattr(C, "_stride_sample", sample)
@@ -291,4 +292,44 @@ def test_values_group_order_stride_and_parameters_match_mirror_and_pytorch(monke
     np.testing.assert_array_equal(a, b)
     with torch.no_grad():
         torch_out = module(torch.from_numpy(x.transpose(2, 0, 1)[None])).numpy()[0].transpose(1, 2, 0)
+    assert np.max(np.abs(a - torch_out)) <= 1e-4
+
+
+@pytest.mark.parametrize("kernel,padding", [(3, (0, 1, 0, 1)), (5, (1, 2, 1, 2)), (3, (1, 1, 0, 1)),
+                                            (3, (0, 1, 1, 1)), (5, (2, 2, 2, 2))])
+@pytest.mark.parametrize("height,width", [(8, 10), (7, 9)])
+def test_a_sampling_phase_matches_the_padded_mirror_and_pytorch(monkeypatch, kernel, padding, height, width):
+    """The block's own array graph, interpreted in NumPy, at the phase a zero padding gives
+    (kernel // 2 - left, kernel // 2 - top): equal to the mirror with that padding, and to
+    PyTorch's padded convolution within 1e-4. The sampler is modelled as taking input pixels
+    stride * i + phase, the rule ``stride_sample`` implements (tests/test_raster_padded_conv.py
+    checks its grids)."""
+    fake = SimpleNamespace(Array=Array, Image=Image,
+                           Kernel=SimpleNamespace(fixed=lambda kw, kh, *args: (kh, kw)),
+                           Reducer=SimpleNamespace(sum=lambda: "sum"))
+    monkeypatch.setattr(C, "ee", fake)
+    monkeypatch.setattr(K, "ee", fake)
+    monkeypatch.setattr(C, "_zero_extended", lambda raster: raster.image)
+    monkeypatch.setattr(C, "_project", lambda image, grid, clip: image)
+    def sample(image, bands, g, stride, clip, *, phase=(0, 0)):
+        py, px = phase
+        return Raster(Image(image.values[py::stride, px::stride], bands), bands,
+                      g.resized(stride, (g.width - px + stride - 1) // stride, (g.height - py + stride - 1) // stride))
+    monkeypatch.setattr(C, "_stride_sample", sample)
+    left, right, top, bottom = padding
+    phase = (kernel // 2 - top, kernel // 2 - left)
+    spec = _Grouped(f"depthwise-k{kernel}-s2", kernel=kernel, stride=2)
+    data = _grouped_data(spec)(61)
+    module = _grouped_module(spec, data)
+    x = ((np.arange(height * width * 4).reshape(height, width, 4) % 97 - 48) / 64).astype(np.float32)
+    raster = Raster(Image(x, tuple(f"z{i}" for i in range(4))), tuple(f"z{i}" for i in range(4)),
+                    Grid("EPSG:3857", (20, 0, 1000, 0, -20, 2000), width, height))
+    a = C.grouped_conv2d(raster, module, phase=phase).image.values.astype(np.float32)
+    expected = mirror(x, data.weights["weight"], data.weights["bias"], groups=4, stride=2, padding=padding)
+    np.testing.assert_array_equal(a, expected)
+    with torch.no_grad():
+        torch_out = torch.nn.functional.conv2d(
+            torch.nn.functional.pad(torch.from_numpy(x.transpose(2, 0, 1)[None]), padding),
+            module.weight, module.bias, 2, 0, 1, 4).numpy()[0].transpose(1, 2, 0)
+    assert torch_out.shape == a.shape == ((height - phase[0] + 1) // 2, (width - phase[1] + 1) // 2, 4)
     assert np.max(np.abs(a - torch_out)) <= 1e-4

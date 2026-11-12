@@ -220,7 +220,8 @@ def _union_axis(sources: list[AxisSupport]) -> AxisSupport:
 def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldReport:
     """Trace supported inference operations without executing any tensor forward.
 
-    Supports the compiler's odd same-padded convolutions, its pools (aligned
+    Supports the compiler's odd convolutions (same-padded, or zero-padded at a sampling
+    phase: the window starts at the call's total left and top padding), its pools (aligned
     k x k average/max for k in 2, 3, 4; padded 3x3 max at stride 1 or 2; padded
     3x3 stride-1 average), fixed integer nearest/bilinear upsampling, inference BatchNorm,
     ReLU/Sigmoid/Identity, residual addition, channel concatenation, the elementwise
@@ -247,7 +248,7 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
             raise UnsupportedReceptiveField("Expected a previously supported tensor node")
         return supports[node]
 
-    from .semantics import semantic_call
+    from .semantics import EMITS_NOTHING, semantic_call
     for node in graph.graph.nodes:
         try:
             if node.op == "placeholder":
@@ -261,15 +262,21 @@ def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldRep
                 continue
             else:
                 call = semantic_call(node, graph)
-                if call.kind == "batchnorm_constant":
+                if call.kind in EMITS_NOTHING:
                     continue
                 support = source(call.inputs[0])
                 if call.kind in ("conv", "grouped_conv", "pool"):
                     module = call.module
                     kernel = _pair(module.kernel_size, name="Window kernel")
                     stride = _pair(module.stride or module.kernel_size, name="Window stride")
-                    padding = ((kernel[0] // 2, kernel[1] // 2) if module.padding == "same"
-                               else _pair(module.padding, name="Window padding"))
+                    if "padding" in call.options:
+                        # A convolution's total zero padding before the input (its own and
+                        # any zero padding directly ahead): top and left, per axis.
+                        left, _, top, _ = call.options["padding"]
+                        padding = (top, left)
+                    else:
+                        padding = ((kernel[0] // 2, kernel[1] // 2) if module.padding == "same"
+                                   else _pair(module.padding, name="Window padding"))
                     support = SpatialSupport(_window_axis(support.y, kernel[0], stride[0], padding[0]),
                                              _window_axis(support.x, kernel[1], stride[1], padding[1]))
                 elif call.kind == "nearest":

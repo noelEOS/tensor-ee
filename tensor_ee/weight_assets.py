@@ -54,10 +54,12 @@ def effective_convolutions(model: nn.Module) -> list[ConvolutionWeights]:
             call = semantic_call(node, traced)
         except UnsupportedOperation as error:
             raise UnsupportedOperation(f"At FX node {node.name} ({node.target}): {error}") from error
+        # The source names the weight's module path (a state-dict prefix): the module
+        # for nn.Conv2d, the weight parameter's owner for a functional convolution.
         if call.kind in ("conv", "grouped_conv") and not diagnostic_convolution(node, traced):
-            result.append(convolution_weights(node.name, call.module, str(node.target)))
+            result.append(convolution_weights(node.name, call.module, call.options["path"]))
         elif call.kind == "batchnorm":
-            source = str(call.options["predecessor"].target) + "+" + str(node.target)
+            source = call.options["path"] + "+" + str(node.target)
             result.append(convolution_weights(node.name, call.module, source))
     if not result:
         raise ValueError("Model contains no deployable convolutions")

@@ -54,7 +54,27 @@ full window (9), as PyTorch's zero padding does; `False` divides by the number o
 in-bounds pixels.
 
 Convolution uses odd same-padded kernels, stride 1/2, dilation 1 and zero padding
-mode. Groups=1 retains the existing `conv2d` block. Groups greater than one route
+mode. A convolution is an `nn.Conv2d` module or `F.conv2d` (`torch.conv2d`) whose weight
+and bias are the model's own parameters or buffers, read only by that call. Zero padding
+directly ahead of it, as `nn.ZeroPad2d`, `nn.ConstantPad2d` with value 0 or `F.pad` with
+a static four-integer pad, mode `"constant"` and value 0 or None, adds to the
+convolution's own padding; an `nn.Identity` directly ahead of `F.conv2d` is absorbed too.
+On each axis the total padding before the input must be `kernel // 2 - phase` with
+`0 <= phase < stride`, and PyTorch's output count at the input size must be
+`ceil((n - phase) / stride)`. Phase 0 is the same-padded convolution and compiles to its
+existing graph; a nonzero phase (for example `(0, 1, 0, 1)` ahead of a 3 × 3 stride-2
+convolution) runs the same block, sampling input pixel `stride * i + phase`
+(the blocks' keyword-only `phase`, an integer or a `(phase_y, phase_x)` pair). A
+nonzero phase is validated live on small fixtures at stride 2: an ordinary 3 × 3
+convolution at phase 1, and depthwise 3 × 3 at phases 1 and `(1, 0)` and 5 × 5 at
+phase 1; other kernels and phases are not validated. Refused: padding computed from a
+tensor's shape, negative pads, other `F.pad` lengths, nonzero values, reflection,
+replication and circular padding, a padding node with any other use, a total padding
+whose phase is outside `[0, stride)` or whose output count is not
+`ceil((n - phase) / stride)` (an unpadded stride-1 convolution, for example), and
+functional weights that are computed or shared. An unpadded 3 × 3 stride-2 convolution
+on an odd-sized map is the phase-1 form and compiles; on an even-sized map it is
+refused. Groups=1 retains the existing `conv2d` block. Groups greater than one route
 to `grouped_conv2d`, including depthwise convolutions and channel multipliers;
 groups must divide both channel counts. The grouped block is validated live for
 depthwise 3 x 3 at strides 1/2 with optional bias, depthwise 5 x 5 at stride 1, and
