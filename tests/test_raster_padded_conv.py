@@ -555,15 +555,18 @@ def test_each_refusal_fires_with_its_message(offline_ee, name, model, message):
     assert any(re.search(message, blocker["message"]) for blocker in report["blockers"]), report["blockers"]
 
 
-def test_a_pad_that_is_a_shape_element_is_a_literal_at_the_proven_size(offline_ee):
-    """``specialize_plumbing`` resolves a shape element into a literal at the compiled input
-    size, as it does for an interpolation size; the raw trace (receptive field) refuses the
-    shape read itself."""
+def test_a_pad_read_from_the_shape_is_refused_even_where_it_would_resolve(offline_ee):
+    """``specialize_plumbing`` would resolve a bare shape element into a literal at the
+    compiled input size (as for an interpolation size), but a pad read from a tensor's shape
+    stays refused: zero padding must be written statically. The raw trace (receptive field)
+    refuses the shape read itself."""
+    message = "padding computed from a tensor's shape"
     model = ShapePad("element").eval()
-    expected, grid = _block_graph(_reference(4, 4, 3, stride=2, bias=False)[0], 1)
-    out = _compile(model, 4)
-    assert out.image.serialize() == expected and out.grid == grid
-    assert check_compatibility(model, (1, 4, 8, 10)).status == "supported"
+    with pytest.raises(UnsupportedOperation, match=message):
+        _compile(model, 4)
+    report = check_compatibility(model, (1, 4, 8, 10)).to_dict()
+    assert report["status"] == "unsupported"
+    assert [b["node"] for b in report["blockers"] if message in b["message"]] == ["pad"]
     for form in ("element", "arithmetic"):
         with pytest.raises(UnsupportedReceptiveField, match="getattr"):
             analyze_receptive_field(ShapePad(form).eval())

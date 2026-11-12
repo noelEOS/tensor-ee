@@ -337,6 +337,20 @@ def specialize_plumbing(graph: GraphModule, input_shape: tuple[int, int, int, in
             if plumbing or size_call:
                 errors[node] = error if not isinstance(error, TypeError) else UnsupportedOperation(
                     f"Invalid call arguments: {error}")
+    # A pad read from a tensor's shape stays refused, even where a shape element would
+    # resolve to a literal at this input size: zero padding must be written statically.
+    for node in graph_copy.nodes:
+        if node.op == "call_function" and node.target is F.pad and node not in errors:
+            try:
+                pad = _bind_options(_pad_arguments, node.args, node.kwargs)["pad"]
+            except TypeError:
+                continue
+            if any(x in values for x in _nodes_in(pad)):
+                try:
+                    _reject("F.pad padding must be static integers; padding computed from a tensor's shape "
+                            "is unsupported")
+                except UnsupportedOperation as error:
+                    errors[node] = error
     # Replace scalar/tuple uses only after their provenance has been checked.
     from torch.fx.node import map_arg
     for node in graph_copy.nodes:
