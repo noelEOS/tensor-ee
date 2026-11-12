@@ -140,7 +140,7 @@ def one_pixel(grid: Grid) -> Grid:
     from the whole map. On a k x k grid it equals ``grid.resized(k, 1, 1)``, the grid
     of an aligned k x k pool."""
     a, b, c, d, e, f = grid.transform
-    return Grid(grid.crs, (a * grid.width, b * grid.width, c, d * grid.height, e * grid.height, f), 1, 1)
+    return Grid(grid.crs, (a * grid.width, b * grid.height, c, d * grid.width, e * grid.height, f), 1, 1)
 
 
 @dataclass(frozen=True)
