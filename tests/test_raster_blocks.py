@@ -94,7 +94,7 @@ MOVED = [
 
 # The public R blocks: the names of the moved map targets.
 BLOCKS = {"conv2d": "conv", "pool2d": "pooling", "nearest_upsample": "resample",
-          "grouped_conv2d": "conv",
+          "grouped_conv2d": "conv", "global_avg_pool2d": "pooling", "multiply": "merge",
           "bilinear_upsample": "resample",
           "batch_norm": "normalization", "standardize": "normalization",
           "concatenate": "merge", "residual_add": "merge",
@@ -171,7 +171,8 @@ def test_every_map_entry_owned_by_l03_is_at_its_target():
         assert BLOCKS[name] == path.split("/")[-1][:-3]
     # Later blocks are additions, so the historical module map does not list them.
     assert {e["target"].split("::")[1] for e in moved} == set(BLOCKS) - {
-        "relu6", "hardsigmoid", "hardswish", "batch_norm", "bilinear_upsample", "grouped_conv2d", "standardize"}
+        "relu6", "hardsigmoid", "hardswish", "batch_norm", "bilinear_upsample", "grouped_conv2d", "standardize",
+        "global_avg_pool2d", "multiply"}
     for entry in stays:
         path, name = entry["target"].split("::")
         assert entry["id"].split(":")[0] == path   # the converter stays where it is
@@ -205,6 +206,8 @@ def test_public_api_names_resolve_to_the_same_objects():
 POSITIONAL, KEYWORD = inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY
 _EMPTY = inspect.Parameter.empty
 BASE_PARAMETERS = {
+    "global_avg_pool2d": [("raster", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
+    "multiply": [("x", POSITIONAL, _EMPTY), ("other", POSITIONAL, _EMPTY), ("clip_footprints", KEYWORD, False)],
     "grouped_conv2d": [("raster", POSITIONAL, _EMPTY), ("module", POSITIONAL, _EMPTY),
                        ("parameters", POSITIONAL, None), ("clip_footprints", KEYWORD, False)],
     "bilinear_upsample": [("raster", POSITIONAL, _EMPTY), ("constants", POSITIONAL, _EMPTY),
@@ -289,6 +292,9 @@ def _grouped_fixture():
 
 
 CALLS = {   # block name -> call(function, fixture, **policy)
+    "global_avg_pool2d": lambda f, x, **kw: f(x[1], **kw),
+    # Both forms: the same grid, and the one-pixel gate pooled from the map.
+    "multiply": lambda f, x, **kw: (f(x[1], x[1], **kw), f(x[1], PL.global_avg_pool2d(x[1]), **kw)),
     "grouped_conv2d": lambda f, x, **kw: f(x[1], _grouped_fixture(), **kw),
     "bilinear_upsample": lambda f, x, **kw: f(x[1], RS.BilinearConstants(
         np.repeat(np.eye(4, dtype=np.float32), 2, axis=0),
@@ -367,6 +373,10 @@ def test_compile_model_keeps_the_per_node_float32_cast(offline_ee):
 # Metadata: every public R block, locality from the inventory and receptive field
 # ---------------------------------------------------------------------------
 EXPECTED = {   # block -> (locality, radius, status)
+    "global_avg_pool2d": (M.Locality.EXTENT, None,
+        "Ready — maps 5 × 7, 8 × 8, 12 × 20, 64 × 64 and 128 × 128"),
+    "multiply": (M.Locality.POINTWISE, None,
+        "Ready — same grid on a 5 × 7 map; one-pixel gate on 5 × 7 and 12 × 20 maps"),
     "grouped_conv2d": (M.Locality.KERNEL, 2,
         "Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2"),
     "bilinear_upsample": (M.Locality.KERNEL, 1, "Ready — factors 2, 3, 4 (align_corners=False), 2, 4 (align_corners=True)"),

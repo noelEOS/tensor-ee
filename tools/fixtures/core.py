@@ -36,6 +36,11 @@ import numpy as np
 TOLERANCE = 1e-4
 """The unchanged 1e-4 absolute target against PyTorch (a fixture may set a smaller one)."""
 
+RAISED_RASTER_SIDE = 128
+"""The largest raster-lane request-grid side one fixture may declare (``Fixture.raster_side``),
+above the budget's 64: the maintainer's allowance for one global-pooling fixture on a
+128 x 128 map, the largest map squeeze-excitation pools in the models it serves."""
+
 LANES = ("raster", "window")
 KINDS = ("output", "input")
 _ID = re.compile(r"^[a-z]+(/[a-z0-9_.-]+)+$")
@@ -223,6 +228,9 @@ class Fixture:
     window: int = 7
     calibration: bool = False
     notes: str = ""
+    raster_side: int | None = None
+    """A raster-lane fixture's own request-grid side, above the budget's default, by the
+    maintainer's allowance (at most ``RAISED_RASTER_SIDE``); None: the budget's."""
 
     def __post_init__(self):
         if not _ID.match(self.id):
@@ -240,16 +248,24 @@ class Fixture:
         if self.lane == "window" and self.settings.get("window") != self.window:
             raise ValueError(f"{self.id}: a window-lane fixture's window ({self.window}) must equal "
                              f"settings['window'] ({self.settings.get('window')!r})")
+        if self.raster_side is not None and (
+                self.lane != "raster" or isinstance(self.raster_side, bool) or not isinstance(self.raster_side, int)
+                or not 0 < self.raster_side <= RAISED_RASTER_SIDE):
+            raise ValueError(f"{self.id}: raster_side is a raster-lane fixture's request-grid side, "
+                             f"an integer of at most {RAISED_RASTER_SIDE}")
 
     def record(self) -> dict:
         """The spec without its callables (evidence and ``--list``)."""
-        return {"id": self.id, "lane": self.lane, "block": self.block, "parts": list(self.parts),
-                "settings": jsonable(self.settings), "policy": self.policy,
-                "shapes": jsonable(self.shapes), "seed": self.seed, "tolerance": self.tolerance,
-                "requests": self.requests, "reference": self.reference_source,
-                "mirror": None if self.mirror is None else {
-                    "source": self.mirror.source, "exact": self.mirror.exact, "bound": self.mirror.bound},
-                "history": self.history, "calibration": self.calibration, "notes": self.notes}
+        record = {"id": self.id, "lane": self.lane, "block": self.block, "parts": list(self.parts),
+                  "settings": jsonable(self.settings), "policy": self.policy,
+                  "shapes": jsonable(self.shapes), "seed": self.seed, "tolerance": self.tolerance,
+                  "requests": self.requests, "reference": self.reference_source,
+                  "mirror": None if self.mirror is None else {
+                      "source": self.mirror.source, "exact": self.mirror.exact, "bound": self.mirror.bound},
+                  "history": self.history, "calibration": self.calibration, "notes": self.notes}
+        if self.raster_side is not None:
+            record["raster_side"] = self.raster_side
+        return record
 
 
 def jsonable(value):

@@ -60,6 +60,7 @@ A fixture is a frozen record (`tools/fixtures/core.py::Fixture`):
 | `mirror` | Optional: the NumPy mirror from `tests/reference`, and whether it models Earth Engine's rounding exactly (`exact`) or within a recorded `bound`, which may not exceed the fixture's tolerance |
 | `tolerance` | 1e-4 absolute against PyTorch. A fixture may set a smaller one, never a larger one (refused by the record). A tolerance of 0 compares float32 bits, so -0.0 against +0.0 fails; selection and copy blocks use it |
 | `window` | The window of the graph, for the window lane's request budget; it must equal `settings["window"]` (refused otherwise) |
+| `raster_side` | Optional, raster lane only: the fixture's own request-grid side above the budget's, by the maintainer's allowance (at most 128); recorded in the spec only when set |
 | `requests` | The expected number of interactive requests; `--plan` refuses a fixture whose graphs need another number |
 | `constants(data)` | The embedded-constant count of its blocks, from their `METADATA` cost functions |
 | `history` | The recorded result the fixture should reproduce, with its file |
@@ -93,7 +94,7 @@ covers runs within them.
 | Limit | Default |
 |---|---|
 | Interactive requests per invocation | 40 |
-| Request grid, raster lane | 64 × 64 pixels |
+| Request grid, raster lane | 64 × 64 pixels; 128 × 128 for `raster/global_avg_pool2d/h128-w128` alone (`Fixture.raster_side`, a maintainer's allowance; a lowered `raster_side` applies to it too) |
 | Request grid, window lane | 8 × 8 windows (56 × 56 tokens at window 7) |
 | Output values per request | 1,000,000 |
 | Serialized request | 2,000,000 bytes |

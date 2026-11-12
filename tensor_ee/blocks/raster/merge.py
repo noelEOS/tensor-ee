@@ -1,8 +1,34 @@
-"""R merges: channel concatenation (``torch.cat`` on dim 1) and residual addition.
+"""R merges: channel concatenation (``torch.cat`` on dim 1), residual addition and
+elementwise multiplication.
 
 Moved whole from ``tensor_ee.compiler`` (``concatenate``, ``residual_add``).
 The old names are re-exports of these objects. Both require identical grids;
 there is no broadcasting.
+
+**Multiply** (``multiply(x, other)``): ``x * other`` band by band, in two forms only:
+
+- ``other`` on ``x``'s grid with ``x``'s channel count (PyTorch's same-shape product);
+- ``other`` a one-pixel gate on ``one_pixel(x.grid)`` with ``x``'s channel count: the
+  ``[N, C, 1, 1]`` tensor ``global_avg_pool2d`` gives for this map, broadcast over its
+  pixels (squeeze-and-excitation's ``sigmoid(g) * x``). The gate is reprojected onto
+  ``x``'s grid; nearest resampling gives every pixel of the map the gate's one value.
+  The grid check is what ties the gate to this map: a gate pooled from another map,
+  chip or resolution is refused.
+
+Everything else is refused: a channel broadcast (a ``[N, 1, H, W]`` operand, scSE's
+spatial gate), a scalar, other grids and other channel counts. Earth Engine would
+broadcast a one-band operand over every band, so the channel count is checked here.
+``x``'s bands and grid are kept. Locality ``POINTWISE``: the gate form's dependence on the
+whole map travels in the one-pixel edge from the ``EXTENT`` pool, so a gate costs one
+``EXTENT`` node, not two.
+
+Policy ``float32_operands``: the product of two float32 values is exact in double, so its
+one float32 rounding at the node boundary gives the correctly rounded float32 product,
+bit-equal to PyTorch's (an IEEE product is commutative, so ``x * g`` and ``g * x`` agree).
+Validated live in the same-grid form on a 5 x 7 map and in the gate form on 5 x 7 and,
+through ``compile_model``, 12 x 20 maps (``raster/multiply/*`` in
+``tools/fixtures/raster.py``), clip_footprints=False: Earth Engine equal to the NumPy mirror
+and to float32 PyTorch in every value. Other map sizes are not validated.
 """
 
 from __future__ import annotations
@@ -10,10 +36,11 @@ from __future__ import annotations
 from typing import Sequence
 
 from ...core.errors import UnsupportedOperation
+from ...core.grid import one_pixel
 from ...core.metadata import ANY_SETTINGS, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
-from ...layouts.raster import finish as _finish
+from ...layouts.raster import finish as _finish, project as _project
 from .conv import _names, _no_coefficients
 
 
@@ -44,6 +71,30 @@ def residual_add(left: Raster, right: Raster, *, clip_footprints: bool = False,
     return _finish(left.image.add(right.image.rename(list(left.bands))), left.bands, left.grid, clip_footprints)
 
 
+MULTIPLY_FORMS = ("the same grid with the same channel count, or a one-pixel gate on the map's own "
+                  "one-pixel grid (one_pixel(x.grid)) with the map's channel count")
+"""The accepted forms, as the refusal names them."""
+
+
+def multiply(x: Raster, other: Raster, *, clip_footprints: bool = False,
+             policy: str = FLOAT32_OPERANDS) -> Raster:
+    """``x * other`` band by band: ``other`` on ``x``'s grid, or a one-pixel gate on
+    ``one_pixel(x.grid)``, with ``x``'s channel count either way; ``x``'s bands and grid."""
+    validate_policy(policy, allowed=FLOAT32_OPERANDS)
+    if not isinstance(x, Raster) or not isinstance(other, Raster):
+        raise UnsupportedOperation("Multiplication requires two raster tensors; a scalar operand is unsupported")
+    if len(other.bands) != len(x.bands):
+        raise UnsupportedOperation(f"Multiplication requires {MULTIPLY_FORMS}; received {len(other.bands)} "
+                                   f"channels for a {len(x.bands)}-channel map (no channel broadcasting)")
+    if other.grid == x.grid:
+        factor = other.image.rename(list(x.bands))
+    elif other.grid == one_pixel(x.grid):
+        factor = _project(other.image.rename(list(x.bands)), x.grid, clip_footprints)
+    else:
+        raise UnsupportedOperation(f"Multiplication requires {MULTIPLY_FORMS}; the operand's grid is neither")
+    return _finish(x.image.multiply(factor), x.bands, x.grid, clip_footprints)
+
+
 # ---------------------------------------------------------------------------
 # Locality and cost metadata (contract section 9)
 # ---------------------------------------------------------------------------
@@ -63,4 +114,14 @@ METADATA = validate_metadata({
         evidence=("docs/history/cnn/results/resnet_primitives.json", "docs/history/cnn/results/resnet18_full64_float32_policy.json",
                   "docs/history/cnn/results/segwater_js_parity_1x1.json"),
         validated=ANY_SETTINGS),
+    "multiply": BlockMetadata(
+        name="multiply", layout_in="R", layout_out="R", locality=Locality.POINTWISE,
+        policy=FLOAT32_OPERANDS, embedded_constants=_no_coefficients,
+        asset_arrays=_no_coefficients,
+        # The maps' sizes are the operands' grids, not parameters: the record holds only
+        # clip_footprints (never varied) and the status names the forms and maps that ran.
+        status="Ready — same grid on a 5 × 7 map; one-pixel gate on 5 × 7 and 12 × 20 maps",
+        evidence=("docs/evidence/raster-global-pool-multiply-offline.json",
+                  "docs/evidence/live-fixtures/20261112T151417Z-global_pool_multiply.json"),
+        validated=Validated(({"clip_footprints": (False,)},))),
 })

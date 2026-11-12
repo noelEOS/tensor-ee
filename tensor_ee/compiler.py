@@ -9,8 +9,10 @@ batch size one; channels are EE bands and spatial dimensions are the Grid.
 Semantics are intentionally strict: finite rectangles, missing input values
 filled with zero, odd same-padded stride-one/two convolutions, aligned k x k
 pooling (k = 2, 3, 4), padded 3x3 max pooling (stride one or two) and stride-one
-average pooling, integer nearest/bilinear upsampling, residual addition, and channel
-concatenation. Outside every tensor's rectangle is zero for the
+average pooling, integer nearest/bilinear upsampling, residual addition, channel
+concatenation, global average pooling onto the map's one-pixel grid and elementwise
+multiplication (same grid, or by a one-pixel gate pooled from the map it multiplies).
+Outside every tensor's rectangle is zero for the
 next convolution, including after a biased layer. Intermediate grids retain
 the original upper-left corner; strided operations sample PyTorch's correct
 pixel centers and then relabel the resulting tensor's coordinates.
@@ -30,7 +32,7 @@ from torch.nn import functional as F
 from torch.fx import GraphModule, Node, symbolic_trace
 
 from .core.errors import UnsupportedOperation
-from .core.grid import Grid
+from .core.grid import Grid, one_pixel
 from .core.tensor import Raster
 # R converters (layout and grid consolidation) and float32 helpers moved to the library; the old
 # names still in use are kept here as re-exports. compile_model looks _finish up here.
@@ -41,9 +43,9 @@ from .weights.constants import inline_float32_array as _inline_float32_array
 # objects. The blocks look their helpers up in their own modules, so tests patch
 # tensor_ee.blocks.raster.conv._inline_float32_array.
 from .blocks.raster.conv import _names, _pair, conv2d, grouped_conv2d
-from .blocks.raster.pooling import pool2d
+from .blocks.raster.pooling import global_avg_pool2d, pool2d
 from .blocks.raster.resample import BilinearConstants, bilinear_upsample, nearest_upsample
-from .blocks.raster.merge import concatenate, residual_add
+from .blocks.raster.merge import concatenate, multiply, residual_add
 from .blocks.raster.normalization import BatchNormConstants, batch_norm
 # The activations were private here; the library names them without the
 # underscore. Tests patch tensor_ee.blocks.raster.activations._finish and
@@ -73,7 +75,7 @@ _POINTWISE_MODULES = (nn.LeakyReLU, nn.SiLU, nn.GELU, nn.Tanh, nn.Dropout, nn.Dr
                       nn.ReLU6, nn.Hardsigmoid, nn.Hardswish)
 _UNSUPPORTED_DROPOUT_MODULES = (nn.Dropout1d, nn.Dropout3d, nn.AlphaDropout, nn.FeatureAlphaDropout)
 _ROOT_MODULES = (nn.Conv2d, nn.BatchNorm2d, nn.ReLU, nn.AvgPool2d, nn.MaxPool2d,
-                 nn.Upsample, nn.Sigmoid, nn.Identity, *_POINTWISE_MODULES,
+                 nn.AdaptiveAvgPool2d, nn.Upsample, nn.Sigmoid, nn.Identity, *_POINTWISE_MODULES,
                  *_UNSUPPORTED_DROPOUT_MODULES)
 
 
@@ -251,6 +253,11 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     residual tensor addition, torch.relu, F.relu, torch.sigmoid, and F.interpolate with a static integer
     scale factor, or a proven size with that same integer mapping. Bilinear requires
     a static align_corners bool and antialias=False; its coefficients stay inline.
+    Global average pooling (AdaptiveAvgPool2d and F.adaptive_avg_pool2d to size 1, and
+    torch.mean/Tensor.mean over dims (2, 3) with keepdim=True) gives a [N, C, 1, 1]
+    tensor on the map's one-pixel grid; the result depends on the whole compiled grid.
+    Multiplication (``*``, torch.mul, Tensor.mul) takes two tensors on one grid, or a map
+    and a one-pixel gate pooled from it, in either operand order.
     Unsupported operators fail explicitly with their FX node.
     ``nodes`` includes the input placeholder and each tensor operation, keyed
     by the names in ``graph_module.graph`` for layer-by-layer parity tests.
@@ -380,6 +387,15 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                         raster = concatenate(inputs, call.options["dim"], clip_footprints=clip_footprints)
                     elif kind == "add":
                         raster = residual_add(*inputs, clip_footprints=clip_footprints)
+                    elif kind == "global_mean":
+                        raster = global_avg_pool2d(inputs[0], clip_footprints=clip_footprints)
+                    elif kind == "multiply":
+                        # The map is x, the gate is other, whichever operand PyTorch wrote
+                        # first (an IEEE product is commutative): sigmoid(g) * x and x * g.
+                        x, other = inputs
+                        if other.grid != x.grid and x.grid == one_pixel(other.grid):
+                            x, other = other, x
+                        raster = multiply(x, other, clip_footprints=clip_footprints)
                     elif kind == "relu":
                         raster = _relu(inputs[0], clip_footprints=clip_footprints)
                     elif kind == "sigmoid":

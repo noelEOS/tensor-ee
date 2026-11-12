@@ -133,6 +133,16 @@ class Grid:
         return self.resized(1 / factor, self.width * factor, self.height * factor)
 
 
+def one_pixel(grid: Grid) -> Grid:
+    """The one-pixel grid that covers exactly ``grid``'s finite extent: the same corner,
+    with pixel spacing ``width`` times ``grid``'s in x and ``height`` times in y (so a
+    non-square map has a non-square pixel). The carrier of a ``[N, C, 1, 1]`` tensor pooled
+    from the whole map. On a k x k grid it equals ``grid.resized(k, 1, 1)``, the grid
+    of an aligned k x k pool."""
+    a, b, c, d, e, f = grid.transform
+    return Grid(grid.crs, (a * grid.width, b * grid.height, c, d * grid.width, e * grid.height, f), 1, 1)
+
+
 @dataclass(frozen=True)
 class TokenGrid:
     """North-up grid with origin (0, 0), `scale` metres per token, rows downward."""

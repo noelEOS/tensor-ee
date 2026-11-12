@@ -29,7 +29,8 @@ outputs back as float32 bands on small computePixels grids. A selection is fixtu
   only ``algorithms.list`` (initialization, at most 2) and ``image.computePixels`` through.
 
 The budget is enforced in code: at most 40 requests per invocation; per request a grid
-of at most 64 x 64 pixels (raster lane) or 8 x 8 windows (window lane), at most 1,000,000
+of at most 64 x 64 pixels (raster lane; one fixture declares 128 x 128 by the maintainer's
+allowance, ``Fixture.raster_side``) or 8 x 8 windows (window lane), at most 1,000,000
 output values and at most 2,000,000 bytes of request; zero assets and zero tasks; requests
 are sent one at a time (the limit is 4 in flight). ``--budget key=value,...`` may lower a
 limit, never raise it. A request's NPY response header (``npy_header_length``) also stays
@@ -393,6 +394,10 @@ def check_budget(fixtures, requests: dict, budget: Budget) -> list[str]:
         if len(built) != fixture.requests:
             violations.append(f"{fixture.id}: declares {fixture.requests} requests but builds {len(built)}")
         limit = side_limit(fixture.lane, budget, fixture.window)
+        if fixture.raster_side is not None and budget.raster_side == DEFAULT_BUDGET.raster_side:
+            # The maintainer's allowance for this fixture alone (Fixture.raster_side); a
+            # lowered --budget raster_side applies to it as to every other fixture.
+            limit = fixture.raster_side
         for r in built:
             where = f"{fixture.id} request {r.index}"
             if r.width > limit or r.height > limit:

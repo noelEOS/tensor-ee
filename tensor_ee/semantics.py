@@ -67,6 +67,62 @@ def _interpolate_arguments(input, size=None, scale_factor=None, mode="nearest", 
     pass
 
 
+def _adaptive_pool_arguments(input, output_size):
+    pass
+
+
+def _mean_arguments(input, dim=None, keepdim=False, *, dtype=None, out=None):
+    pass
+
+
+def _method_mean_arguments(input, dim=None, keepdim=False, *, dtype=None):
+    pass
+
+
+def _operator_mul_arguments(input, other, /):
+    pass
+
+
+def _mul_arguments(input, other, *, out=None):
+    pass
+
+
+def _method_mul_arguments(input, other):
+    pass
+
+
+_GLOBAL_DIMS = ((2, 3), (3, 2), (-2, -1), (-1, -2))
+"""The spatial axes of an NCHW mean that pool the whole map, as ``dim`` may name them."""
+
+
+def _static_int(value) -> bool:
+    return isinstance(value, Integral) and not isinstance(value, bool)
+
+
+def global_pool_size(output_size: Any) -> None:
+    """Accept only the adaptive average pool to one pixel: ``1``, ``(1, 1)`` or ``[1, 1]``."""
+    if _static_int(output_size) and output_size == 1:
+        return
+    if (isinstance(output_size, (tuple, list)) and len(output_size) == 2
+            and all(_static_int(x) and x == 1 for x in output_size)):
+        return
+    _reject("Adaptive average pooling is supported only to one pixel (output_size 1, (1, 1) or [1, 1]): "
+            f"global pooling; received output_size={output_size!r}")
+
+
+def global_mean_options(options: dict[str, Any]) -> None:
+    """Accept only the mean over both spatial axes with ``keepdim=True`` and no ``dtype``."""
+    dim = options["dim"]
+    if (not isinstance(dim, (tuple, list)) or len(dim) != 2 or not all(_static_int(x) for x in dim)
+            or tuple(int(x) for x in dim) not in _GLOBAL_DIMS):
+        _reject("mean is supported only over both spatial axes, dim (2, 3), (3, 2), (-2, -1) or (-1, -2), "
+                f"with keepdim=True; received dim={dim!r}")
+    if options["keepdim"] is not True:
+        _reject(f"mean requires keepdim=True (a [N, C, 1, 1] tensor); received keepdim={options['keepdim']!r}")
+    if options["dtype"] is not None:
+        _reject(f"mean requires dtype=None; received dtype={options['dtype']!r}")
+
+
 def interpolate_options(options: dict[str, Any], input_metadata: TensorMetadata | None = None) -> int:
     if options["mode"] == "bilinear":
         return bilinear_options(options, input_metadata)
@@ -438,6 +494,9 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
                     predecessor, source, fused = folded
                     return SemanticCall("batchnorm", inputs, {"source": source, "predecessor": predecessor}, fused)
                 return SemanticCall("batch_norm", inputs, _module_batchnorm_options(module))
+            if isinstance(module, nn.AdaptiveAvgPool2d):
+                global_pool_size(module.output_size)
+                return SemanticCall("global_mean", inputs)
             _reject(f"Unsupported module {type(module).__name__}", "unsupported_operator")
         if node.op == "call_function":
             target = node.target
@@ -477,7 +536,30 @@ def semantic_call(node: Node, graph: GraphModule) -> SemanticCall:
             if target is F.interpolate:
                 options = _bind_options(_interpolate_arguments, node.args, node.kwargs)
                 return _interpolation_call(_inputs((options["input"],)), options)
+            if target is F.adaptive_avg_pool2d:
+                options = _bind_options(_adaptive_pool_arguments, node.args, node.kwargs)
+                global_pool_size(options["output_size"])
+                return SemanticCall("global_mean", _inputs((options["input"],)))
+            if target is torch.mean:
+                options = _bind_options(_mean_arguments, node.args, node.kwargs)
+                if "out" in node.kwargs:
+                    _reject("out is unsupported for mean")
+                global_mean_options(options)
+                return SemanticCall("global_mean", _inputs((options["input"],)))
+            if target in (operator.mul, torch.mul):
+                options = _bind_options(_operator_mul_arguments if target is operator.mul else _mul_arguments,
+                                        node.args, node.kwargs)
+                if "out" in node.kwargs:
+                    _reject("out is unsupported for multiplication")
+                return SemanticCall("multiply", _inputs((options["input"], options["other"])))
             _reject(f"Unsupported function {target}", "unsupported_operator")
+        if node.op == "call_method" and node.target == "mean":
+            options = _bind_options(_method_mean_arguments, node.args, node.kwargs)
+            global_mean_options(options)
+            return SemanticCall("global_mean", _inputs((options["input"],)))
+        if node.op == "call_method" and node.target == "mul":
+            options = _bind_options(_method_mul_arguments, node.args, node.kwargs)
+            return SemanticCall("multiply", _inputs((options["input"], options["other"])))
         if node.op == "call_method" and node.target in ("relu", "sigmoid", "add"):
             options = _bind_options(_add_arguments if node.target == "add" else _input_arguments, node.args, node.kwargs)
             if "out" in node.kwargs or isinstance(options.get("alpha", 1), bool) or options.get("alpha", 1) != 1:
@@ -511,6 +593,20 @@ def infer_metadata(call: SemanticCall, inputs: tuple[TensorMetadata, ...]) -> Te
     if call.kind in ("nearest", "bilinear"):
         factor = call.options["factor"]
         return TensorMetadata((n, c, h * factor, w * factor), first.scale / factor)
+    if call.kind == "global_mean":
+        # The [N, C, 1, 1] tensor on the map's one-pixel grid keeps the map's scale: the
+        # shape relation stands for the extent, and compile_model checks the grids exactly.
+        return TensorMetadata((n, c, 1, 1), first.scale)
+    if call.kind == "multiply":
+        second = inputs[1]
+        if second.shape == first.shape and second.scale == first.scale:
+            return first
+        for map_, gate in ((first, second), (second, first)):
+            if (gate.shape == (map_.shape[0], map_.shape[1], 1, 1) and gate.scale == map_.scale):
+                return map_
+        _reject("Multiplication requires identical shapes on one grid, or a [N, C, 1, 1] gate pooled from "
+                "the [N, C, H, W] map it multiplies; scalars, channel and other broadcasts are unsupported",
+                "input_shape")
     if call.kind in ("cat", "add"):
         for other in inputs[1:]:
             if other.shape[0] != n or other.shape[2:] != (h, w) or other.scale != first.scale:
