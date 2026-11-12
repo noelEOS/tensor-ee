@@ -7,7 +7,8 @@ inspecting individual FX tensors. Every node describes one NCHW tensor with
 batch size one; channels are EE bands and spatial dimensions are the Grid.
 
 Semantics are intentionally strict: finite rectangles, missing input values
-filled with zero, odd same-padded stride-one/two convolutions, aligned k x k
+filled with zero, odd stride-one/two convolutions, same-padded or zero-padded at
+a sampling phase (``semantics.convolution``), aligned k x k
 pooling (k = 2, 3, 4), padded 3x3 max pooling (stride one or two) and stride-one
 average pooling, integer nearest/bilinear upsampling, residual addition, channel
 concatenation, global average pooling onto the map's one-pixel grid and elementwise
@@ -246,7 +247,10 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                   clip_footprints: bool = False) -> CompiledModel:
     """Convert an eval-mode model into an EE graph; do not evaluate or export it.
 
-    Supports Conv2d (including grouped/depthwise), ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
+    Supports Conv2d (including grouped/depthwise) and F.conv2d with the model's own weight and
+    bias, each with any zero padding directly ahead of it (ZeroPad2d, ConstantPad2d with 0,
+    F.pad with 0) that leaves kernel // 2 - phase pixels before the input with
+    0 <= phase < stride (a nonzero phase is not validated live), ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
     Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, ReLU6, Hardswish, Hardsigmoid,
     eval Dropout/Dropout2d, channel Softmax,
     eval BatchNorm2d and F.batch_norm with fixed buffer/parameter statistics, torch.cat,

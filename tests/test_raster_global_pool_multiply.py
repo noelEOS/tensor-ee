@@ -349,10 +349,15 @@ def test_compatibility_reports_the_stand_ins_supported(offline_ee):
 
 
 def test_efficientnet_b3_unet_pools_and_products_are_no_longer_blocked():
-    """Trace only, no forward: SMP 0.5.0's EfficientNet-B3 U-Net at 256 px keeps its other
-    blockers (functional conv2d with get_attr weights, ZeroPad2d, in-place ReLU, ...), but its 26
-    squeeze-excitation pools and products are no longer among them."""
+    """SMP 0.5.0's EfficientNet-B3 U-Net at 256 px. Its 26 squeeze-excitation pools and
+    products are supported. Traced as built, its only blockers are the decoder's 10 in-place
+    ReLUs (the functional convolutions and their zero padding are recognised,
+    tests/test_raster_padded_conv.py). Through ``adapt_smp_model``, which clears the copied
+    in-place flags and checks its trace against the model with one PyTorch forward, the
+    whole model is supported."""
     smp = pytest.importorskip("segmentation_models_pytorch")
+    from tensor_ee.smp import adapt_smp_model
+
     model = smp.Unet("efficientnet-b3", encoder_weights=None, in_channels=8, classes=3).eval()
     report = check_compatibility(model, (1, 8, 256, 256)).to_dict()
     nodes = {node["name"]: node for node in report["nodes"]}
@@ -363,4 +368,9 @@ def test_efficientnet_b3_unet_pools_and_products_are_no_longer_blocked():
     assert not blocked & {n["name"] for n in pools + products}
     assert all(n["status"] != "unsupported" for n in pools + products)
     assert not any("adaptive_avg_pool2d" in b["message"] or "mul" in b["message"].split() for b in report["blockers"])
-    assert report["status"] == "unsupported"          # the functional convolutions remain
+    assert report["status"] == "unsupported"
+    assert [b["message"] for b in report["blockers"]] == ["In-place ReLU is unsupported"] * 10
+    adapted = adapt_smp_model(model, input_shape=(1, 8, 256, 256))
+    report = check_compatibility(adapted, (1, 8, 256, 256)).to_dict()
+    assert report["status"] == "supported", report["blockers"] + report["unknowns"]
+    assert report["output_shape"] == [1, 3, 256, 256]

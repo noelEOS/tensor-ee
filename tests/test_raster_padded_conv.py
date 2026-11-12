@@ -204,6 +204,29 @@ def test_a_stride_one_phase_and_bad_values_are_refused(offline_ee, block, module
 
 
 # ---------------------------------------------------------------------------
+# The records: phase at its default only, in one canonical form
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize("name", ["conv2d", "grouped_conv2d"])
+def test_every_nonzero_phase_is_outside_the_records_in_either_spelling(name):
+    from tensor_ee.core.metadata import check_settings, describe_validated
+
+    entry = C.METADATA[name]
+    base = {} if name == "conv2d" else {"clip_footprints": False}
+    assert describe_validated(entry.validated) == ("{phase 0}" if name == "conv2d"
+                                                   else "{clip_footprints False; phase 0}")
+    for spelling in (0, (0, 0), [0, 0]):
+        assert check_settings(entry, {**base, "phase": L.canonical_phase(spelling, 2)}).inside
+    for spelling in (1, (1, 1), [1, 1], (0, 1), (1, 0), [1, 0]):
+        result = check_settings(entry, {**base, "phase": L.canonical_phase(spelling, 2)})
+        assert not result.inside and result.outside == ("phase",), (spelling, result)
+    # The canonical form matters: a pair spelling of phase 0 is not the recorded value.
+    assert check_settings(entry, {**base, "phase": (0, 0)}).outside == ("phase",)
+    # Calls that predate the setting leave it unstated, never assumed.
+    assert check_settings(entry, base).unstated == ("phase",)
+    assert entry.radius == (3 if name == "conv2d" else 2)
+
+
+# ---------------------------------------------------------------------------
 # Recognition: zero padding in its spellings, directly ahead of a convolution in either spelling
 # ---------------------------------------------------------------------------
 def _values(shape, salt=0):
@@ -592,3 +615,46 @@ def test_weights_are_collected_and_matched_by_their_state_dict_paths(offline_ee)
     out = _compile(model, 4, weight_provider=provider, include_unfused_nodes=False)
     assert provider.used_asset_keys == {"saved_0", "saved_1"} and not provider.fallback_keys
     assert out.grid == _grid(10, 8).resized(2, 5, 4) and out.folded_batchnorms == ("stem_bn",)
+
+
+# ---------------------------------------------------------------------------
+# SMP's EfficientNet encoders (trace and the adapter's one PyTorch probe; no evaluation)
+# ---------------------------------------------------------------------------
+STRIDED = {   # encoder -> {weight path: (kernel, groups > 1, total padding (l, r, t, b), phase)} at 256 px
+    "efficientnet-b0": {
+        "encoder._conv_stem": (3, False, (0, 1, 0, 1), 1),
+        "encoder._blocks.1._depthwise_conv": (3, True, (0, 1, 0, 1), 1),
+        "encoder._blocks.3._depthwise_conv": (5, True, (1, 2, 1, 2), 1),
+        "encoder._blocks.5._depthwise_conv": (3, True, (0, 1, 0, 1), 1),
+        "encoder._blocks.11._depthwise_conv": (5, True, (1, 2, 1, 2), 1)},
+    "efficientnet-b3": {
+        "encoder._conv_stem": (3, False, (0, 1, 0, 1), 1),
+        "encoder._blocks.2._depthwise_conv": (3, True, (0, 1, 0, 1), 1),
+        "encoder._blocks.5._depthwise_conv": (5, True, (2, 2, 2, 2), 0),
+        "encoder._blocks.8._depthwise_conv": (3, True, (0, 1, 0, 1), 1),
+        "encoder._blocks.18._depthwise_conv": (5, True, (2, 2, 2, 2), 0)},
+}
+
+
+@pytest.mark.parametrize("encoder,channels,classes", [("efficientnet-b0", 3, 2), ("efficientnet-b3", 8, 3)])
+def test_smp_efficientnet_unets_are_supported_through_the_adapter(encoder, channels, classes):
+    """Each stride-2 convolution carries the phase its padding gives. ``efficientnet-b0``
+    pads its 5 x 5 stride-2 layers (1, 2, 1, 2), phase 1; ``efficientnet-b3`` pads its
+    (2, 2, 2, 2), phase 0 (SMP fixes the padding for the encoder's configured image size)."""
+    smp = pytest.importorskip("segmentation_models_pytorch")
+    from tensor_ee.smp import adapt_smp_model
+
+    shape = (1, channels, 256, 256)
+    model = smp.Unet(encoder, encoder_weights=None, in_channels=channels, classes=classes).eval()
+    adapted = adapt_smp_model(model, input_shape=shape)
+    report = check_compatibility(adapted, shape).to_dict()
+    assert report["status"] == "supported", report["blockers"] + report["unknowns"]
+    assert report["output_shape"] == [1, classes, 256, 256]
+    strided = {}
+    for node in adapted.graph.nodes:
+        if node.op in ("call_module", "call_function"):
+            recognised = convolution(node, adapted)
+            if recognised is not None and tuple(recognised.module.stride) == (2, 2):
+                strided[recognised.path] = (recognised.module.kernel_size[0], recognised.module.groups > 1,
+                                            recognised.padding, recognised.phase)
+    assert strided == STRIDED[encoder]

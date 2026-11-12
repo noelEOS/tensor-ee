@@ -242,8 +242,8 @@ Each block's `validated` record, the status in machine-readable form: 90 records
 | [`eval_dropout`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
 | [`common_score_mask`](../tensor_ee/blocks/raster/activations.py) | R → R | any accepted call | — |
 | [`softmax`](../tensor_ee/blocks/raster/activations.py) | R → R | {clip_footprints False} | — |
-| [`grouped_conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | {clip_footprints False} | — |
-| [`conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | any accepted call | — |
+| [`grouped_conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | {clip_footprints False; phase 0} | — |
+| [`conv2d`](../tensor_ee/blocks/raster/conv.py) | R → R | {phase 0} | — |
 | [`concatenate`](../tensor_ee/blocks/raster/merge.py) | R → R | {dim 1} | — |
 | [`residual_add`](../tensor_ee/blocks/raster/merge.py) | R → R | any accepted call | — |
 | [`multiply`](../tensor_ee/blocks/raster/merge.py) | R → R | {clip_footprints False} | — |
@@ -450,7 +450,7 @@ generated list cannot drift from the code.
 | Core | [`tensor_ee.core.precision`](../tensor_ee/core/precision.py) | Precision policies, and how float32 values enter an Earth Engine graph. | `validate_policy`, `exact_scalar`, `encode_float32`, `constant_value` |
 | Core | [`tensor_ee.core.tensor`](../tensor_ee/core/tensor.py) | Tensor carriers: R (`Raster`) and W (`WindowTensor`), plus `Feature`. | `band_names`, `ServerArray`, `Raster`, `WindowTensor`, `Feature`, `same_grid` |
 | Layouts | [`tensor_ee.layouts.boundaries`](../tensor_ee/layouts/boundaries.py) | Stage boundaries: how saved images enter a stage's graph and how its outputs leave it. | `grid_view`, `pin_boundary`, `saved_image`, `boundary_windows`, `boundary_raster`, `relabel_to_windows`, `relabel_from_windows` |
-| Layouts | [`tensor_ee.layouts.raster`](../tensor_ee/layouts/raster.py) | R-layout converters: pinning, zero extension, stride sampling, embedded fixtures. | `project`, `finish`, `zero_extended`, `stride_sample`, `from_image`, `stride_sample_phase`, `embedded_raster` |
+| Layouts | [`tensor_ee.layouts.raster`](../tensor_ee/layouts/raster.py) | R-layout converters: pinning, zero extension, stride sampling, embedded fixtures. | `project`, `finish`, `zero_extended`, `phase_pair`, `canonical_phase`, `stride_sample`, `sample_grids`, `from_image`, `stride_sample_phase`, `embedded_raster` |
 | Layouts | [`tensor_ee.layouts.shift`](../tensor_ee/layouts/shift.py) | W-layout translation, Swin's cyclic shift, periodic extension and domain masks. | `timm_shift`, `projection`, `translate`, `materialize`, `cyclic_neighbor`, `roll_axis`, `roll_windows`, `shift_windows`, `unshift_windows`, `periodic_extension`, `domain_mask` |
 | Layouts | [`tensor_ee.layouts.window`](../tensor_ee/layouts/window.py) | R <-> W converters, halos and im2col. | `as_row`, `flatten_row`, `stride_samples`, `stack_tokens`, `to_windows`, `from_dense`, `depth_to_space`, `to_dense`, `zeros`, `reshape`, `zero_outside`, `check_crop`, `same_crop`, `neighbours`, `halo`, `taps`, `im2col` |
 | Weights | [`tensor_ee.weights.assets`](../tensor_ee/weights/assets.py) | The FeatureCollection weight-asset format and its provider. | `ConvolutionWeights`, `convolution_weights`, `feature_records`, `FeatureCollectionWeightProvider` |

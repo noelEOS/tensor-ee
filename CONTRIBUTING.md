@@ -81,7 +81,9 @@ tag `research-archive-2026-10-12` ([history](docs/history/README.md)).
      `NOT_LIVE` for "Fixed — offline only". Name settings by the parameters of the block, its
      cost functions or its constants builder (the record's `sources`), and add the block to
      [`tests/test_x02b_validated_settings.py`](tests/test_x02b_validated_settings.py)'s
-     allowance tables only with a reason;
+     allowance tables only with a reason. A new setting on an existing block enters that
+     block's record at its default value, the one value its evidence ran, until a live run
+     varies it; a call at any other value is then reported outside the record;
    - `per_setting`, where a radius or chip-edge dependence depends on a setting
      (`window_resize`, `patch_embed`).
 4. **Add offline tests.** Build the block's graph against the offline signatures and

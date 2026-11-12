@@ -2,9 +2,10 @@
 (calibration), at additional pooling and nearest-resize settings (the selection ``p02``) and
 the bounded activations (``relu6``, ``hardsigmoid``, ``hardswish``; ``hard_activations``),
 standalone inference BatchNorm (``batch_norm``), integer bilinear resizing (``bilinear``),
-grouped/depthwise convolution (``grouped_conv``), and global average pooling with the
+grouped/depthwise convolution (``grouped_conv``), global average pooling with the
 elementwise multiply, alone and as a squeeze-excitation gate through ``compile_model``
-(``global_pool_multiply``).
+(``global_pool_multiply``), and zero padding ahead of a convolution, which runs the
+convolution at a sampling phase, through ``compile_model`` (``padded_conv``).
 
 Every fixture runs the library block in ``tensor_ee/blocks/raster`` plus float32
 materialization (through the public facade where available, as ``compile_model``
@@ -1055,6 +1056,159 @@ def _gate_fixtures(cost) -> list[Fixture]:
     return fixtures
 
 
+# ---------------------------------------------------------------------------
+# Zero padding ahead of a convolution: the sampling phase (selection padded_conv)
+# ---------------------------------------------------------------------------
+@dataclass(frozen=True)
+class _Padded:
+    """One padded convolution through ``compile_model``: ``nn.ZeroPad2d(padding)`` then
+    ``F.conv2d`` with the module's own weight and bias at stride 2. Dense 2 -> 3 channels
+    (``groups`` 1) or depthwise on 4 channels. Only forms with distinct graphs are fixtures;
+    spellings of one graph are offline byte-identity tests (tests/test_raster_padded_conv.py)."""
+
+    block: str
+    name: str
+    seed: int
+    padding: tuple             # (left, right, top, bottom)
+    kernel: int = 3
+    groups: int = 1
+    shape: tuple = (8, 10)     # (H, W)
+
+    @property
+    def inputs(self) -> int:
+        return 2 if self.groups == 1 else self.groups
+
+    @property
+    def outputs(self) -> int:
+        return 3 if self.groups == 1 else self.groups
+
+    @property
+    def phase(self) -> tuple:
+        left, _, top, _ = self.padding
+        return self.kernel // 2 - top, self.kernel // 2 - left
+
+    @property
+    def output(self) -> tuple:
+        (h, w), (py, px) = self.shape, self.phase
+        return (h - py + 1) // 2, (w - px + 1) // 2
+
+
+_PADDED = (
+    # Phase 1: the 3 x 3 stride-2 convolution padded (0, 1, 0, 1), on an even and an odd map.
+    _Padded("conv2d", "pad0101-k3-s2-h8-w10", 81, (0, 1, 0, 1)),
+    _Padded("conv2d", "pad0101-k3-s2-h7-w9", 82, (0, 1, 0, 1), shape=(7, 9)),
+    _Padded("grouped_conv2d", "depthwise-pad0101-k3-s2", 83, (0, 1, 0, 1), groups=4),
+    # Phase 1 at 5 x 5: padded (1, 2, 1, 2), the "same" padding of an even map; reach 3.
+    _Padded("grouped_conv2d", "depthwise-pad1212-k5-s2", 84, (1, 2, 1, 2), kernel=5, groups=4),
+    # Phase 0 at 5 x 5 stride 2 through a symmetric pad: today's graph by recognition.
+    _Padded("grouped_conv2d", "depthwise-pad2222-k5-s2", 85, (2, 2, 2, 2), kernel=5, groups=4),
+    # Different phases on the two axes: (1, 0), padded (1, 1, 0, 1).
+    _Padded("grouped_conv2d", "depthwise-pad1101-k3-s2", 86, (1, 1, 0, 1), groups=4),
+)
+
+_PADDED_BANDS = ("b0", "b1", "b2", "b3")
+
+
+def _padded_data(spec: _Padded):
+    def data(seed: int) -> FixtureData:
+        weights = dyadic(seed, "padded.weight", (spec.outputs, spec.inputs // spec.groups, spec.kernel, spec.kernel),
+                         scale=0.125)
+        return FixtureData(inputs={"x": dyadic(seed, "x", (*spec.shape, spec.inputs))}, weights={
+            "weight": weights, "bias": dyadic(seed, "padded.bias", (spec.outputs,), scale=0.125)})
+    return data
+
+
+def _padded_module(spec: _Padded, data: FixtureData):
+    """The stand-in: a padding module, then ``F.conv2d`` reading the module's own weight and
+    bias (static "same" padding as some encoders write it), with no model package imported."""
+    import torch
+    from torch import nn
+    from torch.nn import functional as F
+
+    class StaticPaddingConv(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.static_padding = nn.ZeroPad2d(spec.padding)
+            self.weight = nn.Parameter(torch.from_numpy(data.weights["weight"].copy()))
+            self.bias = nn.Parameter(torch.from_numpy(data.weights["bias"].copy()))
+
+        def forward(self, x):
+            return F.conv2d(self.static_padding(x), self.weight, self.bias, 2, 0, 1, spec.groups)
+
+    return StaticPaddingConv().eval()
+
+
+def _padded_cost_module(spec: _Padded, data: FixtureData):
+    """The same convolution as an ``nn.Conv2d``, for the block's cost function."""
+    import torch
+    from torch import nn
+
+    module = nn.Conv2d(spec.inputs, spec.outputs, spec.kernel, 2, spec.kernel // 2, groups=spec.groups)
+    with torch.no_grad():
+        module.weight.copy_(torch.from_numpy(data.weights["weight"]))
+        module.bias.copy_(torch.from_numpy(data.weights["bias"]))
+    return module.eval()
+
+
+def _padded_build(spec: _Padded):
+    def build(ee, data: FixtureData) -> list:
+        import tensor_ee
+
+        grid = _rect_grid(10, *spec.shape)
+        bands = _PADDED_BANDS[:spec.inputs]
+        image = inline_raster(ee, grid.projection(), data.inputs["x"], bands)
+        compiled = tensor_ee.compile_model(_padded_module(spec, data), image, bands, grid)
+        return [Readout("out", compiled.image, spec.outputs, raster_grid(compiled.grid)),
+                Readout("input", compiled.nodes["x"].image, spec.inputs, raster_grid(grid), "input", "x")]
+    return build
+
+
+def _padded_reference(spec: _Padded):
+    def reference(data: FixtureData) -> dict:
+        import torch
+
+        with torch.no_grad():
+            return {"out": hwc(_padded_module(spec, data)(nchw(data.inputs["x"])))}
+    return reference
+
+
+def _padded_mirror(spec: _Padded):
+    def mirror(data: FixtureData) -> dict:
+        from reference.raster_conv import grouped_conv2d
+
+        return {"out": grouped_conv2d(data.inputs["x"], data.weights["weight"], data.weights["bias"],
+                                      groups=spec.groups, stride=2, padding=spec.padding)}
+    return mirror
+
+
+def _padded_fixtures(cost) -> list[Fixture]:
+    import tensor_ee
+    from torch import nn
+    from tensor_ee.blocks.raster.conv import conv2d, grouped_conv2d
+    from tensor_ee.layouts.raster import canonical_phase
+
+    fixtures = []
+    for spec in _PADDED:
+        dense = spec.groups == 1
+        fixtures.append(Fixture(
+            id=f"raster/{spec.block}/{spec.name}", lane=LANE, block=spec.block,
+            settings={"kernel_size": spec.kernel, "stride": 2, "groups": spec.groups, "padding": spec.padding,
+                      "phase": canonical_phase(spec.phase, 2), "clip_footprints": False}, policy=POLICY,
+            shapes={"input": [*spec.shape, spec.inputs], "output": [*spec.output, spec.outputs]},
+            seed=spec.seed, data=_padded_data(spec), build=_padded_build(spec), reference=_padded_reference(spec),
+            reference_source=f"nn.ZeroPad2d({spec.padding}) then F.conv2d(x, weight, bias, 2, 0, 1, {spec.groups})",
+            mirror=None if dense else MirrorSpec(_padded_mirror(spec), True, "reference.raster_conv.grouped_conv2d"),
+            requests=2,
+            constants=cost(spec.block, lambda data, spec=spec: (_padded_cost_module(spec, data),)),
+            history="New fixture: not yet run live.",
+            accepts=(tensor_ee.compile_model, nn.ZeroPad2d, nn.Conv2d, conv2d if dense else grouped_conv2d),
+            notes=(f"compile_model on a stand-in module: ZeroPad2d{spec.padding} absorbed into F.conv2d, so the "
+                   f"block runs at phase {spec.phase} (output pixel i is input pixel 2 i + phase on each axis); "
+                   + ("No NumPy mirror of the dense convolution's matrixMultiply exists: compared with PyTorch "
+                      "only." if dense else "The mirror applies the same zero padding and PyTorch's output count."))))
+    return fixtures
+
+
 SELECTIONS = {
     # raster-setting validation: every new setting, plus today's pooling and nearest settings as regression checks
     # (three calibration fixtures).
@@ -1071,6 +1225,7 @@ SELECTIONS = {
     "global_pool_multiply": (*(f"raster/global_avg_pool2d/{spec.name}" for spec in _GLOBAL_POOLS),
                              "raster/multiply/same-grid-h5-w7", "raster/multiply/gate-h5-w7",
                              "raster/multiply/squeeze-excitation-h12-w20"),
+    "padded_conv": tuple(f"raster/{spec.block}/{spec.name}" for spec in _PADDED),
 }
 """This lane's named selections (``tools.fixtures.select``)."""
 
@@ -1146,4 +1301,4 @@ def fixtures() -> list[Fixture]:
     ]
     return (calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost)
             + _bilinear_fixtures(cost) + _grouped_fixtures(cost) + _standardize_fixtures(cost)
-            + _gate_fixtures(cost))
+            + _gate_fixtures(cost) + _padded_fixtures(cost))

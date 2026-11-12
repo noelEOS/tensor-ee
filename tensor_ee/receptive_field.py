@@ -220,7 +220,8 @@ def _union_axis(sources: list[AxisSupport]) -> AxisSupport:
 def analyze_receptive_field(model: nn.Module | GraphModule) -> ReceptiveFieldReport:
     """Trace supported inference operations without executing any tensor forward.
 
-    Supports the compiler's odd same-padded convolutions, its pools (aligned
+    Supports the compiler's odd convolutions (same-padded, or zero-padded at a sampling
+    phase: the window starts at the call's total left and top padding), its pools (aligned
     k x k average/max for k in 2, 3, 4; padded 3x3 max at stride 1 or 2; padded
     3x3 stride-1 average), fixed integer nearest/bilinear upsampling, inference BatchNorm,
     ReLU/Sigmoid/Identity, residual addition, channel concatenation, the elementwise
