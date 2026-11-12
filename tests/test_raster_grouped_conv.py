@@ -131,10 +131,9 @@ def test_grouped_block_and_legacy_block_keep_separate_acceptance_and_status(offl
         C.grouped_conv2d(raster, module)
     with pytest.raises(UnsupportedOperation, match="groups=1"):
         C.conv_options(module)
-    # Every accepted call at the sampling phase's default, the one value the evidence ran.
-    assert C.METADATA["conv2d"].validated.configurations == ((("phase", (0,)),),)
+    assert C.METADATA["conv2d"].validated.configurations == ((),)
     assert C.METADATA["grouped_conv2d"].status.startswith("Ready — depthwise")
-    assert C.METADATA["grouped_conv2d"].radius == 2
+    assert C.METADATA["grouped_conv2d"].radius == 3        # 5 x 5 at phase 1: k // 2 + 1
 
 
 def inverted_residual():

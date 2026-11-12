@@ -250,7 +250,7 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     Supports Conv2d (including grouped/depthwise) and F.conv2d with the model's own weight and
     bias, each with any zero padding directly ahead of it (ZeroPad2d, ConstantPad2d with 0,
     F.pad with 0) that leaves kernel // 2 - phase pixels before the input with
-    0 <= phase < stride (a nonzero phase is not validated live), ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
+    0 <= phase < stride (a nonzero phase is validated live at stride 2 for 3 x 3 kernels and a depthwise 5 x 5), ReLU, AvgPool2d, MaxPool2d, nearest and bilinear Upsample,
     Sigmoid, Identity, LeakyReLU, SiLU, exact GELU, Tanh, ReLU6, Hardswish, Hardsigmoid,
     eval Dropout/Dropout2d, channel Softmax,
     eval BatchNorm2d and F.batch_norm with fixed buffer/parameter statistics, torch.cat,

@@ -155,10 +155,7 @@ NEVER_VARIED = {
                                                           "softmax", "relu6", "hardsigmoid", "hardswish")},
     "raster/concatenate": {"dim"},
     "raster/bilinear_upsample": {"clip_footprints"},
-    "raster/grouped_conv2d": {"clip_footprints", "phase"},
-    # A new setting on an existing block enters its record at its default until a live run
-    # varies it (CONTRIBUTING, "Add a block"): the convolutions' sampling phase.
-    "raster/conv2d": {"phase"},
+    "raster/grouped_conv2d": {"clip_footprints"},
     "window/batch_norm": {"eps"},
     "raster/batch_norm": {"eps", "clip_footprints"},
     "raster/standardize": {"clip_footprints"},

@@ -64,13 +64,17 @@ On each axis the total padding before the input must be `kernel // 2 - phase` wi
 `ceil((n - phase) / stride)`. Phase 0 is the same-padded convolution and compiles to its
 existing graph; a nonzero phase (for example `(0, 1, 0, 1)` ahead of a 3 × 3 stride-2
 convolution) runs the same block, sampling input pixel `stride * i + phase`
-(the blocks' keyword-only `phase`, an integer or a `(phase_y, phase_x)` pair). The
-phase is offline only: it has not been validated live, and the blocks' validated
-records name phase 0 alone. Refused: padding computed from a tensor's shape, negative
-pads, other `F.pad` lengths, nonzero values, reflection, replication and circular
-padding, a padding node with any other use, padding that enlarges or shrinks the map
-(a phase outside `[0, stride)` or another output count), and functional weights that
-are computed or shared. Groups=1 retains the existing `conv2d` block. Groups greater than one route
+(the blocks' keyword-only `phase`, an integer or a `(phase_y, phase_x)` pair). A
+nonzero phase is validated live on small fixtures at stride 2: an ordinary 3 × 3
+convolution at phase 1, and depthwise 3 × 3 at phases 1 and `(1, 0)` and 5 × 5 at
+phase 1; other kernels and phases are not validated. Refused: padding computed from a
+tensor's shape, negative pads, other `F.pad` lengths, nonzero values, reflection,
+replication and circular padding, a padding node with any other use, a total padding
+whose phase is outside `[0, stride)` or whose output count is not
+`ceil((n - phase) / stride)` (an unpadded stride-1 convolution, for example), and
+functional weights that are computed or shared. An unpadded 3 × 3 stride-2 convolution
+on an odd-sized map is the phase-1 form and compiles; on an even-sized map it is
+refused. Groups=1 retains the existing `conv2d` block. Groups greater than one route
 to `grouped_conv2d`, including depthwise convolutions and channel multipliers;
 groups must divide both channel counts. The grouped block is validated live for
 depthwise 3 x 3 at strides 1/2 with optional bias, depthwise 5 x 5 at stride 1, and

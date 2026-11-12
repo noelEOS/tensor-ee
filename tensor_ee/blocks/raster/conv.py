@@ -35,8 +35,8 @@ Validated live on 5 x 7 inputs with clip_footprints=False (Earth Engine equal to
 NumPy mirror in every value): depthwise 3 x 3 at strides 1/2 with and without bias,
 depthwise 5 x 5 at stride 1 with bias, grouped 8 -> 8 with 4 groups (2 channels per
 group), and a 4 -> 8 channel multiplier with 4 groups (both 3 x 3, stride 1, with bias).
-Kernel, stride and groups are settings of the PyTorch module, so the record names
-clip_footprints and phase, and the status names the module settings.
+Kernel, stride and groups are settings of the PyTorch module, so the record names only
+clip_footprints and the status names the module settings.
 
 **Sampling phase** (both blocks, keyword-only ``phase``, default 0). An integer or a
 pair ``(phase_y, phase_x)``, each ``0 <= phase < stride``. On an axis with input size
@@ -49,9 +49,16 @@ which is PyTorch's convolution of a map zero-padded ``k // 2 - p`` pixels before
 input, with ``ceil((n - p) / s)`` outputs. The convolution itself is unchanged (the same
 neighbourhood bands, operands, accumulation and one float32 rounding by the caller);
 only ``stride_sample`` picks other pixels. Phase 0 is today's graph. Its reach from an
-output's anchor ``s i`` is ``k // 2 + p``. A nonzero phase is offline only: it has not
-been validated live, and both records name ``phase`` at its default, 0
-(``canonical_phase`` gives the one form a phase is recorded and reported in).
+output's anchor ``s i`` is ``k // 2 + p``. ``canonical_phase`` gives the one form a phase
+is reported in.
+
+Validated live at stride 2 with clip_footprints=False, through ``compile_model`` on zero
+padding ahead of ``F.conv2d``: dense 3 x 3 at phase 1 on 8 x 10 and 7 x 9 inputs (within
+6e-8 of float32 PyTorch; the dense block has no NumPy mirror); depthwise 3 x 3 at phase 1
+and at phase (1, 0), and depthwise 5 x 5 at phase 1 and, through a symmetric pad, at
+phase 0, on 8 x 10 inputs (Earth Engine equal to the NumPy mirror in every value). Other
+kernels and phases, such as a dense 5 x 5 or 7 x 7 at a nonzero phase or a dense mixed
+phase, are not validated.
 """
 
 from __future__ import annotations
@@ -64,7 +71,7 @@ import torch
 from torch import nn
 
 from ...core.errors import SemanticUnknown, UnsupportedOperation, reject as _reject
-from ...core.metadata import BlockMetadata, Locality, Validated, validate_metadata
+from ...core.metadata import ANY_SETTINGS, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
 # Library converters and coefficient transport. These module-level bindings are
@@ -170,7 +177,7 @@ def conv2d(raster: Raster, module: nn.Conv2d,
     ``phase`` (keyword-only, default 0; an integer or a pair ``(phase_y, phase_x)``,
     each ``0 <= phase < stride``) samples the centred convolution at input pixel
     ``stride * i + phase`` on each axis: PyTorch's convolution with zero padding
-    ``kernel // 2 - phase`` before the input. Not validated live at a nonzero phase.
+    ``kernel // 2 - phase`` before the input. Validated live at kernel 3, stride 2, phase 1.
     """
     validate_policy(policy, allowed=FLOAT32_OPERANDS)
     if execution_dtype != "float32":
@@ -221,7 +228,8 @@ def grouped_conv2d(raster: Raster, module: nn.Conv2d,
 
     ``parameters`` follows conv2d's asset layout, with the grouped weight's actual
     input width: [out, in_per_group * kh * kw], bias [out, 1] or None.
-    ``phase`` is ``conv2d``'s sampling phase (not validated live at a nonzero phase).
+    ``phase`` is ``conv2d``'s sampling phase (validated live for depthwise 3 x 3 and 5 x 5
+    at stride 2).
     """
     validate_policy(policy, allowed=FLOAT32_OPERANDS)
     (kh, kw), stride = grouped_conv_options(module)
@@ -294,27 +302,31 @@ METADATA = validate_metadata({
     "grouped_conv2d": BlockMetadata(
         name="grouped_conv2d", layout_in="R", layout_out="R", locality=Locality.KERNEL,
         policy=FLOAT32_OPERANDS, embedded_constants=grouped_conv2d_values,
-        asset_arrays=grouped_conv2d_arrays, radius=2,
-        status="Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1; 3×3 stride 1 with 2 channels per group or channel multiplier 2",
+        asset_arrays=grouped_conv2d_arrays, radius=3,
+        status="Ready — depthwise 3×3 stride 1 or 2, 5×5 stride 1 or 2; 3×3 stride 1 with 2 channels per group or channel multiplier 2",
         evidence=("docs/evidence/raster-grouped-conv-offline.json",
-                  "docs/evidence/live-fixtures/20261029T125301Z-grouped_conv.json"),
-        # phase entered the record at its default, the one value the evidence ran: a nonzero
-        # phase is outside the record until a live run varies it.
-        validated=Validated(({"clip_footprints": (False,), "phase": (0,)},))),
+                  "docs/evidence/live-fixtures/20261029T125301Z-grouped_conv.json",
+                  "docs/evidence/raster-padded-conv-offline.json",
+                  "docs/evidence/live-fixtures/20261112T185127Z-padded_conv.json"),
+        # Radius 3: the 5 x 5 kernel at phase 1 reaches k // 2 + 1. The live runs varied
+        # phase (0, 1 and (1, 0)), so the record does not name it.
+        validated=Validated(({"clip_footprints": (False,)},))),
     # Radius k // 2 for a k x k kernel (receptive_field._window_axis with
-    # padding k // 2). The static field records the largest validated kernel,
-    # 7 (radius 3); kernels 1 and 3 have radius 0 and 1. At a nonzero phase the
-    # window reaches k // 2 + phase on its far side (not validated live).
-    # Validated: every accepted call at phase 0. Kernels 1, 3 and 7 at strides 1 and 2,
-    # and clip_footprints both ways (True in resnet18_full64_float32_policy.json), were
-    # run; the unqualified "Ready" covers them, and other forms are refused. phase entered
-    # the record at its default, the one value the evidence ran.
+    # padding k // 2). The static field records the largest validated reach: kernel
+    # 7 at phase 0 (radius 3); kernels 1 and 3 have radius 0 and 1. At a nonzero phase the
+    # window reaches k // 2 + phase on its far side: 2 for the validated kernel 3 at phase 1.
+    # Validated: any accepted call. Kernels 1, 3 and 7 at strides 1 and 2, and
+    # clip_footprints both ways (True in resnet18_full64_float32_policy.json), were run,
+    # and kernel 3 at stride 2 and phase 1; the unqualified "Ready" covers them, and other
+    # forms are refused. The live runs varied phase, so the record does not name it.
     "conv2d": BlockMetadata(
         name="conv2d", layout_in="R", layout_out="R", locality=Locality.KERNEL,
         policy=FLOAT32_OPERANDS, embedded_constants=_conv_coefficients,
         asset_arrays=_conv_asset_arrays, radius=3, status="Ready",
         evidence=("docs/history/cnn/results/parity.json", "docs/history/cnn/results/primitives_float32.json",
                   "docs/history/cnn/results/resnet_primitives.json", "docs/history/cnn/results/resnet18_full64_float32_policy.json",
-                  "docs/history/cnn/results/segwater_js_parity_1x1.json", "docs/history/cnn/results/tiled_resnet18_2x2_parity.json"),
-        validated=Validated(({"phase": (0,)},))),
+                  "docs/history/cnn/results/segwater_js_parity_1x1.json", "docs/history/cnn/results/tiled_resnet18_2x2_parity.json",
+                  "docs/evidence/raster-padded-conv-offline.json",
+                  "docs/evidence/live-fixtures/20261112T185127Z-padded_conv.json"),
+        validated=ANY_SETTINGS),
 })

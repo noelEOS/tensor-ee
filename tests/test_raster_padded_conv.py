@@ -204,26 +204,26 @@ def test_a_stride_one_phase_and_bad_values_are_refused(offline_ee, block, module
 
 
 # ---------------------------------------------------------------------------
-# The records: phase at its default only, in one canonical form
+# The records: the live run varied the phase, so neither record names it
 # ---------------------------------------------------------------------------
 @pytest.mark.parametrize("name", ["conv2d", "grouped_conv2d"])
-def test_every_nonzero_phase_is_outside_the_records_in_either_spelling(name):
+def test_the_records_do_not_name_the_phase_after_the_live_run(name):
+    """A setting enters a record at its default until a live run varies it. The live run
+    ran phases 0, 1 and (1, 0), so ``phase`` left both records and a call at any phase is
+    inside them, in either spelling."""
     from tensor_ee.core.metadata import check_settings, describe_validated
 
     entry = C.METADATA[name]
     base = {} if name == "conv2d" else {"clip_footprints": False}
-    assert describe_validated(entry.validated) == ("{phase 0}" if name == "conv2d"
-                                                   else "{clip_footprints False; phase 0}")
-    for spelling in (0, (0, 0), [0, 0]):
+    assert describe_validated(entry.validated) == ("any accepted call" if name == "conv2d"
+                                                   else "{clip_footprints False}")
+    assert "phase" not in entry.validated.names
+    for spelling in (0, (0, 0), 1, (1, 1), [1, 1], (0, 1), (1, 0), [1, 0]):
         assert check_settings(entry, {**base, "phase": L.canonical_phase(spelling, 2)}).inside
-    for spelling in (1, (1, 1), [1, 1], (0, 1), (1, 0), [1, 0]):
-        result = check_settings(entry, {**base, "phase": L.canonical_phase(spelling, 2)})
-        assert not result.inside and result.outside == ("phase",), (spelling, result)
-    # The canonical form matters: a pair spelling of phase 0 is not the recorded value.
-    assert check_settings(entry, {**base, "phase": (0, 0)}).outside == ("phase",)
-    # Calls that predate the setting leave it unstated, never assumed.
-    assert check_settings(entry, base).unstated == ("phase",)
-    assert entry.radius == (3 if name == "conv2d" else 2)
+    assert check_settings(entry, base).inside
+    assert entry.radius == 3                  # conv2d: kernel 7; grouped: 5 x 5 at phase 1
+    assert sum(path.endswith("padded_conv.json") or path.endswith("padded-conv-offline.json")
+               for path in entry.evidence) == 2
 
 
 # ---------------------------------------------------------------------------

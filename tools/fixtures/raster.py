@@ -1200,7 +1200,9 @@ def _padded_fixtures(cost) -> list[Fixture]:
             mirror=None if dense else MirrorSpec(_padded_mirror(spec), True, "reference.raster_conv.grouped_conv2d"),
             requests=2,
             constants=cost(spec.block, lambda data, spec=spec: (_padded_cost_module(spec, data),)),
-            history="New fixture: not yet run live.",
+            history=("docs/evidence/live-fixtures/20261112T185127Z-padded_conv.json "
+                     + ("(passed; within 1e-4 of PyTorch, no mirror)" if dense
+                        else "(passed; Earth Engine equal to the mirror)")),
             accepts=(tensor_ee.compile_model, nn.ZeroPad2d, nn.Conv2d, conv2d if dense else grouped_conv2d),
             notes=(f"compile_model on a stand-in module: ZeroPad2d{spec.padding} absorbed into F.conv2d, so the "
                    f"block runs at phase {spec.phase} (output pixel i is input pixel 2 i + phase on each axis); "

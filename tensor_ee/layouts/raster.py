@@ -82,7 +82,7 @@ def stride_sample(image: ee.Image, bands: Sequence[str], grid: Grid,
     input pixel ``s i + p``, sampled at that pixel's centre, and the axis has
     ``ceil((n - p) / s)`` pixels. The canonical grid keeps the same upper-left corner.
     An axis with phase 0 keeps today's corner expression, so the default emits today's
-    graph. A nonzero phase is not validated live.
+    graph. Validated live at stride 2 with phases 1 and (1, 0), through the convolution blocks.
 
     The stride is a parameter, but only strides 1 and 2 are evaluated.
     """
