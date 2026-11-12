@@ -85,6 +85,20 @@ field reports local bounds but refuses a halo guarantee for tiled execution.
 Merges require identical spatial grids, even when dimensions
 happen to match; residual addition rejects broadcasting.
 
+Global average pooling (`nn.AdaptiveAvgPool2d` and `F.adaptive_avg_pool2d` to output size
+1, `(1, 1)` or `[1, 1]`, and `torch.mean`/`Tensor.mean` over dims `(2, 3)` with
+`keepdim=True` and no `dtype`) uses the `global_avg_pool2d` block: the mean of the whole
+compiled grid, a `[N, C, 1, 1]` tensor on a one-pixel grid that covers exactly the map.
+1 × 1 convolutions and pointwise activations run on that grid unchanged. Elementwise
+multiplication (`*`, `torch.mul`, `Tensor.mul`) uses the `multiply` block: two tensors on
+one grid with equal channel counts, or a map and a one-pixel gate pooled from that same map,
+in either operand order (squeeze-and-excitation's `sigmoid(g) * x`). Adaptive pools to other
+sizes, max pools to one pixel, `mean` without `keepdim` or over other dims, scalar products
+and channel broadcasts (`[N, 1, H, W]`) are refused. A global mean depends on the whole chip:
+the result is per compiled grid, `analyze_receptive_field` lists it in `extent_nodes` and
+refuses a halo, and tiled compilation refuses the model. Both blocks have offline evidence
+only.
+
 Model and submodules must already be in eval mode. Computational weights,
 biases and BatchNorm statistics are finite float32 with declared shapes;
 nonfloating bookkeeping counters are allowed. BatchNorm folds into an unshared

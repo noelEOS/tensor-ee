@@ -79,7 +79,10 @@ def test_standalone_primitive_is_wrapped_like_the_compiler():
 
 
 @pytest.mark.parametrize("module", [
-    nn.AdaptiveAvgPool2d((1, 1)),
+    # Global pooling (output size 1) is analysed, listed in extent_nodes and refused a halo
+    # (tests/test_raster_global_pool_multiply.py); other adaptive sizes stay unsupported.
+    nn.AdaptiveAvgPool2d((2, 2)),
+    nn.AdaptiveMaxPool2d((1, 1)),
     nn.Upsample(scale_factor=2, mode="bicubic", align_corners=False),
     nn.Upsample(size=(16, 16), mode="nearest"),
     nn.Upsample(scale_factor=1.5, mode="nearest"),

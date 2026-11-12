@@ -91,13 +91,14 @@ ENTRIES = {key: entry for key, (entry, _) in BLOCKS.items()}
 # ---------------------------------------------------------------------------
 # The record names real parameters
 # ---------------------------------------------------------------------------
-OFFLINE_ONLY: set[str] = set()
+OFFLINE_ONLY: set[str] = {"raster/global_avg_pool2d", "raster/multiply"}
 """The blocks with no live validation yet, by lane-qualified key (two lanes may share a block
-name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. None today."""
+name): their status is "Fixed — offline only" and their record is ``NOT_LIVE``. Raster global
+average pooling and the elementwise multiply have offline fixtures only."""
 
 
 def test_every_block_has_a_record():
-    assert len(BLOCKS) == 88
+    assert len(BLOCKS) == 90
     for key, entry in ENTRIES.items():
         assert isinstance(entry.validated, Validated), key
         offline = key in OFFLINE_ONLY

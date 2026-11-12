@@ -14,7 +14,8 @@ research folders when they were archived at the tag ``research-archive-2026-10-1
 - ``synthetic``: the deterministic hash-generated rasters those references use;
 - ``cnn``: the PyTorch-side helpers of the CNN fixture, ResNet and tiling tests;
 - ``activations``: the NumPy mirrors of the raster lane's bounded activations (``relu6``,
-  ``hardsigmoid``, ``hardswish``).
+  ``hardsigmoid``, ``hardswish``) and of its stable ``sigmoid`` and ``silu``;
+- ``raster_gate``: the raster lane's global average pooling and elementwise multiply.
 
 Nothing here is shipped or imported by ``tensor_ee``. A mirror is a NumPy model of the
 arithmetic the library emits, not the library itself: the library's graphs are checked by

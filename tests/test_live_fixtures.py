@@ -87,8 +87,9 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
 # block passed its separate SegFormer G3-live gate, and the bounded activations and the
 # standalone raster BatchNorm, raster bilinear upsampling and raster grouped convolution
 # theirs, and row concatenation, window depth-to-space and class-token attention
-# theirs, and raster input standardization theirs; no offline-only block remains.
-OFFLINE_ONLY_FIXED: set[str] = set()
+# theirs, and raster input standardization theirs. Raster global average pooling and the
+# elementwise multiply are offline only.
+OFFLINE_ONLY_FIXED: set[str] = {"global_avg_pool2d", "multiply"}
 COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat_rows/prithvi-region-2x2",
                         "window/concat_rows/vit-encoder-reduced", "window/concat_rows/vit-dpt-reduced"}
 """Runnable composition checks excluded from block coverage and evidence counts."""
@@ -735,7 +736,8 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
     offline = {name for (_, name), entry in catalogue.items()
                if entry.status.startswith("Fixed — offline only:")}
     assert offline == OFFLINE_ONLY_FIXED
-    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model", "standardize", "vit_layer_norm", "class_token_query_scale"])
+    new_covered = {name for f in select(["segformer_b0", "hard_activations", "batch_norm", "bilinear", "grouped_conv", "class_token", "prithvi_depth_to_space", "prithvi_settings", "prithvi_model", "standardize", "vit_layer_norm", "class_token_query_scale",
+                                         "global_pool_multiply"])
                    if f.id not in COMPOSITION_FIXTURES and f.mirror is not None and not f.calibration
                    for name in (f.block, *f.parts)}
     assert (SEGFORMER_G3_BLOCKS | HARD_ACTIVATION_G3_BLOCKS | BATCH_NORM_G3_BLOCKS | BILINEAR_G3_BLOCKS
@@ -874,3 +876,48 @@ def test_conv3x3_stride2_fixture_ids_and_data_are_stable():
     for fixture in fixtures:
         data = fixture.data(fixture.seed)
         assert (data.inputs_sha256, data.weights_sha256) == expected[fixture.id]
+
+
+def test_global_pool_multiply_fixture_ids_and_data_are_stable():
+    empty = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    expected = {
+        "raster/global_avg_pool2d/h5-w7": ("53e3cb2954d467e11eeab6a7e27e84a4e615ab1ab6f2ea2d48b782606baab601", empty),
+        "raster/global_avg_pool2d/h8-w8": ("78debda045f0499f6d23bb1aaa5f28d02bc037dc29c8e5937337c848e032afba", empty),
+        "raster/global_avg_pool2d/h64-w64": ("c2f04a66246d2ac1f6674720ce70a4eb6b3e2932ca55a8d82254ebc8dd588ee5", empty),
+        "raster/global_avg_pool2d/h128-w128": ("d474c9442b8e2026dcb5ae92ec1e24616870e08bb2cc297972bb0c0eeb4da2b9",
+                                               empty),
+        "raster/multiply/same-grid-h5-w7": ("1d0d6df749ef7661b1947aa4a282de2812709e35cc6731ca97be61145d9f2440", empty),
+        "raster/multiply/gate-h5-w7": ("25dfbc44d7b6563d6c031d40e4e04f4ad1828da0640b8473bd1c47b761b87417", empty),
+        "raster/multiply/squeeze-excitation-h12-w20": (
+            "079a42c9badf04f0a6d6561ba3e02c67953c129b9d3dc49a92137233dc44cb59",
+            "1bb7efa27be975c4bc2c363307fb8ebdd6db43c85b32486efbc2e7bdf162f657"),
+    }
+    fixtures = select(["global_pool_multiply"])
+    assert [fixture.id for fixture in fixtures] == list(expected)
+    for fixture in fixtures:
+        data = fixture.data(fixture.seed)
+        assert (data.inputs_sha256, data.weights_sha256) == expected[fixture.id]
+        # Integer-generated: no exact zero in a gate or a product operand.
+        assert all(np.count_nonzero(value == 0) == 0 for value in data.inputs.values()), fixture.id
+
+
+def test_only_the_128_global_pool_fixture_raises_the_raster_grid():
+    """The maintainer's allowance is one fixture's own request-grid side (128); the budget's
+    default stays 64 for every other fixture, and a lowered --budget applies to that one too."""
+    raised = {f.id: f.raster_side for f in registry().values() if f.raster_side is not None}
+    assert raised == {"raster/global_avg_pool2d/h128-w128": 128}
+    assert LF.DEFAULT_BUDGET.raster_side == 64 and core.RAISED_RASTER_SIDE == 128
+    fixture = registry()["raster/global_avg_pool2d/h128-w128"]
+    plan = LF.make_plan([fixture])
+    assert plan.violations == [] and max(r.width for r in plan.all_requests) == 128
+    lowered = LF.make_plan([fixture], LF.parse_budget("raster_side=63"))
+    assert any("exceeds 63 per side" in v for v in lowered.violations)
+    plain = dataclasses.replace(fixture, raster_side=None)
+    assert any("exceeds 64 per side" in v for v in LF.make_plan([plain]).violations)
+    assert fixture.record()["raster_side"] == 128
+    assert all("raster_side" not in f.record() for f in registry().values() if f.id != fixture.id)
+    for bad in (129, 0, True, 64.0):
+        with pytest.raises(ValueError, match="raster_side"):
+            dataclasses.replace(fixture, raster_side=bad)
+    with pytest.raises(ValueError, match="raster_side"):
+        dataclasses.replace(registry()["window/patch_merge/w7"], raster_side=64)

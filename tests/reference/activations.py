@@ -1,4 +1,5 @@
-"""NumPy mirrors of the bounded activations the raster lane emits.
+"""NumPy mirrors of the bounded activations the raster lane emits, and of its stable
+``sigmoid`` and ``silu`` (used by the squeeze-excitation fixture's mirror).
 
 ``relu6``, ``hardsigmoid`` and ``hardswish`` (``tensor_ee/blocks/raster/activations.py``) are
 pointwise expressions over float32 operands, materialized with ``.toFloat()`` at the node
@@ -46,3 +47,22 @@ def hardsigmoid(values: np.ndarray) -> np.ndarray:
 def hardswish(values: np.ndarray) -> np.ndarray:
     """``x * min(max(x + 3, 0), 6) / 6``, the product first, rounded to float32 once."""
     return (np.asarray(values, np.float64) * _clamp_shifted(values) / 6.0).astype(np.float32)
+
+
+def _stable_sigmoid(values: np.ndarray) -> np.ndarray:
+    """The raster blocks' sigmoid in float64: ``m = exp(-|x|)``, then ``1 / (1 + m)`` for
+    ``x >= 0`` and ``m / (1 + m)`` for ``x < 0``; no positive exponent."""
+    x = np.asarray(values, np.float64)
+    magnitude = np.exp(-np.abs(x))
+    return np.where(x < 0, magnitude / (magnitude + 1.0), 1.0 / (magnitude + 1.0))
+
+
+def sigmoid(values: np.ndarray) -> np.ndarray:
+    """The raster ``sigmoid``'s stable form in float64, rounded to float32 once. Not exact:
+    Earth Engine's ``exp`` and NumPy's may differ in the last double bit."""
+    return _stable_sigmoid(values).astype(np.float32)
+
+
+def silu(values: np.ndarray) -> np.ndarray:
+    """The raster ``silu``: ``x * sigmoid(x)`` in float64, rounded to float32 once."""
+    return (np.asarray(values, np.float64) * _stable_sigmoid(values)).astype(np.float32)

@@ -1,5 +1,5 @@
 """R pooling: PyTorch ``nn.AvgPool2d`` and ``nn.MaxPool2d`` at a small set of
-common CNN configurations.
+common CNN configurations, and global average pooling.
 
 Moved whole from ``tensor_ee.compiler`` (``pool2d``, both branches) and
 ``tensor_ee.semantics`` (``pool_options``). The old names are re-exports of
@@ -29,6 +29,33 @@ max pooling, within 1e-4 for averages.
 Precision policy ``float32_operands`` (contract section 7). There are no
 coefficients. The node output is materialized with ``.toFloat()`` by the caller
 (``compile_model`` or the ``tensor_ee.primitives`` facade).
+
+**Global average pooling** (``global_avg_pool2d``): PyTorch's ``adaptive_avg_pool2d(x, 1)``
+(``AdaptiveAvgPool2d(1)``, ``x.mean((2, 3), keepdim=True)``) of an H x W map,
+
+    out[c] = (1 / (H W)) * sum over i < H, j < W of x[c, i, j],
+
+as a ``[N, C, 1, 1]`` tensor: a Raster on ``one_pixel(grid)``, the one pixel that covers
+exactly the map (``core.grid.one_pixel``; a non-square map has a non-square pixel). It is
+the aligned branch's expression with the map's size as the kernel, through the same private
+helper (``_aligned_reduce``): ``reduceResolution(mean, bestEffort=False,
+maxPixels=(H + 2)(W + 2))``, pinned to the one-pixel grid. Every pixel of the map is read
+whichever shard or tile asks for the one output pixel, so the mean is over the map (the
+chip), never over the piece being evaluated. Locality ``EXTENT``: the output depends on the
+whole map, so tiling with halos cannot reproduce it, and ``analyze_receptive_field`` and
+tiled compilation refuse a model that has one.
+
+Policy ``float32_operands``: the reducer's mean, rounded once to float32 by the caller.
+The weights of ``reduceResolution``'s mean are the input mask times the fraction of the
+output pixel covered, so a masked pixel inside the map would shrink the denominator; the
+raster lane's tensors are zero-filled and masked only outside their grid, as ``pool2d``'s
+aligned average also requires. Earth Engine's accumulation type and order for
+``reduceResolution`` are not established: the NumPy mirror (``tests/reference``) sums in
+double and divides by H W once, and the fixtures use inputs whose double sums are exact in
+every order. ``maxPixels`` above (k + 2)^2 for k = 4 (16,900 at 128 x 128) is untested by
+Earth Engine. **Not validated live**: offline evidence only, maps 5 x 7, 12 x 20, 8 x 8,
+64 x 64 and 128 x 128 (``raster/global_avg_pool2d/*`` and the squeeze-excitation fixture in
+``tools/fixtures/raster.py``), clip_footprints=False.
 """
 
 from __future__ import annotations
@@ -39,7 +66,8 @@ import ee
 from torch import nn
 
 from ...core.errors import UnsupportedOperation
-from ...core.metadata import BlockMetadata, Locality, Validated, validate_metadata
+from ...core.grid import Grid, one_pixel
+from ...core.metadata import NOT_LIVE, BlockMetadata, Locality, Validated, validate_metadata
 from ...core.precision import FLOAT32_OPERANDS, validate_policy
 from ...core.tensor import Raster
 from ...layouts.raster import finish as _finish, project as _project
@@ -148,9 +176,34 @@ def pool2d(raster: Raster, module: nn.AvgPool2d | nn.MaxPool2d,
     # maxPixels (k + 2)^2 keeps today's 16 at k = 2: the k x k block plus a
     # one-pixel ring. It bounds the input pixels per output pixel; with
     # bestEffort=False a larger need fails the request rather than changing values.
-    result = raster.image.reduceResolution(reducer, bestEffort=False, maxPixels=(k + 2) ** 2)
+    return _aligned_reduce(raster, reducer, grid, (k + 2) ** 2, clip_footprints)
+
+
+def _aligned_reduce(raster: Raster, reducer: ee.Reducer, grid: Grid, max_pixels: int,
+                    clip_footprints: bool) -> Raster:
+    """``reducer`` over the input pixels of each pixel of ``grid``, a coarser grid whose
+    pixels each cover a whole block of input pixels (the same corner, an integer factor):
+    ``reduceResolution`` with ``bestEffort=False`` and ``maxPixels`` input pixels per
+    output pixel, pinned to ``grid``. The one implementation of ``pool2d``'s aligned
+    branch and of ``global_avg_pool2d``."""
+    result = raster.image.reduceResolution(reducer, bestEffort=False, maxPixels=max_pixels)
     result = _project(result, grid, clip_footprints)
     return _finish(result, raster.bands, grid, clip_footprints)
+
+
+def global_avg_pool2d(raster: Raster, *, clip_footprints: bool = False,
+                      policy: str = FLOAT32_OPERANDS) -> Raster:
+    """The mean of each band over the whole H x W map, on ``one_pixel(raster.grid)``:
+    PyTorch's ``adaptive_avg_pool2d(x, 1)``, ``AdaptiveAvgPool2d(1)`` and
+    ``x.mean((2, 3), keepdim=True)``, as a ``[N, C, 1, 1]`` tensor whose one pixel covers
+    exactly the map. ``pool2d``'s aligned expression with the kernel the map's size
+    (``_aligned_reduce``), ``maxPixels`` (H + 2)(W + 2), as ``pool2d`` sizes its ring."""
+    validate_policy(policy, allowed=FLOAT32_OPERANDS)
+    if not isinstance(raster, Raster):
+        raise UnsupportedOperation("Global average pooling requires a raster tensor")
+    grid = raster.grid
+    return _aligned_reduce(raster, ee.Reducer.mean(), one_pixel(grid), (grid.height + 2) * (grid.width + 2),
+                           clip_footprints)
 
 
 # ---------------------------------------------------------------------------
@@ -179,4 +232,13 @@ METADATA = validate_metadata({
             {"reducer": ("max",), "kernel": (3,), "stride": (1, 2), "padding": (1,)},
             {"reducer": ("mean",), "kernel": (3,), "stride": (1,), "padding": (1,), "count_include_pad": (True, False)},
         ), sources=(PoolConfig,))),
+    # The output depends on every pixel of the map: EXTENT. Not chip-edge dependent in the
+    # flag's sense (no wrap or mask); EXTENT already makes a stage whole-chip, as for
+    # window_pool.
+    "global_avg_pool2d": BlockMetadata(
+        name="global_avg_pool2d", layout_in="R", layout_out="R", locality=Locality.EXTENT,
+        policy=FLOAT32_OPERANDS, embedded_constants=_no_coefficients, asset_arrays=_no_coefficients,
+        status=("Fixed — offline only: maps 5 × 7, 12 × 20, 8 × 8, 64 × 64 and 128 × 128; "
+                "clip_footprints=False"),
+        evidence=("docs/evidence/raster-global-pool-multiply-offline.json",), validated=NOT_LIVE),
 })

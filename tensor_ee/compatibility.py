@@ -15,6 +15,10 @@ from .semantics import (SemanticUnknown, TensorMetadata, diagnostic_convolution,
                         infer_metadata, semantic_call, specialize_plumbing)
 
 
+WHOLE_CHIP = "global pooling: the output depends on the whole compiled grid; no tiled compilation"
+"""The restriction a model with a global mean adds: its result is per compiled chip."""
+
+
 @dataclass(frozen=True)
 class CompatibilityReport:
     """Schema-versioned local facts, without an EE execution/capacity guarantee."""
@@ -157,6 +161,8 @@ def check_compatibility(model: nn.Module, input_shape: tuple[int, int, int, int]
                     count += int(call.module.weight.numel()) + int(call.module.bias.numel())
                 elif call.kind == "batch_norm":
                     count += 4 * call.options["channels"]
+                elif call.kind == "global_mean" and WHOLE_CHIP not in report["restrictions"]:
+                    report["restrictions"].append(WHOLE_CHIP)
                 if any(metadata.get(x) is None for x in call.inputs):
                     raise SemanticUnknown("Shape depends on an unsupported or unknown predecessor")
                 metadata[node] = infer_metadata(call, tuple(metadata[x] for x in call.inputs))

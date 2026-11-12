@@ -75,7 +75,7 @@ graphs byte for byte; numerical and live evidence have narrower scope, detailed 
 | SMP DPT + timm ViT-B/16, 224 × 224 | [DPT conversion](https://github.com/noelEOS/tensor-ee/blob/main/docs/converter.md#smp-050-dpt-at-224--224) | Random weights; full-width graph identity; full-width logits meet the 1e-4 target offline only; live evidence covers reduced twins |
 
 You can also compose a model from the [block catalogue](https://github.com/noelEOS/tensor-ee/blob/main/docs/building-blocks.md).
-It has 88 blocks: 23 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
+It has 90 blocks: 25 in `tensor_ee/blocks/raster` and 65 in `tensor_ee/blocks/window`.
 Recent additions include grouped/depthwise convolutions, bilinear upsampling,
 standalone BatchNorm and input standardization. These expand the building blocks;
 whole-model support still depends on the compiler or converter.

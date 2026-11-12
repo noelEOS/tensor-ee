@@ -2,7 +2,9 @@
 (calibration), at additional pooling and nearest-resize settings (the selection ``p02``) and
 the bounded activations (``relu6``, ``hardsigmoid``, ``hardswish``; ``hard_activations``),
 standalone inference BatchNorm (``batch_norm``), integer bilinear resizing (``bilinear``),
-and grouped/depthwise convolution (``grouped_conv``).
+grouped/depthwise convolution (``grouped_conv``), and global average pooling with the
+elementwise multiply, alone and as a squeeze-excitation gate through ``compile_model``
+(``global_pool_multiply``).
 
 Every fixture runs the library block in ``tensor_ee/blocks/raster`` plus float32
 materialization (through the public facade where available, as ``compile_model``
@@ -61,9 +63,9 @@ def _echo(raster, source: str = "x") -> Readout:
 
 
 def _metadata(block: str):
-    from tensor_ee.blocks.raster import activations, conv, normalization, pooling, resample
+    from tensor_ee.blocks.raster import activations, conv, merge, normalization, pooling, resample
 
-    for module in (conv, pooling, resample, activations, normalization):
+    for module in (conv, pooling, resample, activations, normalization, merge):
         if block in module.METADATA:
             return module.METADATA[block]
     raise KeyError(block)
@@ -799,6 +801,259 @@ def _standardize_fixtures(cost) -> list[Fixture]:
     ) for index, spec in enumerate(_STANDARDIZE)]
 
 
+# ---------------------------------------------------------------------------
+# Global average pooling and the elementwise multiply (selection global_pool_multiply)
+# ---------------------------------------------------------------------------
+_GATE_HISTORY = "none: a new block, offline evidence only"
+_POOL_BOUND = 1e-6
+"""The pool mirror's recorded bound against Earth Engine: one float32 step of a mean of
+magnitude at most 6 is 4.8e-7. Every double sum of these inputs is exact (multiples of 2^-21
+below 2^17 in magnitude), so a double accumulation in any order equals the mirror; the bound
+allows one rounding step, and Earth Engine's order is recorded rather than required."""
+_GATE_BOUND = 1e-5
+"""The squeeze-excitation mirror's recorded bound against Earth Engine: a float32 step at each
+node boundary of the gate (|gate| < 1, about 6e-8 each) times |x| <= 6 stays below 1e-6; the
+bound leaves ten times that for the convolutions' accumulation order and ``exp``."""
+
+
+@dataclass(frozen=True)
+class _GlobalPool:
+    """One global-pooling fixture: the map's shape, and its own request-grid side."""
+
+    name: str
+    seed: int
+    shape: tuple               # (H, W); two channels
+    raster_side: int | None = None
+
+
+_GLOBAL_POOLS = (
+    _GlobalPool("h5-w7", 71, (5, 7)),
+    _GlobalPool("h8-w8", 72, (8, 8)),
+    _GlobalPool("h64-w64", 73, (64, 64)),
+    # The maintainer's allowance: the one fixture on a 128 x 128 map (the largest map a
+    # squeeze-excitation gate pools in the EfficientNet-B3 U-Net at 256 px); maxPixels 16,900.
+    _GlobalPool("h128-w128", 74, (128, 128), raster_side=128),
+)
+
+
+def _gate_values(seed: int, stream: str, shape) -> np.ndarray:
+    """Dyadic values in [-2, 6): |x| <= 6, nonzero means, sums exact in double."""
+    return dyadic(seed, stream, shape, scale=4.0, offset=2.0)
+
+
+def _global_pool_data(spec: _GlobalPool):
+    def data(seed: int) -> FixtureData:
+        return FixtureData(inputs={"x": _gate_values(seed, "x", (*spec.shape, 2))}, weights={})
+    return data
+
+
+def _global_pool_build(spec: _GlobalPool):
+    def build(ee, data: FixtureData) -> list:
+        from tensor_ee.blocks.raster.pooling import global_avg_pool2d
+        from tensor_ee.layouts.raster import _float32
+
+        raster = _input(ee, _rect_grid(10, *spec.shape), data.inputs["x"])
+        # The library block plus the node's float32 materialization, as compile_model runs it.
+        out = _float32(global_avg_pool2d(raster, policy=POLICY))
+        return [Readout("out", out.image, 2, raster_grid(out.grid)), _echo(raster)]
+    return build
+
+
+def _global_pool_reference(data: FixtureData) -> dict:
+    import torch
+    from torch.nn import functional as F
+
+    with torch.no_grad():
+        return {"out": hwc(F.adaptive_avg_pool2d(nchw(data.inputs["x"]), 1))}
+
+
+def _global_pool_mirror(data: FixtureData) -> dict:
+    from reference.raster_gate import global_avg_pool2d
+
+    return {"out": global_avg_pool2d(data.inputs["x"])}
+
+
+def _multiply_data(gate: bool):
+    def data(seed: int) -> FixtureData:
+        x = dyadic(seed, "x", (5, 7, 2), scale=8.0)
+        # The other operand: a gate in [0.25, 0.75) (never zero) or a same-grid map.
+        other = (dyadic(seed, "g", (1, 1, 2), scale=0.25, offset=0.5, bits=23) if gate
+                 else dyadic(seed, "y", (5, 7, 2), scale=2.0))
+        return FixtureData(inputs={"x": x, "g" if gate else "y": other}, weights={})
+    return data
+
+
+def _multiply_build(gate: bool):
+    def build(ee, data: FixtureData) -> list:
+        from tensor_ee.blocks.raster.merge import multiply
+        from tensor_ee.core.grid import one_pixel
+        from tensor_ee.layouts.raster import _float32
+
+        grid = _rect_grid(10, 5, 7)
+        x = _input(ee, grid, data.inputs["x"])
+        name = "g" if gate else "y"
+        other = _input(ee, one_pixel(grid) if gate else grid, data.inputs[name])
+        out = _float32(multiply(x, other, policy=POLICY))
+        return [Readout("out", out.image, 2, raster_grid(out.grid)), _echo(x),
+                Readout(f"input_{name}", other.image, 2, raster_grid(other.grid), "input", name)]
+    return build
+
+
+def _multiply_reference(gate: bool):
+    def reference(data: FixtureData) -> dict:
+        import torch
+
+        with torch.no_grad():
+            x = nchw(data.inputs["x"])
+            # The gate on the left, as squeeze-excitation writes sigmoid(g) * x.
+            return {"out": hwc(nchw(data.inputs["g"]) * x if gate else x * nchw(data.inputs["y"]))}
+    return reference
+
+
+def _multiply_mirror(gate: bool):
+    def mirror(data: FixtureData) -> dict:
+        from reference.raster_gate import multiply
+
+        return {"out": multiply(data.inputs["x"], data.inputs["g" if gate else "y"])}
+    return mirror
+
+
+_SE_SHAPE = (12, 20, 4)
+_SE_SQUEEZED = 2
+_SE_BANDS = ("b0", "b1", "b2", "b3")
+
+
+def _se_data(seed: int) -> FixtureData:
+    channels, squeezed = _SE_SHAPE[2], _SE_SQUEEZED
+    return FixtureData(inputs={"x": _gate_values(seed, "x", _SE_SHAPE)}, weights={
+        "reduce.weight": dyadic(seed, "reduce.weight", (squeezed, channels, 1, 1), scale=0.5),
+        "reduce.bias": dyadic(seed, "reduce.bias", (squeezed,), scale=0.125),
+        "expand.weight": dyadic(seed, "expand.weight", (channels, squeezed, 1, 1), scale=0.5),
+        "expand.bias": dyadic(seed, "expand.bias", (channels,), scale=0.125)})
+
+
+def _se_module(data: FixtureData):
+    """A squeeze-excitation stand-in: ``F.adaptive_avg_pool2d``, ``Conv2d`` 1 x 1, ``SiLU``,
+    ``Conv2d`` 1 x 1, ``torch.sigmoid``, then ``sigmoid(g) * x`` (the EfficientNet MBConv order,
+    with module convolutions)."""
+    import torch
+    from torch import nn
+    from torch.nn import functional as F
+
+    class SqueezeExcite(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.reduce = nn.Conv2d(_SE_SHAPE[2], _SE_SQUEEZED, 1)
+            self.act = nn.SiLU()
+            self.expand = nn.Conv2d(_SE_SQUEEZED, _SE_SHAPE[2], 1)
+
+        def forward(self, x):
+            pooled = F.adaptive_avg_pool2d(x, 1)
+            gate = torch.sigmoid(self.expand(self.act(self.reduce(pooled))))
+            return gate * x
+
+    module = SqueezeExcite()
+    with torch.no_grad():
+        for name, value in module.named_parameters():
+            value.copy_(torch.from_numpy(data.weights[name]))
+    return module.eval()
+
+
+def _se_build(ee, data: FixtureData) -> list:
+    import tensor_ee
+
+    grid = _rect_grid(10, *_SE_SHAPE[:2])
+    image = inline_raster(ee, grid.projection(), data.inputs["x"], _SE_BANDS)
+    compiled = tensor_ee.compile_model(_se_module(data), image, _SE_BANDS, grid)
+    pooled, gate = compiled.nodes["adaptive_avg_pool2d"], compiled.nodes["sigmoid"]
+    one = raster_grid(pooled.grid)
+    return [Readout("out", compiled.image, 4, raster_grid(compiled.grid)),
+            Readout("input", compiled.nodes["x"].image, 4, raster_grid(grid), "input", "x"),
+            Readout("pooled", pooled.image, 4, one), Readout("gate", gate.image, 4, one)]
+
+
+def _se_reference(data: FixtureData) -> dict:
+    import torch
+    from torch.nn import functional as F
+
+    module = _se_module(data)
+    with torch.no_grad():
+        x = nchw(data.inputs["x"])
+        pooled = F.adaptive_avg_pool2d(x, 1)
+        gate = torch.sigmoid(module.expand(module.act(module.reduce(pooled))))
+        return {"out": hwc(module(x)), "pooled": hwc(pooled), "gate": hwc(gate)}
+
+
+def _se_mirror(data: FixtureData) -> dict:
+    from reference.activations import sigmoid, silu
+    from reference.raster_conv import grouped_conv2d
+    from reference.raster_gate import global_avg_pool2d, multiply
+
+    w = data.weights
+    pooled = global_avg_pool2d(data.inputs["x"])
+    reduced = grouped_conv2d(pooled, w["reduce.weight"], w["reduce.bias"], groups=1)
+    expanded = grouped_conv2d(silu(reduced), w["expand.weight"], w["expand.bias"], groups=1)
+    gate = sigmoid(expanded)
+    return {"out": multiply(data.inputs["x"], gate), "pooled": pooled, "gate": gate}
+
+
+def _gate_fixtures(cost) -> list[Fixture]:
+    import tensor_ee
+    from tensor_ee.blocks.raster.merge import multiply
+    from tensor_ee.blocks.raster.pooling import global_avg_pool2d
+
+    fixtures = [Fixture(
+        id=f"raster/global_avg_pool2d/{spec.name}", lane=LANE, block="global_avg_pool2d",
+        settings={"clip_footprints": False}, policy=POLICY,
+        shapes={"input": [*spec.shape, 2], "output": [1, 1, 2]}, seed=spec.seed,
+        data=_global_pool_data(spec), build=_global_pool_build(spec), reference=_global_pool_reference,
+        reference_source="torch.nn.functional.adaptive_avg_pool2d(x, 1)",
+        mirror=MirrorSpec(_global_pool_mirror, False, "reference.raster_gate.global_avg_pool2d",
+                          bound=_POOL_BOUND),
+        requests=2, constants=cost("global_avg_pool2d", lambda data: ()), history=_GATE_HISTORY,
+        accepts=(global_avg_pool2d,), raster_side=spec.raster_side,
+        notes=(f"The mean of a {spec.shape[0]} x {spec.shape[1]} map onto its one-pixel grid "
+               f"(reduceResolution, maxPixels {(spec.shape[0] + 2) * (spec.shape[1] + 2):,}). Inputs in "
+               "[-2, 6) whose double sums are exact, so the mirror is order-independent; Earth Engine's "
+               "reduceResolution order is recorded, not required.")
+        + (" The input echo needs a 128 x 128 request grid: the maintainer's allowance for this "
+           "fixture alone." if spec.raster_side else "")
+    ) for spec in _GLOBAL_POOLS]
+    for gate in (False, True):
+        fixtures.append(Fixture(
+            id=f"raster/multiply/{'gate-h5-w7' if gate else 'same-grid-h5-w7'}", lane=LANE, block="multiply",
+            settings={"clip_footprints": False}, policy=POLICY,
+            shapes={"input": [5, 7, 2], "other": [1, 1, 2] if gate else [5, 7, 2], "output": [5, 7, 2]},
+            seed=75 + gate, data=_multiply_data(gate), build=_multiply_build(gate),
+            reference=_multiply_reference(gate),
+            reference_source="torch: g * x, g of shape [1, 2, 1, 1]" if gate else "torch: x * y",
+            mirror=MirrorSpec(_multiply_mirror(gate), True, "reference.raster_gate.multiply"),
+            requests=2 if gate else 1, constants=cost("multiply", lambda data: ()), history=_GATE_HISTORY,
+            accepts=(multiply,),
+            notes=("A one-pixel gate in [0.25, 0.75) on the map's own one-pixel grid, broadcast over a "
+                   "5 x 7 map; " if gate else "Two 5 x 7 maps on one grid; ")
+                  + "one product of float32 values, rounded once: equal to PyTorch's bit for bit."))
+    fixtures.append(Fixture(
+        id="raster/multiply/squeeze-excitation-h12-w20", lane=LANE, block="multiply",
+        parts=("global_avg_pool2d", "conv2d", "silu", "sigmoid"),
+        settings={"clip_footprints": False}, policy=POLICY,
+        shapes={"input": list(_SE_SHAPE), "squeezed": _SE_SQUEEZED, "pooled": [1, 1, _SE_SHAPE[2]],
+                "output": list(_SE_SHAPE)},
+        seed=77, data=_se_data, build=_se_build, reference=_se_reference,
+        reference_source=("a squeeze-excitation stand-in: F.adaptive_avg_pool2d, Conv2d 1x1, SiLU, Conv2d 1x1, "
+                          "torch.sigmoid, sigmoid(g) * x"),
+        mirror=MirrorSpec(_se_mirror, False, "reference.raster_gate with reference.raster_conv and "
+                          "reference.activations", bound=_GATE_BOUND),
+        requests=2,
+        constants=lambda data: {"conv2d": sum(_metadata("conv2d").embedded_constants(m) for m in
+                                              (_se_module(data).reduce, _se_module(data).expand))},
+        history=_GATE_HISTORY, accepts=(tensor_ee.compile_model, multiply, global_avg_pool2d),
+        notes=("compile_model on a non-square 12 x 20 map: the gate's 1 x 1 convolutions, SiLU and sigmoid "
+               "run on the map's one-pixel grid (a non-square pixel), and the gate multiplies the map. "
+               "The pooled mean and the gate are read on that grid as well.")))
+    return fixtures
+
+
 SELECTIONS = {
     # raster-setting validation: every new setting, plus today's pooling and nearest settings as regression checks
     # (three calibration fixtures).
@@ -812,6 +1067,9 @@ SELECTIONS = {
                       for factor, align in _BILINEAR_SETTINGS),
     "grouped_conv": tuple(f"raster/grouped_conv2d/{spec.name}" for spec in _GROUPED),
     "standardize": tuple(f"raster/standardize/{spec.name}" for spec in _STANDARDIZE),
+    "global_pool_multiply": (*(f"raster/global_avg_pool2d/{spec.name}" for spec in _GLOBAL_POOLS),
+                             "raster/multiply/same-grid-h5-w7", "raster/multiply/gate-h5-w7",
+                             "raster/multiply/squeeze-excitation-h12-w20"),
 }
 """This lane's named selections (``tools.fixtures.select``)."""
 
@@ -886,4 +1144,5 @@ def fixtures() -> list[Fixture]:
             notes="A copy: Earth Engine must equal PyTorch bit for bit (tolerance 0)."),
     ]
     return (calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost)
-            + _bilinear_fixtures(cost) + _grouped_fixtures(cost) + _standardize_fixtures(cost))
+            + _bilinear_fixtures(cost) + _grouped_fixtures(cost) + _standardize_fixtures(cost)
+            + _gate_fixtures(cost))
