@@ -585,3 +585,17 @@ def test_report_of_a_run_names_assets_by_leaf_only(prepared):
     assert ROOT_ID not in text and "operations/" not in text and record["project"] == PROJECT
     assert record["eecu_seconds"] == 5.0 * 16 and record["reading"]["status"] == "COMPLETED"
     assert [row["leaf"] for row in record["tasks"]][0] == "input_h128"
+
+
+def test_the_command_line_plans_and_reports_offline(tmp_path, capsys, prepared):
+    output = tmp_path / "plan.json"
+    assert RUN.main(["plan", "--cases", "screen_size", "--json", "--output", str(output)]) == 0
+    printed = json.loads(capsys.readouterr().out)
+    assert printed == json.loads(output.read_text()) == RUN.plan("screen_size")
+    assert [task["leaf"] for task in printed["tasks"]] == ["input_h64", "gated_1_h64", "gated_8_h64"]
+    assert not any(removal.startswith("E1") for removal in printed["removals"])
+    with pytest.raises(SystemExit):                    # run takes no default for the project, root or limits
+        RUN.main(["run", "--run-dir", str(tmp_path / "r"), "--asset-root", ROOT_ID, "--project", PROJECT])
+    assert not (tmp_path / "r").exists()
+    assert RUN.main(["report", "--run-dir", str(prepared), "--output", str(tmp_path / "report.json")]) == 0
+    assert json.loads((tmp_path / "report.json").read_text())["reading"]["decision"] == "incomplete"
