@@ -733,13 +733,14 @@ class _Run:
         """A wall or queue limit: the intent, the cancel, one more status read, a final stop."""
         leaf, name = task["leaf"], record["operation"]
         what = "running" if kind == "wall" else "waiting to start"
-        reason = (f"task {leaf!r} was {what} {elapsed:.0f} s, over the {kind} limit of {limit:g} s: cancelled; "
-                  "the run ends")
+        reason = f"task {leaf!r} was {what} {elapsed:.0f} s, over the {kind} limit of {limit:g} s"
         record.update(state="CANCELLING", guard={"limit": kind, "limit_seconds": limit, "elapsed_seconds": elapsed,
                                                  "unix": self.clock()})
-        self.state.update(status="GUARD", reason=reason)
+        self.state.update(status="GUARD", reason=f"{reason}: cancelling; the run ends (if this process stopped here, "
+                                                 "whether the task was cancelled is unknown: check the task list)")
         self.log("cancelling", leaf, limit=kind)
         self.save()
+        cancelled = False
         for step in ("cancelOperation", "getOperation"):
             try:
                 if step == "getOperation":
@@ -751,9 +752,16 @@ class _Run:
                     self.save()
                     raise
                 continue
-            if step == "getOperation" and isinstance(result, dict):
+            if step == "cancelOperation":
+                cancelled = True
+            elif isinstance(result, dict):
                 self.observe(record, result)
-        record["state"] = "CANCELLED"
+        if cancelled:
+            record["state"] = "CANCELLED"
+            reason += ": cancelled; the run ends"
+        else:
+            reason += (f": the cancel failed ({record['cancelOperation_error']}); the task may still be running: "
+                       "cancel it by hand; the run ends")
         self.stop(reason, leaf=leaf, status="GUARD")
 
     def verify(self, task: dict, record: dict) -> None:
@@ -984,9 +992,19 @@ def reading(plan_record: dict, state: dict, threshold: float = 2.0) -> dict:
     return out
 
 
+def _scrubbed(record: dict, root: str) -> dict:
+    """``record`` with every asset named by its leaf: the root and any other asset ID or
+    operation name removed from its text."""
+    text = json.dumps(record)
+    text = text.replace(f"{root}/", "").replace(root, "<asset root>")
+    text = re.sub(r"projects/[A-Za-z0-9_.:-]+/operations/[A-Za-z0-9_-]+", "<operation>", text)
+    text = re.sub(r"projects/[A-Za-z0-9_.:-]+/assets/[A-Za-z0-9_/-]*", "<asset>", text)
+    return json.loads(text)
+
+
 def report(directory, threshold: float = 2.0) -> dict:
     """The run's record for the repository: costs, times, the reading and the decision; assets
-    named by leaf only. Offline."""
+    named by leaf only, no operation names. Offline."""
     directory = Path(directory)
     prepared, state = _load(directory)
     plan_record = prepared["plan"]
@@ -1007,7 +1025,7 @@ def report(directory, threshold: float = 2.0) -> dict:
               "reading": reading(plan_record, state, threshold),
               "compare": ({leaf: {k: v for k, v in r.items()} for leaf, r in
                            json.loads(compared.read_text())["tasks"].items()} if compared.exists() else None)}
-    return result
+    return _scrubbed(result, prepared["arguments"]["asset_root"])
 
 
 # ---------------------------------------------------------------------------

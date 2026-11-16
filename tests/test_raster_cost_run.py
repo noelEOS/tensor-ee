@@ -360,6 +360,23 @@ def test_a_wall_or_queue_trip_cancels_records_and_ends_the_run(prepared, leaf, b
     assert fake.calls == calls                       # a guard-stopped run makes no further call
 
 
+def test_a_cancel_that_fails_is_recorded_as_not_cancelled(prepared):
+    clock = Clock()
+    fake = FakeData(prepared, clock, behaviour={"gated_1": {"run": 10_000}})
+
+    def refuse(name):
+        fake.calls.append("cancelOperation")
+        raise ee.EEException("cancel refused")
+
+    fake.cancelOperation = refuse
+    with pytest.raises(RUN.RunStopped, match="may still be running: cancel it by hand") as stopped:
+        _go(prepared, fake, clock)
+    assert stopped.value.status == "GUARD"
+    record = _state(prepared)["tasks"]["gated_1"]
+    assert record["state"] == "CANCELLING" and "cancel refused" in record["cancelOperation_error"]
+    assert record["last_status"] == "RUNNING" and fake.calls[-2:] == ["cancelOperation", "getOperation"]
+
+
 def test_the_wall_limit_counts_from_the_tasks_start_not_its_queue(prepared):
     clock = Clock()
     fake = FakeData(prepared, clock, behaviour={"gated_1": {"queue": 1700, "run": 850}})
@@ -577,7 +594,7 @@ def test_report_decides_every_guard_stop_and_says_incomplete_otherwise(planned):
     assert RUN.reading(planned, _synthetic(planned, {}, status="FAILED"))["decision"].startswith("none")
 
 
-def test_report_of_a_run_names_assets_by_leaf_only(prepared):
+def test_report_of_a_run_names_assets_by_leaf_only(prepared, template, tmp_path):
     clock = Clock()
     _go(prepared, FakeData(prepared, clock), clock)
     record = RUN.report(prepared)
@@ -585,6 +602,20 @@ def test_report_of_a_run_names_assets_by_leaf_only(prepared):
     assert ROOT_ID not in text and "operations/" not in text and record["project"] == PROJECT
     assert record["eecu_seconds"] == 5.0 * 16 and record["reading"]["status"] == "COMPLETED"
     assert [row["leaf"] for row in record["tasks"]][0] == "input_h128"
+    # stops whose reasons name a destination, a saved asset or an operation
+    for name, change in (("exists", lambda fake: fake.assets.update({f"{ROOT_ID}/gated_1": {"type": "IMAGE"}})),
+                         ("wrong", lambda fake: fake.tasks[f"{ROOT_ID}/gated_1"]["expect"].update(bands=["x"])),
+                         ("status", lambda fake: setattr(fake, "getOperation", lambda op: (_ for _ in ()).throw(
+                             ee.EEException(f"{op} is unavailable"))))):
+        directory = tmp_path / name
+        shutil.copytree(template, directory)
+        fake = FakeData(directory, clock)
+        change(fake)
+        with pytest.raises(RUN.RunStopped) as stopped:
+            _go(directory, fake, clock)
+        assert ROOT_ID in str(stopped.value) or "operations/" in str(stopped.value)
+        text = json.dumps(RUN.report(directory))
+        assert ROOT_ID not in text and "operations/" not in text and "projects/" not in text, name
 
 
 def test_the_command_line_plans_and_reports_offline(tmp_path, capsys, prepared):
