@@ -26,6 +26,7 @@ from tools.live_fixtures import offline_earth_engine
 
 PROJECT = "example"
 ROOT_ID = "projects/example/assets/cost/run1"
+PARENT = "projects/example/assets/cost"
 LIMITS = RUN.Limits(budget_eecu_seconds=1800, task_seconds=900, queue_seconds=1800, interval_seconds=10)
 ALL = "base,long,screen_size"
 
@@ -57,20 +58,27 @@ def test_the_plan_is_offline_deterministic_and_within_the_limit(planned):
     assert RUN.plan(ALL) == planned                       # offline_earth_engine refuses every cloud call
     assert [task["leaf"] for task in planned["tasks"]] == [
         "input_h128", "control_2", "gated_1", "gated_2", "staged_8_s0", "staged_8_s1", "staged_8_s2", "staged_8_s3",
-        "gated_4", "gated_4_replicate", "control_8", "gated_8", "gated_16", "input_h64", "gated_1_h64", "gated_8_h64"]
-    assert [task["case"] for task in planned["tasks"]][:13] == ["1", "2", "3", "4", "5", "5", "5", "5", "6", "7", "8",
-                                                                  "9", "E1"]
+        "gated_4", "gated_4_replicate", "control_8", "gated_8", "input_h64", "gated_1_h64", "gated_8_h64", "gated_16"]
+    assert [task["case"] for task in planned["tasks"]] == ["1", "2", "3", "4", "5", "5", "5", "5", "6", "7", "8", "9",
+                                                           "E2", "E2", "E2", "E1"]
     assert planned["images"] == len(planned["tasks"]) == 16
     assert all(task["request_bytes"] <= RUN.STAGE_LIMIT_BYTES for task in planned["tasks"])
     assert planned["largest_request_bytes"] == max(task["request_bytes"] for task in planned["tasks"])
-    assert planned["calls"]["run"]["exportImage"] == 16 and planned["calls"]["compare"]["computePixels"] == 16
+    assert planned["calls"]["run"]["exportImage"] == 16
+    assert planned["calls"]["compare"]["computePixels"] == 16 + RUN.CALL_MARGIN
     assert [task["leaf"] for task in RUN.plan("base")["tasks"]] == [task["leaf"] for task in planned["tasks"]][:12]
+    assert planned["folders"] == ["projects/example/assets/cost_run"]
+    assert planned["calls"]["run"]["createFolder"] == 1 and planned["calls"]["run"]["getAsset"] == 1 + 32 + 4
+    at_root = RUN.plan("screen_size", asset_root=ROOT_ID)
+    assert at_root["folders"] == [PARENT, ROOT_ID] and at_root["calls"]["run"]["createFolder"] == 2
+    assert at_root["calls"]["run"]["getAsset"] == 2 + 6 + RUN.CALL_MARGIN
     text = RUN.plan_text(planned)
+    assert "Folders: projects/example/assets/cost_run: each read with getAsset" in text
     assert all(task["request_sha256"] in text for task in planned["tasks"])
 
 
 def test_selections_and_the_request_limit_are_refused_before_anything_is_built(monkeypatch):
-    assert RUN.selection("all") == RUN.selection("screen_size,long,base") == ("base", "long", "screen_size")
+    assert RUN.selection("all") == RUN.selection("screen_size,long,base") == ("base", "screen_size", "long")
     for bad in ("long", "screen_size,long", "nope", ""):
         with pytest.raises(ValueError):
             RUN.selection(bad)
@@ -176,11 +184,11 @@ class FakeData:
     seconds, runs ``run`` seconds and reports ``eecu`` (per leaf, from ``behaviour``), then
     saves its asset; ``getAsset`` answers from the assets saved or raises a 404."""
 
-    def __init__(self, directory, clock, *, behaviour=None, folder=True, extra=None):
+    def __init__(self, directory, clock, *, behaviour=None, folders=(PARENT, ROOT_ID), extra=None):
         prepared = json.loads((Path(directory) / "prepared.json").read_text())
         self.tasks = {task["asset"]: task for task in prepared["plan"]["tasks"]}
         self.clock, self.behaviour = clock, dict(behaviour or {})
-        self.assets = ({ROOT_ID: {"type": "FOLDER", "name": ROOT_ID}} if folder else {}) | dict(extra or {})
+        self.assets = {level: {"type": "FOLDER", "name": level} for level in folders} | dict(extra or {})
         self.operations, self.by_request, self.resubmitted, self.calls = {}, {}, [], []
         self.exported, self.cancelled, self.crash, self.workload_tag = [], [], None, ""
 
@@ -302,30 +310,83 @@ def test_a_run_submits_one_task_at_a_time_in_order_and_records_the_cost(prepared
     leaves = [task["leaf"] for task in json.loads((prepared / "prepared.json").read_text())["plan"]["tasks"]]
     assert state["status"] == "COMPLETED" and fake.exported == leaves
     assert fake.resubmitted == [] and len(set(fake.by_request.values())) == len(leaves) and fake.retries == 0
-    assert "createFolder" not in fake.calls and state["folder"] == "existed"
+    assert "createFolder" not in fake.calls and state["folders"] == {PARENT: "EXISTED", ROOT_ID: "EXISTED"}
     for leaf in leaves:
         record = state["tasks"][leaf]
         assert record["state"] == "VERIFIED" and record["eecu_seconds"] == 5.0
         assert record["run_seconds"] == pytest.approx(30) and record["queue_seconds"] == pytest.approx(15)
     # each destination checked absent before its export and present after
-    assert fake.calls[:3] == ["getAsset", "getAsset", "exportImage"]
-    assert fake.calls.count("getAsset") == 1 + 2 * len(leaves)
+    assert fake.calls[:4] == ["getAsset", "getAsset", "getAsset", "exportImage"]
+    assert fake.calls.count("getAsset") == 2 + 2 * len(leaves)
     _caps_hold(prepared)
     assert _calls(prepared)["exportImage"] == len(leaves)
     assert _go(prepared, fake, clock)["status"] == "COMPLETED" and fake.exported == leaves   # nothing again
 
 
-def test_a_missing_folder_is_created_once_and_a_non_folder_stops_the_run(prepared, tmp_path, template):
+@pytest.mark.parametrize("existing, created", [
+    ((), [PARENT, ROOT_ID]),                  # both levels missing
+    ((PARENT,), [ROOT_ID]),                   # only the leaf missing
+    ((PARENT, ROOT_ID), []),                  # neither
+])
+def test_missing_folder_levels_are_created_top_down_once(prepared, existing, created):
     clock = Clock()
-    fake = FakeData(prepared, clock, folder=False)
-    assert _go(prepared, fake, clock, )["folder"] == "created"
-    assert fake.calls.count("createFolder") == 1 and fake.calls[:2] == ["getAsset", "createFolder"]
-    other = tmp_path / "other"
-    shutil.copytree(template, other)
-    fake = FakeData(other, clock, folder=False, extra={ROOT_ID: {"type": "IMAGE"}})
-    with pytest.raises(RUN.RunStopped, match="not a folder"):
-        _go(other, fake, clock)
-    assert fake.exported == [] and "createFolder" not in fake.calls
+    fake = FakeData(prepared, clock, folders=existing)
+    calls = []
+    original = fake.createFolder
+    fake.createFolder = lambda path: (calls.append(path), original(path))[1]
+    state = _go(prepared, fake, clock)
+    assert calls == created and state["status"] == "COMPLETED"
+    assert state["folders"] == {level: "CREATED" if level in created else "EXISTED" for level in (PARENT, ROOT_ID)}
+    folder_calls = [call for level in (PARENT, ROOT_ID)
+                    for call in (["getAsset", "createFolder"] if level in created else ["getAsset"])]
+    assert fake.calls[:len(folder_calls) + 2] == folder_calls + ["getAsset", "exportImage"]
+    _caps_hold(prepared)
+
+
+def test_a_non_folder_level_stops_the_run_before_any_export(prepared):
+    clock = Clock()
+    fake = FakeData(prepared, clock, folders=(), extra={PARENT: {"type": "IMAGE"}})
+    with pytest.raises(RUN.RunStopped, match=f"{PARENT} exists and is a 'IMAGE', not a folder"):
+        _go(prepared, fake, clock)
+    assert fake.exported == [] and "createFolder" not in fake.calls and fake.calls == ["getAsset"]
+
+
+@pytest.mark.parametrize("took_effect", [False, True])
+def test_an_interruption_at_a_folder_is_read_again_before_acting(prepared, took_effect):
+    """The intent written, then the process stopped: before the call (the folder absent) or
+    after it took effect (the folder present). The resumed run reads the level first and
+    creates it only if it is absent."""
+    clock = Clock()
+    fake = FakeData(prepared, clock, folders=(PARENT, ROOT_ID) if took_effect else (PARENT,))
+    state = _state(prepared)
+    state.update(status="RUNNING", folders={PARENT: "EXISTED", ROOT_ID: "CREATING"})
+    (prepared / "state.json").write_text(json.dumps(state))
+    state = _go(prepared, fake, clock)
+    assert state["status"] == "COMPLETED" and state["folders"][ROOT_ID] == "CREATED"
+    assert fake.calls.count("createFolder") == (0 if took_effect else 1)
+    assert fake.calls[:2] == ["getAsset", "getAsset" if took_effect else "createFolder"]
+    _caps_hold(prepared)
+
+
+def test_a_folder_created_whose_answer_was_lost_is_not_created_again(prepared):
+    clock = Clock()
+    fake = FakeData(prepared, clock, folders=(PARENT,))
+    fake.crash = (3, "after")                             # createFolder took effect; the process stopped
+    original = fake.createFolder
+
+    def create(path):
+        result = original(path)
+        fake._call("createFolder", "after")
+        return result
+
+    fake.createFolder = create
+    with pytest.raises(Crash):
+        _go(prepared, fake, clock)
+    assert _state(prepared)["folders"][ROOT_ID] == "CREATING"
+    fake.crash = None
+    assert _go(prepared, fake, clock)["status"] == "COMPLETED"
+    assert fake.calls.count("createFolder") == 1
+    _caps_hold(prepared)
 
 
 def test_an_existing_destination_stops_the_run_before_submission(prepared):
@@ -411,7 +472,8 @@ def test_the_long_chain_is_removed_unless_case_9_ran_within_a_quarter_of_the_wal
     assert state["status"] == "COMPLETED"
     assert ("gated_16" in fake.exported) is not removed
     assert (state["tasks"]["gated_16"]["state"] == "REMOVED") is removed
-    assert fake.exported[-3:] == ["input_h64", "gated_1_h64", "gated_8_h64"]
+    assert fake.exported[-1] == ("gated_8_h64" if removed else "gated_16")
+    assert fake.exported[12:15] == ["input_h64", "gated_1_h64", "gated_8_h64"]
 
 
 def test_a_failed_task_ends_the_run_and_is_never_retried(prepared):
@@ -428,7 +490,7 @@ def test_a_failed_task_ends_the_run_and_is_never_retried(prepared):
 def test_resume_continues_an_interrupted_run_without_a_second_submission(prepared):
     clock = Clock()
     fake = FakeData(prepared, clock)
-    fake.crash = (14, "before")                           # a getOperation of the second task, while it runs
+    fake.crash = (15, "before")                           # a getOperation of the second task, while it runs
     with pytest.raises(Crash):
         _go(prepared, fake, clock)
     state = _state(prepared)
@@ -445,7 +507,7 @@ def test_resume_continues_an_interrupted_run_without_a_second_submission(prepare
 def test_an_unknown_submission_is_never_submitted_again(prepared):
     clock = Clock()
     fake = FakeData(prepared, clock)
-    fake.crash = (3, "after")                             # exportImage took effect; its answer was lost
+    fake.crash = (4, "after")                             # exportImage took effect; its answer was lost
     with pytest.raises(Crash):
         _go(prepared, fake, clock)
     assert _state(prepared)["tasks"]["input_h128"]["state"] == "SUBMITTING"
@@ -539,6 +601,32 @@ def test_compare_fetches_each_saved_image_once_and_compares_with_pytorch(prepare
         RUN.compare(prepared, project="another", data=pixels, ee_module=ee)
 
 
+def test_compare_reruns_after_a_failed_fetch_within_its_cap(prepared):
+    clock = Clock()
+    _go(prepared, FakeData(prepared, clock), clock)
+    bands = {task["leaf"]: task["expect"]["bands"]
+             for task in json.loads((prepared / "prepared.json").read_text())["plan"]["tasks"]}
+    pixels = FakePixels(_expected_values(), bands)
+    answer, attempts = pixels.computePixels, []
+
+    def flaky(params):
+        attempts.append(1)
+        if len(attempts) == 3:
+            raise ee.EEException("computePixels: deadline exceeded")
+        return answer(params)
+
+    pixels.computePixels = flaky
+    with offline_earth_engine(), pytest.raises(ee.EEException, match="deadline"):
+        RUN.compare(prepared, project=PROJECT, data=pixels, ee_module=ee)
+    assert len(pixels.fetched) == 2 and len(list((prepared / "fetched").iterdir())) == 2
+    with offline_earth_engine():
+        record = RUN.compare(prepared, project=PROJECT, data=pixels, ee_module=ee)
+    assert record["passed"] and record["compared"] == 16
+    assert len(pixels.fetched) == 16 and len(set(pixels.fetched)) == 16      # only the missing ones again
+    counts = json.loads((prepared / "compare_calls.json").read_text())
+    assert counts["counts"]["computePixels"] == 17 <= counts["caps"]["computePixels"] == 16 + RUN.CALL_MARGIN
+
+
 # ---------------------------------------------------------------------------
 # report
 # ---------------------------------------------------------------------------
@@ -581,9 +669,19 @@ def test_report_decides_every_guard_stop_and_says_incomplete_otherwise(planned):
     assert walled["decision"] == "not one graph" and "wall limit" in walled["reasons"][0]
     budget = RUN.reading(planned, _synthetic(planned, _power(1.5, long=False), status="GUARD", reason="budget"))
     assert budget["quantities"]["N"] == 8 and budget["quantities"]["p"] == pytest.approx(1.5)
-    assert budget["decision"] in ("one graph", "not one graph") and budget["reasons"][-1].startswith("the run ended")
+    assert budget["decision"] == "not one graph" and budget["reasons"][-1].startswith("the run ended")
+    none = "none: the run ended before the tasks the reading needs"
+    # a queue stop with only the input measured
     queued = RUN.reading(planned, _synthetic(planned, {"input": 2.0}, status="GUARD", reason="queue"))
-    assert queued["decision"] == "one graph" and "C2" in queued["missing"] and "anything else" in queued["reasons"][0]
+    assert queued["decision"] == none and queued["missing"] == ["C2", "C8", "G4", "G4r", "G8"]
+    # a budget stop before case 9
+    early = {role: cost for role, cost in _power(1.5).items() if role not in ("G8", "G16")}
+    stopped = RUN.reading(planned, _synthetic(planned, early, status="GUARD", reason="budget"))
+    assert stopped["decision"] == none and stopped["missing"] == ["G8"] and "no reading" in stopped["reasons"][0]
+    # a wall trip on a control: not a gated chain, and C(8) is missing
+    control = {role: cost for role, cost in _power(1.5).items() if role not in ("C8", "G8", "G16")}
+    walled_control = RUN.reading(planned, _synthetic(planned, control, status="GUARD", walled="control_8"))
+    assert walled_control["decision"] == none and walled_control["missing"] == ["C8", "G8"]
     flat = _power(1.0)
     flat.update(G4=9.0, G8=9.0, G16=9.0, G4r=9.0)                     # G(n) - a <= 0: p cannot be computed
     unreadable = RUN.reading(planned, _synthetic(planned, flat))

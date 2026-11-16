@@ -22,10 +22,11 @@ and weights from ``dyadic``, integer arithmetic only), so no two tasks share a c
 | Selection | Tasks |
 |---|---|
 | ``base`` | 1 the input, 128 x 128 x 8; 2 a control of 2 blocks without the gate; 3, 4 gated chains of 1 and 2 blocks; 5 a gated chain of 8 blocks as 4 stages of 2; 6 a gated chain of 4; 7 the same length, fresh seeds; 8 a control of 8 blocks; 9 a gated chain of 8 |
-| ``long`` | E1 a gated chain of 16 blocks, submitted only if case 9 finished within a quarter of the wall limit (needs ``base``) |
 | ``screen_size`` | E2 an input of 64 x 64 x 8, gated chains of 1 and 8 blocks reading it |
+| ``long`` | E1 a gated chain of 16 blocks, submitted only if case 9 finished within a quarter of the wall limit (needs ``base``) |
 
-Selections join with commas (``base,long``); ``all`` is all three. Tasks run in this order.
+Selections join with commas (``base,long``); ``all`` is all three. Tasks run in this order, the
+16-block chain last, so that a stop on it loses no other task.
 
 **plan** builds every request offline (zero cloud calls, every Earth Engine entry point refused)
 and prints, or writes as JSON, every task in order: its case, asset leaf, description, what it
@@ -46,9 +47,11 @@ before ``exportImage``, never a resubmission, no client retries and no workload 
 destination checked absent (``getAsset`` answering HTTP 404) before submission and present
 after, with its bands, float precision and grid, and bounded polling with ``getOperation``,
 sleeping ``--interval`` seconds before each call. The asset root must be
-``projects/<project>/assets/<folder>`` of ``--project``; the folder is created
-(``createFolder``) only if ``getAsset`` finds it missing, and the run stops if it is not a
-folder. The guards only remove tasks:
+``projects/<project>/assets/<folder>[/<folder>..]`` of ``--project``. Each folder level below
+``projects/<project>/assets`` is read with ``getAsset``, top down, and created (``createFolder``)
+only if it is missing; a level that is not a folder stops the run. The intent is written before
+each ``createFolder``, and a run resumed after an interruption there reads the level again
+before acting. The guards only remove tasks:
 
 - **wall limit** (``--task-seconds``), counted from the operation's ``startTime``: the task is
   cancelled (``cancelOperation``), its operation read once more (``getOperation``) and recorded,
@@ -73,7 +76,8 @@ Every call of the client is counted before it is made and refused past its cap
 resumes); the caps are the plan's.
 
 **compare** fetches each saved image once (``computePixels``, one call per verified task,
-kept in ``fetched/``) and compares every chain's output with float32 PyTorch run on its fetched
+kept in ``fetched/``; a rerun after a failed fetch fetches only what is missing, within a cap
+of the images plus ``CALL_MARGIN``) and compares every chain's output with float32 PyTorch run on its fetched
 input: the stage modules up to that task, for a staged case. An input must equal its local
 values bit for bit. Tolerance 1e-4 absolute, the largest absolute error recorded per task
 (``compare.json``). Different seeds give one graph and stages different weights: they are
@@ -92,9 +96,14 @@ EECU-seconds:
 - B = 26 min G(k) / k over the lengths k that ran: the best staging of 26 blocks;
 - Q = P / B.
 
-Decision: a gated chain cancelled at the wall limit, or Q > threshold (1 + 3 d), is "not one
-graph"; anything else, Q within the noise band and a reading that cannot be computed
-included, is "one graph", with the reason. A run that has not finished is "incomplete"; a
+Decision, for a completed run or one ended by a guard: a gated chain cancelled at the wall
+limit is "not one graph"; with Q and d computed, Q > threshold (1 + 3 d) is "not one graph" and
+anything else, Q within the noise band included, "one graph"; with every cost the reading
+needs (C(2), C(8), G(4), G'(4), G(N), G(N/2)) present but G - a not positive, so that p cannot
+be computed, "one graph" (the gates cost nothing measurable above one export's fixed cost);
+otherwise, the run ended before the tasks the reading needs (a queue stop, a budget stop, a
+stop on a control or input), "none", with the missing costs listed: no reading, never a
+decision. A run that has not finished is "incomplete"; a
 failed run has no decision. The report names assets by leaf only, and the project as given.
 
 Run storage (the run directory, chosen by the caller, never committed): ``prepared.json`` (the
@@ -105,7 +114,7 @@ process holds the directory.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import datetime
 import functools
 import hashlib
@@ -180,12 +189,12 @@ CASES = (
     Case("7", "gated_4_replicate", "G4r", "noise: G(4) with fresh seeds", 7107, _C, 4, reads="input_h128"),
     Case("8", "control_8", "C8", "fixed and per-block cost, with 2", 7108, _C, 8, gate=False, reads="input_h128"),
     Case("9", "gated_8", "G8", "G(8)", 7109, _C, 8, reads="input_h128"),
-    Case("E1", "gated_16", "G16", "G(16)", 7110, _C, 16, reads="input_h128", condition=("gated_8", 0.25)),
     Case("E2", "input_h64", "input_h64", "the screen's size: its input", 7111, _S),
     Case("E2", "gated_1_h64", "G1_h64", "the screen's size: G(1) at 64 x 64", 7112, _S, 1, reads="input_h64"),
     Case("E2", "gated_8_h64", "G8_h64", "the screen's size: G(8) at 64 x 64", 7113, _S, 8, reads="input_h64"),
+    Case("E1", "gated_16", "G16", "G(16)", 7110, _C, 16, reads="input_h128", condition=("gated_8", 0.25)),
 )
-SELECTIONS = {"base": ("1", "2", "3", "4", "5", "6", "7", "8", "9"), "long": ("E1",), "screen_size": ("E2",)}
+SELECTIONS = {"base": ("1", "2", "3", "4", "5", "6", "7", "8", "9"), "screen_size": ("E2",), "long": ("E1",)}
 
 
 def selection(text) -> tuple[str, ...]:
@@ -327,12 +336,19 @@ class Limits:
                 "queue_seconds": self.queue_seconds, "interval_seconds": self.interval_seconds}
 
 
-def caps(limits: Limits, count: int) -> dict:
-    """Every client call ``run`` makes, with its cap. ``getOperation``: per task, the polls
-    until the queue and wall limits have both passed, plus one, then one more after a cancel;
-    so a guard always fires before the cap."""
+def folder_levels(root: str) -> list[str]:
+    """The folders of ``root`` below ``projects/<project>/assets``, top down."""
+    parts = root.split("/")
+    return ["/".join(parts[:k]) for k in range(4, len(parts) + 1)]
+
+
+def caps(limits: Limits, count: int, levels: int = 1) -> dict:
+    """Every client call ``run`` makes, with its cap. ``getAsset``: each folder level, each
+    destination before and after; ``createFolder``: each level at most once; ``getOperation``:
+    per task, the polls until the queue and wall limits have both passed, plus one, then one
+    more after a cancel, so a guard always fires before the cap."""
     per_task = math.ceil((limits.queue_seconds + limits.task_seconds) / limits.interval_seconds) + 2
-    return {"getAsset": 1 + 2 * count + CALL_MARGIN, "createFolder": 1, "exportImage": count,
+    return {"getAsset": levels + 2 * count + CALL_MARGIN, "createFolder": levels, "exportImage": count,
             "getOperation": count * per_task + 1 + CALL_MARGIN, "cancelOperation": 1}
 
 
@@ -417,8 +433,10 @@ def plan(names="base", *, asset_root: str = PLAN_ROOT, limits: Limits | None = N
     compared = len(records)
     return {"format": f"{FORMAT}.plan", "version": VERSION, "selection": list(selection(names)),
             "asset_root": asset_root, "placeholder_root": asset_root == PLAN_ROOT,
-            "limits": limits.to_json(), "tasks": records, "images": len(records), "folders": 1,
-            "calls": {"run": caps(limits, len(records)), "compare": {"computePixels": compared}},
+            "limits": limits.to_json(), "tasks": records, "images": len(records),
+            "folders": folder_levels(asset_root),
+            "calls": {"run": caps(limits, len(records), len(folder_levels(asset_root))),
+                      "compare": {"computePixels": compared + CALL_MARGIN}},
             "removals": [removal for removal in REMOVALS
                          if any(record["condition"] for record in records) or not removal.startswith("E1")],
             "request_limit_bytes": STAGE_LIMIT_BYTES,
@@ -447,9 +465,11 @@ def plan_text(record: dict) -> str:
                  f"polling every {limits['interval_seconds']:g} s")
     lines.append("Calls, run (each counted before it is made, refused past its cap): "
                  + ", ".join(f"{name} <= {cap:,}" for name, cap in record["calls"]["run"].items())
-                 + "; createFolder only if the folder is missing; cancelOperation only at a wall or queue limit")
+                 + "; createFolder only for a missing folder level; cancelOperation only at a wall or queue limit")
+    lines.append(f"Folders: {', '.join(record['folders'])}: each read with getAsset, top down, and created only if "
+                 "missing; a level that is not a folder stops the run")
     lines.append(f"Calls, compare: computePixels <= {record['calls']['compare']['computePixels']} "
-                 "(one per saved image)")
+                 f"(one per saved image, {record['images']}, plus {CALL_MARGIN} for a rerun after a failed fetch)")
     lines.append(f"Requests: largest {record['largest_request_bytes']:,} bytes (limit "
                  f"{record['request_limit_bytes']:,}), {record['request_bytes']:,} in all; "
                  f"{record['calls_to_earth_engine']} calls to Earth Engine to plan")
@@ -512,7 +532,7 @@ def prepare(directory, *, project: str, asset_root: str, names, limits: Limits) 
     text = _document(document)
     _write(directory / "prepared.json", text)
     state = {"format": f"{FORMAT}.state", "version": VERSION, "prepared_sha256": _sha256(text.encode("ascii")),
-             "arguments": document["arguments"], "status": "PREPARED", "reason": None, "folder": None,
+             "arguments": document["arguments"], "status": "PREPARED", "reason": None, "folders": {},
              "tasks": {task["leaf"]: {"state": "PREPARED"} for task in record["tasks"]},
              "history": [{"unix": time.time(), "event": "prepared", "tasks": len(record["tasks"])}]}
     _write(directory / "state.json", _document(state))
@@ -567,33 +587,40 @@ class _Run:
 
     # -- steps --------------------------------------------------------------------
     def folder(self) -> None:
-        if self.state["folder"]:
-            return
-        root = self.prepared["arguments"]["asset_root"]
-        try:
-            found = self.call("getAsset", root)
-        except RunStopped:
-            raise
-        except Exception as error:
-            if not _not_found(error):
-                self.stop(f"getAsset({root}) failed: {type(error).__name__}: {error}", cause=error)
-            found = None
-        if found is not None:
-            if found.get("type") != "FOLDER":
-                self.stop(f"the asset root {root} exists and is a {found.get('type')!r}, not a folder")
-            self.state["folder"] = "existed"
-        else:
-            self.log("creating folder")
-            self.save()
+        """Each folder level of the root, top down: read, and created only if missing. A level
+        left ``CREATING`` (the intent written, the call's outcome unknown) is read again before
+        anything is done."""
+        levels = self.state["folders"]
+        for level in folder_levels(self.prepared["arguments"]["asset_root"]):
+            if levels.get(level) in ("EXISTED", "CREATED"):
+                continue
             try:
-                self.call("createFolder", root)
+                found = self.call("getAsset", level)
             except RunStopped:
                 raise
             except Exception as error:
-                self.stop(f"the asset root {root} could not be created: {type(error).__name__}: {error}", cause=error)
-            self.state["folder"] = "created"
-        self.log("folder", state=self.state["folder"])
-        self.save()
+                if not _not_found(error):
+                    self.stop(f"getAsset({level}) failed: {type(error).__name__}: {error}", cause=error)
+                found = None
+            if found is not None:
+                if found.get("type") != "FOLDER":
+                    self.stop(f"{level} exists and is a {found.get('type')!r}, not a folder")
+                levels[level] = "CREATED" if levels.get(level) == "CREATING" else "EXISTED"
+                self.log("folder", level=level, state=levels[level])
+                self.save()
+                continue
+            levels[level] = "CREATING"
+            self.log("creating folder", level=level)
+            self.save()
+            try:
+                self.call("createFolder", level)
+            except RunStopped:
+                raise
+            except Exception as error:
+                self.stop(f"the folder {level} could not be created: {type(error).__name__}: {error}", cause=error)
+            levels[level] = "CREATED"
+            self.log("folder", level=level, state="CREATED")
+            self.save()
 
     def absent(self, task: dict) -> None:
         try:
@@ -880,7 +907,8 @@ def compare(directory, *, project: str, data=None, ee_module=None) -> dict:
         return np.load(path)
 
     by_leaf, results = {task["leaf"]: task for task in prepared["plan"]["tasks"]}, {}
-    with CallGuard({"computePixels": len(verified)}, data=data, path=directory / "compare_calls.json"):
+    with CallGuard({"computePixels": len(verified) + CALL_MARGIN}, data=data,
+                   path=directory / "compare_calls.json"):
         arrays = {task["leaf"]: fetched(task) for task in verified}
     for task in verified:
         leaf, case = task["leaf"], _case(task["chain"])
@@ -968,24 +996,33 @@ def reading(plan_record: dict, state: dict, threshold: float = 2.0) -> dict:
             if full is not None and cost[role] > 0:
                 q[f"{role.split('_')[0]}(128)/{role.split('_')[0]}(64)"] = full / cost[role]
     out["quantities"] = q
-    out["missing"] = missing
     walled = [task["leaf"] for task in tasks if task["gate"] and records[task["leaf"]].get("guard", {}).get("limit")
               == "wall"]
+    needed = [role for role in dict.fromkeys(("C2", "C8", "G4", "G4r", f"G{n}", f"G{n // 2}"))
+              if cost.get(role) is None]
+    out["missing"] = needed
     if walled:
         out["decision"] = "not one graph"
         reasons.insert(0, f"the gated chain {walled[0]} was cancelled at the wall limit")
-    elif q.get("Q") is not None and q.get("d") is not None and q["Q"] > threshold * (1 + 3 * q["d"]):
-        out["decision"] = "not one graph"
-        reasons.insert(0, f"Q = {q['Q']:.4g} > {threshold:g} (1 + 3 d) = {threshold * (1 + 3 * q['d']):.4g}")
-    else:
-        out["decision"] = "one graph"
-        if q.get("Q") is not None and q.get("d") is not None:
-            band = threshold * (1 + 3 * q["d"])
+    elif needed:
+        out["decision"] = "none: the run ended before the tasks the reading needs"
+        reasons.insert(0, f"no reading: missing {', '.join(needed)}")
+    elif q.get("Q") is not None and q.get("d") is not None:
+        band = threshold * (1 + 3 * q["d"])
+        if q["Q"] > band:
+            out["decision"] = "not one graph"
+            reasons.insert(0, f"Q = {q['Q']:.4g} > {threshold:g} (1 + 3 d) = {band:.4g}")
+        else:
+            out["decision"] = "one graph"
             reasons.insert(0, f"Q = {q['Q']:.4g} <= {threshold:g} (1 + 3 d) = {band:.4g}"
                            + (f": within the noise band above {threshold:g}" if q["Q"] > threshold else ""))
-        else:
-            reasons.insert(0, "anything else: Q " + ("and d are" if q.get("Q") is None else "is computed but d is")
-                           + " not computable" + (f" (missing {', '.join(missing)})" if missing else ""))
+    elif "p" not in q:
+        out["decision"] = "one graph"
+        reasons.insert(0, "every cost is there, but G - a is not positive: the gates cost nothing measurable above "
+                          "one export's fixed cost")
+    else:
+        out["decision"] = "none: the reading cannot be computed"
+        reasons.insert(0, "d is not computable: G(4) and G'(4) have no positive mean")
     if status == "GUARD":
         reasons.append(f"the run ended at a guard: {state.get('reason')}")
     out["reasons"] = reasons
