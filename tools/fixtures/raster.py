@@ -7,6 +7,12 @@ elementwise multiply, alone and as a squeeze-excitation gate through ``compile_m
 (``global_pool_multiply``), and zero padding ahead of a convolution, which runs the
 convolution at a sampling phase, through ``compile_model`` (``padded_conv``).
 
+``se_chain`` is a request-cost screen, not block evidence: chains of 1, 2, 4 and 8 residual
+blocks with a squeeze-excitation gate, and 8 blocks without it, through ``compile_model``,
+one request each, so that a live run's wall time per request shows how request time grows
+with the number of chained gates against a chain without gates. Each has its own input and
+weights; they compare with PyTorch only, and the composed NumPy mirrors are checked offline.
+
 Every fixture runs the library block in ``tensor_ee/blocks/raster`` plus float32
 materialization (through the public facade where available, as ``compile_model``
 runs each node) on an inline input on a ``Grid`` (20 or 40 m for the calibration; 10, 30 or
@@ -1211,6 +1217,175 @@ def _padded_fixtures(cost) -> list[Fixture]:
     return fixtures
 
 
+# ---------------------------------------------------------------------------
+# Chained squeeze-excitation blocks: a request-cost screen (selection se_chain)
+# ---------------------------------------------------------------------------
+@dataclass(frozen=True)
+class _SEChain:
+    """One chain of residual blocks through ``compile_model``, on a 64 x 64 map with 8
+    channels: ``blocks`` blocks, each with a squeeze-excitation gate, or (``gate`` False) the
+    same blocks without it. Its own seed: its own input and weights."""
+
+    name: str
+    seed: int
+    blocks: int
+    gate: bool = True
+
+    @property
+    def block(self) -> str:
+        return "multiply" if self.gate else "residual_add"
+
+
+_SE_CHAINS = (
+    _SEChain("se-chain-1-h64-w64", 91, 1),
+    _SEChain("se-chain-2-h64-w64", 92, 2),
+    _SEChain("se-chain-4-h64-w64", 93, 4),
+    _SEChain("se-chain-8-h64-w64", 94, 8),
+    # The control: eight blocks without the gate (no pool, no gate convolutions, no product).
+    _SEChain("no-gate-chain-8-h64-w64", 95, 8, gate=False),
+)
+_SE_CHAIN_SHAPE = (64, 64, 8)
+_SE_CHAIN_SQUEEZED = 4
+_SE_CHAIN_BANDS = tuple(f"b{c}" for c in range(_SE_CHAIN_SHAPE[2]))
+_SE_CHAIN_SCALES = {"depthwise.weight": 0.5, "depthwise.bias": 0.25, "reduce.weight": 0.5, "reduce.bias": 0.5,
+                    "expand.weight": 0.5, "expand.bias": 1.0, "project.weight": 0.25, "project.bias": 0.125}
+"""Each parameter's dyadic scale: the outputs stay of order 1 through eight blocks and the
+gates well inside (0, 1) (the ranges are checked in tests/test_raster_se_chain.py)."""
+
+
+def _se_chain_parameters(spec: _SEChain) -> dict:
+    """{parameter name: shape}, in the stand-in module's ``named_parameters`` order."""
+    channels, squeezed = _SE_CHAIN_SHAPE[2], _SE_CHAIN_SQUEEZED
+    shapes = {"depthwise.weight": (channels, 1, 3, 3), "depthwise.bias": (channels,)}
+    if spec.gate:
+        shapes.update({"reduce.weight": (squeezed, channels, 1, 1), "reduce.bias": (squeezed,),
+                       "expand.weight": (channels, squeezed, 1, 1), "expand.bias": (channels,)})
+    shapes.update({"project.weight": (channels, channels, 1, 1), "project.bias": (channels,)})
+    return {f"blocks.{index}.{name}": shape for index in range(spec.blocks) for name, shape in shapes.items()}
+
+
+def _se_chain_data(spec: _SEChain):
+    def data(seed: int) -> FixtureData:
+        return FixtureData(inputs={"x": dyadic(seed, "x", _SE_CHAIN_SHAPE)}, weights={
+            name: dyadic(seed, name, shape, scale=_SE_CHAIN_SCALES[name.split(".", 2)[2]])
+            for name, shape in _se_chain_parameters(spec).items()})
+    return data
+
+
+def _se_chain_module(spec: _SEChain, data: FixtureData):
+    """The stand-in, importing no model package: ``blocks`` residual blocks, each
+    ``y = SiLU(depthwise 3 x 3 convolution of x, with bias)``; with the gate,
+    ``y = sigmoid(conv1x1(SiLU(conv1x1(adaptive_avg_pool2d(y, 1))))) * y``, squeezing 8
+    channels to 4 and back; then ``x + conv1x1(y)``."""
+    import torch
+    from torch import nn
+    from torch.nn import functional as F
+
+    channels, squeezed = _SE_CHAIN_SHAPE[2], _SE_CHAIN_SQUEEZED
+
+    class Block(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.depthwise = nn.Conv2d(channels, channels, 3, padding=1, groups=channels)
+            self.act = nn.SiLU()
+            if spec.gate:
+                self.reduce = nn.Conv2d(channels, squeezed, 1)
+                self.gate_act = nn.SiLU()
+                self.expand = nn.Conv2d(squeezed, channels, 1)
+            self.project = nn.Conv2d(channels, channels, 1)
+
+        def forward(self, x):
+            y = self.act(self.depthwise(x))
+            if spec.gate:
+                gate = torch.sigmoid(self.expand(self.gate_act(self.reduce(F.adaptive_avg_pool2d(y, 1)))))
+                y = gate * y
+            return x + self.project(y)
+
+    class Chain(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.blocks = nn.ModuleList(Block() for _ in range(spec.blocks))
+
+        def forward(self, x):
+            for block in self.blocks:
+                x = block(x)
+            return x
+
+    module = Chain()
+    with torch.no_grad():
+        for name, value in module.named_parameters():
+            value.copy_(torch.from_numpy(data.weights[name]))
+    return module.eval()
+
+
+def _se_chain_build(spec: _SEChain):
+    def build(ee, data: FixtureData) -> list:
+        import tensor_ee
+
+        grid = _rect_grid(10, *_SE_CHAIN_SHAPE[:2])
+        image = inline_raster(ee, grid.projection(), data.inputs["x"], _SE_CHAIN_BANDS)
+        compiled = tensor_ee.compile_model(_se_chain_module(spec, data), image, _SE_CHAIN_BANDS, grid)
+        channels = _SE_CHAIN_SHAPE[2]
+        return [Readout("out", compiled.image, channels, raster_grid(compiled.grid)),
+                Readout("input", compiled.nodes["x"].image, channels, raster_grid(grid), "input", "x")]
+    return build
+
+
+def _se_chain_reference(spec: _SEChain):
+    def reference(data: FixtureData) -> dict:
+        import torch
+
+        with torch.no_grad():
+            return {"out": hwc(_se_chain_module(spec, data)(nchw(data.inputs["x"])))}
+    return reference
+
+
+def _se_chain_constants(spec: _SEChain):
+    def constants(data: FixtureData) -> dict:
+        module = _se_chain_module(spec, data)
+        counts = {"grouped_conv2d": sum(_metadata("grouped_conv2d").embedded_constants(block.depthwise)
+                                        for block in module.blocks),
+                  "conv2d": sum(_metadata("conv2d").embedded_constants(conv) for block in module.blocks
+                                for conv in ((block.reduce, block.expand, block.project) if spec.gate
+                                             else (block.project,)))}
+        return counts
+    return constants
+
+
+def _se_chain_fixtures() -> list[Fixture]:
+    import tensor_ee
+    from torch import nn
+    from tensor_ee.blocks.raster.merge import multiply, residual_add
+
+    fixtures = []
+    for spec in _SE_CHAINS:
+        gate = ("F.adaptive_avg_pool2d, Conv2d 1x1 8->4, SiLU, Conv2d 1x1 4->8, torch.sigmoid, gate * y, "
+                if spec.gate else "")
+        fixtures.append(Fixture(
+            id=f"raster/{spec.block}/{spec.name}", lane=LANE, block=spec.block, settings={"clip_footprints": False},
+            policy=POLICY,
+            shapes={"input": list(_SE_CHAIN_SHAPE), "blocks": spec.blocks,
+                    **({"squeezed": _SE_CHAIN_SQUEEZED} if spec.gate else {}), "output": list(_SE_CHAIN_SHAPE)},
+            seed=spec.seed, data=_se_chain_data(spec), build=_se_chain_build(spec),
+            reference=_se_chain_reference(spec),
+            reference_source=(f"a stand-in nn.Module of {spec.blocks} residual blocks: Conv2d(8, 8, 3, padding=1, "
+                              f"groups=8), SiLU, {gate}Conv2d 1x1, x + y"),
+            mirror=None, requests=1, constants=_se_chain_constants(spec),
+            history="docs/evidence/live-fixtures/20261116T022247Z-se_chain.json (passed; within 1e-4 of PyTorch, no mirror)",
+            accepts=(tensor_ee.compile_model, nn.Conv2d, multiply if spec.gate else residual_add),
+            notes=(f"Composition check, excluded from block evidence: a request-cost screen. compile_model on a "
+                   f"chain of {spec.blocks} residual blocks on a 64 x 64 map with 8 channels"
+                   + (", each with a squeeze-excitation gate, which reads its block's output twice (the "
+                      "whole-map mean and the product). With the other chains of 1, 2, 4 and 8 gated blocks and "
+                      "the chain of 8 blocks without the gate, the live wall time per request shows how request "
+                      "time grows with the number of chained gates. " if spec.gate else
+                      " without the gate: the control for the chains of 1, 2, 4 and 8 gated blocks, so the live "
+                      "wall time per request separates the cost of the gates from that of the blocks. ")
+                   + "Its own input and weights, so no request shares another's computation. Compared with "
+                     "PyTorch only; the composed NumPy mirrors are checked offline (tests/test_raster_se_chain.py).")))
+    return fixtures
+
+
 SELECTIONS = {
     # raster-setting validation: every new setting, plus today's pooling and nearest settings as regression checks
     # (three calibration fixtures).
@@ -1228,6 +1403,8 @@ SELECTIONS = {
                              "raster/multiply/same-grid-h5-w7", "raster/multiply/gate-h5-w7",
                              "raster/multiply/squeeze-excitation-h12-w20"),
     "padded_conv": tuple(f"raster/{spec.block}/{spec.name}" for spec in _PADDED),
+    # a request-cost screen: chains of 1, 2, 4 and 8 gated blocks, and 8 blocks without the gate.
+    "se_chain": tuple(f"raster/{spec.block}/{spec.name}" for spec in _SE_CHAINS),
 }
 """This lane's named selections (``tools.fixtures.select``)."""
 
@@ -1303,4 +1480,4 @@ def fixtures() -> list[Fixture]:
     ]
     return (calibration + _p02_fixtures(cost) + _hard_fixtures(cost) + _batch_norm_fixtures(cost)
             + _bilinear_fixtures(cost) + _grouped_fixtures(cost) + _standardize_fixtures(cost)
-            + _gate_fixtures(cost) + _padded_fixtures(cost))
+            + _gate_fixtures(cost) + _padded_fixtures(cost) + _se_chain_fixtures())
