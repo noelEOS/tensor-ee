@@ -90,8 +90,15 @@ PHASE2_FIXED = {"relative_position_bias", "window_attention", "shifted_window_ma
 # theirs, and raster input standardization theirs, and raster global average pooling and the
 # elementwise multiply theirs; no offline-only block remains.
 OFFLINE_ONLY_FIXED: set[str] = set()
+SE_CHAIN_FIXTURES = {"raster/multiply/se-chain-1-h64-w64", "raster/multiply/se-chain-2-h64-w64",
+                     "raster/multiply/se-chain-4-h64-w64", "raster/multiply/se-chain-8-h64-w64",
+                     "raster/residual_add/no-gate-chain-8-h64-w64"}
+"""The request-cost screen (selection se_chain): chains of blocks through compile_model that
+measure how request time grows with the number of chained gates. They compare with PyTorch
+only and claim no block's coverage."""
 COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat_rows/prithvi-region-2x2",
-                        "window/concat_rows/vit-encoder-reduced", "window/concat_rows/vit-dpt-reduced"}
+                        "window/concat_rows/vit-encoder-reduced", "window/concat_rows/vit-dpt-reduced",
+                        *SE_CHAIN_FIXTURES}
 """Runnable composition checks excluded from block coverage and evidence counts."""
 
 SEGFORMER_G3_BLOCKS = {"depthwise_conv3x3_window"}
@@ -753,7 +760,7 @@ def test_the_calibration_covers_every_fixed_block_of_phase_2(plan):
 
 
 def test_composition_fixture_does_not_claim_block_coverage():
-    fixtures = select(["prithvi_model", "prithvi_region", "vit_encoder_reduced", "vit_dpt_reduced"])
+    fixtures = select(["prithvi_model", "prithvi_region", "vit_encoder_reduced", "vit_dpt_reduced", "se_chain"])
     assert {fixture.id for fixture in fixtures} == COMPOSITION_FIXTURES
     assert all(not fixture.calibration and fixture.parts == () for fixture in fixtures)
 
@@ -954,6 +961,48 @@ def test_padded_conv_fixture_ids_data_and_graphs_are_stable():
         assert len(graphs) == len(fixtures)
     finally:
         case.tearDown()
+
+
+def test_se_chain_fixture_ids_data_and_graphs_are_stable():
+    """Five fixtures, one request each (the output and the input echo share the 64 x 64 grid),
+    compared with PyTorch only. Each has its own seed, input and weights, and builds the same
+    graph twice; the five graphs are distinct (their shared nodes: tests/test_raster_se_chain.py)."""
+    expected = {
+        "raster/multiply/se-chain-1-h64-w64": (
+            "a5fd7767ef321360a16da4217eff98ee29e55b810d7ad55546bc617c29f520ed",
+            "9a9c8acfeb005e01a2079a01a09b0f3509cdb9c8a645d1275463f13361e573c3"),
+        "raster/multiply/se-chain-2-h64-w64": (
+            "a14cad489d695be80cd52d46d01e6f656fd98807b0b4e4eb2488997052de9c35",
+            "6b7fd17c9ec9d334cde4628f54d0b2e585129a441215a3885540782502944c95"),
+        "raster/multiply/se-chain-4-h64-w64": (
+            "396007b30f0922830d63d4e64d2c97c0e163f67f51888dd463333405bcf3ecfc",
+            "7d33a74271ebd278462ee427e66ef135bd054bcbc501d140ecd679677e25c447"),
+        "raster/multiply/se-chain-8-h64-w64": (
+            "a2354d0cac8ff1ec34a10bd74080dbf7cf281e4d4c2ab67b31eb4d842c4b0dd2",
+            "42f747cf739b188e348635e5ce53d91f905aa5911540d077a14a4800346dfa71"),
+        "raster/residual_add/no-gate-chain-8-h64-w64": (
+            "d6881e81ab9f548f4e8cf337053d480a8b5c52054300f8dc62f94ef9b130599b",
+            "6d763410bd320fe2766b33864df0fbd83ae3ece94548cc92de2f093f94dfe123"),
+    }
+    fixtures = select(["se_chain"])
+    assert [fixture.id for fixture in fixtures] == list(expected)
+    assert len({fixture.seed for fixture in fixtures}) == len(fixtures)
+    assert not {fixture.seed for fixture in fixtures} & {f.seed for f in registry().values()
+                                                          if f.id not in SE_CHAIN_FIXTURES}
+    assert [(f.shapes["blocks"], f.block) for f in fixtures] == [
+        (1, "multiply"), (2, "multiply"), (4, "multiply"), (8, "multiply"), (8, "residual_add")]
+    for fixture in fixtures:
+        data = fixture.data(fixture.seed)
+        assert (data.inputs_sha256, data.weights_sha256) == expected[fixture.id]
+        assert fixture.requests == 1 and fixture.mirror is None and fixture.tolerance == core.TOLERANCE
+        assert fixture.parts == () and not fixture.calibration and fixture.raster_side is None
+    plan, again = LF.make_plan(fixtures), LF.make_plan(select(["se_chain"]))
+    assert plan.violations == [] and plan.totals()["requests"] == 5
+    graphs = [r.graph_sha256 for r in plan.all_requests]
+    assert graphs == [r.graph_sha256 for r in again.all_requests]
+    assert [r.request_bytes for r in plan.all_requests] == [r.request_bytes for r in again.all_requests]
+    assert len(set(graphs)) == len(graphs) == 5
+    assert all((r.height, r.width, len(r.bands)) == (64, 64, 18) for r in plan.all_requests)
 
 
 def test_only_the_128_global_pool_fixture_raises_the_raster_grid():
