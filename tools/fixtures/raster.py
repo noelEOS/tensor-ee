@@ -1371,7 +1371,7 @@ def _se_chain_fixtures() -> list[Fixture]:
             reference_source=(f"a stand-in nn.Module of {spec.blocks} residual blocks: Conv2d(8, 8, 3, padding=1, "
                               f"groups=8), SiLU, {gate}Conv2d 1x1, x + y"),
             mirror=None, requests=1, constants=_se_chain_constants(spec),
-            history="New fixture: not yet run live.",
+            history="docs/evidence/live-fixtures/20261116T022247Z-se_chain.json (passed; within 1e-4 of PyTorch, no mirror)",
             accepts=(tensor_ee.compile_model, nn.Conv2d, multiply if spec.gate else residual_add),
             notes=(f"Composition check, excluded from block evidence: a request-cost screen. compile_model on a "
                    f"chain of {spec.blocks} residual blocks on a 64 x 64 map with 8 channels"

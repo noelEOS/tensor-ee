@@ -479,8 +479,12 @@ def test_the_defaults_are_inside_the_record(name):
 # Every live fixture is inside the records of its block and parts
 # ---------------------------------------------------------------------------
 COMPOSITION_FIXTURES = {"window/concat_rows/prithvi-crop-logits", "window/concat_rows/prithvi-region-2x2",
-                        "window/concat_rows/vit-encoder-reduced", "window/concat_rows/vit-dpt-reduced"}
-"""Whole-model checks whose compatibility block field does not identify block evidence."""
+                        "window/concat_rows/vit-encoder-reduced", "window/concat_rows/vit-dpt-reduced",
+                        # The request-cost screen (selection se_chain): chains of blocks, not block evidence.
+                        "raster/multiply/se-chain-1-h64-w64", "raster/multiply/se-chain-2-h64-w64",
+                        "raster/multiply/se-chain-4-h64-w64", "raster/multiply/se-chain-8-h64-w64",
+                        "raster/residual_add/no-gate-chain-8-h64-w64"}
+"""Whole-model and composition checks whose compatibility block field does not identify block evidence."""
 
 RELATIVE_BIAS_PARITY_FIXTURES = {
     "window/swin_block/bias-slices",
