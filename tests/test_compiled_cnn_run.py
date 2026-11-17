@@ -191,12 +191,15 @@ def _missing():
 class FakeEarthEngine:
     """The calls of ``upload`` (on ``ee.data`` itself, as the uploader uses it), ``run`` and
     ``compare``. ``tables``: per table index, "ok", "fail" or "crash" (the process stops at the
-    first status read); ``model``: "ok", "complex", "error", "lost", "fail", "wall", "queue"."""
+    first status read); ``model``: "ok", "complex", "error", "lost", "fail", "wall", "queue", the
+    logits' behaviour; ``exports``: the same per export leaf of a staged run."""
 
-    def __init__(self, directory, clock, *, tables=None, model="ok", folders=(PARENT, ROOT_ID), extra=None):
+    def __init__(self, directory, clock, *, tables=None, model="ok", folders=(PARENT, ROOT_ID), extra=None,
+                 exports=None):
         prepared = json.loads((Path(directory) / "prepared.json").read_text())
         self.plan = prepared["plan"]
         self.clock, self.tables, self.model = clock, dict(tables or {}), model
+        self.behaviours = {"logits": model, **dict(exports or {})}
         self.assets = {level: {"type": "FOLDER"} for level in folders} | dict(extra or {})
         self.calls, self.operations, self.exported = [], {}, []
         self.crashed = False
@@ -228,21 +231,28 @@ class FakeEarthEngine:
         asset = body["assetExportOptions"]["earthEngineDestination"]["name"]
         leaf = asset.rsplit("/", 1)[1]
         self.exported.append(leaf)
-        if leaf == "logits":
-            if self.model == "complex":
-                raise ee.EEException("Computation is too complex.")
-            if self.model == "error":
-                raise ee.EEException("Collection.loadTable: Collection asset not found.")
-            if self.model == "lost":
-                raise Crash("the call did not return")
+        behaviour = self.behaviours.get(leaf, "ok")
+        if behaviour == "complex":
+            raise ee.EEException("Computation is too complex.")
+        if behaviour == "error":
+            raise ee.EEException("Collection.loadTable: Collection asset not found.")
+        if behaviour == "lost":
+            raise Crash("the call did not return")
         name = f"projects/{PROJECT}/operations/I{len(self.operations)}"
         self.operations[name] = {"kind": leaf, "asset": asset, "created": self.clock(), "reads": 0,
                                  "description": body["description"], "cancelled": False}
         return {"name": name, "metadata": {"state": "PENDING", "description": body["description"],
                                            "type": "EXPORT_IMAGE"}, "done": False}
 
+    def _part(self, asset):
+        if asset.endswith("/input"):
+            return self.plan["input"]
+        if self.plan.get("mode") == "staged":
+            return next(e for e in self.plan["exports"] if e["asset"] == asset)
+        return self.plan["model"]
+
     def _saved(self, asset):
-        part = self.plan["input"] if asset.endswith("/input") else self.plan["model"]
+        part = self._part(asset)
         return {"type": "IMAGE", "name": asset, "sizeBytes": "4096",
                 "bands": [{"id": band, "dataType": {"precision": "FLOAT"}, "grid": copy.deepcopy(part["expect"]["grid"])}
                           for band in part["expect"]["bands"]]}
@@ -267,7 +277,10 @@ class FakeEarthEngine:
                     "createTime": _time(created), "updateTime": _time(now),
                     "destinationUris": [f"https://code.earthengine.google.com/?asset={operation['asset']}"]}
         result = {"name": name, "metadata": metadata, "done": False}
-        behaviour = self.model if operation["kind"] == "logits" else "ok"
+        behaviour = self.behaviours.get(operation["kind"], "ok")
+        if behaviour == "crash" and not self.crashed and operation["reads"] == 1:
+            self.crashed = True
+            raise Crash("the process stops while polling an export")
         start = created + 15 if behaviour != "queue" else float("inf")
         run_seconds = 10_000 if behaviour == "wall" else 30
         if operation["cancelled"]:
@@ -305,7 +318,8 @@ class FakeEarthEngine:
         self.calls.append("computePixels")
         graph = json.dumps(ee.serializer.encode(params["expression"], for_cloud_api=True))
         values = self.values["input" if "/input" in graph else "logits"]
-        names = self.plan["input"]["expect"]["bands"] if "/input" in graph else self.plan["model"]["expect"]["bands"]
+        final = self.plan["exports"][-1] if self.plan.get("mode") == "staged" else self.plan["model"]
+        names = self.plan["input"]["expect"]["bands"] if "/input" in graph else final["expect"]["bands"]
         array = np.empty(values.shape[:2], dtype=[(band, np.float32) for band in names])
         for c, band in enumerate(names):
             array[band] = values[:, :, c]
@@ -347,9 +361,9 @@ def _failed(params, manifest, path, **kwargs):
     return {"status": "fail"}
 
 
-def _upload(directory, fake, clock, verify=_passed):
+def _upload(directory, fake, clock, verify=_passed, recipe=TINY):
     with _on_ee_data(fake) as data:
-        return RUN.upload(directory, recipe=TINY, project=PROJECT, asset_root=ROOT_ID, data=data, clock=clock,
+        return RUN.upload(directory, recipe=recipe, project=PROJECT, asset_root=ROOT_ID, data=data, clock=clock,
                           sleep=clock.sleep, verify_asset_rows=verify)
 
 
@@ -594,3 +608,193 @@ def test_a_recipe_without_its_package_says_so(monkeypatch):
     monkeypatch.setattr(builtins, "__import__", refuse)
     with pytest.raises(RUN.RecipeUnavailable, match="segmentation-models-pytorch"):
         RUN.RECIPES[SMP].build()
+
+
+# ---------------------------------------------------------------------------
+# Staged runs: a tiny U-Net whose skip crosses the cut
+# ---------------------------------------------------------------------------
+UNET = "tiny_unet_2band_16"
+STAGED_ROOT = "projects/example/assets/cnn/staged1"
+
+
+class TinyUNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.a, self.bn_a = nn.Conv2d(2, 8, 3, padding=1), nn.BatchNorm2d(8)
+        self.b, self.bn_b = nn.Conv2d(8, 16, 3, stride=2, padding=1), nn.BatchNorm2d(16)
+        self.c, self.out = nn.Conv2d(16, 16, 3, padding=1), nn.Conv2d(24, 3, 1)
+
+    def forward(self, x):
+        a = torch.relu(self.bn_a(self.a(x)))
+        b = torch.relu(self.bn_b(self.b(a)))
+        up = nn.functional.interpolate(self.c(b), scale_factor=2, mode="nearest")
+        return self.out(torch.cat([up, a], dim=1))
+
+
+@pytest.fixture(scope="module", autouse=True)
+def unet_recipe():
+    RUN.RECIPES[UNET] = RUN.Recipe(UNET, "a tiny U-Net for the tests", lambda: TinyUNet().eval(), 2, 16, (), None,
+                                   100_000, cut_lists={"skip": ("relu", "relu_1"),
+                                                       "unread": ("relu", "c", "relu_1")})
+    yield
+    del RUN.RECIPES[UNET]
+
+
+@pytest.fixture(scope="module")
+def unet_upload(unet_recipe, tmp_path_factory):
+    """An earlier one-graph upload of the tiny U-Net, verified, to adopt; and its fake's assets."""
+    directory = tmp_path_factory.mktemp("unet") / "upload"
+    RUN.prepare(directory, recipe=UNET, project=PROJECT, asset_root=ROOT_ID)
+    clock = Clock()
+    fake = FakeEarthEngine(directory, clock)
+    _upload(directory, fake, clock, recipe=UNET)
+    return directory, dict(fake.assets)
+
+
+@pytest.fixture
+def staged(unet_upload, tmp_path):
+    upload, _ = unet_upload
+    directory = tmp_path / "staged"
+    RUN.prepare_staged(directory, recipe=UNET, cuts="skip", project=PROJECT, asset_root=STAGED_ROOT, adopt=upload,
+                       path_bound=100_000, limits=LIMITS)
+    return directory
+
+
+def _staged_fake(directory, unet_upload, **kwargs):
+    fake = FakeEarthEngine(directory, Clock(), folders=(PARENT,), **kwargs)
+    fake.assets.update(unet_upload[1])
+    return fake
+
+
+def test_a_staged_plan_reads_what_each_export_depends_on(unet_recipe):
+    record = RUN.staged_plan(UNET, "skip", asset_root=STAGED_ROOT)
+    exports = record["exports"]
+    assert [e["leaf"] for e in exports] == ["stage01", "stage02", "logits"]
+    assert [e["node"] for e in exports] == ["relu", "relu_1", "output"]
+    assert [e["reads"] for e in exports] == [["input"], ["stage01"], ["stage01", "stage02"]]   # the skip
+    assert exports[0]["grid"]["height"] == 16 and exports[1]["grid"]["height"] == 8
+    assert all(e["counts"]["clip"] > 0 and e["counts"]["longest_path"] > 0 for e in exports)
+    assert record["path_bound"] is None and RUN.staged_plan(UNET, "skip", asset_root=STAGED_ROOT) == record
+    text = RUN.staged_text(record)
+    assert "none set: this plan measures and cannot be prepared" in text
+    assert all(e["sha256"] in text for e in exports) and "stage_refused_too_complex" in text
+    assert record["calls"]["run"]["exportImage"] == 3 and "exportTable" not in record["calls"]["run"]
+
+
+def test_the_staged_plan_refuses_what_it_can_check_offline(unet_recipe, monkeypatch):
+    longest = max(e["counts"]["longest_path"] for e in RUN.staged_plan(UNET, "skip", asset_root=STAGED_ROOT)["exports"])
+    with pytest.raises(ValueError, match="over the longest-path bound"):
+        RUN.staged_plan(UNET, "skip", asset_root=STAGED_ROOT, path_bound=longest - 1)
+    assert RUN.staged_plan(UNET, "skip", asset_root=STAGED_ROOT, path_bound=longest)["path_bound"] == longest
+    with pytest.raises(ValueError, match="'relu_1' is read by no later export"):
+        RUN.staged_plan(UNET, "unread", asset_root=STAGED_ROOT)
+    with pytest.raises(ValueError, match="unknown cut list"):
+        RUN.staged_plan(UNET, "nope", asset_root=STAGED_ROOT)
+    # the check that a saved node cuts off what it should is live: a wrong dependency set trips it
+    monkeypatch.setattr(RUN, "frontier", lambda graph_module, target, saved: {"input"})
+    with pytest.raises(ValueError, match="does not cut off what it should"):
+        RUN.staged_plan(UNET, "skip", asset_root=STAGED_ROOT)
+
+
+def test_adoption_reproduces_the_manifest_or_refuses(unet_upload, tmp_path):
+    upload, _ = unet_upload
+    adopted = RUN.adoption(UNET, upload)
+    assert adopted["root"] == ROOT_ID and adopted["manifest_sha256"] == json.loads(
+        (upload / "prepared.json").read_text())["plan"]["manifest_sha256"]
+    other = tmp_path / "other"
+    shutil.copytree(upload, other)
+    manifest = json.loads((other / "weights_manifest.json").read_text())
+    first = next(iter(manifest["layers"]))
+    manifest["layers"][first]["sha256"] = "0" * 64
+    (other / "weights_manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="does not reproduce"):
+        RUN.adoption(UNET, other)
+    with pytest.raises(ValueError, match="does not reproduce"):
+        RUN.prepare_staged(tmp_path / "never", recipe=UNET, cuts="skip", project=PROJECT, asset_root=STAGED_ROOT,
+                           adopt=other, path_bound=100_000)
+    assert not (tmp_path / "never").exists()
+    with pytest.raises(ValueError, match="needs a longest-path bound"):
+        RUN.prepare_staged(tmp_path / "unbounded", recipe=UNET, cuts="skip", project=PROJECT,
+                           asset_root=STAGED_ROOT, adopt=upload, path_bound=None)
+
+
+def test_a_staged_run_adopts_with_get_asset_only_runs_in_order_and_compares(staged, unet_upload):
+    fake = _staged_fake(staged, unet_upload)
+    state = _run(staged, fake, fake.clock)
+    assert state["outcome"] == {"name": "completed", "export": None}
+    assert fake.exported == ["stage01", "stage02", "logits"] and "exportTable" not in fake.calls
+    tables = json.loads((staged / "prepared.json").read_text())["plan"]["tables"]["count"]
+    # the output folder levels (one created), then each adopted table and the input: getAsset only
+    assert fake.calls[:3 + tables + 1] == ["getAsset", "getAsset", "createFolder"] + ["getAsset"] * (tables + 1)
+    assert all(state["exports"][leaf]["state"] == "VERIFIED" for leaf in ("stage01", "stage02", "logits"))
+    _caps_hold(staged, "run")
+    calls = list(fake.calls)
+    assert _run(staged, fake, fake.clock)["outcome"]["name"] == "completed" and fake.calls == calls
+    chip = RUN.evaluation_chip(UNET)
+    with torch.no_grad():
+        reference = RUN.reference_model(UNET)(torch.from_numpy(chip).permute(2, 0, 1)[None])[0].permute(1, 2, 0).numpy()
+    fake.values = {"input": chip, "logits": reference}
+    with offline_earth_engine():
+        assert RUN.compare(staged, project=PROJECT, data=fake, ee_module=ee)["passed"]
+    record = RUN.report(staged)
+    assert record["outcome"]["outcome"] == "completed" and "compare passed" in record["outcome"]["text"]
+    assert [row["eecu_seconds"] for row in record["exports"]] == [0.5, 0.5, 12.5]
+    text = json.dumps(record)
+    assert ROOT_ID not in text and STAGED_ROOT not in text and "operations/" not in text and "projects/" not in text
+
+
+def test_a_missing_adopted_table_stops_before_any_export(staged, unet_upload):
+    fake = _staged_fake(staged, unet_upload)
+    table = json.loads((staged / "prepared.json").read_text())["plan"]["tables"]["assets"][0]
+    del fake.assets[table]
+    with pytest.raises(RUN.RunStopped, match="does not exist; nothing is submitted"):
+        _run(staged, fake, fake.clock)
+    assert fake.exported == [] and "exportImage" not in fake.calls
+
+
+def test_a_refused_middle_export_ends_the_run_and_keeps_the_earlier_asset(staged, unet_upload):
+    fake = _staged_fake(staged, unet_upload, exports={"stage02": "complex"})
+    state = _run(staged, fake, fake.clock)
+    assert state["outcome"]["name"] == "stage_refused_too_complex" and state["outcome"]["export"] == "stage02"
+    assert fake.exported == ["stage01", "stage02"] and state["exports"]["stage01"]["state"] == "VERIFIED"
+    assert f"{STAGED_ROOT}/stage01" in fake.assets
+    outcome = RUN.report(staged)["outcome"]
+    assert outcome["outcome"] == "stage_refused_too_complex" and outcome["text"].startswith("stage02 refused")
+    with offline_earth_engine(), pytest.raises(RUN.RunStopped, match="nothing to compare"):
+        RUN.compare(staged, project=PROJECT, data=fake, ee_module=ee)
+
+
+def test_an_interrupted_staged_run_resumes_without_a_second_submission(staged, unet_upload):
+    fake = _staged_fake(staged, unet_upload, exports={"stage02": "crash"})
+    with pytest.raises(Crash):
+        _run(staged, fake, fake.clock)
+    assert _state(staged)["exports"]["stage02"]["state"] == "SUBMITTED"
+    state = _run(staged, fake, fake.clock)
+    assert state["outcome"]["name"] == "completed" and fake.exported == ["stage01", "stage02", "logits"]
+
+
+def test_a_lost_answer_is_never_submitted_again(staged, unet_upload):
+    fake = _staged_fake(staged, unet_upload, exports={"stage02": "lost"})
+    with pytest.raises(Crash):
+        _run(staged, fake, fake.clock)
+    with pytest.raises(RUN.RunStopped, match="never submitted again"):
+        _run(staged, fake, fake.clock)
+    assert fake.exported == ["stage01", "stage02"]
+    assert RUN.report(staged)["outcome"]["outcome"] == "stage_answer_lost"
+
+
+@pytest.mark.parametrize("behaviour, outcome", [("fail", "stage_task_failed"), ("wall", "stage_stopped_at_limit"),
+                                                ("error", "stage_submission_error")])
+def test_each_staged_ending_is_named_with_its_export(staged, unet_upload, behaviour, outcome):
+    fake = _staged_fake(staged, unet_upload, exports={"stage01": behaviour})
+    state = _run(staged, fake, fake.clock)
+    assert state["outcome"]["name"] == outcome and state["outcome"]["export"] == "stage01"
+    assert fake.exported == ["stage01"]
+
+
+def test_the_budget_is_checked_before_every_staged_submission(staged, unet_upload):
+    fake = _staged_fake(staged, unet_upload)
+    tight = RUN.Limits(budget_eecu_seconds=0.4, task_seconds=900, queue_seconds=1800, interval_seconds=10)
+    state = _run(staged, fake, fake.clock, tight)
+    assert state["outcome"] == {"name": "stage_stopped_at_limit", "export": "stage02", "limit": "budget"}
+    assert fake.exported == ["stage01"]
