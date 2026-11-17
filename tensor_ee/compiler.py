@@ -24,7 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import inspect
 from numbers import Integral
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import ee
 import torch
@@ -240,11 +240,46 @@ def _resolve(value: Any, environment: dict[Node, Any]) -> Any:
     return value
 
 
+def _read_raster(image: ee.Image, bands: Sequence[str], names: Sequence[str], grid: Grid,
+                 clip_footprints: bool) -> Raster:
+    """The one way ``compile_model`` reads a raster from an image: ``bands`` selected in order,
+    missing values zero (the footprint extended), renamed ``names``, pinned and masked to
+    ``grid``. The input placeholder and every saved node (``saved_nodes``) are read so."""
+    return _finish(image.select(list(bands)).unmask(0, sameFootprint=False), names, grid, clip_footprints)
+
+
+def _saved_nodes(saved_nodes, traced: GraphModule) -> dict[str, ee.Image]:
+    """``saved_nodes`` checked against the traced graph: node name -> image."""
+    if saved_nodes is None:
+        return {}
+    if not isinstance(saved_nodes, Mapping):
+        raise TypeError("saved_nodes maps FX node names to ee.Image objects")
+    operations = {node.name for node in traced.graph.nodes if node.op not in ("placeholder", "output")}
+    for name, value in saved_nodes.items():
+        if name not in operations:
+            raise UnsupportedOperation(f"saved_nodes names {name!r}, which is not a tensor operation of the traced "
+                                       "model (the input and the output cannot be saved nodes)")
+        if not isinstance(value, ee.Image):
+            raise TypeError(f"saved_nodes[{name!r}] must be an ee.Image; received {type(value).__name__}")
+    return dict(saved_nodes)
+
+
+def _saved_raster(raster, image: ee.Image, clip_footprints: bool) -> Raster:
+    """A saved node's tensor read from ``image`` on the node's own grid and bands."""
+    if not isinstance(raster, Raster):
+        raise UnsupportedOperation("a saved node must be a raster tensor")
+    if raster.grid.width == 1 and raster.grid.height == 1:
+        raise UnsupportedOperation("a one-pixel tensor (a global mean or a squeeze-excitation gate) cannot be a saved "
+                                   "node: its read-back from a saved image is not shown to be exact")
+    return _read_raster(image, raster.bands, raster.bands, raster.grid, clip_footprints)
+
+
 def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str], grid: Grid,
                   *, weight_provider: WeightProvider | None = None,
                   include_unfused_nodes: bool = True,
                   execution_dtype: str = "float32",
-                  clip_footprints: bool = False) -> CompiledModel:
+                  clip_footprints: bool = False,
+                  saved_nodes: Mapping[str, ee.Image] | None = None) -> CompiledModel:
     """Convert an eval-mode model into an EE graph; do not evaluate or export it.
 
     Supports Conv2d (including grouped/depthwise) and F.conv2d with the model's own weight and
@@ -277,6 +312,21 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     ``clip_footprints=True`` additionally clips finite tensor extents before
     layer reprojections. It is an optional EE execution/memory experiment;
     convolution padding continues to zero-extend the preceding finite tensor.
+
+    ``saved_nodes`` (keyword-only, default None: today's graph) maps FX node names to images
+    an earlier export saved for those nodes, so that a model can run in stages. A saved node's
+    tensor is still built, for its grid and bands, and then replaced by the saved image read
+    exactly as the input is (``select`` of the node's bands, ``unmask(0,
+    sameFootprint=False)``, pinned and masked to the node's own grid), before the node
+    boundary's float32 cast. Everything downstream reads the saved image; work upstream of a
+    saved node reaches the exported graph only along paths that avoid every saved node. So
+    compiling the whole model with a saved node gives the same graph as compiling the model's
+    tail alone from that image on that grid. Refused: a name that is not a tensor operation of
+    the traced graph (the input placeholder, the output, plumbing), a node with no raster tensor
+    (a diagnostic convolution skipped with ``include_unfused_nodes=False``), and a one-pixel
+    tensor (a global mean or a squeeze-excitation gate), whose read-back from a saved image is
+    not shown to be exact. Not validated live: no staged run has been checked against a
+    reference.
     """
     if any(module.training for module in model.modules()):
         # Explain dropout's effective flag at its FX node even when p=0. Other
@@ -315,11 +365,13 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     from .semantics import specialize_plumbing
     plumbing = specialize_plumbing(traced, (1, len(input_bands), grid.height, grid.width))
     traced = plumbing.graph
+    saved = _saved_nodes(saved_nodes, traced)
     environment: dict[Node, Any] = {}
     nodes: dict[str, Raster] = {}
     folded: list[str] = []
     placeholders = 0
     output: Raster | None = None
+    read: set[str] = set()
 
     def convolve(key: str, raster: Raster, module: nn.Conv2d, phase) -> Raster:
         parameters = None if weight_provider is None else weight_provider(key, module)
@@ -340,8 +392,7 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                 if placeholders > 1:
                     raise UnsupportedOperation("Only one tensor input is supported")
                 metadata[node] = TensorMetadata((1, len(input_bands), grid.height, grid.width))
-                raster = _finish(image.select(list(input_bands)).unmask(0, sameFootprint=False),
-                                 _names(len(input_bands)), grid, clip_footprints)
+                raster = _read_raster(image, input_bands, _names(len(input_bands)), grid, clip_footprints)
             elif node.op == "output":
                 output = _resolve(node.args[0], environment)
                 if not isinstance(output, Raster):
@@ -411,6 +462,9 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
                     else:
                         raster = _apply_pointwise(kind, inputs[0], call.options,
                                                   clip_footprints=clip_footprints)
+            if node.name in saved:
+                raster = _saved_raster(raster, saved[node.name], clip_footprints)
+                read.add(node.name)
             if not isinstance(raster, Raster):
                 raise UnsupportedOperation("Operation did not produce a raster tensor")
             if execution_dtype == "float32":
@@ -423,4 +477,7 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
             raise UnsupportedOperation(f"At FX node {node.name} ({node.target}): {error}") from error
     if output is None:
         raise UnsupportedOperation("Model has no tensor output")
+    if set(saved) - read:
+        raise UnsupportedOperation(f"saved_nodes names {sorted(set(saved) - read)}, which compute no raster tensor "
+                                   "(a diagnostic convolution not built, or graph plumbing)")
     return CompiledModel(output.image, output.bands, output.grid, nodes, traced, tuple(folded))
