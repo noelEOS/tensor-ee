@@ -18,6 +18,14 @@ integer-hash values at each tensor's native initializer scale, then a fixed Batc
 calibration. Optional packages are imported inside the factory only (``RecipeUnavailable``
 without them); no weights are downloaded. Each build runs with two torch threads.
 
+**A trained recipe** (``ftw_v31_unet_efficientnet_b3_8band_256``: the released Fields of The World
+v3.1 CC BY EfficientNet-B3 U-Net, the same architecture and cut lists) reads its weights from
+``FTW_CHECKPOINT`` in a resources checkout (``--resources``, or ``TENSOR_EE_RESOURCES``): the file is
+refused unless its SHA-256 is ``FTW_SHA256``, read with ``torch.load(..., weights_only=True)``
+only, and loaded strictly with the ``model.`` prefix removed; nothing is initialized or
+calibrated. Without the file the recipe is unavailable; the tool never fetches it. Its input is
+the evaluation chip plus 0.5 (``Recipe.chip``), a numerical input in [0, 1), not imagery.
+
 **plan** (offline, exact) builds the deterministic model, its effective convolutions
 (``tensor_ee.weight_assets.effective_convolutions``) and their tables with the uploader's own
 chunking (``upload_chunks``, ``TABLE_MAX_BYTES``), named as ``export_weights`` names them
@@ -162,7 +170,7 @@ OUTCOMES = {
 
 
 class RecipeUnavailable(RuntimeError):
-    """A recipe's optional package is not installed."""
+    """A recipe's optional package, or its weights file, is not available."""
 
 
 class RunStopped(RuntimeError):
@@ -175,7 +183,11 @@ class RunStopped(RuntimeError):
 @dataclass(frozen=True)
 class Recipe:
     """``build()`` returns the raw float32 eval module; ``adapt(module)`` the module
-    ``compile_model`` takes; ``schemes`` the native initializer of each part (prefix, kind)."""
+    ``compile_model`` takes; ``schemes`` the native initializer of each part (prefix, kind).
+    ``weights(model, resources)``, when set, loads trained weights into ``model`` from the
+    resources checkout instead of the integer-hash initialization and the BatchNorm calibration;
+    ``chip(bands, size)``, when set, is the evaluation input instead of
+    ``cnn_reference.evaluation_input``."""
 
     name: str
     description: str
@@ -186,6 +198,8 @@ class Recipe:
     adapt: Callable | None = None
     table_max_bytes: int = TABLE_MAX_BYTES
     cut_lists: dict = field(default_factory=dict)
+    weights: Callable | None = None
+    chip: Callable | None = None
 
 
 def _smp_unet() -> object:
@@ -201,6 +215,53 @@ def _adapt_smp_256(module):
     from tensor_ee.smp import adapt_smp_model
 
     return adapt_smp_model(module, input_shape=(1, 8, 256, 256))
+
+
+FTW_CHECKPOINT = "checkpoints/ftw-v3.1/prue_efnetb3_ccby_checkpoint.ckpt"
+"""The released Fields of The World v3.1 CC BY EfficientNet-B3 U-Net checkpoint, relative to a
+resources checkout (``--resources``). Never fetched by this tool."""
+FTW_SHA256 = "cd51f020168e66ddd1eff501e81da347b39632af34bebf19a6a20d6c73c5a6d4"
+"""The SHA-256 of that file as its release publishes it; any other file is refused."""
+
+
+def _ftw_weights(model, resources):
+    """The trained weights, loaded strictly into ``model``: the checkpoint's bytes read once,
+    refused unless their SHA-256 is ``FTW_SHA256``, deserialized from those same bytes with
+    ``torch.load(..., weights_only=True)`` only, every ``state_dict`` key under ``model.`` (the
+    prefix removed), every floating tensor finite float32. The trained BatchNorm statistics are
+    the model's: nothing is initialized or calibrated."""
+    import io
+
+    import torch
+
+    if resources is None:
+        raise RecipeUnavailable(f"this recipe's weights are read from {FTW_CHECKPOINT} in a resources checkout "
+                                "(--resources); none is given")
+    path = Path(resources) / FTW_CHECKPOINT
+    if not path.is_file():
+        raise RecipeUnavailable(f"this recipe's weights file {FTW_CHECKPOINT} is not in the resources checkout")
+    data = path.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != FTW_SHA256:
+        raise ValueError(f"{FTW_CHECKPOINT} has SHA-256 {digest}, not the released {FTW_SHA256}: it is not loaded")
+    checkpoint = torch.load(io.BytesIO(data), map_location="cpu", weights_only=True)
+    state = checkpoint.get("state_dict") if isinstance(checkpoint, dict) else None
+    if not isinstance(state, dict) or not state or not all(key.startswith("model.") for key in state):
+        raise ValueError(f"{FTW_CHECKPOINT}: expected a state_dict whose every key is under 'model.'")
+    state = {key[len("model."):]: value for key, value in state.items()}
+    for key, value in state.items():
+        if value.is_floating_point() and (value.dtype != torch.float32 or not torch.isfinite(value).all()):
+            raise ValueError(f"{FTW_CHECKPOINT}: {key} is not finite float32")
+    model.load_state_dict(state, strict=True)
+    return model.eval()
+
+
+def _offset_chip(bands: int, size: int) -> np.ndarray:
+    """The evaluation chip plus 0.5: dyadic values in [0, 1), exact in float32. A numerical
+    input, not imagery."""
+    from tools.fixtures.cnn_reference import evaluation_input
+
+    return (evaluation_input(bands, size) + np.float32(0.5)).astype(np.float32)
 
 
 RECIPES = {
@@ -219,6 +280,23 @@ RECIPES = {
             "features": ("encoder__swish", "add_2", "add_4", "add_12", "decoder_center"),
         }),
 }
+RECIPES["ftw_v31_unet_efficientnet_b3_8band_256"] = Recipe(
+    "ftw_v31_unet_efficientnet_b3_8band_256",
+    "Fields of The World release v3.1, the CC BY EfficientNet-B3 U-Net (SMP Unet, 8 input bands, 3 classes), its "
+    "released trained weights, one 256 x 256 chip of the evaluation input plus 0.5 (a numerical input, not imagery)",
+    _smp_unet, 8, 256, (), _adapt_smp_256, cut_lists=dict(RECIPES["smp_unet_efficientnet_b3_8band_256"].cut_lists),
+    weights=_ftw_weights, chip=_offset_chip)
+"""The same architecture with its trained weights: no initializer, no calibration; the same cut
+lists (the FX node names are the same). Unavailable without the checkpoint in ``--resources``."""
+RESOURCES = {"path": None}
+"""The resources checkout trained recipes read their weights from (``set_resources``)."""
+
+
+def set_resources(path) -> None:
+    """Set the resources checkout and forget the models built from another one."""
+    RESOURCES["path"] = None if path is None else Path(path)
+    reference_model.cache_clear()
+    compiled_module.cache_clear()
 """The recipes, by name: SMP 0.5.0's own initializers for the decoder (Kaiming, ReLU) and the head
 (Xavier); the encoder at torch's defaults (``tools/fixtures/cnn_reference.py``)."""
 
@@ -231,13 +309,16 @@ def _recipe(name: str) -> Recipe:
 
 @functools.lru_cache(maxsize=4)
 def reference_model(name: str):
-    """The recipe's raw model with its deterministic weights and calibrated BatchNorm, in eval."""
+    """The recipe's raw model in eval: its trained weights (``Recipe.weights``, from the resources
+    checkout), or its deterministic weights with calibrated BatchNorm."""
     import torch
     from tools.fixtures.cnn_reference import calibrate, initialize
 
     torch.set_num_threads(2)
     recipe = _recipe(name)
     model = recipe.build()
+    if recipe.weights is not None:
+        return recipe.weights(model, RESOURCES["path"])
     initialize(model, recipe.schemes)
     return calibrate(model, recipe.bands, recipe.size)
 
@@ -258,10 +339,11 @@ def parameters(name: str) -> list:
 
 
 def evaluation_chip(name: str) -> np.ndarray:
+    """The recipe's evaluation input, [size, size, bands] float32."""
     from tools.fixtures.cnn_reference import evaluation_input
 
     recipe = _recipe(name)
-    return evaluation_input(recipe.bands, recipe.size)
+    return (evaluation_input if recipe.chip is None else recipe.chip)(recipe.bands, recipe.size)
 
 
 def _grid(recipe: Recipe):
@@ -1449,6 +1531,8 @@ def compare(directory, *, project: str, data=None, ee_module=None, reference=Non
               "input_equals_local": input_equal, "max_abs": float(error.max()),
               "over_tolerance": int((error > TOLERANCE).sum()), "largest_reference": float(np.abs(reference).max()),
               "argmax_agreement": float((logits.argmax(-1) == reference.argmax(-1)).mean()),
+              "argmax_agreeing": int((logits.argmax(-1) == reference.argmax(-1)).sum()),
+              "pixels": int(np.prod(logits.shape[:2])),
               "passed": bool(input_equal and error.max() <= TOLERANCE)}
     _write(directory / "compare.json", _document(record))
     return record
@@ -1484,9 +1568,16 @@ def outcome_of(state: dict, compared: dict | None) -> dict:
                          f"compare {'passed' if compared['passed'] else 'failed'}: largest absolute error "
                          f"{compared['max_abs']:.3g} ({compared['over_tolerance']} over {compared['tolerance']:g}; "
                          f"largest reference {compared['largest_reference']:.3g}; input equal "
-                         f"{compared['input_equals_local']}; argmax agreement {compared['argmax_agreement']:.4f})")),
+                         f"{compared['input_equals_local']}; {_argmax_text(compared)})")),
     }
     return {"outcome": outcome, "text": texts[outcome], "eecu_seconds": cost}
+
+
+def _argmax_text(compared: dict) -> str:
+    """The argmax class agreement as a count of pixels, never a rounded fraction."""
+    if "argmax_agreeing" in compared:
+        return f"argmax equal at {compared['argmax_agreeing']:,} of {compared['pixels']:,} pixels"
+    return f"argmax agreement {compared['argmax_agreement']!r} (a fraction; no count recorded)"
 
 
 def staged_outcome(state: dict, compared: dict | None) -> dict:
@@ -1522,7 +1613,7 @@ def staged_outcome(state: dict, compared: dict | None) -> dict:
                          f"compare {'passed' if compared['passed'] else 'failed'}: largest absolute error "
                          f"{compared['max_abs']:.3g} ({compared['over_tolerance']} over {compared['tolerance']:g}; "
                          f"largest reference {compared['largest_reference']:.3g}; input equal "
-                         f"{compared['input_equals_local']}; argmax agreement {compared['argmax_agreement']:.4f})")),
+                         f"{compared['input_equals_local']}; {_argmax_text(compared)})")),
     }
     return {"outcome": name, "export": leaf, "text": texts[name], "eecu_seconds": total}
 
@@ -1614,7 +1705,15 @@ def main(argv=None) -> int:
     o = sub.add_parser("report")
     o.add_argument("--run-dir", type=Path, required=True)
     o.add_argument("--output", type=Path)
+    for sub_parser in (p, v, u, r, c):
+        sub_parser.add_argument("--resources", type=Path, default=None,
+                                help="a resources checkout holding a trained recipe's weights file (default: the "
+                                     "TENSOR_EE_RESOURCES environment variable)")
     args = parser.parse_args(argv)
+    if args.command != "report":
+        import os
+
+        set_resources(args.resources or os.environ.get("TENSOR_EE_RESOURCES"))
     if args.command == "plan":
         if args.cuts:
             record = staged_plan(args.recipe, args.cuts, asset_root=args.asset_root, adopt=args.adopt,

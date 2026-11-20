@@ -11,6 +11,7 @@ import copy
 import datetime
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 from unittest import mock
@@ -738,6 +739,7 @@ def test_a_staged_run_adopts_with_get_asset_only_runs_in_order_and_compares(stag
         assert RUN.compare(staged, project=PROJECT, data=fake, ee_module=ee)["passed"]
     record = RUN.report(staged)
     assert record["outcome"]["outcome"] == "completed" and "compare passed" in record["outcome"]["text"]
+    assert "argmax equal at 256 of 256 pixels" in record["outcome"]["text"]
     assert [row["eecu_seconds"] for row in record["exports"]] == [0.5, 0.5, 12.5]
     text = json.dumps(record)
     assert ROOT_ID not in text and STAGED_ROOT not in text and "operations/" not in text and "projects/" not in text
@@ -798,3 +800,81 @@ def test_the_budget_is_checked_before_every_staged_submission(staged, unet_uploa
     state = _run(staged, fake, fake.clock, tight)
     assert state["outcome"] == {"name": "stage_stopped_at_limit", "export": "stage02", "limit": "budget"}
     assert fake.exported == ["stage01"]
+
+
+# ---------------------------------------------------------------------------
+# The trained recipe (the released Fields of The World v3.1 checkpoint)
+# ---------------------------------------------------------------------------
+FTW = "ftw_v31_unet_efficientnet_b3_8band_256"
+RESOURCES = os.environ.get("TENSOR_EE_RESOURCES")
+HAS_FTW = bool(RESOURCES) and (Path(RESOURCES) / RUN.FTW_CHECKPOINT).is_file()
+
+
+@pytest.fixture
+def resources():
+    """Restore the tool's resources (and forget the models built) after a test changes them."""
+    yield RUN.set_resources
+    RUN.set_resources(None)
+
+
+def test_the_argmax_agreement_is_reported_as_a_count():
+    text = RUN._argmax_text({"argmax_agreement": 65_535 / 65_536, "argmax_agreeing": 65_535, "pixels": 65_536})
+    assert text == "argmax equal at 65,535 of 65,536 pixels"
+    assert "1.0000" not in RUN._argmax_text({"argmax_agreement": 65_535 / 65_536})
+
+
+def test_the_trained_recipe_input_is_the_evaluation_chip_plus_one_half():
+    chip = RUN.evaluation_chip(FTW)
+    base = REF.evaluation_input(8, 256)
+    assert chip.dtype == np.float32 and chip.shape == (256, 256, 8)
+    assert np.array_equal(chip.astype(np.float64), base.astype(np.float64) + 0.5)          # exact
+    assert chip.min() >= 0 and chip.max() < 1 and not (np.signbit(chip) & (chip == 0)).any()
+    assert np.array_equal(RUN.evaluation_chip(SMP), base)                                  # the random recipe's own
+
+
+def test_the_trained_recipe_is_unavailable_without_its_file(resources, tmp_path):
+    resources(None)
+    with pytest.raises(RUN.RecipeUnavailable, match="none is given"):
+        RUN.reference_model(FTW)
+    resources(tmp_path)
+    with pytest.raises(RUN.RecipeUnavailable, match="is not in the resources checkout"):
+        RUN.reference_model(FTW)
+
+
+def _fake_checkpoint(directory: Path, state: dict) -> Path:
+    path = directory / RUN.FTW_CHECKPOINT
+    path.parent.mkdir(parents=True)
+    torch.save({"state_dict": state}, path)
+    return path
+
+
+@pytest.mark.skipif(not HAS_SMP, reason="segmentation-models-pytorch is not installed")
+def test_a_wrong_or_malformed_weights_file_is_refused(resources, tmp_path, monkeypatch):
+    import hashlib
+
+    resources(tmp_path)
+    path = _fake_checkpoint(tmp_path, {"model.encoder._conv_stem.weight": torch.zeros(1)})
+    with pytest.raises(ValueError, match="not the released"):
+        RUN.reference_model(FTW)
+    # with the digest pinned to this file: a missing key fails the strict load
+    monkeypatch.setattr(RUN, "FTW_SHA256", hashlib.sha256(path.read_bytes()).hexdigest())
+    resources(tmp_path)
+    with pytest.raises(RuntimeError, match="Missing key"):
+        RUN.reference_model(FTW)
+    other = tmp_path / "other"
+    path = _fake_checkpoint(other, {"encoder._conv_stem.weight": torch.zeros(1)})
+    monkeypatch.setattr(RUN, "FTW_SHA256", hashlib.sha256(path.read_bytes()).hexdigest())
+    resources(other)
+    with pytest.raises(ValueError, match="under 'model.'"):
+        RUN.reference_model(FTW)
+
+
+@pytest.mark.skipif(not HAS_FTW, reason="the Fields of The World v3.1 checkpoint is not in TENSOR_EE_RESOURCES")
+def test_the_released_checkpoint_loads_strictly_without_calibration(resources):
+    resources(RESOURCES)
+    model = RUN.reference_model(FTW)
+    checkpoint = torch.load(Path(RESOURCES) / RUN.FTW_CHECKPOINT, map_location="cpu", weights_only=True)["state_dict"]
+    state = model.state_dict()
+    assert set(state) == {key[len("model."):] for key in checkpoint}
+    assert all(torch.equal(state[key[len("model."):]], value) for key, value in checkpoint.items())
+    assert not model.training
