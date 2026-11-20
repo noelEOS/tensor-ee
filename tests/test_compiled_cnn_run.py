@@ -193,14 +193,16 @@ class FakeEarthEngine:
     """The calls of ``upload`` (on ``ee.data`` itself, as the uploader uses it), ``run`` and
     ``compare``. ``tables``: per table index, "ok", "fail" or "crash" (the process stops at the
     first status read); ``model``: "ok", "complex", "error", "lost", "fail", "wall", "queue", the
-    logits' behaviour; ``exports``: the same per export leaf of a staged run."""
+    logits' behaviour; ``exports``: the same per export leaf of a staged run; ``poll_errors``:
+    per export leaf, the numbers of the status reads (from 1) that raise."""
 
     def __init__(self, directory, clock, *, tables=None, model="ok", folders=(PARENT, ROOT_ID), extra=None,
-                 exports=None):
+                 exports=None, poll_errors=None):
         prepared = json.loads((Path(directory) / "prepared.json").read_text())
         self.plan = prepared["plan"]
         self.clock, self.tables, self.model = clock, dict(tables or {}), model
         self.behaviours = {"logits": model, **dict(exports or {})}
+        self.poll_errors = dict(poll_errors or {})
         self.assets = {level: {"type": "FOLDER"} for level in folders} | dict(extra or {})
         self.calls, self.operations, self.exported = [], {}, []
         self.crashed = False
@@ -273,6 +275,8 @@ class FakeEarthEngine:
                 return {"name": name, "metadata": metadata, "done": True, "error": {"message": "table export failed"}}
             self.assets[operation["asset"]] = {"type": "TABLE"}
             return {"name": name, "metadata": metadata, "done": True}
+        if operation["reads"] in self.poll_errors.get(operation["kind"], ()):
+            raise ee.EEException(f"Deadline exceeded on status read {operation['reads']}")
         created, now = operation["created"], self.clock()
         metadata = {"state": "PENDING", "description": operation["description"], "type": "EXPORT_IMAGE",
                     "createTime": _time(created), "updateTime": _time(now),
@@ -533,6 +537,55 @@ def test_an_existing_logits_destination_stops_before_submission(uploaded):
     with pytest.raises(RUN.RunStopped, match="exists"):
         _run(uploaded, fake, clock)
     assert fake.exported == [] and _state(uploaded)["model"]["state"] == "PREPARED"
+
+
+def _failed_polls(state):
+    return [entry for entry in state["history"] if entry["event"] == "poll failed"]
+
+
+@pytest.mark.parametrize("failing, attempts", [
+    ({1}, [1]), ({1, 2, 3}, [1, 2, 3]), ({1, 2, 3, 5, 6, 7}, [1, 2, 3, 1, 2, 3]),   # an answer resets the count
+])
+def test_a_failed_status_read_is_tried_again(uploaded, failing, attempts):
+    clock = Clock()
+    fake = FakeEarthEngine(uploaded, clock, poll_errors={"logits": failing})
+    state = _run(uploaded, fake, clock)
+    assert state["model"]["outcome"] == "completed" and state["model"]["state"] == "VERIFIED"
+    failed = _failed_polls(state)
+    assert [entry["attempt"] for entry in failed] == attempts and len(failed) == len(failing)
+    assert all(entry["export"] == "model" and entry["error"].startswith("EEException: Deadline exceeded on status read")
+               for entry in failed)
+    assert fake.exported == ["logits"] and fake.calls.count("exportImage") == 1
+    _caps_hold(uploaded, "run")
+
+
+def test_four_failed_status_reads_in_a_row_stop_the_run_until_it_is_run_again(uploaded):
+    clock = Clock()
+    fake = FakeEarthEngine(uploaded, clock, poll_errors={"logits": {1, 2, 3, 4}})
+    with pytest.raises(RUN.RunStopped, match="the task is not resubmitted: run again to poll it"):
+        _run(uploaded, fake, clock)
+    state = _state(uploaded)
+    assert state["reason"] == ("getOperation failed: EEException: Deadline exceeded on status read 4; the task is not "
+                               "resubmitted: run again to poll it")
+    assert state["model"]["state"] == "SUBMITTED" and "outcome" not in state["model"]
+    assert [entry["attempt"] for entry in _failed_polls(state)] == [1, 2, 3, 4]
+    assert fake.calls.count("getOperation") == 4 and fake.calls.count("exportImage") == 1
+    state = _run(uploaded, fake, clock)                                            # polls the same task
+    assert state["model"]["outcome"] == "completed" and fake.exported == ["logits"]
+    assert fake.calls.count("exportImage") == 1 and len(_failed_polls(state)) == 4
+    _caps_hold(uploaded, "run")
+
+
+def test_status_reads_tried_again_count_against_the_cap(uploaded):
+    clock = Clock()
+    fake = FakeEarthEngine(uploaded, clock, model="queue", poll_errors={"logits": set(range(1, 100_000, 2))})
+    patient = RUN.Limits(budget_eecu_seconds=600, task_seconds=900, queue_seconds=1e9, interval_seconds=10)
+    with pytest.raises(RUN.RunStopped, match="the cap of .* getOperation calls is reached"):
+        _run(uploaded, fake, clock, patient)
+    cap = json.loads((uploaded / "prepared.json").read_text())["plan"]["calls"]["run"]["getOperation"]
+    assert fake.calls.count("getOperation") == cap and len(_failed_polls(_state(uploaded))) == (cap + 1) // 2
+    assert fake.calls.count("exportImage") == 1 and fake.calls.count("cancelOperation") == 0
+    _caps_hold(uploaded, "run")
 
 
 # ---------------------------------------------------------------------------

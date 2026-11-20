@@ -59,17 +59,22 @@ overwrites, never deletes.
 **run** submits the model's logits export once, ``clip_footprints=True`` (every validated block
 record names ``False``), only after a complete and verified upload, and only if the upload's
 recorded cost is within ``--budget-eecu-seconds``. It polls with ``getOperation`` every
-``--interval`` seconds; a task still running ``--task-seconds`` after its start, or not started
-``--queue-seconds`` after submission, is cancelled once (``cancelOperation``), read once more,
-and the run ends. The submission is never repeated: its intent and request ID are written first,
-and a run that finds it ``SUBMITTING`` stops. Before submitting it sets the client's request
-deadline to ``SUBMIT_DEADLINE_SECONDS``; a deadline (or a socket-wide timeout) shorter than the
-time Earth Engine takes to answer a large request leaves the answer lost.
+``--interval`` seconds; a read that raises is tried again after the interval, up to
+``POLL_RETRIES`` consecutive failures, each written to the history, and the next one ends the run
+(the task is not resubmitted: run again to poll it); a task still running ``--task-seconds``
+after its start, or not started ``--queue-seconds`` after submission, is cancelled once
+(``cancelOperation``), read once more, and the run ends. The submission is never repeated: its
+intent and request ID are written first, and a run that finds it ``SUBMITTING`` stops. Before
+submitting it sets the client's request deadline to ``SUBMIT_DEADLINE_SECONDS``; a deadline (or a
+socket-wide timeout) shorter than the time Earth Engine takes to answer a large request leaves the
+answer lost.
 
 **Staged runs** (``plan --cuts``, ``run --cuts``): a model too complex for one request runs as a
 sequence of exports. The recipe holds plain ordered cut lists (``Recipe.cut_lists``: FX node
 names, no search); export k builds the whole model with every earlier saved node read from its
-asset (``compile_model(..., saved_nodes=...)``, not validated live) and exports node k on its own
+asset (``compile_model(..., saved_nodes=...)``, run live with both recipes and the ``features``
+cut list, only the final logits compared: ``docs/evidence/compiled-cnn-staged-live.json``,
+``docs/evidence/compiled-cnn-ftw-v31-staged-live.json``) and exports node k on its own
 grid and bands, and the last export is the logits, every one with ``clip_footprints=True``. The
 plan prints, per export, the node, grid, bands, what it reads, request bytes, SHA-256 and offline
 counts (invocations, longest path, value-table entries, clip), with ``--path-bound``, the longest
@@ -149,6 +154,10 @@ TOO_COMPLEX = "Computation is too complex"
 TOLERANCE = 1e-4
 SUBMIT_DEADLINE_SECONDS = 900
 """The client's request deadline ``run`` sets before submitting (``ee.data.setDeadline``)."""
+POLL_RETRIES = 3
+"""Consecutive failed status reads (a ``getOperation`` that raises) ``run`` tries again after the
+polling interval; the next failure ends the run, the task not resubmitted. Every attempt counts
+against the ``getOperation`` cap; nothing else is retried."""
 RATE = 3.3
 """EECU-seconds per running second for the worst case: the 16-block chained-gate task's measured
 rate in ``docs/evidence/raster-gate-cost-live.json`` (1,178.5 in 353 s), one task's rate, not a
@@ -187,7 +196,7 @@ class Recipe:
     ``weights(model, resources)``, when set, loads trained weights into ``model`` from the
     resources checkout instead of the integer-hash initialization and the BatchNorm calibration;
     ``chip(bands, size)``, when set, is the evaluation input instead of
-    ``cnn_reference.evaluation_input``."""
+    ``cnn_reference.evaluation_input``, and ``chip_text`` names it in the plan."""
 
     name: str
     description: str
@@ -200,6 +209,7 @@ class Recipe:
     cut_lists: dict = field(default_factory=dict)
     weights: Callable | None = None
     chip: Callable | None = None
+    chip_text: str = "the evaluation chip"
 
 
 def _smp_unet() -> object:
@@ -280,12 +290,14 @@ RECIPES = {
             "features": ("encoder__swish", "add_2", "add_4", "add_12", "decoder_center"),
         }),
 }
+"""The recipes, by name: SMP 0.5.0's own initializers for the decoder (Kaiming, ReLU) and the head
+(Xavier); the encoder at torch's defaults (``tools/fixtures/cnn_reference.py``)."""
 RECIPES["ftw_v31_unet_efficientnet_b3_8band_256"] = Recipe(
     "ftw_v31_unet_efficientnet_b3_8band_256",
     "Fields of The World release v3.1, the CC BY EfficientNet-B3 U-Net (SMP Unet, 8 input bands, 3 classes), its "
     "released trained weights, one 256 x 256 chip of the evaluation input plus 0.5 (a numerical input, not imagery)",
     _smp_unet, 8, 256, (), _adapt_smp_256, cut_lists=dict(RECIPES["smp_unet_efficientnet_b3_8band_256"].cut_lists),
-    weights=_ftw_weights, chip=_offset_chip)
+    weights=_ftw_weights, chip=_offset_chip, chip_text="the evaluation chip plus 0.5")
 """The same architecture with its trained weights: no initializer, no calibration; the same cut
 lists (the FX node names are the same). Unavailable without the checkpoint in ``--resources``."""
 RESOURCES = {"path": None}
@@ -297,8 +309,6 @@ def set_resources(path) -> None:
     RESOURCES["path"] = None if path is None else Path(path)
     reference_model.cache_clear()
     compiled_module.cache_clear()
-"""The recipes, by name: SMP 0.5.0's own initializers for the decoder (Kaiming, ReLU) and the head
-(Xavier); the encoder at torch's defaults (``tools/fixtures/cnn_reference.py``)."""
 
 
 def _recipe(name: str) -> Recipe:
@@ -571,7 +581,8 @@ def plan_text(record: dict) -> str:
     for shard in tables["shards"]:
         lines.append(f"  table {shard['index']:>3}  {shard['asset_id'].rsplit('/', 1)[1]:<20} {shard['rows']:>6,} rows "
                      f"{shard['collection_payload_bytes']:>10,} bytes  {len(shard['layers'])} layers")
-    lines.append(f"Input image: {data['asset']}, the evaluation chip inline, {data['bytes']:,} bytes  "
+    chip = _recipe(record["recipe"]).chip_text
+    lines.append(f"Input image: {data['asset']}, {chip} inline, {data['bytes']:,} bytes  "
                  f"sha256 {data['sha256']}")
     counts = model["counts"]
     lines.append(f"Model logits: {model['asset']}, clip_footprints=True (every validated block record names False), "
@@ -999,6 +1010,7 @@ class _Exports(_Command):
 
     def poll(self, record: dict, planned: dict, label: str, part: str, outcome, prefix: str = "") -> None:
         export = {"label": label, "description": planned["description"], "asset": planned["asset"]}
+        failures = 0
         while True:
             self.sleep(self.limits.interval_seconds)
             try:
@@ -1006,8 +1018,15 @@ class _Exports(_Command):
             except RunStopped:
                 raise
             except Exception as error:
-                self.stop(part, f"getOperation failed: {type(error).__name__}: {error}; the task is not resubmitted: "
-                                "run again to poll it", cause=error)
+                failures += 1
+                text = f"{type(error).__name__}: {error}"
+                self.log("poll failed", export=label, attempt=failures, error=text)
+                if failures > POLL_RETRIES:
+                    self.stop(part, f"getOperation failed: {text}; the task is not resubmitted: run again to poll it",
+                              cause=error)
+                self.save()
+                continue
+            failures = 0
             problem = _operation_problem(operation, record["operation"], export, destinations=True)
             if problem:
                 self.stop(part, problem)

@@ -325,8 +325,13 @@ def compile_model(model: nn.Module, image: ee.Image, input_bands: Sequence[str],
     the traced graph (the input placeholder, the output, plumbing), a node with no raster tensor
     (a diagnostic convolution skipped with ``include_unfused_nodes=False``), and a one-pixel
     tensor (a global mean or a squeeze-excitation gate), whose read-back from a saved image is
-    not shown to be exact. Not validated live: no staged run has been checked against a
-    reference.
+    not shown to be exact. Run live in two staged runs of one architecture (SMP's
+    EfficientNet-B3 U-Net, 8 bands, 256 × 256, ``clip_footprints=True``, five saved nodes):
+    the final logits agreed with float32 PyTorch within 1e-4, with deterministic weights and
+    with trained weights (``docs/evidence/compiled-cnn-staged-live.json``,
+    ``docs/evidence/compiled-cnn-ftw-v31-staged-live.json``). No saved stage image was itself
+    compared with a reference, and no other model, cut list or ``clip_footprints=False`` has
+    run live.
     """
     if any(module.training for module in model.modules()):
         # Explain dropout's effective flag at its FX node even when p=0. Other
