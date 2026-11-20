@@ -885,6 +885,7 @@ def test_the_trained_recipe_input_is_the_evaluation_chip_plus_one_half():
     assert np.array_equal(RUN.evaluation_chip(SMP), base)                                  # the random recipe's own
 
 
+@pytest.mark.skipif(not HAS_SMP, reason="segmentation-models-pytorch is not installed")
 def test_the_trained_recipe_is_unavailable_without_its_file(resources, tmp_path):
     resources(None)
     with pytest.raises(RUN.RecipeUnavailable, match="none is given"):
