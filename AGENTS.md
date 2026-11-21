@@ -134,7 +134,9 @@ output.
 - The 1e-4 absolute target against float32 PyTorch is unchanged and applies to block
   fixtures and to a model's final outputs. A model's intermediate outputs are checked
   against float64 PyTorch instead: the mirror no farther than float32 PyTorch
-  (CONTRIBUTING, "Numerical comparisons"). Report the largest absolute error, never
+  (CONTRIBUTING, "Numerical comparisons"). So is a final output on which float32
+  PyTorch is itself more than 1e-4 from float64 PyTorch; the two PyTorch runs alone
+  decide that, never the output under test. Report the largest absolute error, never
   only a relative one. Never relax a check or rewrite a recorded result.
 
 ## Never

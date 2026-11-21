@@ -623,6 +623,9 @@ def test_compare_passes_and_fails_and_the_report_is_scrubbed(uploaded, shift, pa
         record = RUN.compare(uploaded, project=PROJECT, data=fake, ee_module=ee)
     assert record["passed"] is passed and record["input_equals_local"] and fake.calls.count("computePixels") == 2
     assert record["max_abs"] == pytest.approx(float(shift), abs=1e-6) and record["argmax_agreement"] == 1.0
+    assert record["rule"] == "float32_tolerance" and record["reference_max_abs_float64"] < 1e-5   # the tiny model
+    assert record["max_abs_float64"] == pytest.approx(float(shift), abs=1e-5)
+    assert record["float32_step"] == float(np.spacing(np.float32(record["largest_reference"])))
     with offline_earth_engine():
         RUN.compare(uploaded, project=PROJECT, data=fake, ee_module=ee)
     assert fake.calls.count("computePixels") == 2                                  # fetched once
@@ -631,6 +634,65 @@ def test_compare_passes_and_fails_and_the_report_is_scrubbed(uploaded, shift, pa
     assert ("compare passed" if passed else "compare failed") in report["outcome"]["text"]
     text = json.dumps(report)
     assert ROOT_ID not in text and "operations/" not in text and "projects/" not in text
+
+
+STEP = 2.0 ** -13                                       # 1.22e-4: over the tolerance, exact in float64
+
+
+@pytest.mark.parametrize("own, off, rule, within", [
+    (0.0, 2 * STEP, "float32_tolerance", False),         # float32 and float64 PyTorch agree: 1e-4 against float32
+    (STEP / 2, -3 * STEP / 8, "float32_tolerance", False),   # nearer float64 than float32 is; float32 inside 1e-4
+    (STEP / 2, STEP / 4, "float32_tolerance", True),
+    (2 * STEP, -STEP, "float64_ordering", True),         # 3 steps from float32, 1 from float64: float32 is 2 away
+    (2 * STEP, 0.0, "float64_ordering", True),
+    (2 * STEP, 2 * STEP, "float64_ordering", True),      # float32 PyTorch itself: no larger than its own
+    (2 * STEP, -3 * STEP, "float64_ordering", False),
+    (2 * STEP, 3 * STEP, "float64_ordering", False),
+])
+def test_the_check_is_chosen_by_the_two_references_and_never_by_the_logits(own, off, rule, within):
+    """``own``: float32 PyTorch above float64 PyTorch at one value; ``off``: the logits above float64 there."""
+    double = np.arange(48, dtype=np.float64).reshape(4, 4, 3) / 8
+    single, logits = double.astype(np.float32), double.astype(np.float32)
+    single[1, 2, 0] += np.float32(own)
+    logits[1, 2, 0] += np.float32(off)
+    facts = RUN.judged(logits, single, double)
+    assert (facts["rule"], facts["within"]) == (rule, within)
+    assert facts["reference_max_abs_float64"] == own and facts["max_abs_float64"] == abs(off)
+    assert facts["max_abs"] == abs(off - own) and facts["over_tolerance"] == int(abs(off - own) > 1e-4)
+    assert facts["reference_over_tolerance_float64"] == int(own > 1e-4) and facts["pixels"] == 16
+    assert facts["largest_reference"] == float(np.abs(single).max())
+    # the same references with other logits: the same check
+    assert RUN.judged(single, single, double)["rule"] == RUN.judged(logits + 1, single, double)["rule"] == rule
+
+
+def test_compare_judges_against_float64_where_float32_pytorch_is_itself_outside(uploaded):
+    clock = Clock()
+    fake = FakeEarthEngine(uploaded, clock)
+    _run(uploaded, fake, clock)
+    reference = _reference()
+    double = reference.astype(np.float64)
+    double[0, 0, 0] -= 2 * STEP                           # float32 PyTorch 2.4e-4 above float64 at one value
+    logits = reference.copy()
+    logits[0, 0, 0] = np.float32(double[0, 0, 0] - STEP)  # 1.2e-4 from float64, 3.7e-4 from float32
+    fake.values = {"input": RUN.evaluation_chip(TINY), "logits": logits}
+    with offline_earth_engine():
+        record = RUN.compare(uploaded, project=PROJECT, data=fake, ee_module=ee, reference64=double)
+    assert record["rule"] == "float64_ordering" and record["passed"] and record["over_tolerance"] == 1
+    assert record["max_abs_float64"] < record["reference_max_abs_float64"] < record["max_abs"]
+    assert record["reference_max_abs_float64"] == pytest.approx(2 * STEP, abs=1e-6)
+    text = RUN.report(uploaded)["outcome"]["text"]
+    assert "compare passed (the check: no farther from float64 PyTorch than float32 PyTorch" in text
+    with offline_earth_engine():                           # the same logits, references that agree: 1e-4 against float32
+        record = RUN.compare(uploaded, project=PROJECT, data=fake, ee_module=ee)
+    assert record["rule"] == "float32_tolerance" and not record["passed"] and fake.calls.count("computePixels") == 2
+    assert "compare failed (the check: within 0.0001 of float32 PyTorch)" in RUN.report(uploaded)["outcome"]["text"]
+
+
+def test_a_comparison_recorded_before_the_float64_check_prints_as_it_did():
+    old = {"passed": True, "max_abs": 3.43e-05, "over_tolerance": 0, "tolerance": 1e-4, "largest_reference": 35.69,
+           "input_equals_local": True, "argmax_agreeing": 65536, "pixels": 65536}
+    assert RUN._compare_text(old) == ("compare passed: largest absolute error 3.43e-05 (0 over 0.0001; largest "
+                                      "reference 35.7; input equal True; argmax equal at 65,536 of 65,536 pixels)")
 
 
 def test_compare_refuses_without_a_completed_run(uploaded):
@@ -1226,6 +1288,7 @@ def test_an_imagery_run_needs_its_input_check_and_compares_on_the_fetched_input(
     assert compared["passed"] is passed and compared["max_abs"] == pytest.approx(float(shift), abs=1e-6)
     assert compared["input_equals_local"] is None                                  # no local chip: not reported true
     assert compared["input"]["source"] == "imagery" and compared["input"]["sha256"] == record["sha256"]
+    assert compared["input"]["reference_equals_check"] is True and compared["rule"] == "float32_tolerance"
     assert compared["input"]["masked_pixels"] == 0 and sum(compared["class_counts"]["earth_engine"]) == 256
     assert fake.calls.count("computePixels") == 2            # the check's fetch and the logits: no second input fetch
     _caps_hold(imagery_prepared, "check_input")

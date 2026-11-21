@@ -75,7 +75,8 @@ numerical chip. With them:
   chip's shape (``input_check_problem``). The other figures are reported, not judged.
 - **compare** has no local chip to equal: its reference is float32 PyTorch on that kept array
   (its SHA-256 checked, never fetched again), ``input_equals_local`` is null and the record's
-  ``input`` gives the check's facts instead. The tolerance on the logits is the same.
+  ``input`` gives the check's facts instead, and whether the float32 reference equals the one
+  the check kept. The logits are judged as for a numerical chip.
 - **map** (offline) draws each image in true colour next to the predicted classes, with the class
   counts: the run's logits once ``compare`` has fetched them, before that the PyTorch
   reference's. One chip, one forward pass, no labels: not an accuracy claim.
@@ -149,9 +150,14 @@ assets kept and the outcome naming the export (``STAGED_OUTCOMES``); an interrup
 at the first export without a verified asset. A re-cut is a new plan in a new directory.
 
 **compare** fetches the saved input and logits once each (``computePixels``), requires the input
-to equal the evaluation chip bit for bit, and compares the logits with float32 PyTorch on that
-chip: the largest absolute error, the count over ``TOLERANCE``, the largest reference value, and
-the argmax class agreement (information only).
+to equal the evaluation chip bit for bit, and compares the logits with float32 and float64
+PyTorch on that chip (``judged``). Where float32 PyTorch is within ``TOLERANCE`` of float64
+PyTorch, the logits must be within ``TOLERANCE`` of float32 PyTorch. Where it is not, that
+target would test the reference's own rounding, and the logits must instead be no farther from
+float64 PyTorch than float32 PyTorch is. Which check applies is decided by the two PyTorch runs
+alone, never by the logits. The record names the check and gives the three largest absolute
+errors, the counts over ``TOLERANCE``, the largest reference value with the float32 step there,
+and the argmax class agreement (information only).
 
 **Outcomes, stated in advance; ``report`` prints exactly one** and reports the cost without
 judging it (``OUTCOMES``): refused as too complex at submission; another submission error; the
@@ -860,8 +866,10 @@ def imagery_text(record: dict) -> list[str]:
                  f"{readback['response_bytes']:,} bytes of response; expression {readback['graph_bytes']:,} bytes  "
                  f"sha256 {readback['graph_sha256']}; run submits no model export without its record, or with a "
                  "masked pixel, or with a fetch that is not finite float32 of the chip's shape")
-    lines.append(f"Compare: the reference is float32 PyTorch on the fetched input (the check's cached array, its "
-                 f"SHA-256 checked); the logits within {TOLERANCE:g}, as for a numerical chip")
+    lines.append(f"Compare: the references are float32 and float64 PyTorch on the fetched input (the check's cached "
+                 f"array, its SHA-256 checked); the logits judged as for a numerical chip: within {TOLERANCE:g} of "
+                 "float32 PyTorch, or, where float32 PyTorch is itself farther than that from float64 PyTorch, no "
+                 "farther from float64 PyTorch than float32 PyTorch is")
     return lines
 
 
@@ -2099,11 +2107,43 @@ def check_input(directory, *, project: str, data=None, ee_module=None) -> dict:
 # ---------------------------------------------------------------------------
 # compare
 # ---------------------------------------------------------------------------
-def compare(directory, *, project: str, data=None, ee_module=None, reference=None) -> dict:
+RULES = ("float32_tolerance", "float64_ordering")
+
+
+def judged(logits: np.ndarray, single: np.ndarray, double: np.ndarray, *, tolerance: float = TOLERANCE) -> dict:
+    """A model's final output against float32 (``single``) and float64 (``double``) PyTorch, with
+    the check that applies (``RULES``), chosen from the two references alone:
+
+    - ``float32_tolerance``, where float32 PyTorch is within ``tolerance`` of float64 PyTorch:
+      ``within`` is the largest absolute error against float32 PyTorch at most ``tolerance``.
+    - ``float64_ordering``, where it is not: ``within`` is the largest absolute error against
+      float64 PyTorch no larger than float32 PyTorch's own.
+
+    Every figure is recorded under either check. Offline."""
+    values, exact = logits.astype(np.float64), np.asarray(double, dtype=np.float64)
+    error, error64 = np.abs(values - single.astype(np.float64)), np.abs(values - exact)
+    own = np.abs(single.astype(np.float64) - exact)
+    rule = RULES[0] if own.max() <= tolerance else RULES[1]
+    largest = float(np.abs(single).max())
+    return {"rule": rule, "tolerance": tolerance, "max_abs": float(error.max()),
+            "over_tolerance": int((error > tolerance).sum()), "max_abs_float64": float(error64.max()),
+            "over_tolerance_float64": int((error64 > tolerance).sum()),
+            "reference_max_abs_float64": float(own.max()),
+            "reference_over_tolerance_float64": int((own > tolerance).sum()),
+            "largest_reference": largest, "float32_step": float(np.spacing(np.float32(largest))),
+            "argmax_agreement": float((logits.argmax(-1) == single.argmax(-1)).mean()),
+            "argmax_agreeing": int((logits.argmax(-1) == single.argmax(-1)).sum()),
+            "argmax_agreeing_float64": int((logits.argmax(-1) == exact.argmax(-1)).sum()),
+            "pixels": int(np.prod(logits.shape[:2])),
+            "within": bool(error.max() <= tolerance if rule == RULES[0] else error64.max() <= own.max())}
+
+
+def compare(directory, *, project: str, data=None, ee_module=None, reference=None, reference64=None) -> dict:
     """Fetch the saved input and logits once each and compare (see the module docstring); writes
-    and returns ``compare.json``. ``reference``: the float32 PyTorch logits [H, W, classes], by
-    default computed here from the evaluation chip, or, for an imagery input, from the fetched
-    input ``check-input`` kept (never fetched again; its SHA-256 must be the record's)."""
+    and returns ``compare.json``. ``reference``, ``reference64``: the float32 and float64 PyTorch
+    logits [H, W, classes], each by default computed here from the evaluation chip, or, for an
+    imagery input, from the fetched input ``check-input`` kept (never fetched again; its SHA-256
+    must be the record's)."""
     directory = Path(directory)
     prepared, state = _load(directory)
     if prepared["arguments"]["project"] != project:
@@ -2142,21 +2182,22 @@ def compare(directory, *, project: str, data=None, ee_module=None, reference=Non
     if reference is None:
         reference = forward(recipe, chip)
     reference = np.asarray(reference, dtype=np.float32)
-    error = np.abs(logits.astype(np.float64) - reference.astype(np.float64))
+    if reference64 is None:
+        reference64 = forward(recipe, chip, double=True)
+    facts = judged(logits, reference, reference64)
     input_equal = None if imagery else bool(np.array_equal(image.view(np.uint32), chip.view(np.uint32)))
-    record = {"format": f"{FORMAT}.compare", "version": VERSION, "project": project, "tolerance": TOLERANCE,
-              "input_equals_local": input_equal, "max_abs": float(error.max()),
-              "over_tolerance": int((error > TOLERANCE).sum()), "largest_reference": float(np.abs(reference).max()),
-              "argmax_agreement": float((logits.argmax(-1) == reference.argmax(-1)).mean()),
-              "argmax_agreeing": int((logits.argmax(-1) == reference.argmax(-1)).sum()),
-              "pixels": int(np.prod(logits.shape[:2])),
-              "passed": bool((imagery or input_equal) and error.max() <= TOLERANCE)}
+    record = {"format": f"{FORMAT}.compare", "version": VERSION, "project": project,
+              "input_equals_local": input_equal, **facts,
+              "passed": bool((imagery or input_equal) and facts["within"])}
     if imagery:
         # No local chip exists to equal: the input is what check-input fetched and recorded.
         check = json.loads((directory / "input_check.json").read_text(encoding="ascii"))
         classes = logits.shape[-1]
+        kept = cache / "reference.npy"                 # the float32 logits check-input computed
+        same = bool(np.array_equal(np.load(kept).view(np.uint32), reference.view(np.uint32))) if kept.exists() else None
         record.update(
             input={"source": "imagery", "reference_on": "the fetched input (check-input's cached array)",
+                   "reference_equals_check": same,
                    **{key: check[key] for key in ("sha256", "shape", "dtype", "float32", "finite", "masked_pixels")}},
             class_counts={"earth_engine": [int(n) for n in np.bincount(logits.argmax(-1).ravel(), minlength=classes)],
                           "reference": [int(n) for n in np.bincount(reference.argmax(-1).ravel(),
@@ -2239,13 +2280,25 @@ def outcome_of(state: dict, compared: dict | None) -> dict:
                              f"({'cancelled' if model.get('cancelled') else 'the cancel failed'}); last state "
                              f"{model.get('last_status')!r}; cost {cost} EECU-seconds"),
         "completed": (f"completed: cost {cost} EECU-seconds; "
-                      + ("compare not run" if compared is None else
-                         f"compare {'passed' if compared['passed'] else 'failed'}: largest absolute error "
-                         f"{compared['max_abs']:.3g} ({compared['over_tolerance']} over {compared['tolerance']:g}; "
-                         f"largest reference {compared['largest_reference']:.3g}; {_input_text(compared)}; "
-                         f"{_argmax_text(compared)})")),
+                      + ("compare not run" if compared is None else _compare_text(compared))),
     }
     return {"outcome": outcome, "text": texts[outcome], "eecu_seconds": cost}
+
+
+def _compare_text(compared: dict) -> str:
+    """A comparison in one line. A record from before the float64 check (no ``rule``) prints as it
+    always did."""
+    verdict, tail = f"compare {'passed' if compared['passed'] else 'failed'}", (
+        f"largest reference {compared['largest_reference']:.3g}; {_input_text(compared)}; {_argmax_text(compared)}")
+    if "rule" not in compared:
+        return (f"{verdict}: largest absolute error {compared['max_abs']:.3g} ({compared['over_tolerance']} over "
+                f"{compared['tolerance']:g}; {tail})")
+    check = (f"within {compared['tolerance']:g} of float32 PyTorch" if compared["rule"] == RULES[0] else
+             f"no farther from float64 PyTorch than float32 PyTorch, which is itself over {compared['tolerance']:g} from it")
+    return (f"{verdict} (the check: {check}): largest absolute error against float32 PyTorch {compared['max_abs']:.3g} "
+            f"({compared['over_tolerance']} over {compared['tolerance']:g}), against float64 PyTorch "
+            f"{compared['max_abs_float64']:.3g}; float32 PyTorch's own against float64 PyTorch "
+            f"{compared['reference_max_abs_float64']:.3g}; {tail}; float32 step there {compared['float32_step']:.3g}")
 
 
 def _input_text(compared: dict) -> str:
@@ -2296,11 +2349,7 @@ def staged_outcome(state: dict, compared: dict | None) -> dict:
                                    f"{record.get('last_status')!r}"),
         "completed": (f"completed: {total} EECU-seconds over {len(exports)} exports; "
                       + (f"the input export {state['input'].get('eecu_seconds')} more; " if "input" in state else "")
-                      + ("compare not run" if compared is None else
-                         f"compare {'passed' if compared['passed'] else 'failed'}: largest absolute error "
-                         f"{compared['max_abs']:.3g} ({compared['over_tolerance']} over {compared['tolerance']:g}; "
-                         f"largest reference {compared['largest_reference']:.3g}; {_input_text(compared)}; "
-                         f"{_argmax_text(compared)})")),
+                      + ("compare not run" if compared is None else _compare_text(compared))),
     }
     return {"outcome": name, "export": leaf, "text": texts[name], "eecu_seconds": total}
 
