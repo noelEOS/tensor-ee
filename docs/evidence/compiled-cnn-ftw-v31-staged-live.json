@@ -1,0 +1,253 @@
+{
+ "adopt": "VERIFIED",
+ "calls": {
+  "calls_compare": {
+   "caps": {
+    "computePixels": 6
+   },
+   "counts": {
+    "computePixels": 2
+   }
+  },
+  "calls_run": {
+   "caps": {
+    "cancelOperation": 1,
+    "createFolder": 2,
+    "exportImage": 6,
+    "getAsset": 50,
+    "getOperation": 1636
+   },
+   "counts": {
+    "cancelOperation": 0,
+    "createFolder": 0,
+    "exportImage": 6,
+    "getAsset": 46,
+    "getOperation": 49
+   }
+  }
+ },
+ "compare": {
+  "argmax_agreeing": 65536,
+  "argmax_agreement": 1.0,
+  "format": "compiled_cnn_run.compare",
+  "input_equals_local": true,
+  "largest_reference": 35.68622970581055,
+  "max_abs": 3.4332275390625e-05,
+  "over_tolerance": 0,
+  "passed": true,
+  "pixels": 65536,
+  "project": "tensor-ee",
+  "tolerance": 0.0001,
+  "version": 1
+ },
+ "cuts": {
+  "name": "features",
+  "nodes": [
+   "encoder__swish",
+   "add_2",
+   "add_4",
+   "add_12",
+   "decoder_center"
+  ]
+ },
+ "exports": [
+  {
+   "bytes": 17621,
+   "counts": {
+    "clip": 6,
+    "invocations": 113,
+    "longest_path": 45,
+    "reproject": 7,
+    "value_table_entries": 42
+   },
+   "eecu_seconds": 3.899007797241211,
+   "error": null,
+   "last_status": "SUCCEEDED",
+   "leaf": "stage01",
+   "limit": null,
+   "node": "encoder__swish",
+   "outcome": null,
+   "queue_seconds": 1.9970300197601318,
+   "reads": [
+    "input"
+   ],
+   "run_seconds": 12.211974859237671,
+   "sha256": "b1ef4242bd139b58cbd2ee6228ae75558adf2f9606a59ad86856c69841c3a778",
+   "state": "VERIFIED",
+   "times": {
+    "createTime": "2026-11-20T08:59:25.983607Z",
+    "endTime": "2026-11-20T08:59:40.192612Z",
+    "startTime": "2026-11-20T08:59:27.980637Z",
+    "updateTime": "2026-11-20T08:59:40.192612Z"
+   }
+  },
+  {
+   "bytes": 341145,
+   "counts": {
+    "clip": 68,
+    "invocations": 1275,
+    "longest_path": 692,
+    "reproject": 91,
+    "value_table_entries": 1723
+   },
+   "eecu_seconds": 25.01099967956543,
+   "error": null,
+   "last_status": "SUCCEEDED",
+   "leaf": "stage02",
+   "limit": null,
+   "node": "add_2",
+   "outcome": null,
+   "queue_seconds": 3.9623148441314697,
+   "reads": [
+    "stage01"
+   ],
+   "run_seconds": 23.092053174972534,
+   "sha256": "6bca45e31e7e8d3479b4a307e694ea10f9f0802862580d8ed7179b1472076033",
+   "state": "VERIFIED",
+   "times": {
+    "createTime": "2026-11-20T08:59:51.140145Z",
+    "endTime": "2026-11-20T09:00:18.194513Z",
+    "startTime": "2026-11-20T08:59:55.102460Z",
+    "updateTime": "2026-11-20T09:00:18.194513Z"
+   }
+  },
+  {
+   "bytes": 680230,
+   "counts": {
+    "clip": 45,
+    "invocations": 853,
+    "longest_path": 456,
+    "reproject": 60,
+    "value_table_entries": 5255
+   },
+   "eecu_seconds": 29.279010772705078,
+   "error": null,
+   "last_status": "SUCCEEDED",
+   "leaf": "stage03",
+   "limit": null,
+   "node": "add_4",
+   "outcome": null,
+   "queue_seconds": 8.044312000274658,
+   "reads": [
+    "stage02"
+   ],
+   "run_seconds": 36.745041847229004,
+   "sha256": "aec37b3729f8eb0f6c64438e1bef02b10d27c77adc4bd357fbbb648471cdbeb1",
+   "state": "VERIFIED",
+   "times": {
+    "createTime": "2026-11-20T09:00:28.968625Z",
+    "endTime": "2026-11-20T09:01:13.757979Z",
+    "startTime": "2026-11-20T09:00:37.012937Z",
+    "updateTime": "2026-11-20T09:01:13.757979Z"
+   }
+  },
+  {
+   "bytes": 2274031,
+   "counts": {
+    "clip": 142,
+    "invocations": 2658,
+    "longest_path": 1486,
+    "reproject": 192,
+    "value_table_entries": 15633
+   },
+   "eecu_seconds": 100.13121795654297,
+   "error": null,
+   "last_status": "SUCCEEDED",
+   "leaf": "stage04",
+   "limit": null,
+   "node": "add_12",
+   "outcome": null,
+   "queue_seconds": 4.235505104064941,
+   "reads": [
+    "stage03"
+   ],
+   "run_seconds": 135.877995967865,
+   "sha256": "be931696ab9a6edaaab5c89634dbeb2216cdce09419984227655660ff431ba99",
+   "state": "VERIFIED",
+   "times": {
+    "createTime": "2026-11-20T09:01:38.894181Z",
+    "endTime": "2026-11-20T09:03:59.007682Z",
+    "startTime": "2026-11-20T09:01:43.129686Z",
+    "updateTime": "2026-11-20T09:03:59.007682Z"
+   }
+  },
+  {
+   "bytes": 4291209,
+   "counts": {
+    "clip": 114,
+    "invocations": 2190,
+    "longest_path": 1191,
+    "reproject": 154,
+    "value_table_entries": 28254
+   },
+   "eecu_seconds": 170.18528747558594,
+   "error": null,
+   "last_status": "SUCCEEDED",
+   "leaf": "stage05",
+   "limit": null,
+   "node": "decoder_center",
+   "outcome": null,
+   "queue_seconds": 1.544368028640747,
+   "reads": [
+    "stage04"
+   ],
+   "run_seconds": 280.5759000778198,
+   "sha256": "3a1091bf1ac088cee1952998c5ab36d4ca7a7343f9f1a5f499fad48e0564cfff",
+   "state": "VERIFIED",
+   "times": {
+    "createTime": "2026-11-20T12:53:45.309718Z",
+    "endTime": "2026-11-20T12:58:27.429986Z",
+    "startTime": "2026-11-20T12:53:46.854086Z",
+    "updateTime": "2026-11-20T12:58:27.429986Z"
+   }
+  },
+  {
+   "bytes": 714396,
+   "counts": {
+    "clip": 41,
+    "invocations": 711,
+    "longest_path": 310,
+    "reproject": 52,
+    "value_table_entries": 3575
+   },
+   "eecu_seconds": 29.81188201904297,
+   "error": null,
+   "last_status": "SUCCEEDED",
+   "leaf": "logits",
+   "limit": null,
+   "node": "output",
+   "outcome": null,
+   "queue_seconds": 4.398993015289307,
+   "reads": [
+    "stage01",
+    "stage02",
+    "stage03",
+    "stage04",
+    "stage05"
+   ],
+   "run_seconds": 26.702889919281006,
+   "sha256": "f759ebe845b0afdb15a1b57cc2f0412631766bfbbb3853e90e22dfa018c70ecf",
+   "state": "VERIFIED",
+   "times": {
+    "createTime": "2026-11-20T12:58:43.050646Z",
+    "endTime": "2026-11-20T12:59:14.152529Z",
+    "startTime": "2026-11-20T12:58:47.449639Z",
+    "updateTime": "2026-11-20T12:59:14.152529Z"
+   }
+  }
+ ],
+ "format": "compiled_cnn_run.report",
+ "manifest_sha256": "652774277f5ccef5778862c8939adb70fb8e58c33550c5a9988a5a7525a7da81",
+ "mode": "staged",
+ "outcome": {
+  "eecu_seconds": 358.3174057006836,
+  "export": null,
+  "outcome": "completed",
+  "text": "completed: 358.3174057006836 EECU-seconds over 6 exports; compare passed: largest absolute error 3.43e-05 (0 over 0.0001; largest reference 35.7; input equal True; argmax equal at 65,536 of 65,536 pixels)"
+ },
+ "path_bound": 1600,
+ "project": "tensor-ee",
+ "reason": null,
+ "recipe": "ftw_v31_unet_efficientnet_b3_8band_256",
+ "version": 1
+}

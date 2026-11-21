@@ -1,0 +1,146 @@
+{
+ "calls": {
+  "calls_run": {
+   "caps": {
+    "cancelOperation": 1,
+    "exportImage": 1,
+    "getAsset": 6,
+    "getOperation": 276
+   },
+   "counts": {
+    "cancelOperation": 0,
+    "exportImage": 1,
+    "getAsset": 1,
+    "getOperation": 0
+   }
+  },
+  "calls_upload": {
+   "caps": {
+    "computeValue": 144,
+    "createFolder": 2,
+    "exportImage": 1,
+    "exportTable": 34,
+    "getAsset": 68,
+    "getOperation": 3846,
+    "getTaskStatus": 3664
+   },
+   "counts": {
+    "computeValue": 140,
+    "createFolder": 1,
+    "exportImage": 1,
+    "exportTable": 30,
+    "getAsset": 35,
+    "getOperation": 689,
+    "getTaskStatus": 0
+   }
+  }
+ },
+ "compare": null,
+ "format": "compiled_cnn_run.report",
+ "model": {
+  "eecu_seconds": null,
+  "error": "EEException: Computation is too complex.",
+  "last_status": null,
+  "limit": null,
+  "outcome": "refused_too_complex",
+  "queue_seconds": null,
+  "run_seconds": null,
+  "state": "ENDED",
+  "times": null
+ },
+ "outcome": {
+  "eecu_seconds": null,
+  "outcome": "refused_too_complex",
+  "text": "refused as too complex at submission: EEException: Computation is too complex.. No single request at this structure; the tables stay for a staged run"
+ },
+ "project": "tensor-ee",
+ "reason": null,
+ "recipe": "smp_unet_efficientnet_b3_8band_256",
+ "requests": {
+  "input": {
+   "bytes": 6520837,
+   "sha256": "237b97a9aebf81581d8c2baa3ecb0e094886520635ac7461c4d32e336a9dd316"
+  },
+  "model": {
+   "bytes": 6587046,
+   "counts": {
+    "clip": 402,
+    "invocations": 7503,
+    "longest_path": 4132,
+    "reproject": 543,
+    "value_table_entries": 29349
+   },
+   "sha256": "23c0e072031be67f43906e0e8764ec95d3b280d8b8511a941219bfaee6ab53db"
+  }
+ },
+ "tables": {
+  "count": 30
+ },
+ "upload": {
+  "eecu_seconds": 1.4283403072040528,
+  "input": {
+   "asset": {
+    "bands": 8,
+    "sizeBytes": "1247501",
+    "type": "IMAGE"
+   },
+   "eecu_seconds": 1.3017792701721191,
+   "intent_unix": 1794922242.11487,
+   "last_operation": {
+    "done": true,
+    "metadata": {
+     "@type": "type.googleapis.com/google.earthengine.v1alpha.OperationMetadata",
+     "attempt": 1,
+     "batchEecuUsageSeconds": 1.3017792701721191,
+     "createTime": "2026-11-17T13:31:19.342512Z",
+     "description": "compiled_cnn_input",
+     "destinationUris": [
+      "https://code.earthengine.google.com/?asset=input"
+     ],
+     "endTime": "2026-11-17T13:32:22.470152Z",
+     "priority": 100,
+     "progress": 1,
+     "stages": [
+      {
+       "completeWorkUnits": 1,
+       "description": "Computation and writing of temporary files.",
+       "displayName": "Create Local Files",
+       "totalWorkUnits": "1"
+      },
+      {
+       "completeWorkUnits": 1,
+       "description": "Uploading of files to the export destination.",
+       "displayName": "Write Files to Destination",
+       "totalWorkUnits": "1"
+      }
+     ],
+     "startTime": "2026-11-17T13:31:23.516087Z",
+     "state": "SUCCEEDED",
+     "type": "EXPORT_IMAGE",
+     "updateTime": "2026-11-17T13:32:22.470152Z"
+    },
+    "name": "<operation>",
+    "response": {
+     "@type": "type.googleapis.com/google.protobuf.Empty"
+    }
+   },
+   "last_status": "SUCCEEDED",
+   "operation": "<operation>",
+   "polls": 7,
+   "queue_seconds": 4.173575162887573,
+   "request_id": "65e6e7ab-0047-4ea6-a586-267e82bb12b6",
+   "run_seconds": 58.95406484603882,
+   "state": "VERIFIED",
+   "submitted_unix": 1794922279.75378,
+   "times": {
+    "createTime": "2026-11-17T13:31:19.342512Z",
+    "endTime": "2026-11-17T13:32:22.470152Z",
+    "startTime": "2026-11-17T13:31:23.516087Z",
+    "updateTime": "2026-11-17T13:32:22.470152Z"
+   }
+  },
+  "state": "VERIFIED",
+  "tables_started_unix": 1794916069.196188
+ },
+ "version": 1
+}
