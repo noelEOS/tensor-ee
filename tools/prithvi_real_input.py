@@ -62,12 +62,17 @@ def crop_grid(crs: str, chip_transform, offset):
     return Grid(crs, (a, b, x0 + col * a, d, e, y0 + row * e), CROP, CROP)
 
 
+def day_images(ee, collection: str, date: str, grid):
+    """The images of ``collection`` of that day (UTC) whose footprint contains ``grid``."""
+    start = ee.Date(date)
+    return (ee.ImageCollection(collection).filterDate(start, start.advance(1, "day"))
+            .filter(ee.Filter.contains(leftField=".geo", rightValue=grid.geometry())))
+
+
 def discover_expression(ee, date: str, grid):
     """One request: the day's L1C images whose footprint contains the crop, as a list of
     [index, product id, tile, cloud percentage]."""
-    start = ee.Date(date)
-    images = (ee.ImageCollection(COLLECTION).filterDate(start, start.advance(1, "day"))
-              .filter(ee.Filter.contains(leftField=".geo", rightValue=grid.geometry())))
+    images = day_images(ee, COLLECTION, date, grid)
     return images.reduceColumns(ee.Reducer.toList(len(PROPERTIES)), list(PROPERTIES)).get("list")
 
 

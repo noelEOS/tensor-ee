@@ -281,6 +281,12 @@ research inputs are not uploaded to CI.
   must be no larger than float32 PyTorch's own. Large intermediate values put 1e-4
   out of reach of any float32 implementation; this check shows the library is at
   least as accurate as PyTorch there.
+- **A final output on which float32 PyTorch is itself more than 1e-4 from that
+  float64 run** is checked as an intermediate output is: its largest absolute error
+  against float64 must be no larger than float32 PyTorch's own. There, 1e-4 against
+  float32 would test the reference's own rounding. Which check applies is decided by
+  the two PyTorch runs alone, before the output under test is read, and the record
+  names it. A block fixture's outputs are never checked this way.
 - **Record the scale with every comparison**, for each output: its largest absolute
   value, the float32 step at that value (`np.spacing`), the largest absolute error
   against float32 PyTorch and, for a model, against float64 PyTorch, and argmax flips

@@ -1,0 +1,58 @@
+{
+ "band": "B4",
+ "calls": {
+  "caps": {
+   "computeValue": 1
+  },
+  "counts": {
+   "computeValue": 1
+  }
+ },
+ "collection": "COPERNICUS/S2_SR_HARMONIZED",
+ "date": "2021-09-25",
+ "format": "compiled_cnn_run.discover",
+ "grid": {
+  "crs": "EPSG:32633",
+  "height": 256,
+  "transform": [
+   10.0,
+   0.0,
+   361120.0,
+   0.0,
+   -10.0,
+   5335910.0
+  ],
+  "width": 256
+ },
+ "images": [
+  {
+   "CLOUDY_PIXEL_PERCENTAGE": 0.000441,
+   "MGRS_TILE": "33UUP",
+   "PROCESSING_BASELINE": "05.00",
+   "PRODUCT_ID": "S2B_MSIL2A_20210925T101019_N0500_R022_T33UUP_20230121T204223",
+   "band": "B4",
+   "chip_on_band_pixels": true,
+   "crs": "EPSG:32633",
+   "data_type": {
+    "max": 65535,
+    "min": 0,
+    "precision": "int",
+    "type": "PixelType"
+   },
+   "id": "COPERNICUS/S2_SR_HARMONIZED/20210925T101019_20210925T101413_T33UUP",
+   "system:index": "20210925T101019_20210925T101413_T33UUP",
+   "transform": [
+    10,
+    0,
+    300000,
+    0,
+    -10,
+    5400000
+   ]
+  }
+ ],
+ "limit": 20,
+ "recipe": "ftw_v31_unet_efficientnet_b3_8band_256",
+ "truncated": false,
+ "version": 1
+}
