@@ -81,8 +81,13 @@ numerical chip. With them:
   counts: the run's logits once ``compare`` has fetched them, before that the PyTorch
   reference's. One chip, one forward pass, no labels: not an accuracy claim.
 
-The imagery path is exercised offline and against fake clients (``tests/test_compiled_cnn_run.py``);
-it has not run live.
+The imagery path ran live once: a staged run of the trained recipe on one chip of two pinned
+Sentinel-2 images (``docs/evidence/compiled-cnn-ftw-v31-sentinel2-live.json``, with the two scene
+lookups beside it): the input export, its check, six model exports and ``compare``. On that chip
+float32 PyTorch is itself more than ``TOLERANCE`` from float64 PyTorch, so the logits were judged
+against float64 PyTorch (below). Not run live: a one-graph imagery run, a source image with a
+masked pixel, and a chip off the images' pixel grid; fake clients exercise the first two
+(``tests/test_compiled_cnn_run.py``).
 
 **plan** (offline, exact) builds the deterministic model, its effective convolutions
 (``tensor_ee.weight_assets.effective_convolutions``) and their tables with the uploader's own
