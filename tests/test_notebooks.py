@@ -17,6 +17,7 @@ Notebooks that need segmentation-models-pytorch or timm skip by name without the
 """
 from __future__ import annotations
 
+import base64
 import contextlib
 import json
 import re
@@ -32,6 +33,12 @@ EXPECTED = {
     "01_quickstart.ipynb": (),
     "02_is_my_model_supported.ipynb": ("segmentation_models_pytorch", "timm"),
     "03_bring_your_own_cnn.ipynb": ("segmentation_models_pytorch",),
+}
+MAX_PNG_BYTES = 300_000
+EXPECTED_OFFLINE_FIGURES = {
+    "01_quickstart.ipynb": 0,
+    "02_is_my_model_supported.ipynb": 2,
+    "03_bring_your_own_cnn.ipynb": 2,
 }
 PLACEHOLDER_PROJECT = "YOUR_EE_PROJECT"
 MANIFESTS = ROOT / "data" / "manifests"
@@ -83,14 +90,49 @@ def test_the_notebooks_are_the_three_reader_notebooks():
     assert {path.name for path in NOTEBOOKS.glob("*.ipynb")} == set(EXPECTED)
 
 
+def _output_text(cell):
+    chunks = []
+    for output in cell.get("outputs", []):
+        if output.get("output_type") == "stream":
+            chunks.append("".join(output.get("text", [])))
+        elif output.get("output_type") in ("display_data", "execute_result"):
+            plain = output.get("data", {}).get("text/plain", [])
+            chunks.append("".join(plain) if isinstance(plain, list) else str(plain))
+    return "\n".join(chunks)
+
+
+def _is_install_cell(cell):
+    return any(line.lstrip().startswith(("!", "%")) for line in _source(cell).splitlines())
+
+
 @pytest.mark.parametrize("name", sorted(EXPECTED))
-def test_outputs_and_execution_counts_are_cleared(name):
+def test_notebook_structure_and_output_hygiene(name):
     notebook = json.loads((NOTEBOOKS / name).read_text())
     assert notebook["nbformat"] == 4
+    png_count = 0
     for cell in notebook["cells"]:
         assert cell["cell_type"] in ("markdown", "code")
-        if cell["cell_type"] == "code":
+        if cell["cell_type"] != "code":
+            continue
+        if _is_install_cell(cell):
             assert cell["outputs"] == [] and cell["execution_count"] is None, _source(cell)[:80]
+        for output in cell["outputs"]:
+            assert output.get("output_type") != "error", f"Committed error output in {name}: {output}"
+            data = output.get("data", {})
+            if "image/png" in data:
+                raw_b64 = data["image/png"]
+                raw_b64 = "".join(raw_b64) if isinstance(raw_b64, list) else raw_b64
+                png_bytes = base64.b64decode(raw_b64)
+                assert png_bytes.startswith(b"\x89PNG\r\n\x1a\n"), f"Invalid PNG in {name}"
+                assert len(png_bytes) <= MAX_PNG_BYTES, f"PNG too large ({len(png_bytes)} bytes) in {name}"
+                png_count += 1
+    assert png_count >= EXPECTED_OFFLINE_FIGURES[name], f"{name}: expected >= {EXPECTED_OFFLINE_FIGURES[name]} PNGs, found {png_count}"
+
+
+@pytest.mark.parametrize("name", sorted(EXPECTED))
+def test_no_em_dashes(name):
+    text = "\n".join(_source(cell) + "\n" + _output_text(cell) for cell in _cells(name))
+    assert "—" not in text, f"Found em-dash in {name}"
 
 
 @pytest.mark.parametrize("name", sorted(EXPECTED))
@@ -110,9 +152,11 @@ def test_the_quickstart_has_one_setting_and_stops_cleanly_without_it():
     sources = [_source(cell) for cell in _code("01_quickstart.ipynb")]
     text = "\n".join(sources)
     assert "RUN_LIVE" not in text and "ApiTestCase" not in text
+    helpers = next(source for source in sources if "class Stop" in source)
     settings = [source for source in sources if 'PROJECT = ""  # @param {type:"string"}' in source]
     assert len(settings) == 1
     namespace = {}
+    exec(compile(helpers, "helpers", "exec"), namespace)
     with pytest.raises(Exception) as stopped:
         exec(compile(settings[0], "settings", "exec"), namespace)
     assert type(stopped.value).__name__ == "Stop"
@@ -121,10 +165,9 @@ def test_the_quickstart_has_one_setting_and_stops_cleanly_without_it():
 
 
 def test_the_quickstart_waits_with_progress_and_stops_on_a_failed_export(capsys):
-    settings = next(_source(cell) for cell in _code("01_quickstart.ipynb") if "def wait_for" in _source(cell))
+    helpers = next(_source(cell) for cell in _code("01_quickstart.ipynb") if "def wait_for" in _source(cell))
     namespace = {}
-    with pytest.raises(Exception):
-        exec(compile(settings, "settings", "exec"), namespace)   # stops: PROJECT is empty
+    exec(compile(helpers, "helpers", "exec"), namespace)
 
     class Task:
         def __init__(self, states):
@@ -165,7 +208,7 @@ def test_live_steps_in_03_follow_one_setting_and_check_the_project():
 
 @pytest.mark.parametrize("name", sorted(EXPECTED))
 def test_no_private_values(name):
-    text = "\n".join(_source(cell) for cell in _cells(name))
+    text = "\n".join(_source(cell) + "\n" + _output_text(cell) for cell in _cells(name))
     assert not EMAIL.search(text)
     assert not HOME.search(text)
     assert "billed" not in text.lower()
@@ -350,7 +393,7 @@ def test_bring_your_own_cnn_skips_the_steps_already_done(monkeypatch, tmp_path, 
         assert len(starts) == 1 and "Already exported" in capsys.readouterr().out
         namespace["started"]["projects/offline-check/assets/region"] = Task(["RUNNING", "RUNNING", "COMPLETED"])
         export_once("region", lambda: None, None, "region", minutes=60)      # still running: waited for
-        assert len(starts) == 1 and "still running; waiting" in capsys.readouterr().out
+        assert len(starts) == 1 and "Waiting for export" in capsys.readouterr().out
         namespace["RUN_UP_TO"] = "offline"
 
     _run(name, monkeypatch, then=check)
